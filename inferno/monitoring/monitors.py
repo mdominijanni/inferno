@@ -8,21 +8,21 @@ import torch.nn as nn
 from inferno._internal import get_nested_attr
 from inferno.common.hookables import PreHookable, PostHookable
 from inferno.monitoring.reducers.abstract import AbstractReducer
-from inferno.monitoring.reducers.passthrough import PassthroughReducer
+from inferno.monitoring.reducers.passthrough import SinglePassthroughReducer
 
 
 class AbstractMonitor(PostHookable):
     """Abstract class for passing data to a reducer from a module on call after `forward()` execution.
 
     Args:
-        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`PassthroughReducer`.
+        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`SinglePassthroughReducer`.
         train_update (bool, optional): if monitoring should occur during training. Defaults to `True`.
         eval_update (bool, optional): if monitoring should occur during evaluation. Defaults to `True`.
         module (nn.Module | None, optional): module being monitored. Defaults to `None`.
     """
     def __init__(
         self,
-        reducer: AbstractReducer = PassthroughReducer(),
+        reducer: AbstractReducer = SinglePassthroughReducer(),
         train_update: bool = True,
         eval_update: bool = True,
         module: nn.Module | None = None
@@ -81,14 +81,14 @@ class AbstractPreMonitor(PreHookable):
     """Abstract class for passing data to a reducer from a module on call before `forward()` execution.
 
     Args:
-        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`PassthroughReducer`.
+        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`SinglePassthroughReducer`.
         train_update (bool, optional): if monitoring should occur during training. Defaults to `True`.
         eval_update (bool, optional): if monitoring should occur during evaluation. Defaults to `True`.
         module (nn.Module | None, optional): module being monitored. Defaults to `None`.
     """
     def __init__(
         self,
-        reducer: AbstractReducer = PassthroughReducer(),
+        reducer: AbstractReducer = SinglePassthroughReducer(),
         train_update: bool = True,
         eval_update: bool = True,
         module: nn.Module | None = None
@@ -147,7 +147,7 @@ class InputMonitor(AbstractMonitor):
     """Monitors the inputs given to a module on call.
 
     Args:
-        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`PassthroughReducer`.
+        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`SinglePassthroughReducer`.
         index (int, optional): index of input to `forward()` to monitor. Defaults to `0`.
         train_update (bool, optional): if monitoring should occur during training. Defaults to `True`.
         eval_update (bool, optional): if monitoring should occur during evaluation. Defaults to `True`.
@@ -155,7 +155,7 @@ class InputMonitor(AbstractMonitor):
     """
     def __init__(
         self,
-        reducer: AbstractReducer = PassthroughReducer(),
+        reducer: AbstractReducer = SinglePassthroughReducer(),
         index: int = 0,
         train_update: bool = True,
         eval_update: bool = True,
@@ -188,7 +188,7 @@ class OutputMonitor(AbstractMonitor):
     """Monitors the outputs from a module on call.
 
     Args:
-        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`PassthroughReducer`.
+        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`SinglePassthroughReducer`.
         index (int, optional): index of output from `forward()` to monitor. Defaults to `None`.
         train_update (bool, optional): if monitoring should occur during training. Defaults to `True`.
         eval_update (bool, optional): if monitoring should occur during evaluation. Defaults to `True`.
@@ -196,7 +196,7 @@ class OutputMonitor(AbstractMonitor):
     """
     def __init__(
         self,
-        reducer: AbstractReducer = PassthroughReducer(),
+        reducer: AbstractReducer = SinglePassthroughReducer(),
         index: int | None = None,
         train_update: bool = True,
         eval_update: bool = True,
@@ -233,7 +233,7 @@ class StateMonitor(AbstractMonitor):
 
     Args:
         attr (str): name of the module's attribute to be monitored, compatible with dot notation.
-        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`PassthroughReducer`.
+        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`SinglePassthroughReducer`.
         train_update (bool, optional): if monitoring should occur during training. Defaults to `True`.
         eval_update (bool, optional): if monitoring should occur during evaluation. Defaults to `True`.
         module (nn.Module | None, optional): module being monitored. Defaults to `None`.
@@ -241,7 +241,7 @@ class StateMonitor(AbstractMonitor):
     def __init__(
         self,
         attr: str,
-        reducer: AbstractReducer = PassthroughReducer(),
+        reducer: AbstractReducer = SinglePassthroughReducer(),
         train_update: bool = True,
         eval_update: bool = True,
         module: nn.Module | None = None
@@ -271,7 +271,7 @@ class StatePreMonitor(AbstractPreMonitor):
 
     Args:
         attr (str): name of the module's attribute to be monitored, compatible with dot notation.
-        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`PassthroughReducer`.
+        reducer (AbstractReducer, optional): reducer used to process and store monitored parameter. Defaults to :py:class:`SinglePassthroughReducer`.
         train_update (bool, optional): if monitoring should occur during training. Defaults to `True`.
         eval_update (bool, optional): if monitoring should occur during evaluation. Defaults to `True`.
         module (nn.Module | None, optional): module being monitored. Defaults to `None`.
@@ -279,7 +279,7 @@ class StatePreMonitor(AbstractPreMonitor):
     def __init__(
         self,
         attr: str,
-        reducer: AbstractReducer = PassthroughReducer(),
+        reducer: AbstractReducer = SinglePassthroughReducer(),
         train_update: bool = True,
         eval_update: bool = True,
         module: nn.Module | None = None

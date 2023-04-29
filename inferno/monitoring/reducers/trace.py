@@ -47,15 +47,17 @@ class TraceReducer(AbstractReducer):
             warnings.warn("for trace decay to function correctly, 'decay' should be in the range (0,1)", category=RuntimeWarning)
 
         # register buffers
-        self.register_buffer('data', None)
         self.register_buffer('amplitude', create_tensor(amplitude))
         self.register_buffer('target', create_tensor(target))
+        self.register_buffer('data', torch.empty(0))
 
     def clear(self) -> None:
         """Reinitializes reducer state.
         """
+        dtype = self.data.dtype
+        device = self.data.device
         del self.data
-        self.register_buffer('data', None)
+        self.register_buffer('data', torch.empty(0, dtype=dtype, device=device))
 
     def peak(self) -> torch.Tensor | None:
         """Returns the trace of the observered tensor since the reducer was last cleared.
@@ -63,7 +65,8 @@ class TraceReducer(AbstractReducer):
         Returns:
             torch.Tensor | None: cumulative output stored since the reducer was last cleared.
         """
-        return self.data
+        if self.data.numel() > 0:
+            return self.data
 
     def pop(self) -> torch.Tensor | None:
         """Returns the trace of the observered tensor since the reducer was last cleared, then clears the reducer.
@@ -83,8 +86,8 @@ class TraceReducer(AbstractReducer):
         Args:
             inputs (torch.Tensor): :py:class:`torch.Tensor` of the attribute being monitored.
         """
-        if self.data is None:
-            self.data = torch.zeros_like(inputs, dtype=self.decay.dtype, device=self.decay.device, requires_grad=False)
+        if self.data.numel() == 0:
+            self.data = torch.zeros_like(inputs, dtype=self.decay.dtype, device=self.decay.device)
         self.data.mul_(self.decay)
         self.data.masked_fill_(inputs == self.target, self.amplitude)
 
@@ -120,27 +123,26 @@ class AdditiveTraceReducer(AbstractReducer):
         if 'decay' not in kwargs:
             if ('step_time' not in kwargs) or ('time_constant' not in kwargs):
                 raise KeyError("either 'decay' or both 'step_time' and 'time_constant' must be provided")
-            if not isinstance(kwargs['step_time'], torch.Tensor) and not isinstance(kwargs['time_constant'], torch.Tensor):
-                self.register_buffer('decay', torch.exp(torch.tensor(-kwargs['step_time'] / kwargs['time_constant'])))
-            else:
-                self.register_buffer('decay', torch.exp(-kwargs['step_time'] / kwargs['time_constant']))
+            self.register_buffer('decay', torch.exp(create_tensor(-kwargs['step_time'] / kwargs['time_constant'])))
         else:
-            self.register_buffer('decay', torch.tensor(kwargs['decay'], requires_grad=False))
+            self.register_buffer('decay', create_tensor(kwargs['decay']))
 
         # check if decay is in a valid range
         if (self.decay <= 0.0) or (self.decay >= 1.0):
             warnings.warn("for trace decay to function correctly, 'decay' should be in the range (0,1)", category=RuntimeWarning)
 
         # register buffers
-        self.register_buffer('data', None)
-        self.register_buffer('amplitude', torch.tensor(amplitude, requires_grad=False))
+        self.register_buffer('amplitude', create_tensor(amplitude))
         self.register_buffer('target', create_tensor(target))
+        self.register_buffer('data', torch.empty(0))
 
     def clear(self) -> None:
         """Reinitializes reducer state.
         """
+        dtype = self.data.dtype
+        device = self.data.device
         del self.data
-        self.register_buffer('data', None)
+        self.register_buffer('data', torch.empty(0, dtype=dtype, device=device))
 
     def peak(self) -> torch.Tensor | None:
         """Returns the additive trace of the observered tensor since the reducer was last cleared.
@@ -148,7 +150,8 @@ class AdditiveTraceReducer(AbstractReducer):
         Returns:
             torch.Tensor | None: cumulative output stored since the reducer was last cleared.
         """
-        return self.data
+        if self.data.numel() > 0:
+            return self.data
 
     def pop(self) -> torch.Tensor | None:
         """Returns the additive trace of the observered tensor since the reducer was last cleared, then clears the reducer.
@@ -168,13 +171,13 @@ class AdditiveTraceReducer(AbstractReducer):
         Args:
             inputs (torch.Tensor): :py:class:`torch.Tensor` of the attribute being monitored.
         """
-        if self.data is None:
-            self.data = torch.zeros_like(inputs, dtype=self.decay.dtype, device=self.decay.device, requires_grad=False)
+        if self.data.numel() == 0:
+            self.data = torch.zeros_like(inputs, dtype=self.decay.dtype, device=self.decay.device)
         self.data.mul_(self.decay)
         self.data.add_((inputs == self.target) * self.amplitude)
 
 
-class ScaledAdditiveTraceReducer(AbstractReducer):
+class ScalingTraceReducer(AbstractReducer):
     """Stores elementwise an additive trace of a tensor, where the amplitude is scaled by the inputs.
 
     Args:
@@ -203,26 +206,25 @@ class ScaledAdditiveTraceReducer(AbstractReducer):
         if 'decay' not in kwargs:
             if ('step_time' not in kwargs) or ('time_constant' not in kwargs):
                 raise KeyError("either 'decay' or both 'step_time' and 'time_constant' must be provided")
-            if not isinstance(kwargs['step_time'], torch.Tensor) and not isinstance(kwargs['time_constant'], torch.Tensor):
-                self.register_buffer('decay', torch.exp(torch.tensor(-kwargs['step_time'] / kwargs['time_constant'])))
-            else:
-                self.register_buffer('decay', torch.exp(-kwargs['step_time'] / kwargs['time_constant']))
+            self.register_buffer('decay', torch.exp(create_tensor(-kwargs['step_time'] / kwargs['time_constant'])))
         else:
-            self.register_buffer('decay', torch.tensor(kwargs['decay'], requires_grad=False))
+            self.register_buffer('decay', create_tensor(kwargs['decay']))
 
         # check if decay is in a valid range
         if (self.decay <= 0.0) or (self.decay >= 1.0):
             warnings.warn("for trace decay to function correctly, 'decay' should be in the range (0,1)", category=RuntimeWarning)
 
         # register buffers
-        self.register_buffer('data', None)
-        self.register_buffer('amplitude', torch.tensor(amplitude, requires_grad=False))
+        self.register_buffer('amplitude', create_tensor(amplitude))
+        self.register_buffer('data', torch.empty(0))
 
     def clear(self) -> None:
         """Reinitializes reducer state.
         """
+        dtype = self.data.dtype
+        device = self.data.device
         del self.data
-        self.register_buffer('data', None)
+        self.register_buffer('data', torch.empty(0, dtype=dtype, device=device))
 
     def peak(self) -> torch.Tensor | None:
         """Returns the additive trace of the observered tensor since the reducer was last cleared.
@@ -230,7 +232,8 @@ class ScaledAdditiveTraceReducer(AbstractReducer):
         Returns:
             torch.Tensor | None: cumulative output stored since the reducer was last cleared.
         """
-        return self.data
+        if self.data.numel() > 0:
+            return self.data
 
     def pop(self) -> torch.Tensor | None:
         """Returns the additive trace of the observered tensor since the reducer was last cleared, then clears the reducer.
@@ -250,7 +253,7 @@ class ScaledAdditiveTraceReducer(AbstractReducer):
         Args:
             inputs (torch.Tensor): :py:class:`torch.Tensor` of the attribute being monitored.
         """
-        if self.data is None:
-            self.data = torch.zeros_like(inputs, dtype=self.decay.dtype, device=self.decay.device, requires_grad=False)
+        if self.data.numel() == 0:
+            self.data = torch.zeros_like(inputs, dtype=self.decay.dtype, device=self.decay.device)
         self.data.mul_(self.decay)
         self.data.add_(inputs * self.amplitude)

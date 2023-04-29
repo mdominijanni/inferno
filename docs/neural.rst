@@ -1,30 +1,40 @@
 inferno.neural
 ==========================
 
+.. automodule:: inferno.neural
+
+Components for building a network.
+
+.. currentmodule:: inferno.neural
+
 Dynamics
+----------------------------------
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+    :template: classtemplate.rst
+
+    AbstractDynamics
+    PIFDynamics
+    LIFDynamics
+    AdaptiveLIFDynamics
+
+Connections
 ---------------------------------
 
-.. autoclass:: inferno.neural.AbstractDynamics
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+    :template: classtemplate.rst
 
-.. autoclass:: inferno.neural.ShapeMixin
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
-.. autoclass:: inferno.neural.PIFDynamics
-   :members:
-   :undoc-members:
-   :show-inheritance:
+Helpers
+---------------------------------
 
-.. autoclass:: inferno.neural.LIFDynamics
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+    :template: classtemplate.rst
 
-.. autoclass:: inferno.neural.AdaptiveLIFDynamics
-   :members:
-   :undoc-members:
-   :show-inheritance:
+    ShapeMixin

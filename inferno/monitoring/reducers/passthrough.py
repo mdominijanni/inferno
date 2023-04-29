@@ -5,20 +5,36 @@ from inferno.monitoring.reducers.abstract import AbstractReducer
 
 
 class PassthroughReducer(AbstractReducer):
-    """Directly stores all prior states of the monitored tensor attribute.
+    """Directly stores prior states in a window of the monitored tensor.
+
+    Args:
+        window (int): size of the window over which to store values.
+
+    Raises:
+        ValueError: `window` must be a positive integer.
     """
 
-    def __init__(self):
+    def __init__(self, window: int):
         # call superclass constructor
         AbstractReducer.__init__(self)
 
-        # register data list
-        self.data = []
+        # test if window size is valid
+        if int(window) < 1:
+            raise ValueError(f"'window' must be a positive integer, received {window}")
+
+        # register variables
+        self.register_buffer('window', create_tensor(int(window)).to(dtype=torch.int64))
+        self.register_buffer('idx', create_tensor(-1).to(dtype=torch.int64))
+        self.register_buffer('data', torch.empty(0))
 
     def clear(self) -> None:
         """Reinitializes reducer state.
         """
-        self.data.clear()
+        dtype = self.data.dtype
+        device = self.data.device
+        del self.data
+        self.register_buffer('data', torch.empty(0, dtype=dtype, device=device))
+        self.idx.fill_(-1)
 
     def peak(self, dim: int = -1) -> torch.Tensor | None:
         """Returns the concatenated tensor of observed states since the reducer was last cleared.
@@ -29,10 +45,10 @@ class PassthroughReducer(AbstractReducer):
         Returns:
             torch.Tensor | None: cumulative output stored since the reducer was last cleared.
         """
-        if self.data:
-            return torch.stack(self.data, dim=dim)
-        else:
-            return None
+        if self.idx != -1:
+            pdims = list(range(1, self.data.ndims))
+            pdims.insert(dim % self.data.ndims, 0)
+            return torch.permute(self.data[:(self.idx + 1)], pdims)
 
     def pop(self, dim: int = -1) -> torch.Tensor | None:
         """Returns the concatenated tensor of observed states since the reducer was last cleared, then clears the reducer.
@@ -55,11 +71,17 @@ class PassthroughReducer(AbstractReducer):
         Args:
             inputs (torch.Tensor): :py:class:`torch.Tensor` of the attribute being monitored.
         """
-        self.data.append(create_tensor(inputs))
+        if self.data.numel() == 0:
+            self.data = torch.full([int(self.window)] + list(inputs.shape), float('nan'), dtype=self.data.dtype, device=self.data.device, requires_grad=input.requires_grad)
+        self.idx = (self.idx + 1) % self.window
+        self.data[self.idx] = create_tensor(inputs).to(dtype=self.data.dtype, device=self.data.device)
 
 
 class SinglePassthroughReducer(AbstractReducer):
-    """Stores the most recent state of the monitored tensor attribute.
+    """Stores the most recent state of the monitored tensor.
+
+    Note:
+        Tensor device and datatype never persist, the device and datatype match that of the latest input.
     """
 
     def __init__(self):
@@ -81,7 +103,8 @@ class SinglePassthroughReducer(AbstractReducer):
         Returns:
             torch.Tensor | None: most recent output stored since reducer was last cleared.
         """
-        return self.data
+        if self.data is not None:
+            return self.data
 
     def pop(self) -> torch.Tensor | None:
         """Returns the most recent output since the reducer was last cleared, then clears the reducer.
@@ -90,6 +113,8 @@ class SinglePassthroughReducer(AbstractReducer):
             torch.Tensor | None: most recent output stored since the reducer was last cleared.
         """
         res = self.peak()
+        if res is not None:
+            res = res.clone()
         self.clear()
         return res
 
