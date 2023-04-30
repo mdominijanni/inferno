@@ -20,6 +20,16 @@ Dynamics
     LIFDynamics
     AdaptiveLIFDynamics
 
+Mixins
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+    :template: classtemplate.rst
+
+    ShapeMixin
+
 Connections
 ---------------------------------
 
@@ -28,8 +38,7 @@ Connections
     :nosignatures:
     :template: classtemplate.rst
 
-
-Helpers
+Hooks
 ---------------------------------
 
 .. autosummary::
@@ -37,4 +46,5 @@ Helpers
     :nosignatures:
     :template: classtemplate.rst
 
-    ShapeMixin
+    ParameterNormalization
+    ParameterClamping

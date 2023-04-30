@@ -12,11 +12,13 @@ Welcome to Inferno's documentation!
 
    installation
    fundamentals
+   tutorials
 
 .. toctree::
    :maxdepth: 2
    :caption: API Reference:
 
+   common
    neural
    monitoring
 
