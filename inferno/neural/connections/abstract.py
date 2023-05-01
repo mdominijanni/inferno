@@ -145,6 +145,15 @@ class AbstractDelayedConnection(AbstractConnection):
         AbstractConnection.__init__(self)
 
     @abstractproperty
+    def delay_max(self) -> int:
+        """Maximum permissible delay.
+
+        Returns:
+            int: maximum delay to apply to any inputs, in number of time steps.
+        """
+        return self._delay_max
+
+    @abstractproperty
     def delay(self) -> torch.Tensor:
         """Connection delays for the connection object.
 
@@ -164,7 +173,7 @@ class AbstractDelayedConnection(AbstractConnection):
 
     @abstractmethod
     def clear(self, **kwargs) -> None:
-        """Reinitializes the connection state.
+        """Reinitializes the input history.
 
         Raises:
             NotImplementedError: :py:meth:`clear` is abstract and must be implemented by the subclass.

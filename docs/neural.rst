@@ -41,6 +41,11 @@ Connections
     AbstractConnection
     AbstractDelayedConnection
     DenseConnection
+    DirectConnection
+    LateralConnection
+    DenseDelayedConnection
+    DirectDelayedConnection
+    LateralDelayedConnection
 
 Hooks
 ---------------------------------
