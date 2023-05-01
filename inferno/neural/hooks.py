@@ -34,6 +34,10 @@ class ParameterNormalization(PreHookable):
         \\lVert \\mathbf{x} \\rVert_p = \\left(\\sum_i \\left|x_i\\right|^p \\right)^\\frac{1}{p}
 
     .. note::
+        This is usually used in such a way that normalization on a connection's weights are performed per-target, which varies by connection type.
+        For linear connection types, this would involve normalizing the last dimension of the weights (i.e. the dimensions should target the input representations).
+
+    .. note::
         Attribute with name `name` in :py:class:`torch.nn.Module` `module` must be a kind of tensor. This includes both instances of :py:class:`torch.Tensor` and
         :py:class:`torch.nn.parameter.Parameter`.
 

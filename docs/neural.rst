@@ -38,6 +38,10 @@ Connections
     :nosignatures:
     :template: classtemplate.rst
 
+    AbstractConnection
+    AbstractDelayedConnection
+    DenseConnection
+
 Hooks
 ---------------------------------
 
