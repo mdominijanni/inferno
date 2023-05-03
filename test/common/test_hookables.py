@@ -7,6 +7,20 @@ sys.path.insert(0, '../..')
 from inferno.common import PreHookable, PostHookable
 
 
+class Hooked(nn.Module):
+    def __init__(self):
+        nn.Module.__init__(self)
+        self.value = 1
+
+    def forward(self):
+        return self.value
+
+
+@pytest.fixture(scope='function')
+def hooked():
+    return Hooked()
+
+
 class TestPreHookable:
 
     class DoubleAttrHook(PreHookable):
@@ -17,35 +31,23 @@ class TestPreHookable:
         def forward(self, module, inputs):
             setattr(module, self.attr, getattr(module, self.attr) * 2)
 
-    class Hooked(nn.Module):
-        def __init__(self):
-            nn.Module.__init__(self)
-            self.value = 1
-
-        def forward(self):
-            return self.value
-
     @pytest.fixture(scope='function')
-    def hookable(self):
+    def make_hook(self):
         return lambda module=None: self.DoubleAttrHook('value', module)
 
-    @pytest.fixture(scope='function')
-    def hooked(self):
-        return self.Hooked()
-
-    def test_constructor_register(self, hookable, hooked):
-        hook = hookable(hooked)
+    def test_constructor_register(self, make_hook, hooked):
+        hook = make_hook(hooked)
         assert list(hooked._forward_pre_hooks.values())[0] is hook
 
-    def test_register_deregister(self, hookable, hooked):
-        hook = hookable()
+    def test_register_deregister(self, make_hook, hooked):
+        hook = make_hook()
         hook.register(hooked)
         assert list(hooked._forward_pre_hooks.values())[0] is hook
         hook.deregister()
         assert len(hooked._forward_pre_hooks) == 0
 
-    def test_forward(self, hookable, hooked):
-        _ = hookable(hooked)
+    def test_forward(self, make_hook, hooked):
+        _ = make_hook(hooked)
         value = hooked.value
         assert hooked() == 2 * value
         assert hooked.value == 2 * value
@@ -61,35 +63,23 @@ class TestPostHookable:
         def forward(self, module, inputs, outputs):
             setattr(module, self.attr, getattr(module, self.attr) * 2)
 
-    class Hooked(nn.Module):
-        def __init__(self):
-            nn.Module.__init__(self)
-            self.value = 1
-
-        def forward(self):
-            return self.value
-
     @pytest.fixture(scope='function')
-    def hookable(self):
+    def make_hook(self):
         return lambda module=None: self.DoubleAttrHook('value', module)
 
-    @pytest.fixture(scope='function')
-    def hooked(self):
-        return self.Hooked()
-
-    def test_posthookable_constructor_register(self, hookable, hooked):
-        hook = hookable(hooked)
+    def test_constructor_register(self, make_hook, hooked):
+        hook = make_hook(hooked)
         assert list(hooked._forward_hooks.values())[0] is hook
 
-    def test_posthookable_register_deregister(self, hookable, hooked):
-        hook = hookable()
+    def test_register_deregister(self, make_hook, hooked):
+        hook = make_hook()
         hook.register(hooked)
         assert list(hooked._forward_hooks.values())[0] is hook
         hook.deregister()
         assert len(hooked._forward_hooks) == 0
 
-    def test_posthookable_forward(self, hookable, hooked):
-        _ = hookable(hooked)
+    def test_forward(self, make_hook, hooked):
+        _ = make_hook(hooked)
         value = hooked.value
         assert hooked() == value
         assert hooked.value == 2 * value
