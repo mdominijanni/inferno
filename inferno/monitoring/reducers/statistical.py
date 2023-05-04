@@ -67,7 +67,7 @@ class SMAReducer(AbstractReducer):
             inputs (torch.Tensor): :py:class:`torch.Tensor` of the attribute being monitored.
         """
         if self.data.numel() == 0:
-            self.data = torch.full([int(self.window)] + list(inputs.shape), float('nan'), dtype=self.data.dtype, device=self.data.device)
+            self.data = torch.full([int(self.window)] + list(inputs.shape), float('nan'), dtype=self.data.dtype, device=self.data.device, requires_grad=self.data.requires_grad)
         self.idx = (self.idx + 1) % self.window
         self.data[self.idx] = create_tensor(inputs).to(dtype=self.data.dtype, device=self.data.device)
 
@@ -126,7 +126,7 @@ class CMAReducer(AbstractReducer):
             inputs (torch.Tensor): :py:class:`torch.Tensor` of the attribute being monitored.
         """
         if self.data.numel() == 0:
-            self.data = torch.zeros_like(inputs, dtype=self.count.dtype, device=self.count.device)
+            self.data = torch.zeros_like(inputs, dtype=self.data.dtype, device=self.data.device)
         self.data.add_((inputs - self.data) / (self.count + 1))
         self.count.add_(1)
 
@@ -169,7 +169,7 @@ class EMAReducer(AbstractReducer):
         Returns:
             torch.Tensor | None: cumulative output stored since the reducer was last cleared.
         """
-        if self.data.numel > 0:
+        if self.data.numel() > 0:
             return self.data
 
     def pop(self) -> torch.Tensor | None:
@@ -191,6 +191,6 @@ class EMAReducer(AbstractReducer):
             inputs (torch.Tensor): :py:class:`torch.Tensor` of the attribute being monitored.
         """
         if self.data.numel() == 0:
-            self.data = torch.zeros_like(inputs, dtype=self.count.dtype, device=self.count.device)
+            self.data = torch.zeros_like(inputs, dtype=self.data.dtype, device=self.data.device)
         self.data.mul_(1 - self.alpha)
         self.data.add_(self.alpha * inputs)

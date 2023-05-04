@@ -57,9 +57,9 @@ class MultiIOModule(nn.Module):
         return self.historic
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def inputs():
-    return [torch.rand((3, 3), dtype=torch.float32, requires_grad=False) for _ in range(7)]
+    return [torch.rand((3, 3), dtype=torch.float32, requires_grad=False) for _ in range(20)]
 
 
 @pytest.fixture(scope='function')

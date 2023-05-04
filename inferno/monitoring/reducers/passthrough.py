@@ -25,6 +25,7 @@ class PassthroughReducer(AbstractReducer):
         # register variables
         self.register_buffer('window', create_tensor(int(window)).to(dtype=torch.int64))
         self.register_buffer('idx', create_tensor(-1).to(dtype=torch.int64))
+        self.register_buffer('full', create_tensor(False).to(dtype=torch.bool))
         self.register_buffer('data', torch.empty(0))
 
     def clear(self) -> None:
@@ -46,9 +47,13 @@ class PassthroughReducer(AbstractReducer):
             torch.Tensor | None: cumulative output stored since the reducer was last cleared.
         """
         if self.idx != -1:
-            pdims = list(range(1, self.data.ndims))
-            pdims.insert(dim % self.data.ndims, 0)
-            return torch.permute(self.data[:(self.idx + 1)], pdims)
+            pdims = list(range(1, self.data.ndim))
+            pdims.insert(dim % self.data.ndim, 0)
+            if not self.full:
+                imdata = self.data[:(self.idx + 1)]
+            else:
+                imdata = torch.roll(self.data, -int(self.idx + 1), 0)
+            return torch.permute(imdata, pdims)
 
     def pop(self, dim: int = -1) -> torch.Tensor | None:
         """Returns the concatenated tensor of observed states since the reducer was last cleared, then clears the reducer.
@@ -60,8 +65,6 @@ class PassthroughReducer(AbstractReducer):
             torch.Tensor | None: cumulative output stored since the reducer was last cleared.
         """
         res = self.peak(dim)
-        if res is not None:
-            res = res.clone()
         self.clear()
         return res
 
@@ -72,8 +75,10 @@ class PassthroughReducer(AbstractReducer):
             inputs (torch.Tensor): :py:class:`torch.Tensor` of the attribute being monitored.
         """
         if self.data.numel() == 0:
-            self.data = torch.full([int(self.window)] + list(inputs.shape), float('nan'), dtype=self.data.dtype, device=self.data.device, requires_grad=input.requires_grad)
+            self.data = torch.full([int(self.window)] + list(inputs.shape), float('nan'), dtype=self.data.dtype, device=self.data.device)
         self.idx = (self.idx + 1) % self.window
+        if (self.idx == self.window - 1) and not self.full:
+            self.full.fill_(True)
         self.data[self.idx] = create_tensor(inputs).to(dtype=self.data.dtype, device=self.data.device)
 
 
