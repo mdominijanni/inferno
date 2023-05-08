@@ -30,7 +30,6 @@ class LastEventReducer(AbstractReducer):
         device = self.data.device
         del self.data
         self.register_buffer('data', torch.empty(0, dtype=dtype, device=device))
-        self.idx.fill_(-1)
 
     def peak(self) -> torch.Tensor | None:
         """Returns the number of observations since the observered tensor's values last matched a target since the reducer was last cleared.
@@ -38,7 +37,7 @@ class LastEventReducer(AbstractReducer):
         Returns:
             torch.Tensor | None: cumulative output stored since the reducer was last cleared.
         """
-        if self.data is not None:
+        if self.data.numel() > 0:
             return self.data
 
     def pop(self) -> torch.Tensor | None:
@@ -62,7 +61,7 @@ class LastEventReducer(AbstractReducer):
         if self.data.numel() == 0:
             self.data = torch.full_like(inputs, float('inf'), dtype=self.data.dtype, device=self.data.device)
         self.data.add_(1)
-        self.data.masked_fill_(inputs == self.value, 0)
+        self.data.masked_fill_(inputs == self.target, 0)
 
 
 class FuzzyLastEventReducer(AbstractReducer):
@@ -99,7 +98,6 @@ class FuzzyLastEventReducer(AbstractReducer):
         device = self.data.device
         del self.data
         self.register_buffer('data', torch.empty(0, dtype=dtype, device=device))
-        self.idx.fill_(-1)
 
     def peak(self) -> torch.Tensor | None:
         """Returns the number of observations since the observered tensor's values last matched a target since the reducer was last cleared.
@@ -107,7 +105,7 @@ class FuzzyLastEventReducer(AbstractReducer):
         Returns:
             torch.Tensor | None: cumulative output stored since the reducer was last cleared.
         """
-        if self.data is not None:
+        if self.data.numel() > 0:
             return self.data
 
     def pop(self) -> torch.Tensor | None:
