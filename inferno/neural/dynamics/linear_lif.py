@@ -33,16 +33,12 @@ class PIFDynamics(ShapeMixin, AbstractDynamics):
         v_reset (float, optional): membrane voltage a neuron is reset to following action potential, in :math:`mV`. Defaults to `-65.0`.
         v_threshold (float, optional): membrane voltage at which a neuron generates an action potential, in :math:`mV`. Defaults to `-50.0`.
         ts_abs_refrac (int, optional): number of time steps for which a neuron should be in its absolute refractory period. Defaults to `2`.
-        tc_membrane (float | None, optional): time constant of a neuron's membrane, defined as :math:`\\tau_m = R_mC_m`, in :math:`ms`. Defaults to `20.0`.
-        r_membrane (float | None, optional): electrical resistance of a neuron's membrane, in :math:`k\\Omega`. Defaults to `1.0`.
-        c_membrane (float | None, optional): capacitance of a neuron's membrane, in :math:`nF`. Defaults to `None`.
+        r_membrane (float, optional): electrical resistance of a neuron's membrane, in :math:`k\\Omega`. Defaults to `1.0`.
         batch_size (int, optional): number of separate inputs to be passed along the batch (:math:`0^\\text{th}`) axis. Defaults to `1`.
 
     Raises:
         ValueError: `batch_size` must be a positive integer.
         ValueError: `step_time` must be a non-negative value.
-        TypeError: at least two of `tc_membrane`, `r_membrane`, and `c_membrane` must not be `None`.
-        ValueError: `tc_membrane`, `r_membrane`, and `c_membrane` have mismatched values, `tc_membrane == r_membrane * c_membrane` must be true.
     """
     def __init__(
         self,
@@ -52,9 +48,7 @@ class PIFDynamics(ShapeMixin, AbstractDynamics):
         v_reset: float = -65.0,
         v_threshold: float = -50.0,
         ts_abs_refrac: int = 2,
-        tc_membrane: float | None = 20.0,
-        r_membrane: float | None = 1.0,
-        c_membrane: float | None = None,
+        r_membrane: float = 1.0,
         batch_size: int = 1
     ):
         # call superclass constructors
@@ -71,33 +65,7 @@ class PIFDynamics(ShapeMixin, AbstractDynamics):
         self.register_buffer('v_reset', torch.tensor(v_reset, requires_grad=False))
         self.register_buffer('v_threshold', torch.tensor(v_threshold, requires_grad=False))
         self.register_buffer('ts_abs_refrac', torch.tensor(ts_abs_refrac, requires_grad=False))
-        self.register_buffer('tc_membrane', None)
-        self.register_buffer('r_membrane', None)
-        self.register_buffer('c_membrane', None)
-        if [tc_membrane, r_membrane, c_membrane].count(None) > 1:
-            raise TypeError("at least two of 'tc_membrane', 'r_membrane', and 'c_membrane' must be specified")
-        elif [tc_membrane, r_membrane, c_membrane].count(None) == 1:
-            if tc_membrane is None:
-                self.r_membrane = torch.tensor(r_membrane, requires_grad=False)
-                self.c_membrane = torch.tensor(c_membrane, requires_grad=False)
-                self.tc_membrane = self.r_membrane * self.c_membrane
-            if r_membrane is None:
-                self.tc_membrane = torch.tensor(tc_membrane, requires_grad=False)
-                self.c_membrane = torch.tensor(c_membrane, requires_grad=False)
-                self.r_membrane = self.tc_membrane / self.c_membrane
-            if c_membrane is None:
-                self.tc_membrane = torch.tensor(tc_membrane, requires_grad=False)
-                self.r_membrane = torch.tensor(r_membrane, requires_grad=False)
-                self.c_membrane = self.tc_membrane / self.r_membrane
-        else:
-            if tc_membrane == r_membrane * c_membrane:
-                self.tc_membrane = torch.tensor(tc_membrane, requires_grad=False)
-                self.r_membrane = torch.tensor(r_membrane, requires_grad=False)
-                self.c_membrane = torch.tensor(c_membrane, requires_grad=False)
-            else:
-                raise ValueError("'tc_membrane', 'r_membrane', and 'c_membrane' have mismatched values, \
-                    tc_membrane must equal r_membrane * c_membrane")
-        self.register_buffer('decay_rate', torch.exp(-self.step_time / self.tc_membrane))
+        self.register_buffer('r_membrane', torch.tensor(r_membrane, requires_grad=False))
 
         # register states as parameters
         self.register_parameter('v_membranes', nn.Parameter(torch.ones(self.batched_shape, requires_grad=False) * self.v_rest, False))
@@ -124,11 +92,6 @@ class PIFDynamics(ShapeMixin, AbstractDynamics):
        """
         # reset voltages for last depolarized neurons
         self.v_membranes.masked_fill_(self.ts_refrac_membranes == self.ts_abs_refrac, self.v_reset)
-
-        # decay voltages
-        self.v_membranes.sub_(self.v_rest)
-        self.v_membranes.mul_(self.decay_rate)
-        self.v_membranes.add_(self.v_rest)
 
         # incorporate input currents
         self.v_membranes.add_((self.ts_refrac_membranes == 0) * (inputs * self.r_membrane))
