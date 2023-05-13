@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod, abstractproperty
+from typing import Callable
 
 import torch
 import torch.nn as nn
@@ -90,9 +91,30 @@ class AbstractConnection(nn.Module, ABC):
         raise NotImplementedError(f"'AbstractConnection.inputs_as_receptive_areas()' is abstract, {type(self).__name__} must implement the 'inputs_as_receptive_areas' method")
 
     @abstractmethod
-    def update_weight_add(
+    def reshape_weight_update(
         self,
         update: torch.Tensor,
+        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+    ) -> torch.Tensor:
+        """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
+
+        Args:
+            update (torch.Tensor): the update to reshape.
+            spatial_reduction (Callable[[torch.Tensor, tuple): reduction to apply to any spatial reductions, usage varies by subclass. Defaults to `None`.
+
+        Raises:
+            NotImplementedError: :py:meth:`reshape_weight_update` is abstract and must be implemented by the subclass.
+
+        Returns:
+            torch.Tensor: the update tensor after reshaping and reduction.
+        """
+        raise NotImplementedError(f"'AbstractConnection.reshape_weight_update()' is abstract, {type(self).__name__} must implement the 'reshape_weight_update' method")
+
+    @abstractmethod
+    def update_weight(
+        self,
+        update: torch.Tensor,
+        batch_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor],
         weight_min: float | None = None,
         weight_max: float | None = None,
     ) -> None:
@@ -100,42 +122,14 @@ class AbstractConnection(nn.Module, ABC):
 
         Args:
             update (torch.Tensor): The update to apply.
+            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]): reduction to apply to the batch dimension.
             weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
             weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
 
         Raises:
-            NotImplementedError: :py:meth:`update_weight_additive` is abstract and must be implemented by the subclass.
+            NotImplementedError: :py:meth:`update_weight` is abstract and must be implemented by the subclass.
         """
-        raise NotImplementedError(f"'AbstractConnection.update_weight_additive()' is abstract, {type(self).__name__} must implement the 'update_weight_additive' method")
-
-    @abstractmethod
-    def update_weight_pd(
-        self,
-        add_update: torch.Tensor,
-        sub_update: torch.Tensor,
-        weight_min: float | None = None,
-        weight_max: float | None = None,
-        bounding_mode: str | None = None,
-    ) -> None:
-        """Applies both a potentiation and a depression update to the connection weights, allows for advanced weight bounding.
-
-        Args:
-            add_update (torch.Tensor): The potentiation update to apply.
-            sub_update (torch.Tensor): The depression update to apply.
-            weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
-            weight_min (float | None, optional): Maximum allowable weight values. Defaults to None.
-            bounding_mode (str | None, optional): Weight bounding to use. Defaults to None.
-
-        .. note::
-            There are three weight bounding modes, other than `None`. The bounding mode 'hard' multiplies the potentiation update term
-            by :math:`Θ(w_{max} - w)` and the depression update term by :math:`Θ(w - w_{min})`, where :math:`Θ` is the heaviside step function.
-            The bounding mode 'soft' multiplies the potentiation update term by :math:`w_{max} - w` and the depression update term by :math:`w - w_{min}`.
-            The bounding mode 'clamp' sets any weight values greater than the specified maximum to the maximum, and any less than the specified minimum to the minimum.
-
-        Raises:
-            NotImplementedError: :py:meth:`update_weight_potdep` is abstract and must be implemented by the subclass.
-        """
-        raise NotImplementedError(f"'AbstractConnection.update_weight_potdep()' is abstract, {type(self).__name__} must implement the 'update_weight_potdep' method")
+        raise NotImplementedError(f"'AbstractConnection.update_weight()' is abstract, {type(self).__name__} must implement the 'update_weight' method")
 
 
 class AbstractDelayedConnection(AbstractConnection):

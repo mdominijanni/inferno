@@ -5,6 +5,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from einops._torch_specific import allow_ops_in_compiled_graph
+allow_ops_in_compiled_graph()
+from einops import rearrange as einrearrange, reduce as einreduce
+
 from inferno.neural.connections.abstract import AbstractConnection
 
 
@@ -97,7 +101,7 @@ class DenseConnection(AbstractConnection):
         Args:
             inputs (torch.Tensor): tensor of values to which a linear transformation should be applied.
 
-        Returns:
+        Returns
             torch.Tensor: tensor of values after the linear transformation was applied.
         """
         return F.linear(inputs.view(inputs.shape[0], -1).to(dtype=self.weight.dtype), self.weight)
@@ -125,9 +129,7 @@ class DenseConnection(AbstractConnection):
         Returns:
             torch.Tensor: reshaped form of the postsynaptic tensor.
         """
-        outputs = outputs.view(outputs.shape[0], -1)  # B x * -> B x N
-        outputs = outputs.unsqueeze(-1)               # B x N -> B x N x 1
-        return outputs
+        return einrearrange(outputs, '(b z) ... -> b (...) z', z=1)
 
     def reshape_inputs(self, inputs: torch.Tensor) -> torch.Tensor:
         """Reshapes a presynaptic tensor, for dimensional compatibility with like postsynaptic tensors.
@@ -152,9 +154,7 @@ class DenseConnection(AbstractConnection):
         Returns:
             torch.Tensor: reshaped form of the presynaptic tensor.
         """
-        inputs = inputs.view(inputs.shape[0], -1)  # B x * -> B x N
-        inputs = inputs.unsqueeze(1)               # B x N -> B x 1 x N
-        return inputs
+        return einrearrange(inputs, '(b z) ... -> b z (...)', z=1)
 
     def inputs_as_receptive_areas(
         self,
@@ -168,9 +168,9 @@ class DenseConnection(AbstractConnection):
         Shape:
             **Input:**
 
-            :math:`B \\times N_\\text{out},`
-            where :math:`B` is the size of the batch dimension, :math:`N_\\text{out}` is the
-            number of outputs.
+            :math:`B \\times N_\\text{out}^{(0)} \\times \\cdots,`
+            where :math:`B` is the size of the batch dimension, :math:`N_\\text{out} \\times \\cdots` are
+            the output feature dimensions with a product equal to the number of output features.
 
             **Output:**
 
@@ -184,11 +184,41 @@ class DenseConnection(AbstractConnection):
         Returns:
             torch.Tensor: resulting tensor representing the receptive areas of the provided inputs on this connection.
         """
-        return torch.stack([inputs.view(inputs.shape[0], -1)] * self.output_size, dim=-2)
+        return einrearrange([inputs] * self.output_size, 'o b ... -> b o (...)')
 
-    def update_weight_add(
+    def reshape_weight_update(
         self,
         update: torch.Tensor,
+        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+    ) -> torch.Tensor:
+        """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N_\\text{out} \\times N_\\text{in},`
+            where :math:`B`, is the size of the batch dimension, :math:`N_\\text{out}` is
+            the number of output features and :math:`N_\\text{in}` is the number of input features.
+
+            **Output:**
+
+            :math:`B \\times N_\\text{out} \\times N_\\text{in},`
+            where :math:`B`, is the size of the batch dimension, :math:`N_\\text{out}` is
+            the number of output features and :math:`N_\\text{in}` is the number of input features.
+
+        Args:
+            update (torch.Tensor): the update to reshape.
+            space_reduction (Callable[[torch.Tensor, tuple): unused by `DenseConnection`. Defaults to `None`.
+
+        Returns:
+            torch.Tensor: the update tensor after reshaping and reduction.
+        """
+        return update
+
+    def update_weight(
+        self,
+        update: torch.Tensor,
+        batch_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] = torch.mean,
         weight_min: float | None = None,
         weight_max: float | None = None,
     ) -> None:
@@ -203,77 +233,13 @@ class DenseConnection(AbstractConnection):
 
         Args:
             update (torch.Tensor): The update to apply.
+            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]): reduction to apply to the batch dimension. Defaults to `torch.mean`.
             weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
             weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
         """
-        self.weight.add_(update)
+        self.weight.add_(einreduce(update, 'b ... -> ...', batch_reduction))
         if (weight_min is not None) or (weight_max is not None):
             self.weight.clamp_(min=weight_min, max=weight_max)
-
-    def update_weight_pd(
-        self,
-        add_update: torch.Tensor,
-        sub_update: torch.Tensor,
-        weight_min: float | None = None,
-        weight_max: float | None = None,
-        bounding_mode: str | None = None,
-    ) -> None:
-        """Applies both a potentiation and a depression update to the connection weights, allows for advanced weight bounding.
-
-        Shape:
-            **Input:**
-
-            :math:`N_\\text{out} \\times N_\\text{in},`
-            where :math:`N_\\text{out}` is the number of outputs,
-            and :math:`N_\\text{in}` is the number of inputs.
-
-        Args:
-            add_update (torch.Tensor): The potentiation update to apply.
-            sub_update (torch.Tensor): The depression update to apply.
-            weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
-            weight_min (float | None, optional): Maximum allowable weight values. Defaults to None.
-            bounding_mode (str | None, optional): Weight bounding to use. Defaults to None.
-
-        .. note::
-            There are three weight bounding modes, other than `None`. The bounding mode 'hard' multiplies the potentiation update term
-            by :math:`Θ(w_{max} - w)` and the depression update term by :math:`Θ(w - w_{min})`, where :math:`Θ` is the heaviside step function.
-            The bounding mode 'soft' multiplies the potentiation update term by :math:`w_{max} - w` and the depression update term by :math:`w - w_{min}`.
-            The bounding mode 'clamp' sets any weight values greater than the specified maximum to the maximum, and any less than the specified minimum to the minimum.
-
-        Raises:
-            ValueError: an unsupported value for the parameter `bounding_mode` was specified
-        """
-        wb_mode = str(bounding_mode).lower()
-        match wb_mode:
-            case 'hard':
-                if weight_min is not None:
-                    dep_mult = torch.heaviside(self.weight - weight_min, torch.zeros(1, dtype=sub_update.dtype, device=sub_update.device))
-                else:
-                    dep_mult = 1.0
-                if weight_max is not None:
-                    pot_mult = torch.heaviside(weight_max - self.weight, torch.zeros(1, dtype=sub_update.dtype, device=sub_update.device))
-                else:
-                    pot_mult = 1.0
-                self.weight.sub_(sub_update * dep_mult)
-                self.weight.add_(add_update * pot_mult)
-            case 'soft':
-                if weight_min is not None:
-                    dep_mult = self.weight - weight_min
-                else:
-                    dep_mult = 1.0
-                if weight_max is not None:
-                    pot_mult = weight_max - self.weight
-                else:
-                    pot_mult = 1.0
-                self.weight.sub_(sub_update * dep_mult)
-                self.weight.add_(add_update * pot_mult)
-            case 'clamp':
-                self.weight.add_(add_update - sub_update)
-                self.weight.clamp_(min=weight_min, max=weight_max)
-            case 'none':
-                self.weight.add_(add_update - sub_update)
-            case _:
-                raise ValueError(f"invalid 'bounding_mode' specified, must be None, 'hard', 'soft', or 'clamp', received {bounding_mode}")
 
 
 class DirectConnection(AbstractConnection):
@@ -387,9 +353,7 @@ class DirectConnection(AbstractConnection):
         Returns:
             torch.Tensor: reshaped form of the postsynaptic tensor.
         """
-        outputs = outputs.view(outputs.shape[0], -1)  # B x * -> B x N
-        outputs = outputs.unsqueeze(-1)               # B x N -> B x N x 1
-        return outputs
+        return einrearrange(outputs, '(b z) ... -> b (...) z', z=1)
 
     def reshape_inputs(self, inputs: torch.Tensor) -> torch.Tensor:
         """Reshapes a presynaptic tensor, for dimensional compatibility with like postsynaptic tensors.
@@ -414,9 +378,7 @@ class DirectConnection(AbstractConnection):
         Returns:
             torch.Tensor: reshaped form of the presynaptic tensor.
         """
-        inputs = inputs.view(inputs.shape[0], -1)  # B x * -> B x N
-        inputs = inputs.unsqueeze(1)               # B x N -> B x 1 x N
-        return inputs
+        return einrearrange(inputs, '(b z) ... -> b z (...)', z=1)
 
     def inputs_as_receptive_areas(
         self,
@@ -430,15 +392,14 @@ class DirectConnection(AbstractConnection):
         Shape:
             **Input:**
 
-            :math:`B \\times N,`
-            where :math:`B` is the size of the batch dimension, :math:`N` is the
-            number of features.
+            :math:`B \\times N^{(0)} \\times \\cdots,`
+            where :math:`B` is the batch size and :math:`N^{(0)} \\times \\ldots` are the
+            feature dimensions with a product equal to the number of features.
 
             **Output:**
 
             :math:`B \\times N \\times 1,`
-            where :math:`B` is the size of the batch dimension and :math:`\\times N` is the
-            number of outputs.
+            where :math:`B` is the batch size and :math:`N` is the number of features.
 
         Args:
             inputs (torch.Tensor): inputs for which to build the receptive area.
@@ -446,13 +407,39 @@ class DirectConnection(AbstractConnection):
         Returns:
             torch.Tensor: resulting tensor representing the receptive areas of the provided inputs on this connection.
         """
-        return torch.stack([inputs.view(inputs.shape[0], -1)] * self.size, dim=-2)\
-            .masked_select(self._mask[(None,) * (inputs.ndim - 1) + (...,)].bool())\
-            .view(list(inputs.shape) + [1])
+        return einrearrange(inputs, '(b z) ... -> b (...) z', z=1)
 
-    def update_weight_add(
+    def reshape_weight_update(
         self,
         update: torch.Tensor,
+        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+    ) -> torch.Tensor:
+        """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N,`
+            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
+
+            **Output:**
+
+            :math:`B \\times N \\times N,`
+            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
+
+        Args:
+            update (torch.Tensor): the update to reshape.
+            space_reduction (Callable[[torch.Tensor, tuple): unused by `DirectConnection`. Defaults to `None`.
+
+        Returns:
+            torch.Tensor: the update tensor after reshaping and reduction.
+        """
+        return update
+
+    def update_weight(
+        self,
+        update: torch.Tensor,
+        batch_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] = torch.mean,
         weight_min: float | None = None,
         weight_max: float | None = None,
     ) -> None:
@@ -466,81 +453,14 @@ class DirectConnection(AbstractConnection):
 
         Args:
             update (torch.Tensor): The update to apply.
+            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]): reduction to apply to the batch dimension. Defaults to `torch.mean`.
             weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
             weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
         """
-        self.weight.add_(update)
+        self.weight.add_(einreduce(update, 'b ... -> ...', batch_reduction))
         if (weight_min is not None) or (weight_max is not None):
             self.weight.clamp_(min=weight_min, max=weight_max)
         self.weight.mul_(self._mask)
-
-    def update_weight_pd(
-        self,
-        add_update: torch.Tensor,
-        sub_update: torch.Tensor,
-        weight_min: float | None = None,
-        weight_max: float | None = None,
-        bounding_mode: str | None = None,
-    ) -> None:
-        """Applies both a potentiation and a depression update to the connection weights.
-
-        Shape:
-            **Input:**
-
-            :math:`N \\times N,`
-            where :math:`N` is the number of features
-
-        Args:
-            add_update (torch.Tensor): The potentiation update to apply.
-            sub_update (torch.Tensor): The depression update to apply.
-            weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
-            weight_min (float | None, optional): Maximum allowable weight values. Defaults to None.
-            bounding_mode (str | None, optional): Weight bounding to use. Defaults to None.
-
-        .. note::
-            There are three weight bounding modes, other than `None`. The bounding mode 'hard' multiplies the potentiation update term
-            by :math:`Θ(w_{max} - w)` and the depression update term by :math:`Θ(w - w_{min})`, where :math:`Θ` is the heaviside step function.
-            The bounding mode 'soft' multiplies the potentiation update term by :math:`w_{max} - w` and the depression update term by :math:`w - w_{min}`.
-            The bounding mode 'clamp' sets any weight values greater than the specified maximum to the maximum, and any less than the specified minimum to the minimum.
-
-        Raises:
-            ValueError: an unsupported value for the parameter `bounding_mode` was specified
-        """
-        wb_mode = str(bounding_mode).lower()
-        match wb_mode:
-            case 'hard':
-                if weight_min is not None:
-                    dep_mult = torch.heaviside(self.weight - weight_min, torch.zeros(1, dtype=sub_update.dtype, device=sub_update.device))
-                else:
-                    dep_mult = 1.0
-                if weight_max is not None:
-                    pot_mult = torch.heaviside(weight_max - self.weight, torch.zeros(1, dtype=sub_update.dtype, device=sub_update.device))
-                else:
-                    pot_mult = 1.0
-                self.weight.sub_(sub_update * dep_mult)
-                self.weight.add_(add_update * pot_mult)
-                self.weight.mul_(self._mask)
-            case 'soft':
-                if weight_min is not None:
-                    dep_mult = self.weight - weight_min
-                else:
-                    dep_mult = 1.0
-                if weight_max is not None:
-                    pot_mult = weight_max - self.weight
-                else:
-                    pot_mult = 1.0
-                self.weight.sub_(sub_update * dep_mult)
-                self.weight.add_(add_update * pot_mult)
-                self.weight.mul_(self._mask)
-            case 'clamp':
-                self.weight.add_(add_update - sub_update)
-                self.weight.clamp_(min=weight_min, max=weight_max)
-                self.weight.mul_(self._mask)
-            case 'none':
-                self.weight.add_(add_update - sub_update)
-                self.weight.mul_(self._mask)
-            case _:
-                raise ValueError(f"invalid 'bounding_mode' specified, must be None, 'hard', 'soft', or 'clamp', received {bounding_mode}")
 
 
 class LateralConnection(AbstractConnection):
@@ -570,7 +490,10 @@ class LateralConnection(AbstractConnection):
         weight_init(self._weight)
 
         # masking matrix (diagonal is 0, rest is 1)
-        weight_init('_mask', torch.abs(torch.eye(self.size, dtype=self.weight.dtype, device=self.weight.device) - 1))
+        self.register_buffer('_mask', torch.abs(torch.eye(self.size, dtype=self.weight.dtype, device=self.weight.device) - 1))
+
+        # initial weight masking
+        self.weight = self.weight * self._mask
 
     @property
     def size(self) -> int:
@@ -579,7 +502,7 @@ class LateralConnection(AbstractConnection):
         Returns:
             int: number of elements of each input/output sample, excluding any batch dimensions.
         """
-        return self._size
+        return self.weight.shape[0]
 
     @property
     def weight(self) -> torch.Tensor:
@@ -651,9 +574,7 @@ class LateralConnection(AbstractConnection):
         Returns:
             torch.Tensor: reshaped form of the postsynaptic tensor.
         """
-        outputs = outputs.view(outputs.shape[0], -1)  # B x * -> B x N
-        outputs = outputs.unsqueeze(-1)               # B x N -> B x N x 1
-        return outputs
+        return einrearrange(outputs, '(b z) ... -> b (...) z', z=1)
 
     def reshape_inputs(self, inputs: torch.Tensor) -> torch.Tensor:
         """Reshapes a presynaptic tensor, for dimensional compatibility with like postsynaptic tensors.
@@ -678,9 +599,7 @@ class LateralConnection(AbstractConnection):
         Returns:
             torch.Tensor: reshaped form of the presynaptic tensor.
         """
-        inputs = inputs.view(inputs.shape[0], -1)  # B x * -> B x N
-        inputs = inputs.unsqueeze(1)               # B x N -> B x 1 x N
-        return inputs
+        return einrearrange(inputs, '(b z) ... -> b z (...)', z=1)
 
     def inputs_as_receptive_areas(
         self,
@@ -710,13 +629,40 @@ class LateralConnection(AbstractConnection):
         Returns:
             torch.Tensor: resulting tensor representing the receptive areas of the provided inputs on this connection.
         """
-        return torch.stack([inputs] * self.size, dim=-2)\
-            .masked_select(self._mask[(None,) * (inputs.ndim - 1) + (...,)].bool())\
-            .view(list(inputs.shape) + [self.size - 1])
+        return einrearrange(einrearrange([inputs] * self.size, 'n b ... -> b n (...)')
+            .masked_select(self._mask.unsqueeze(0).bool()), '(b n m) -> b n m', n=self.size, m=(self.size - 1))
 
-    def update_weight_add(
+    def reshape_weight_update(
         self,
         update: torch.Tensor,
+        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+    ) -> torch.Tensor:
+        """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N,`
+            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
+
+            **Output:**
+
+            :math:`B \\times N \\times N,`
+            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
+
+        Args:
+            update (torch.Tensor): the update to reshape.
+            space_reduction (Callable[[torch.Tensor, tuple): unused by `DirectConnection`. Defaults to `None`.
+
+        Returns:
+            torch.Tensor: the update tensor after reshaping and reduction.
+        """
+        return update
+
+    def update_weight(
+        self,
+        update: torch.Tensor,
+        batch_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] = torch.mean,
         weight_min: float | None = None,
         weight_max: float | None = None,
     ) -> None:
@@ -730,78 +676,11 @@ class LateralConnection(AbstractConnection):
 
         Args:
             update (torch.Tensor): The update to apply.
+            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]): reduction to apply to the batch dimension. Defaults to `torch.mean`.
             weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
             weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
         """
-        self.weight.add_(update)
+        self.weight.add_(einreduce(update, 'b ... -> ...', batch_reduction))
         if (weight_min is not None) or (weight_max is not None):
             self.weight.clamp_(min=weight_min, max=weight_max)
         self.weight.mul_(self._mask)
-
-    def update_weight_pd(
-        self,
-        add_update: torch.Tensor,
-        sub_update: torch.Tensor,
-        weight_min: float | None = None,
-        weight_max: float | None = None,
-        bounding_mode: str | None = None,
-    ) -> None:
-        """Applies both a potentiation and a depression update to the connection weights.
-
-        Shape:
-            **Input:**
-
-            :math:`N \\times N,`
-            where :math:`N` is the number of features
-
-        Args:
-            add_update (torch.Tensor): The potentiation update to apply.
-            sub_update (torch.Tensor): The depression update to apply.
-            weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
-            weight_min (float | None, optional): Maximum allowable weight values. Defaults to None.
-            bounding_mode (str | None, optional): Weight bounding to use. Defaults to None.
-
-        .. note::
-            There are three weight bounding modes, other than `None`. The bounding mode 'hard' multiplies the potentiation update term
-            by :math:`Θ(w_{max} - w)` and the depression update term by :math:`Θ(w - w_{min})`, where :math:`Θ` is the heaviside step function.
-            The bounding mode 'soft' multiplies the potentiation update term by :math:`w_{max} - w` and the depression update term by :math:`w - w_{min}`.
-            The bounding mode 'clamp' sets any weight values greater than the specified maximum to the maximum, and any less than the specified minimum to the minimum.
-
-        Raises:
-            ValueError: an unsupported value for the parameter `bounding_mode` was specified
-        """
-        wb_mode = str(bounding_mode).lower()
-        match wb_mode:
-            case 'hard':
-                if weight_min is not None:
-                    dep_mult = torch.heaviside(self.weight - weight_min, torch.zeros(1, dtype=sub_update.dtype, device=sub_update.device))
-                else:
-                    dep_mult = 1.0
-                if weight_max is not None:
-                    pot_mult = torch.heaviside(weight_max - self.weight, torch.zeros(1, dtype=sub_update.dtype, device=sub_update.device))
-                else:
-                    pot_mult = 1.0
-                self.weight.sub_(sub_update * dep_mult)
-                self.weight.add_(add_update * pot_mult)
-                self.weight.mul_(self._mask)
-            case 'soft':
-                if weight_min is not None:
-                    dep_mult = self.weight - weight_min
-                else:
-                    dep_mult = 1.0
-                if weight_max is not None:
-                    pot_mult = weight_max - self.weight
-                else:
-                    pot_mult = 1.0
-                self.weight.sub_(sub_update * dep_mult)
-                self.weight.add_(add_update * pot_mult)
-                self.weight.mul_(self._mask)
-            case 'clamp':
-                self.weight.add_(add_update - sub_update)
-                self.weight.clamp_(min=weight_min, max=weight_max)
-                self.weight.mul_(self._mask)
-            case 'none':
-                self.weight.add_(add_update - sub_update)
-                self.weight.mul_(self._mask)
-            case _:
-                raise ValueError(f"invalid 'bounding_mode' specified, must be None, 'hard', 'soft', or 'clamp', received {bounding_mode}")
