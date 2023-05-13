@@ -210,7 +210,7 @@ class DenseConnection(AbstractConnection):
         if (weight_min is not None) or (weight_max is not None):
             self.weight.clamp_(min=weight_min, max=weight_max)
 
-    def update_weight_potdep(
+    def update_weight_pd(
         self,
         add_update: torch.Tensor,
         sub_update: torch.Tensor,
@@ -304,6 +304,9 @@ class DirectConnection(AbstractConnection):
 
         # masking matrix (diagonal is 1, rest is 0)
         self.register_buffer('_mask', torch.eye(self.size, dtype=self.weight.dtype, device=self.weight.device))
+
+        # initial weight masking
+        self.weight = self.weight * self._mask
 
     @property
     def size(self) -> int:
@@ -434,8 +437,8 @@ class DirectConnection(AbstractConnection):
             **Output:**
 
             :math:`B \\times N \\times 1,`
-            where :math:`B` is the size of the batch dimension, :math:`\\times N` is the
-            number of outputs, and :math:`\\times N_\\text{in}` is the number of inputs.
+            where :math:`B` is the size of the batch dimension and :math:`\\times N` is the
+            number of outputs.
 
         Args:
             inputs (torch.Tensor): inputs for which to build the receptive area.
@@ -471,7 +474,7 @@ class DirectConnection(AbstractConnection):
             self.weight.clamp_(min=weight_min, max=weight_max)
         self.weight.mul_(self._mask)
 
-    def update_weight_potdep(
+    def update_weight_pd(
         self,
         add_update: torch.Tensor,
         sub_update: torch.Tensor,
@@ -735,7 +738,7 @@ class LateralConnection(AbstractConnection):
             self.weight.clamp_(min=weight_min, max=weight_max)
         self.weight.mul_(self._mask)
 
-    def update_weight_potdep(
+    def update_weight_pd(
         self,
         add_update: torch.Tensor,
         sub_update: torch.Tensor,

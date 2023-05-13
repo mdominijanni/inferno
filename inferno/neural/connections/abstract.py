@@ -109,7 +109,7 @@ class AbstractConnection(nn.Module, ABC):
         raise NotImplementedError(f"'AbstractConnection.update_weight_additive()' is abstract, {type(self).__name__} must implement the 'update_weight_additive' method")
 
     @abstractmethod
-    def update_weight_potdep(
+    def update_weight_pd(
         self,
         add_update: torch.Tensor,
         sub_update: torch.Tensor,
