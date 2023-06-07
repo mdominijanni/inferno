@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 from einops._torch_specific import allow_ops_in_compiled_graph
 allow_ops_in_compiled_graph()
-from einops import rearrange as einrearrange, reduce as einreduce
+from einops import rearrange as einrearrange
 
 from inferno.neural.connections.abstract import AbstractConnection
 
@@ -218,7 +218,6 @@ class DenseConnection(AbstractConnection):
     def update_weight(
         self,
         update: torch.Tensor,
-        batch_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] = torch.mean,
         weight_min: float | None = None,
         weight_max: float | None = None,
     ) -> None:
@@ -233,11 +232,10 @@ class DenseConnection(AbstractConnection):
 
         Args:
             update (torch.Tensor): The update to apply.
-            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]): reduction to apply to the batch dimension. Defaults to `torch.mean`.
             weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
             weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
         """
-        self.weight.add_(einreduce(update, 'b ... -> ...', batch_reduction))
+        self.weight.add_(update)
         if (weight_min is not None) or (weight_max is not None):
             self.weight.clamp_(min=weight_min, max=weight_max)
 
@@ -439,7 +437,6 @@ class DirectConnection(AbstractConnection):
     def update_weight(
         self,
         update: torch.Tensor,
-        batch_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] = torch.mean,
         weight_min: float | None = None,
         weight_max: float | None = None,
     ) -> None:
@@ -453,11 +450,10 @@ class DirectConnection(AbstractConnection):
 
         Args:
             update (torch.Tensor): The update to apply.
-            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]): reduction to apply to the batch dimension. Defaults to `torch.mean`.
             weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
             weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
         """
-        self.weight.add_(einreduce(update, 'b ... -> ...', batch_reduction))
+        self.weight.add_(update)
         if (weight_min is not None) or (weight_max is not None):
             self.weight.clamp_(min=weight_min, max=weight_max)
         self.weight.mul_(self._mask)
@@ -662,7 +658,6 @@ class LateralConnection(AbstractConnection):
     def update_weight(
         self,
         update: torch.Tensor,
-        batch_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] = torch.mean,
         weight_min: float | None = None,
         weight_max: float | None = None,
     ) -> None:
@@ -676,11 +671,10 @@ class LateralConnection(AbstractConnection):
 
         Args:
             update (torch.Tensor): The update to apply.
-            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]): reduction to apply to the batch dimension. Defaults to `torch.mean`.
             weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
             weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
         """
-        self.weight.add_(einreduce(update, 'b ... -> ...', batch_reduction))
+        self.weight.add_(update)
         if (weight_min is not None) or (weight_max is not None):
             self.weight.clamp_(min=weight_min, max=weight_max)
         self.weight.mul_(self._mask)

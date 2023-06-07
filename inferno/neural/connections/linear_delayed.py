@@ -4,11 +4,14 @@ from typing import Any, Callable
 import torch
 import torch.nn as nn
 
+from einops._torch_specific import allow_ops_in_compiled_graph
+allow_ops_in_compiled_graph()
+from einops import rearrange as einrearrange
+
 from inferno.neural.connections.abstract import AbstractDelayedConnection
-from inferno.neural.connections.linear import DenseConnection, DirectConnection, LateralConnection
 
 
-class DenseDelayedConnection(DenseConnection, AbstractDelayedConnection):
+class DenseDelayedConnection(AbstractDelayedConnection):
     """Connection object with trainable delays which provides an all-to-all connection structure between the inputs and the weights/delays.
 
     Args:
@@ -32,11 +35,20 @@ class DenseDelayedConnection(DenseConnection, AbstractDelayedConnection):
         delay_init: Callable[[torch.Tensor], Any] = partial(nn.init.constant_, val=0)
     ):
         # call superclass constructors
-        DenseConnection.__init__(self, input_size, output_size, weight_init)
         AbstractDelayedConnection.__init__(self)
 
+        # set input and output sizes
+        if int(input_size) < 1:
+            raise ValueError(f"parameter 'input_size' must be at least 1, received {input_size}")
+        if int(output_size) < 1:
+            raise ValueError(f"parameter 'output_size' must be at least 1, received {output_size}")
+
+        # register weights
+        self.register_parameter('_weight', nn.Parameter(torch.empty((int(output_size), int(input_size))), False))
+        weight_init(self._weight)
+
         # register delays
-        self.register_parameter('_delay', nn.Parameter(torch.empty((self._output_size, self._input_size), dtype=torch.int64), False))
+        self.register_parameter('_delay', nn.Parameter(torch.empty((self.output_size, self.input_size), dtype=torch.int64), False))
         delay_init(self._delay)
 
         # set maximum delay
@@ -46,6 +58,46 @@ class DenseDelayedConnection(DenseConnection, AbstractDelayedConnection):
 
         # register empty queue
         self.register_buffer('_queue', None)
+
+    @property
+    def input_size(self) -> int:
+        """Number of expected inputs.
+
+        Returns:
+            int: number of elements of each input sample, excluding any batch dimensions.
+        """
+        return self.weight.shape[1]
+
+    @property
+    def output_size(self) -> int:
+        """Number of generated outputs.
+
+        Returns:
+            int: number of elements of each output sample, excluding any batch dimensions.
+        """
+        return self.weight.shape[0]
+
+    @property
+    def weight(self) -> torch.Tensor:
+        """Learnable weights for the connection object.
+
+        Shape:
+            :math:`N_\\text{out} \\times N_\\text{in},`
+            where :math:`N_\\text{out}` is the number of outputs set at object construction and
+            :math:`N_\\text{in}` is the number of inputs set at object construction.
+
+        :getter: returns the current connection weights.
+        :setter: sets the current connection weights.
+        :type: torch.Tensor
+        """
+        return self._weight.data
+
+    @weight.setter
+    def weight(self, value):
+        if isinstance(value, torch.Tensor):
+            self._weight.data = value
+        else:
+            self._weight = value
 
     @property
     def delay(self) -> torch.Tensor:
@@ -97,7 +149,7 @@ class DenseDelayedConnection(DenseConnection, AbstractDelayedConnection):
 
         Returns:
             torch.Tensor: tensor of values after the linear transformation was applied.
-        """
+                """
         # function to rebuild queue
         def rebuild_queue():
             self._queue = torch.zeros((inputs.shape[0], self.delay_max + 1, self.input_size), dtype=self.weight.dtype)
@@ -131,6 +183,139 @@ class DenseDelayedConnection(DenseConnection, AbstractDelayedConnection):
         if self._queue is not None:
             self._queue.fill_(0)
 
+    def reshape_outputs(self, outputs: torch.Tensor) -> torch.Tensor:
+        """Reshapes a postsynaptic tensor, for dimensional compatibility with like presynaptic tensors.
+
+        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N_\\text{out}^{(0)} \\times \\cdots,`
+            where :math:`B` is the batch size and :math:`N_\\text{out}^{(0)}, \\ldots` are the
+            output feature dimensions with a product equal to the number of output features.
+
+            **Output:**
+
+            :math:`B \\times N_\\text{out} \\times 1,`
+            where :math:`B` is the batch size and :math:`N_\\text{out}` is the number of output feature.
+
+        Args:
+            outputs (torch.Tensor): like postsynaptic tensor to reshape.
+
+        Returns:
+            torch.Tensor: reshaped form of the postsynaptic tensor.
+        """
+        return einrearrange(outputs, '(b z) ... -> b (...) z', z=1)
+
+    def reshape_inputs(self, inputs: torch.Tensor) -> torch.Tensor:
+        """Reshapes a presynaptic tensor, for dimensional compatibility with like postsynaptic tensors.
+
+        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N_\\text{in}^{(0)} \\times \\cdots,`
+            where :math:`B` is the batch size and :math:`N_\\text{in}^{(0)}, \\ldots` are the
+            input feature dimensions with a product equal to the number of input features.
+
+            **Output:**
+
+            :math:`B \\times 1 \\times  N_\\text{in},`
+            where :math:`B` is the batch size and :math:`N_\\text{in}` is the number of input features.
+
+        Args:
+            inputs (torch.Tensor): like presynaptic tensor to reshape.
+
+        Returns:
+            torch.Tensor: reshaped form of the presynaptic tensor.
+        """
+        return einrearrange(inputs, '(b z) ... -> b z (...)', z=1)
+
+    def inputs_as_receptive_areas(
+        self,
+        inputs: torch.Tensor
+    ) -> torch.Tensor:
+        """Builds a tensor representing the receptive areas for each corresponding output.
+
+        The receptive area representation arranges and replicates inputs to show which inputs contributed
+        to each output.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N_\\text{out}^{(0)} \\times \\cdots,`
+            where :math:`B` is the size of the batch dimension, :math:`N_\\text{out} \\times \\cdots` are
+            the output feature dimensions with a product equal to the number of output features.
+
+            **Output:**
+
+            :math:`B \\times N_\\text{out} \\times N_\\text{in},`
+            where :math:`B` is the size of the batch dimension, :math:`N_\\text{out}` is the
+            number of outputs, and :math:`N_\\text{in}` is the number of inputs.
+
+        Args:
+            inputs (torch.Tensor): inputs for which to build the receptive area.
+
+        Returns:
+            torch.Tensor: resulting tensor representing the receptive areas of the provided inputs on this connection.
+        """
+        return einrearrange([inputs] * self.output_size, 'o b ... -> b o (...)')
+
+    def reshape_weight_update(
+        self,
+        update: torch.Tensor,
+        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+    ) -> torch.Tensor:
+        """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N_\\text{out} \\times N_\\text{in},`
+            where :math:`B`, is the size of the batch dimension, :math:`N_\\text{out}` is
+            the number of output features and :math:`N_\\text{in}` is the number of input features.
+
+            **Output:**
+
+            :math:`B \\times N_\\text{out} \\times N_\\text{in},`
+            where :math:`B`, is the size of the batch dimension, :math:`N_\\text{out}` is
+            the number of output features and :math:`N_\\text{in}` is the number of input features.
+
+        Args:
+            update (torch.Tensor): the update to reshape.
+            space_reduction (Callable[[torch.Tensor, tuple): unused by `DenseConnection`. Defaults to `None`.
+
+        Returns:
+            torch.Tensor: the update tensor after reshaping and reduction.
+        """
+        return update
+
+    def update_weight(
+        self,
+        update: torch.Tensor,
+        weight_min: float | None = None,
+        weight_max: float | None = None,
+    ) -> None:
+        """Applies an additive update to the connection weights.
+
+        Shape:
+            **Input:**
+
+            :math:`N_\\text{out} \\times N_\\text{in},`
+            where :math:`N_\\text{out}` is the number of outputs,
+            and :math:`N_\\text{in}` is the number of inputs.
+
+        Args:
+            update (torch.Tensor): The update to apply.
+            weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
+            weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
+        """
+        self.weight.add_(update)
+        if (weight_min is not None) or (weight_max is not None):
+            self.weight.clamp_(min=weight_min, max=weight_max)
+
     def delays_as_receptive_areas(self) -> torch.Tensor:
         """Returns the delays of the layer, stuctured by receptive area.
 
@@ -146,9 +331,9 @@ class DenseDelayedConnection(DenseConnection, AbstractDelayedConnection):
         """
         return self.delay.clone()
 
-    def update_delay_add(
+    def update_delay(
         self,
-        update: torch.Tensor,
+        update: torch.Tensor
     ) -> None:
         """Applies an additive update to the learned delays
 
@@ -178,7 +363,7 @@ class DenseDelayedConnection(DenseConnection, AbstractDelayedConnection):
         self.delay.clamp_(min=0, max=self.delay_max)
 
 
-class DirectDelayedConnection(DirectConnection, AbstractDelayedConnection):
+class DirectDelayedConnection(AbstractDelayedConnection):
     """Connection object with trainable delays which provides an one-to-one connection structure between the inputs and the weights/delays.
 
     Args:
@@ -199,11 +384,24 @@ class DirectDelayedConnection(DirectConnection, AbstractDelayedConnection):
         delay_init: Callable[[torch.Tensor], Any] = partial(nn.init.constant_, val=0)
     ):
         # call superclass constructors
-        DirectConnection.__init__(self, size, weight_init)
         AbstractDelayedConnection.__init__(self)
 
+        # set size
+        if int(size) < 1:
+            raise ValueError(f"parameter 'size' must be at least 1, received {size}")
+
+        # register weights
+        self.register_parameter('_weight', nn.Parameter(torch.empty((int(size), int(size))), False))
+        weight_init(self._weight)
+
+        # masking matrix (diagonal is 1, rest is 0)
+        self.register_buffer('_mask', torch.eye(self.size, dtype=self.weight.dtype, device=self.weight.device))
+
+        # initial weight masking
+        self.weight = self.weight * self._mask
+
         # register delays
-        self.register_parameter('_delay', nn.Parameter(torch.empty((self._output_size, self._input_size), dtype=torch.int64), False))
+        self.register_parameter('_delay', nn.Parameter(torch.empty((self.size, self.size), dtype=torch.int64), False))
         delay_init(self._delay)
 
         # set maximum delay
@@ -216,6 +414,36 @@ class DirectDelayedConnection(DirectConnection, AbstractDelayedConnection):
 
         # register helpers
         self.register_buffer('_receptive_area_indices', torch.tensor([range(self.size)], dtype=torch.int64, device=self.weight.device))
+
+    @property
+    def size(self) -> int:
+        """Number of expected inputs and generated outputs.
+
+        Returns:
+            int: number of elements of each input/output sample, excluding any batch dimensions.
+        """
+        return self.weight.shape[0]
+
+    @property
+    def weight(self) -> torch.Tensor:
+        """Learnable weights for the connection object.
+
+        Shape:
+            :math:`N \\times N,`
+            where :math:`N` is the number of inputs and the number of outputs as set at object construction.
+
+        :getter: returns the current connection weights.
+        :setter: sets the current connection weights.
+        :type: torch.Tensor
+        """
+        return self._weight.data
+
+    @weight.setter
+    def weight(self, value):
+        if isinstance(value, torch.Tensor):
+            self._weight.data = value
+        else:
+            self._weight = value
 
     @property
     def delay(self) -> torch.Tensor:
@@ -305,6 +533,138 @@ class DirectDelayedConnection(DirectConnection, AbstractDelayedConnection):
         if self._queue is not None:
             self._queue.fill_(0)
 
+    def reshape_outputs(self, outputs: torch.Tensor) -> torch.Tensor:
+        """Reshapes a postsynaptic tensor, for dimensional compatibility with like presynaptic tensors.
+
+        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N^{(0)} \\times \\cdots,`
+            where :math:`B` is the batch size and :math:`N^{(0)}, \\ldots` are the
+            feature dimensions with a product equal to the number of features.
+
+            **Output:**
+
+            :math:`B \\times N \\times 1,`
+            where :math:`B` is the batch size and :math:`N` is the number of features.
+
+        This function assumes a temporal dimension and will generate a postsynaptic intermediate valid for Hadamard product operations.
+
+        Args:
+            outputs (torch.Tensor): like postsynaptic tensor to reshape.
+
+        Returns:
+            torch.Tensor: reshaped form of the postsynaptic tensor.
+        """
+        return einrearrange(outputs, '(b z) ... -> b (...) z', z=1)
+
+    def reshape_inputs(self, inputs: torch.Tensor) -> torch.Tensor:
+        """Reshapes a presynaptic tensor, for dimensional compatibility with like postsynaptic tensors.
+
+        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N^{(0)} \\times \\cdots,`
+            where :math:`B` is the batch size and :math:`N^{(0)}, \\ldots` are the
+            feature dimensions with a product equal to the number of features.
+
+            **Output:**
+
+            :math:`B \\times N \\times 1,`
+            where :math:`B` is the batch size and :math:`N` is the number of features.
+
+        Args:
+            inputs (torch.Tensor): like presynaptic tensor to reshape.
+
+        Returns:
+            torch.Tensor: reshaped form of the presynaptic tensor.
+        """
+        return einrearrange(inputs, '(b z) ... -> b z (...)', z=1)
+
+    def inputs_as_receptive_areas(
+        self,
+        inputs: torch.Tensor
+    ) -> torch.Tensor:
+        """Builds a tensor representing the receptive areas for each corresponding output.
+
+        The receptive area representation arranges and replicates inputs to show which inputs contributed
+        to each output.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N^{(0)} \\times \\cdots,`
+            where :math:`B` is the batch size and :math:`N^{(0)} \\times \\ldots` are the
+            feature dimensions with a product equal to the number of features.
+
+            **Output:**
+
+            :math:`B \\times N \\times 1,`
+            where :math:`B` is the batch size and :math:`N` is the number of features.
+
+        Args:
+            inputs (torch.Tensor): inputs for which to build the receptive area.
+
+        Returns:
+            torch.Tensor: resulting tensor representing the receptive areas of the provided inputs on this connection.
+        """
+        return einrearrange(inputs, '(b z) ... -> b (...) z', z=1)
+
+    def reshape_weight_update(
+        self,
+        update: torch.Tensor,
+        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+    ) -> torch.Tensor:
+        """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N,`
+            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
+
+            **Output:**
+
+            :math:`B \\times N \\times N,`
+            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
+
+        Args:
+            update (torch.Tensor): the update to reshape.
+            space_reduction (Callable[[torch.Tensor, tuple): unused by `DirectConnection`. Defaults to `None`.
+
+        Returns:
+            torch.Tensor: the update tensor after reshaping and reduction.
+        """
+        return update
+
+    def update_weight(
+        self,
+        update: torch.Tensor,
+        weight_min: float | None = None,
+        weight_max: float | None = None,
+    ) -> None:
+        """Applies an additive update to the connection weights.
+
+        Shape:
+            **Input:**
+
+            :math:`N \\times N,`
+            where :math:`N` is the number of features
+
+        Args:
+            update (torch.Tensor): The update to apply.
+            weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
+            weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
+        """
+        self.weight.add_(update)
+        if (weight_min is not None) or (weight_max is not None):
+            self.weight.clamp_(min=weight_min, max=weight_max)
+        self.weight.mul_(self._mask)
+
     def delays_as_receptive_areas(self) -> torch.Tensor:
         """Returns the delays of the layer, stuctured by receptive area.
 
@@ -319,7 +679,7 @@ class DirectDelayedConnection(DirectConnection, AbstractDelayedConnection):
         """
         return torch.masked_select(self.delay.data, self._mask.bool()).view(self.size, 1)
 
-    def update_delay_add(
+    def update_delay(
         self,
         update: torch.Tensor,
     ) -> None:
@@ -333,7 +693,7 @@ class DirectDelayedConnection(DirectConnection, AbstractDelayedConnection):
 
     def update_delay_ra(
         self,
-        update: torch.Tensor
+        update: torch.Tensor,
     ) -> None:
         """Applies an additive update, in the form of a receptive area, to the connection delays.
 
@@ -352,7 +712,7 @@ class DirectDelayedConnection(DirectConnection, AbstractDelayedConnection):
         self.delay.mul_(self._mask.to(dtype=self.delay.dtype))
 
 
-class LateralDelayedConnection(LateralConnection, AbstractDelayedConnection):
+class LateralDelayedConnection(AbstractDelayedConnection):
     """Connection object with trainable delays which provides an all-to-all-but-one connection structure between the inputs and the weights/delays.
 
     Args:
@@ -373,11 +733,24 @@ class LateralDelayedConnection(LateralConnection, AbstractDelayedConnection):
         delay_init: Callable[[torch.Tensor], Any] = partial(nn.init.constant_, val=0)
     ):
         # call superclass constructors
-        LateralConnection.__init__(self, size, weight_init)
         AbstractDelayedConnection.__init__(self)
 
+        # set size
+        if int(size) < 1:
+            raise ValueError(f"parameter 'size' must be at least 1, received {size}")
+
+        # register weights
+        self.register_parameter('_weight', nn.Parameter(torch.empty((int(size), int(size))), False))
+        weight_init(self._weight)
+
+        # masking matrix (diagonal is 0, rest is 1)
+        self.register_buffer('_mask', torch.abs(torch.eye(self.size, dtype=self.weight.dtype, device=self.weight.device) - 1))
+
+        # initial weight masking
+        self.weight = self.weight * self._mask
+
         # register delays
-        self.register_parameter('_delay', nn.Parameter(torch.empty((self._output_size, self._input_size), dtype=torch.int64), False))
+        self.register_parameter('_delay', nn.Parameter(torch.empty((self.size, self.size), dtype=torch.int64), False))
         delay_init(self._delay)
 
         # set maximum delay
@@ -393,6 +766,36 @@ class LateralDelayedConnection(LateralConnection, AbstractDelayedConnection):
             (torch.ones((self.size, self.size - 1), dtype=torch.int64, device=self.weight.device)
             * torch.tensor([range(1, self.size)], dtype=torch.int64, device=self.weight.device)).t()
             - torch.triu(torch.ones((self.size - 1, self.size), dtype=torch.int64, device=self.weight.device), diagonal=1))
+
+    @property
+    def size(self) -> int:
+        """Number of expected inputs and generated outputs.
+
+        Returns:
+            int: number of elements of each input/output sample, excluding any batch dimensions.
+        """
+        return self.weight.shape[0]
+
+    @property
+    def weight(self) -> torch.Tensor:
+        """Learnable weights for the connection object.
+
+        Shape:
+            :math:`N \\times N,`
+            where :math:`N` is the number of inputs and the number of outputs as set at object construction.
+
+        :getter: returns the current connection weights.
+        :setter: sets the current connection weights.
+        :type: torch.Tensor
+        """
+        return self._weight.data
+
+    @weight.setter
+    def weight(self, value):
+        if isinstance(value, torch.Tensor):
+            self._weight.data = value
+        else:
+            self._weight = value
 
     @property
     def delay(self) -> torch.Tensor:
@@ -482,6 +885,140 @@ class LateralDelayedConnection(LateralConnection, AbstractDelayedConnection):
         if self._queue is not None:
             self._queue.fill_(0)
 
+    def reshape_outputs(self, outputs: torch.Tensor) -> torch.Tensor:
+        """Reshapes a postsynaptic tensor, for dimensional compatibility with like presynaptic tensors.
+
+        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N^{(0)} \\times \\cdots,`
+            where :math:`B` is the batch size and :math:`N^{(0)}, \\ldots` are the
+            feature dimensions with a product equal to the number of features.
+
+            **Output:**
+
+            :math:`B \\times N \\times 1,`
+            where :math:`B` is the batch size and :math:`N` is the number of features.
+
+        This function assumes a temporal dimension and will generate a postsynaptic intermediate valid for Hadamard product operations.
+
+        Args:
+            outputs (torch.Tensor): like postsynaptic tensor to reshape.
+
+        Returns:
+            torch.Tensor: reshaped form of the postsynaptic tensor.
+        """
+        return einrearrange(outputs, '(b z) ... -> b (...) z', z=1)
+
+    def reshape_inputs(self, inputs: torch.Tensor) -> torch.Tensor:
+        """Reshapes a presynaptic tensor, for dimensional compatibility with like postsynaptic tensors.
+
+        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N^{(0)} \\times \\cdots,`
+            where :math:`B` is the batch size and :math:`N^{(0)}, \\ldots` are the
+            feature dimensions with a product equal to the number of features.
+
+            **Output:**
+
+            :math:`B \\times N \\times 1,`
+            where :math:`B` is the batch size and :math:`N` is the number of features.
+
+        Args:
+            inputs (torch.Tensor): like presynaptic tensor to reshape.
+
+        Returns:
+            torch.Tensor: reshaped form of the presynaptic tensor.
+        """
+        return einrearrange(inputs, '(b z) ... -> b z (...)', z=1)
+
+    def inputs_as_receptive_areas(
+        self,
+        inputs: torch.Tensor
+    ) -> torch.Tensor:
+        """Builds a tensor representing the receptive areas for each corresponding output.
+
+        The receptive area representation arranges and replicates inputs to show which inputs contributed
+        to each output.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N,`
+            where :math:`B` is the size of the batch dimension, :math:`N` is the
+            number of features.
+
+            **Output:**
+
+            :math:`B \\times N \\times N - 1,`
+            where :math:`B` is the size of the batch dimension, :math:`\\times N` is the
+            number of outputs, and :math:`\\times N_\\text{in}` is the number of inputs.
+
+        Args:
+            inputs (torch.Tensor): inputs for which to build the receptive area.
+
+        Returns:
+            torch.Tensor: resulting tensor representing the receptive areas of the provided inputs on this connection.
+        """
+        return einrearrange(einrearrange([inputs] * self.size, 'n b ... -> b n (...)')
+            .masked_select(self._mask.unsqueeze(0).bool()), '(b n m) -> b n m', n=self.size, m=(self.size - 1))
+
+    def reshape_weight_update(
+        self,
+        update: torch.Tensor,
+        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+    ) -> torch.Tensor:
+        """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
+
+        Shape:
+            **Input:**
+
+            :math:`B \\times N,`
+            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
+
+            **Output:**
+
+            :math:`B \\times N \\times N,`
+            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
+
+        Args:
+            update (torch.Tensor): the update to reshape.
+            space_reduction (Callable[[torch.Tensor, tuple): unused by `DirectConnection`. Defaults to `None`.
+
+        Returns:
+            torch.Tensor: the update tensor after reshaping and reduction.
+        """
+        return update
+
+    def update_weight(
+        self,
+        update: torch.Tensor,
+        weight_min: float | None = None,
+        weight_max: float | None = None,
+    ) -> None:
+        """Applies an additive update to the connection weights.
+
+        Shape:
+            **Input:**
+
+            :math:`N \\times N,`
+            where :math:`N` is the number of features
+
+        Args:
+            update (torch.Tensor): The update to apply.
+            weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
+            weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
+        """
+        self.weight.add_(update)
+        if (weight_min is not None) or (weight_max is not None):
+            self.weight.clamp_(min=weight_min, max=weight_max)
+        self.weight.mul_(self._mask)
+
     def delays_as_receptive_areas(self) -> torch.Tensor:
         """Returns the delays of the layer, stuctured by receptive area.
 
@@ -496,7 +1033,7 @@ class LateralDelayedConnection(LateralConnection, AbstractDelayedConnection):
         """
         return self.delay.clone()
 
-    def update_delay_add(
+    def update_delay(
         self,
         update: torch.Tensor,
     ) -> None:

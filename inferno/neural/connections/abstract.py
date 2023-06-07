@@ -114,7 +114,6 @@ class AbstractConnection(nn.Module, ABC):
     def update_weight(
         self,
         update: torch.Tensor,
-        batch_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor],
         weight_min: float | None = None,
         weight_max: float | None = None,
     ) -> None:
@@ -122,7 +121,6 @@ class AbstractConnection(nn.Module, ABC):
 
         Args:
             update (torch.Tensor): The update to apply.
-            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]): reduction to apply to the batch dimension.
             weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
             weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
 
@@ -191,9 +189,9 @@ class AbstractDelayedConnection(AbstractConnection):
         raise NotImplementedError(f"'AbstractDelayedConnection.receptive_areas()' is abstract, {type(self).__name__} must implement the 'delays_as_receptive_area' method")
 
     @abstractmethod
-    def update_delay_add(
+    def update_delay(
         self,
-        update: torch.Tensor,
+        update: torch.Tensor
     ) -> None:
         """Applies an additive update to the learned delays
 
