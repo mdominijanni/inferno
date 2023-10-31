@@ -1,680 +1,236 @@
-from functools import partial
-from typing import Any, Callable
-
+import einops as ein
+from inferno.typing import OneToOne
+import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-from einops._torch_specific import allow_ops_in_compiled_graph
-allow_ops_in_compiled_graph()
-from einops import rearrange as einrearrange
-
-from inferno.neural.connections.abstract import AbstractConnection
+from .. import Connection, SynapseConstructor
 
 
-class DenseConnection(AbstractConnection):
-    """Connection object which provides an all-to-all connection structure between the inputs and the weights.
-
-    Args:
-        input_size (int): number of elements of each input sample.
-        output_size (int): number of elements of each output sample.
-        weight_init (Callable[[torch.Tensor], Any], optional): initialization function for connection weights. Defaults to `partial(torch.nn.init.uniform_, a=0.0, b=1.0)`.
-
-    Raises:
-        ValueError: `input_size` must be a positive integer.
-        ValueError: `output_size` must be a positive integer.
-    """
+class DenseLinear(Connection):
     def __init__(
         self,
-        input_size: int,
-        output_size: int,
-        weight_init: Callable[[torch.Tensor], Any] = partial(torch.nn.init.uniform_, a=0.0, b=1.0)
+        input_shape: tuple[int, ...] | int,
+        output_shape: tuple[int, ...] | int,
+        step_time: float,
+        *,
+        synapse: SynapseConstructor,
+        batch_size: int = 1,
+        bias: bool = False,
+        delay: int | float | None = None,
+        weight_init: OneToOne | None = None,
+        bias_init: OneToOne | None = None,
+        delay_init: OneToOne | None = None,
     ):
-        # call superclass constructor
-        AbstractConnection.__init__(self)
+        # convert shapes
+        try:
+            input_shape = (int(input_shape),)
+        except TypeError:
+            input_shape = tuple(int(s) for s in input_shape)
+        try:
+            output_shape = (int(output_shape),)
+        except TypeError:
+            output_shape = tuple(int(s) for s in output_shape)
 
-        # set input and output sizes
-        if int(input_size) < 1:
-            raise ValueError(f"parameter 'input_size' must be at least 1, received {input_size}")
-        if int(output_size) < 1:
-            raise ValueError(f"parameter 'output_size' must be at least 1, received {output_size}")
+        input_size = math.prod(input_shape)
+        output_size = math.prod(output_shape)
 
-        # register weights
-        self.register_parameter('_weight', nn.Parameter(torch.empty((int(output_size), int(input_size))), False))
-        weight_init(self._weight)
+        # check that the step time is valid
+        if float(step_time) <= 0:
+            raise ValueError(
+                f"step time must be greater than zero, received {float(step_time)}"
+            )
 
-    @property
-    def input_size(self) -> int:
-        """Number of expected inputs.
+        # check that the delay is valid
+        if delay is not None:
+            if delay == 0:
+                raise ValueError(
+                    f"delay, if not none, it must be greater than zero, received {delay}"
+                )
 
-        Returns:
-            int: number of elements of each input sample, excluding any batch dimensions.
-        """
-        return self.weight.shape[1]
+        # build parameters
+        weights = nn.Parameter(torch.rand(output_size, input_size), requires_grad=False)
 
-    @property
-    def output_size(self) -> int:
-        """Number of generated outputs.
-
-        Returns:
-            int: number of elements of each output sample, excluding any batch dimensions.
-        """
-        return self.weight.shape[0]
-
-    @property
-    def weight(self) -> torch.Tensor:
-        """Learnable weights for the connection object.
-
-        Shape:
-            :math:`N_\\text{out} \\times N_\\text{in},`
-            where :math:`N_\\text{out}` is the number of outputs set at object construction and
-            :math:`N_\\text{in}` is the number of inputs set at object construction.
-
-        :getter: returns the current connection weights.
-        :setter: sets the current connection weights.
-        :type: torch.Tensor
-        """
-        return self._weight.data
-
-    @weight.setter
-    def weight(self, value):
-        if isinstance(value, torch.Tensor):
-            self._weight.data = value
+        if bias:
+            biases = nn.Parameter(torch.rand(output_size, 1), requires_grad=False)
         else:
-            self._weight = value
+            biases = None
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
-        """Applies a linear transformation from all inputs to all of the outputs.
+        if delay:
+            if isinstance(delay, int):
+                synapse_delay = delay
+                delays = nn.Parameter(
+                    torch.zeros(output_size, input_size, dtype=torch.int64),
+                    requires_grad=False,
+                )
+            if isinstance(delay, float):
+                synapse_delay = int(delay // step_time)
+                delays = nn.Parameter(
+                    torch.zeros(output_size, input_size),
+                    requires_grad=False,
+                )
+        else:
+            synapse_delay = None
+            delays = None
 
-        Shape:
-            **Input:**
+        # call superclass constructor
+        Connection.__init__(
+            self,
+            synapse=synapse(
+                input_size, float(step_time), int(batch_size), synapse_delay
+            ),
+            weight=weights,
+            bias=biases,
+            delay=delays,
+        )
 
-            :math:`B \\times N_\\text{in}^{(0)} \\times \\cdots,`
-            where :math:`B` is the batch size and :math:`N_\\text{in}^{(0)}, \\ldots` are the input
-            feature dimensions, and their product must be equal to the number of input features.
+        # register extras
+        self.register_extra("input_shape", input_shape)
+        self.register_extra("output_shape", output_shape)
 
-            **Output:**
+        # initialize parameters
+        if weight_init:
+            self.weight = weight_init(self.weight)
 
-            :math:`B \\times N_\\text{out},`
-            where :math:`B` is the batch size and :math:`N_\\text{out}` is the number of output features.
+        if bias_init and bias:
+            self.bias = bias_init(self.bias)
 
-        Args:
-            inputs (torch.Tensor): tensor of values to which a linear transformation should be applied.
+        if delay_init and delay:
+            self.delay = delay_init(self.delay)
 
-        Returns
-            torch.Tensor: tensor of values after the linear transformation was applied.
-        """
-        return F.linear(inputs.view(inputs.shape[0], -1).to(dtype=self.weight.dtype), self.weight)
+    @property
+    def inshape(self) -> tuple[int]:
+        return self.input_shape
 
-    def reshape_outputs(self, outputs: torch.Tensor) -> torch.Tensor:
-        """Reshapes a postsynaptic tensor, for dimensional compatibility with like presynaptic tensors.
+    @property
+    def outshape(self) -> tuple[int]:
+        return self.output_shape
 
-        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
+    def forward(self, inputs: torch.Tensor):
+        if self.delayed:
+            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"))
+            res = self.synapse.dcurrent(self.delay)
 
-        Shape:
-            **Input:**
+            if self.bias is not None:
+                res = torch.sum(res * self.weight + self.bias, dim=-1)
+            else:
+                res = torch.sum(res * self.weight, dim=-1)
 
-            :math:`B \\times N_\\text{out}^{(0)} \\times \\cdots,`
-            where :math:`B` is the batch size and :math:`N_\\text{out}^{(0)}, \\ldots` are the
-            output feature dimensions with a product equal to the number of output features.
+        else:
+            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"))
+            res = F.linear(res, self.weight, self.bias)
 
-            **Output:**
-
-            :math:`B \\times N_\\text{out} \\times 1,`
-            where :math:`B` is the batch size and :math:`N_\\text{out}` is the number of output feature.
-
-        Args:
-            outputs (torch.Tensor): like postsynaptic tensor to reshape.
-
-        Returns:
-            torch.Tensor: reshaped form of the postsynaptic tensor.
-        """
-        return einrearrange(outputs, '(b z) ... -> b (...) z', z=1)
-
-    def reshape_inputs(self, inputs: torch.Tensor) -> torch.Tensor:
-        """Reshapes a presynaptic tensor, for dimensional compatibility with like postsynaptic tensors.
-
-        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N_\\text{in}^{(0)} \\times \\cdots,`
-            where :math:`B` is the batch size and :math:`N_\\text{in}^{(0)}, \\ldots` are the
-            input feature dimensions with a product equal to the number of input features.
-
-            **Output:**
-
-            :math:`B \\times 1 \\times  N_\\text{in},`
-            where :math:`B` is the batch size and :math:`N_\\text{in}` is the number of input features.
-
-        Args:
-            inputs (torch.Tensor): like presynaptic tensor to reshape.
-
-        Returns:
-            torch.Tensor: reshaped form of the presynaptic tensor.
-        """
-        return einrearrange(inputs, '(b z) ... -> b z (...)', z=1)
-
-    def inputs_as_receptive_areas(
-        self,
-        inputs: torch.Tensor
-    ) -> torch.Tensor:
-        """Builds a tensor representing the receptive areas for each corresponding output.
-
-        The receptive area representation arranges and replicates inputs to show which inputs contributed
-        to each output.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N_\\text{out}^{(0)} \\times \\cdots,`
-            where :math:`B` is the size of the batch dimension, :math:`N_\\text{out} \\times \\cdots` are
-            the output feature dimensions with a product equal to the number of output features.
-
-            **Output:**
-
-            :math:`B \\times N_\\text{out} \\times N_\\text{in},`
-            where :math:`B` is the size of the batch dimension, :math:`N_\\text{out}` is the
-            number of outputs, and :math:`N_\\text{in}` is the number of inputs.
-
-        Args:
-            inputs (torch.Tensor): inputs for which to build the receptive area.
-
-        Returns:
-            torch.Tensor: resulting tensor representing the receptive areas of the provided inputs on this connection.
-        """
-        return einrearrange([inputs] * self.output_size, 'o b ... -> b o (...)')
-
-    def reshape_weight_update(
-        self,
-        update: torch.Tensor,
-        spatial_reduction: Callable[[torch.Tensor], torch.Tensor] | None = None
-    ) -> torch.Tensor:
-        """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N_\\text{out} \\times N_\\text{in},`
-            where :math:`B`, is the size of the batch dimension, :math:`N_\\text{out}` is
-            the number of output features and :math:`N_\\text{in}` is the number of input features.
-
-            **Output:**
-
-            :math:`B \\times N_\\text{out} \\times N_\\text{in},`
-            where :math:`B`, is the size of the batch dimension, :math:`N_\\text{out}` is
-            the number of output features and :math:`N_\\text{in}` is the number of input features.
-
-        Args:
-            update (torch.Tensor): the update to reshape.
-            space_reduction (Callable[[torch.Tensor, tuple): unused by `DenseConnection`. Defaults to `None`.
-
-        Returns:
-            torch.Tensor: the update tensor after reshaping and reduction.
-        """
-        return update
-
-    def update_weight(
-        self,
-        update: torch.Tensor,
-        weight_min: float | None = None,
-        weight_max: float | None = None,
-    ) -> None:
-        """Applies an additive update to the connection weights.
-
-        Shape:
-            **Input:**
-
-            :math:`N_\\text{out} \\times N_\\text{in},`
-            where :math:`N_\\text{out}` is the number of outputs,
-            and :math:`N_\\text{in}` is the number of inputs.
-
-        Args:
-            update (torch.Tensor): The update to apply.
-            weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
-            weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
-        """
-        self.weight.add_(update)
-        if (weight_min is not None) or (weight_max is not None):
-            self.weight.clamp_(min=weight_min, max=weight_max)
+        return res.view(-1, *self.outshape)
 
 
-class DirectConnection(AbstractConnection):
-    """Connection object which provides an one-to-one connection structure between the inputs and the weights.
-
-    Args:
-        size (int): number of elements of each input/output sample.
-        weight_init (Callable[[torch.Tensor], Any], optional): initialization function for connection weights. Defaults to `partial(torch.nn.init.uniform_, a=0.0, b=1.0)`.
-
-    Raises:
-        ValueError: `size` must be a positive integer.
-    """
+class DirectLinear(Connection):
     def __init__(
         self,
-        size: int,
-        weight_init: Callable[[torch.Tensor], Any] = partial(torch.nn.init.uniform_, a=0.0, b=1.0)
+        shape: tuple[int, ...] | int,
+        step_time: float,
+        *,
+        synapse: SynapseConstructor,
+        batch_size: int = 1,
+        bias: bool = False,
+        delay: int | float | None = None,
+        weight_init: OneToOne | None = None,
+        bias_init: OneToOne | None = None,
+        delay_init: OneToOne | None = None,
     ):
-        # call superclass constructor
-        AbstractConnection.__init__(self)
+        # convert shapes
+        try:
+            shape = (int(shape),)
+        except TypeError:
+            shape = tuple(int(s) for s in shape)
 
-        # set size
-        if int(size) < 1:
-            raise ValueError(f"parameter 'size' must be at least 1, received {size}")
+        size = math.prod(shape)
 
-        # register weights
-        self.register_parameter('_weight', nn.Parameter(torch.empty((int(size), int(size))), False))
-        weight_init(self._weight)
+        # check that the step time is valid
+        if float(step_time) <= 0:
+            raise ValueError(
+                f"step time must be greater than zero, received {float(step_time)}"
+            )
 
-        # masking matrix (diagonal is 1, rest is 0)
-        self.register_buffer('_mask', torch.eye(self.size, dtype=self.weight.dtype, device=self.weight.device))
+        # check that the delay is valid
+        if delay is not None:
+            if delay == 0:
+                raise ValueError(
+                    f"delay, if not none, it must be greater than zero, received {delay}"
+                )
 
-        # initial weight masking
-        self.weight = self.weight * self._mask
+        # build parameters
+        weights = nn.Parameter(torch.rand(size), requires_grad=False)
 
-    @property
-    def size(self) -> int:
-        """Number of expected inputs and generated outputs.
-
-        Returns:
-            int: number of elements of each input/output sample, excluding any batch dimensions.
-        """
-        return self.weight.shape[0]
-
-    @property
-    def weight(self) -> torch.Tensor:
-        """Learnable weights for the connection object.
-
-        Shape:
-            :math:`N \\times N,`
-            where :math:`N` is the number of inputs and the number of outputs as set at object construction.
-
-        :getter: returns the current connection weights.
-        :setter: sets the current connection weights.
-        :type: torch.Tensor
-        """
-        return self._weight.data
-
-    @weight.setter
-    def weight(self, value):
-        if isinstance(value, torch.Tensor):
-            self._weight.data = value
+        if bias:
+            biases = nn.Parameter(torch.rand(size), requires_grad=False)
         else:
-            self._weight = value
+            biases = None
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
-        """Applies a linear transformation from one input to one output.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N^{(0)} \\times \\cdots,`
-            where :math:`B` is the batch size and :math:`N^{(0)}, \\ldots` are the feature dimensions,
-            and their product must be equal to the number of features.
-
-            **Output:**
-
-            :math:`B \\times N,`
-            where :math:`B` is the batch size and :math:`N` is the number of features.
-
-        Args:
-            inputs (torch.Tensor): tensor of values to which a linear transformation should be applied.
-
-        Returns:
-            torch.Tensor: tensor of values after the linear transformation was applied.
-        """
-        self.weight = self.weight * self._mask
-        return F.linear(inputs.view(inputs.shape[0], -1).to(dtype=self.weight.dtype), self.weight)
-
-    def reshape_outputs(self, outputs: torch.Tensor) -> torch.Tensor:
-        """Reshapes a postsynaptic tensor, for dimensional compatibility with like presynaptic tensors.
-
-        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N^{(0)} \\times \\cdots,`
-            where :math:`B` is the batch size and :math:`N^{(0)}, \\ldots` are the
-            feature dimensions with a product equal to the number of features.
-
-            **Output:**
-
-            :math:`B \\times N \\times 1,`
-            where :math:`B` is the batch size and :math:`N` is the number of features.
-
-        This function assumes a temporal dimension and will generate a postsynaptic intermediate valid for Hadamard product operations.
-
-        Args:
-            outputs (torch.Tensor): like postsynaptic tensor to reshape.
-
-        Returns:
-            torch.Tensor: reshaped form of the postsynaptic tensor.
-        """
-        return einrearrange(outputs, '(b z) ... -> b (...) z', z=1)
-
-    def reshape_inputs(self, inputs: torch.Tensor) -> torch.Tensor:
-        """Reshapes a presynaptic tensor, for dimensional compatibility with like postsynaptic tensors.
-
-        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N^{(0)} \\times \\cdots,`
-            where :math:`B` is the batch size and :math:`N^{(0)}, \\ldots` are the
-            feature dimensions with a product equal to the number of features.
-
-            **Output:**
-
-            :math:`B \\times N \\times 1,`
-            where :math:`B` is the batch size and :math:`N` is the number of features.
-
-        Args:
-            inputs (torch.Tensor): like presynaptic tensor to reshape.
-
-        Returns:
-            torch.Tensor: reshaped form of the presynaptic tensor.
-        """
-        return einrearrange(inputs, '(b z) ... -> b z (...)', z=1)
-
-    def inputs_as_receptive_areas(
-        self,
-        inputs: torch.Tensor
-    ) -> torch.Tensor:
-        """Builds a tensor representing the receptive areas for each corresponding output.
-
-        The receptive area representation arranges and replicates inputs to show which inputs contributed
-        to each output.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N^{(0)} \\times \\cdots,`
-            where :math:`B` is the batch size and :math:`N^{(0)} \\times \\ldots` are the
-            feature dimensions with a product equal to the number of features.
-
-            **Output:**
-
-            :math:`B \\times N \\times 1,`
-            where :math:`B` is the batch size and :math:`N` is the number of features.
-
-        Args:
-            inputs (torch.Tensor): inputs for which to build the receptive area.
-
-        Returns:
-            torch.Tensor: resulting tensor representing the receptive areas of the provided inputs on this connection.
-        """
-        return einrearrange(inputs, '(b z) ... -> b (...) z', z=1)
-
-    def reshape_weight_update(
-        self,
-        update: torch.Tensor,
-        spatial_reduction: Callable[[torch.Tensor], torch.Tensor] | None = None
-    ) -> torch.Tensor:
-        """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N,`
-            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
-
-            **Output:**
-
-            :math:`B \\times N \\times N,`
-            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
-
-        Args:
-            update (torch.Tensor): the update to reshape.
-            space_reduction (Callable[[torch.Tensor, tuple): unused by `DirectConnection`. Defaults to `None`.
-
-        Returns:
-            torch.Tensor: the update tensor after reshaping and reduction.
-        """
-        return update
-
-    def update_weight(
-        self,
-        update: torch.Tensor,
-        weight_min: float | None = None,
-        weight_max: float | None = None,
-    ) -> None:
-        """Applies an additive update to the connection weights.
-
-        Shape:
-            **Input:**
-
-            :math:`N \\times N,`
-            where :math:`N` is the number of features
-
-        Args:
-            update (torch.Tensor): The update to apply.
-            weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
-            weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
-        """
-        self.weight.add_(update)
-        if (weight_min is not None) or (weight_max is not None):
-            self.weight.clamp_(min=weight_min, max=weight_max)
-        self.weight.mul_(self._mask)
-
-
-class LateralConnection(AbstractConnection):
-    """Connection object which provides an all-to-all-but-one connection structure between the inputs and the weights.
-
-    Args:
-        size (int): number of elements of each input/output sample.
-        weight_init (Callable[[torch.Tensor], Any], optional): initialization function for connection weights. Defaults to `partial(torch.nn.init.uniform_, a=0.0, b=1.0)`.
-
-    Raises:
-        ValueError: `size` must be a positive integer.
-    """
-    def __init__(
-        self,
-        size: int,
-        weight_init: Callable[[torch.Tensor], Any] = partial(torch.nn.init.uniform_, a=0.0, b=1.0)
-    ):
-        # call superclass constructor
-        AbstractConnection.__init__(self)
-
-        # set size
-        if int(size) < 1:
-            raise ValueError(f"parameter 'size' must be at least 1, received {size}")
-
-        # register weights
-        self.register_parameter('_weight', nn.Parameter(torch.empty((int(size), int(size))), False))
-        weight_init(self._weight)
-
-        # masking matrix (diagonal is 0, rest is 1)
-        self.register_buffer('_mask', torch.abs(torch.eye(self.size, dtype=self.weight.dtype, device=self.weight.device) - 1))
-
-        # initial weight masking
-        self.weight = self.weight * self._mask
-
-    @property
-    def size(self) -> int:
-        """Number of expected inputs and generated outputs.
-
-        Returns:
-            int: number of elements of each input/output sample, excluding any batch dimensions.
-        """
-        return self.weight.shape[0]
-
-    @property
-    def weight(self) -> torch.Tensor:
-        """Learnable weights for the connection object.
-
-        Shape:
-            :math:`N \\times N,`
-            where :math:`N` is the number of inputs and the number of outputs as set at object construction.
-
-        :getter: returns the current connection weights.
-        :setter: sets the current connection weights.
-        :type: torch.Tensor
-        """
-        return self._weight.data
-
-    @weight.setter
-    def weight(self, value):
-        if isinstance(value, torch.Tensor):
-            self._weight.data = value
+        if delay:
+            if isinstance(delay, int):
+                synapse_delay = delay
+                delays = nn.Parameter(
+                    torch.zeros(size, dtype=torch.int64),
+                    requires_grad=False,
+                )
+            if isinstance(delay, float):
+                synapse_delay = int(delay // step_time)
+                delays = nn.Parameter(
+                    torch.zeros(size),
+                    requires_grad=False,
+                )
         else:
-            self._weight = value
+            synapse_delay = None
+            delays = None
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
-        """Applies a linear transformation from all inputs to all-but-one outputs.
+        # call superclass constructor
+        Connection.__init__(
+            self,
+            synapse=synapse(size, float(step_time), int(batch_size), synapse_delay),
+            weight=weights,
+            bias=biases,
+            delay=delays,
+        )
 
-        Shape:
-            **Input:**
+        # register extras
+        self.register_extra("shape", shape)
 
-            :math:`B \\times N^{(0)} \\times \\cdots,`
-            where :math:`B` is the batch size and :math:`N^{(0)}, \\ldots` are the feature dimensions,
-            and their product must be equal to the number of features.
+        # initialize parameters
+        if weight_init:
+            self.weight = weight_init(self.weight)
 
-            **Output:**
+        if bias_init and bias:
+            self.bias = bias_init(self.bias)
 
-            :math:`B \\times N,`
-            where :math:`B` is the batch size and :math:`N` is the number of features.
+        if delay_init and delay:
+            self.delay = delay_init(self.delay)
 
-        Args:
-            inputs (torch.Tensor): tensor of values to which a linear transformation should be applied.
+    @property
+    def inshape(self) -> tuple[int]:
+        return self.shape
 
-        Returns:
-            torch.Tensor: tensor of values after the linear transformation was applied.
-        """
-        self.weight = self.weight * self._mask
-        return F.linear(inputs.view(inputs.shape[0], -1).to(dtype=self.weight.dtype), self.weight)
+    @property
+    def outshape(self) -> tuple[int]:
+        return self.shape
 
-    def reshape_outputs(self, outputs: torch.Tensor) -> torch.Tensor:
-        """Reshapes a postsynaptic tensor, for dimensional compatibility with like presynaptic tensors.
+    def forward(self, inputs: torch.Tensor):
+        if self.delayed:
+            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"))
+            res = ein.rearrange(
+                self.synapse.dcurrent(self.delay.view(-1, 1)), "b 1 n -> b n"
+            )
 
-        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
+            if self.bias is not None:
+                res = res * self.weight + self.bias
+            else:
+                res = res * self.weight
 
-        Shape:
-            **Input:**
+        else:
+            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"))
 
-            :math:`B \\times N^{(0)} \\times \\cdots,`
-            where :math:`B` is the batch size and :math:`N^{(0)}, \\ldots` are the
-            feature dimensions with a product equal to the number of features.
+            if self.bias is not None:
+                res = res * self.weight + self.bias
+            else:
+                res = res * self.weight
 
-            **Output:**
-
-            :math:`B \\times N \\times 1,`
-            where :math:`B` is the batch size and :math:`N` is the number of features.
-
-        This function assumes a temporal dimension and will generate a postsynaptic intermediate valid for Hadamard product operations.
-
-        Args:
-            outputs (torch.Tensor): like postsynaptic tensor to reshape.
-
-        Returns:
-            torch.Tensor: reshaped form of the postsynaptic tensor.
-        """
-        return einrearrange(outputs, '(b z) ... -> b (...) z', z=1)
-
-    def reshape_inputs(self, inputs: torch.Tensor) -> torch.Tensor:
-        """Reshapes a presynaptic tensor, for dimensional compatibility with like postsynaptic tensors.
-
-        Used for updates by various learning algorithms, this output is shaped for compatibility with batch matrix multiplication operations.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N^{(0)} \\times \\cdots,`
-            where :math:`B` is the batch size and :math:`N^{(0)}, \\ldots` are the
-            feature dimensions with a product equal to the number of features.
-
-            **Output:**
-
-            :math:`B \\times N \\times 1,`
-            where :math:`B` is the batch size and :math:`N` is the number of features.
-
-        Args:
-            inputs (torch.Tensor): like presynaptic tensor to reshape.
-
-        Returns:
-            torch.Tensor: reshaped form of the presynaptic tensor.
-        """
-        return einrearrange(inputs, '(b z) ... -> b z (...)', z=1)
-
-    def inputs_as_receptive_areas(
-        self,
-        inputs: torch.Tensor
-    ) -> torch.Tensor:
-        """Builds a tensor representing the receptive areas for each corresponding output.
-
-        The receptive area representation arranges and replicates inputs to show which inputs contributed
-        to each output.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N,`
-            where :math:`B` is the size of the batch dimension, :math:`N` is the
-            number of features.
-
-            **Output:**
-
-            :math:`B \\times N \\times N - 1,`
-            where :math:`B` is the size of the batch dimension, :math:`\\times N` is the
-            number of outputs, and :math:`\\times N_\\text{in}` is the number of inputs.
-
-        Args:
-            inputs (torch.Tensor): inputs for which to build the receptive area.
-
-        Returns:
-            torch.Tensor: resulting tensor representing the receptive areas of the provided inputs on this connection.
-        """
-        return einrearrange(einrearrange([inputs] * self.size, 'n b ... -> b n (...)')
-            .masked_select(self._mask.unsqueeze(0).bool()), '(b n m) -> b n m', n=self.size, m=(self.size - 1))
-
-    def reshape_weight_update(
-        self,
-        update: torch.Tensor,
-        spatial_reduction: Callable[[torch.Tensor], torch.Tensor] | None = None
-    ) -> torch.Tensor:
-        """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
-
-        Shape:
-            **Input:**
-
-            :math:`B \\times N,`
-            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
-
-            **Output:**
-
-            :math:`B \\times N \\times N,`
-            where :math:`B`, is the size of the batch dimension and :math:`N` is the number of features.
-
-        Args:
-            update (torch.Tensor): the update to reshape.
-            space_reduction (Callable[[torch.Tensor, tuple): unused by `DirectConnection`. Defaults to `None`.
-
-        Returns:
-            torch.Tensor: the update tensor after reshaping and reduction.
-        """
-        return update
-
-    def update_weight(
-        self,
-        update: torch.Tensor,
-        weight_min: float | None = None,
-        weight_max: float | None = None,
-    ) -> None:
-        """Applies an additive update to the connection weights.
-
-        Shape:
-            **Input:**
-
-            :math:`N \\times N,`
-            where :math:`N` is the number of features
-
-        Args:
-            update (torch.Tensor): The update to apply.
-            weight_min (float | None, optional): Minimum allowable weight values. Defaults to None.
-            weight_max (float | None, optional): Maximum allowable weight values. Defaults to None.
-        """
-        self.weight.add_(update)
-        if (weight_min is not None) or (weight_max is not None):
-            self.weight.clamp_(min=weight_min, max=weight_max)
-        self.weight.mul_(self._mask)
+        return res.view(-1, *self.outshape)

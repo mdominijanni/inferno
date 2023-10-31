@@ -1,6 +1,23 @@
-from .dynamics import *                                              # noqa: F401, F403
-from .connections import *                                           # noqa: F401, F403
-from .encoders import AbstractEncoder                                # noqa: F401
-from .encoders import HomogeneousPoissonEncoder, PassthroughEncoder  # noqa: F401
-from .hooks import ParameterNormalization, ParameterClamping         # noqa: F401
-from .modeling import AbstractLayer, Layer, MultiLayer               # noqa: F401
+from .infrastructure import (  # noqa:F401
+    Group,
+    Neuron,
+    Synapse,
+    Connection,
+    SynapseConstructor,
+)
+
+from .neurons import (  # noqa:F401
+    LIF,
+    ALIF,
+    GLIF1,
+    GLIF2,
+)
+
+from .synapses import (  # noqa:F401
+    PassthroughSynapse,
+)
+
+from .connections import (  # noqa:F401
+    DenseLinear,
+    DirectLinear,
+)
