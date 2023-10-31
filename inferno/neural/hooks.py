@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 
 from inferno.common import PreHookable
+from inferno._internal import get_nested_attr
 
 
 class ParameterNormalization(PreHookable):
@@ -100,8 +101,8 @@ class ParameterNormalization(PreHookable):
             inputs (Any): inputs passed to associated :py:class:`torch.nn.Module` on call.
         """
         if (self.train_update and module.training) or (self.eval_update and not module.training):
-            getattr(module, self.name).div_(torch.linalg.vector_norm(getattr(module, self.name), self.norm, self.dims, keepdim=True))
-            getattr(module, self.name).mul_(self.scale)
+            get_nested_attr(module, self.name).div_(torch.linalg.vector_norm(get_nested_attr(module, self.name), self.norm, self.dims, keepdim=True))
+            get_nested_attr(module, self.name).mul_(self.scale)
 
 
 class ParameterClamping(PreHookable):
@@ -176,4 +177,4 @@ class ParameterClamping(PreHookable):
             inputs (Any): inputs passed to associated :py:class:`torch.nn.Module` on call.
         """
         if (self.train_update and module.training) or (self.eval_update and not module.training):
-            getattr(module, self.name).clamp_(min=self.clamp_min, max=self.clamp_max)
+            get_nested_attr(module, self.name).clamp_(min=self.clamp_min, max=self.clamp_max)

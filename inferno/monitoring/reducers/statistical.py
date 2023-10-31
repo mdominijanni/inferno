@@ -10,7 +10,8 @@ class SMAReducer(AbstractReducer):
     .. math::
         SMA_{w, n} = \\frac{x_{n} + x_{n-1} + \\cdots x_{n-w+1}}{w}
 
-    Where :math:`n` is the current step, :math:`w` is the window size, and :math:`x` is the changing value being averaged.
+    Where :math:`n` is the current step, :math:`w` is the window size,
+        and :math:`x` is the changing value being averaged.
 
     Args:
         window (int): size of the window over which to average values.

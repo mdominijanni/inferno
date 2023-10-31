@@ -189,7 +189,7 @@ class DenseConnection(AbstractConnection):
     def reshape_weight_update(
         self,
         update: torch.Tensor,
-        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+        spatial_reduction: Callable[[torch.Tensor], torch.Tensor] | None = None
     ) -> torch.Tensor:
         """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
 
@@ -410,7 +410,7 @@ class DirectConnection(AbstractConnection):
     def reshape_weight_update(
         self,
         update: torch.Tensor,
-        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+        spatial_reduction: Callable[[torch.Tensor], torch.Tensor] | None = None
     ) -> torch.Tensor:
         """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
 
@@ -631,7 +631,7 @@ class LateralConnection(AbstractConnection):
     def reshape_weight_update(
         self,
         update: torch.Tensor,
-        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+        spatial_reduction: Callable[[torch.Tensor], torch.Tensor] | None = None
     ) -> torch.Tensor:
         """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
 

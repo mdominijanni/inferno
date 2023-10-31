@@ -25,7 +25,7 @@ any :py:class:`Tensor` passed to them.
 
 In general, reducers can be moved between devices and their datatype can be changed.
 The exception to this is :py:class:`SinglePassthroughReducer` which takes its state
-from the last input only. The :py:meth:`peak` method of reducers typically expose
+from the last input only. The :py:meth:`peek` method of reducers typically expose
 the underlying state tensor and as such should not be modified externally.
 
 .. currentmodule:: inferno.monitoring

@@ -266,7 +266,7 @@ class DenseDelayedConnection(AbstractDelayedConnection):
     def reshape_weight_update(
         self,
         update: torch.Tensor,
-        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+        spatial_reduction: Callable[[torch.Tensor], torch.Tensor] | None = None
     ) -> torch.Tensor:
         """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
 
@@ -333,7 +333,7 @@ class DenseDelayedConnection(AbstractDelayedConnection):
 
     def update_delay(
         self,
-        update: torch.Tensor
+        update: torch.Tensor,
     ) -> None:
         """Applies an additive update to the learned delays
 
@@ -345,7 +345,7 @@ class DenseDelayedConnection(AbstractDelayedConnection):
 
     def update_delay_ra(
         self,
-        update: torch.Tensor
+        update: torch.Tensor,
     ) -> None:
         """Applies an additive update, in the form of a receptive area, to the connection delays.
 
@@ -502,7 +502,7 @@ class DirectDelayedConnection(AbstractDelayedConnection):
 
         # function to rebuild queue
         def rebuild_queue():
-            self._queue = torch.zeros((inputs.shape[0], self.delay_max + 1, self.input_size), dtype=self.weight.dtype)
+            self._queue = torch.zeros((inputs.shape[0], self.delay_max + 1, self.size), dtype=self.weight.dtype)
 
         # check if queue exists
         if self._queue is None:
@@ -617,7 +617,7 @@ class DirectDelayedConnection(AbstractDelayedConnection):
     def reshape_weight_update(
         self,
         update: torch.Tensor,
-        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+        spatial_reduction: Callable[[torch.Tensor], torch.Tensor] | None = None
     ) -> torch.Tensor:
         """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
 
@@ -671,8 +671,8 @@ class DirectDelayedConnection(AbstractDelayedConnection):
         Shape:
             **Output:**
 
-            :math:`B \\times N \\times 1,`
-            where :math:`B` is the batch size and :math:`N` is the number of parameters.
+            :math: times N \\times 1,`
+            where :math:`N` is the number of parameters.
 
         Returns:
             torch.Tensor: The learned delays, structured by its receptive area
@@ -690,6 +690,7 @@ class DirectDelayedConnection(AbstractDelayedConnection):
         """
         self.delay.add_(update)
         self.delay.clamp_(min=0, max=self.delay_max)
+        self.delay.mul_(self._mask.to(dtype=self.delay.dtype))
 
     def update_delay_ra(
         self,
@@ -971,7 +972,7 @@ class LateralDelayedConnection(AbstractDelayedConnection):
     def reshape_weight_update(
         self,
         update: torch.Tensor,
-        spatial_reduction: Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None = None
+        spatial_reduction: Callable[[torch.Tensor], torch.Tensor] | None = None
     ) -> torch.Tensor:
         """Reshapes an update from a learning method to be specific for the kind of layer to be like weights.
 
@@ -1047,7 +1048,7 @@ class LateralDelayedConnection(AbstractDelayedConnection):
 
     def update_delay_ra(
         self,
-        update: torch.Tensor
+        update: torch.Tensor,
     ) -> None:
         """Applies an additive update, in the form of a receptive area, to the connection delays.
 

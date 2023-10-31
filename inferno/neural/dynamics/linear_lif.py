@@ -228,9 +228,6 @@ class LIFDynamics(ShapeMixin, AbstractDynamics):
         Returns:
             torch.Tensor: resulting tensor shaped like the population of neurons indicating which spiked (1) and which did not (0).
        """
-        # reset voltages for last depolarized neurons
-        self.v_membranes.masked_fill_(self.ts_refrac_membranes == self.ts_abs_refrac, self.v_reset)
-
         # decay voltages
         self.v_membranes.sub_(self.v_rest)
         self.v_membranes.mul_(self.decay_rate)
@@ -249,6 +246,9 @@ class LIFDynamics(ShapeMixin, AbstractDynamics):
 
         # set refractory periods of depolarized neurons
         self.ts_refrac_membranes.masked_fill_(spikes, self.ts_abs_refrac)
+
+        # reset voltages for last depolarized neurons
+        self.v_membranes.masked_fill_(self.ts_refrac_membranes == self.ts_abs_refrac, self.v_reset)
 
         return spikes
 
@@ -402,9 +402,6 @@ class AdaptiveLIFDynamics(ShapeMixin, AbstractDynamics):
         else:
             adapt_theta = self.adapt_theta
 
-        # reset voltages for last depolarized neurons
-        self.v_membranes.masked_fill_(self.ts_refrac_membranes == self.ts_abs_refrac, self.v_reset)
-
         # decay voltages
         self.v_membranes.sub_(self.v_rest)
         self.v_membranes.mul_(self.decay_rate)
@@ -431,5 +428,8 @@ class AdaptiveLIFDynamics(ShapeMixin, AbstractDynamics):
 
         # set refractory periods of depolarized neurons
         self.ts_refrac_membranes.masked_fill_(spikes, self.ts_abs_refrac)
+
+        # reset voltages for last depolarized neurons
+        self.v_membranes.masked_fill_(self.ts_refrac_membranes == self.ts_abs_refrac, self.v_reset)
 
         return spikes
