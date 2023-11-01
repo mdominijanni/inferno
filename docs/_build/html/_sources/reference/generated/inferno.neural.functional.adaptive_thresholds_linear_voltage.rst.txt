@@ -1,0 +1,6 @@
+﻿inferno.neural.functional.adaptive\_thresholds\_linear\_voltage
+===============================================================
+
+.. currentmodule:: inferno.neural.functional
+
+.. autofunction:: adaptive_thresholds_linear_voltage
