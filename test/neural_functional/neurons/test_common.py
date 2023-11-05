@@ -8,8 +8,8 @@ sys.path.insert(0, "../../..")
 
 
 from inferno.neural.functional import (
-    _voltage_thresholding,
-    _voltage_thresholding_slope_intercept
+    _voltage_thresholding_discrete,
+    _voltage_thresholding_slope_intercept_discrete
 )
 
 
@@ -171,7 +171,7 @@ class Test_VoltageThresholding:
             else voltages.clone().detach()
         )
 
-        res = _voltage_thresholding(
+        res = _voltage_thresholding_discrete(
             inputs=inputs,
             refracs=refracs,
             voltage_fn=voltage_fn,
@@ -181,7 +181,7 @@ class Test_VoltageThresholding:
             voltages=voltages,
         )
 
-        res_fd = _voltage_thresholding(
+        res_fd = _voltage_thresholding_discrete(
             inputs=inputs_fd,
             refracs=refracs_fd,
             voltage_fn=voltage_fn,
@@ -208,7 +208,7 @@ class Test_VoltageThresholding:
         voltages = torch.rand(dynamics_shape, dtype=torch.float32) * 10 - 70
         voltage_fn = lambda x: voltages + x
 
-        res_spikes, res_volts, _ = _voltage_thresholding(
+        res_spikes, res_volts, _ = _voltage_thresholding_discrete(
             inputs=inputs.clone().detach(),
             refracs=refracs.clone().detach(),
             voltage_fn=voltage_fn,
@@ -239,7 +239,7 @@ class Test_VoltageThresholding:
         refrac_ts_orig = refrac_ts.clone().detach()
         voltages_orig = voltages.clone().detach()
 
-        _ = _voltage_thresholding(
+        _ = _voltage_thresholding_discrete(
             inputs=inputs,
             refracs=refracs,
             voltage_fn=voltage_fn,
@@ -266,7 +266,7 @@ class Test_VoltageThresholding:
         voltages = torch.rand(dynamics_shape, dtype=torch.float32) * 10 - 70
         voltage_fn = lambda x: voltages.clone().detach() + x
 
-        res_spikes, res_volts, res_refracs = _voltage_thresholding(
+        res_spikes, res_volts, res_refracs = _voltage_thresholding_discrete(
             inputs=inputs.clone().detach(),
             refracs=refracs.clone().detach(),
             voltage_fn=voltage_fn,
@@ -298,7 +298,7 @@ class Test_VoltageThresholding:
         voltages = torch.rand(dynamics_shape, dtype=torch.float32) * 10 - 70
         voltage_fn = lambda x: voltages + x
 
-        res_spikes, res_volts, res_refracs = _voltage_thresholding(
+        res_spikes, res_volts, res_refracs = _voltage_thresholding_discrete(
             inputs=inputs,
             refracs=refracs,
             voltage_fn=voltage_fn,
@@ -499,7 +499,7 @@ class Test_VoltageThresholdingSlopeIntercept:
             else voltages.clone().detach()
         )
 
-        res = _voltage_thresholding_slope_intercept(
+        res = _voltage_thresholding_slope_intercept_discrete(
             inputs=inputs,
             refracs=refracs,
             voltage_fn=voltage_fn,
@@ -511,7 +511,7 @@ class Test_VoltageThresholdingSlopeIntercept:
             voltages=voltages,
         )
 
-        res_fd = _voltage_thresholding_slope_intercept(
+        res_fd = _voltage_thresholding_slope_intercept_discrete(
             inputs=inputs_fd,
             refracs=refracs_fd,
             voltage_fn=voltage_fn,
@@ -542,7 +542,7 @@ class Test_VoltageThresholdingSlopeIntercept:
         voltages = torch.rand(dynamics_shape, dtype=torch.float32) * 10 - 70
         voltage_fn = lambda x: voltages + x
 
-        res_spikes, res_volts, _ = _voltage_thresholding_slope_intercept(
+        res_spikes, res_volts, _ = _voltage_thresholding_slope_intercept_discrete(
             inputs=inputs.clone().detach(),
             refracs=refracs.clone().detach(),
             voltage_fn=voltage_fn,
@@ -579,7 +579,7 @@ class Test_VoltageThresholdingSlopeIntercept:
         refrac_ts_orig = refrac_ts.clone().detach()
         voltages_orig = voltages.clone().detach()
 
-        _ = _voltage_thresholding_slope_intercept(
+        _ = _voltage_thresholding_slope_intercept_discrete(
             inputs=inputs.clone().detach(),
             refracs=refracs.clone().detach(),
             voltage_fn=voltage_fn,
@@ -612,7 +612,7 @@ class Test_VoltageThresholdingSlopeIntercept:
         voltages = torch.rand(dynamics_shape, dtype=torch.float32) * 10 - 70
         voltage_fn = lambda x: voltages.clone().detach() + x
 
-        res_spikes, res_volts, res_refracs = _voltage_thresholding_slope_intercept(
+        res_spikes, res_volts, res_refracs = _voltage_thresholding_slope_intercept_discrete(
             inputs=inputs.clone().detach(),
             refracs=refracs.clone().detach(),
             voltage_fn=voltage_fn,
@@ -648,7 +648,7 @@ class Test_VoltageThresholdingSlopeIntercept:
         voltages = torch.rand(dynamics_shape, dtype=torch.float32) * 10 - 70
         voltage_fn = lambda x: voltages + x
 
-        res_spikes, res_volts, res_refracs = _voltage_thresholding_slope_intercept(
+        res_spikes, res_volts, res_refracs = _voltage_thresholding_slope_intercept_discrete(
             inputs=inputs,
             refracs=refracs,
             voltage_fn=voltage_fn,

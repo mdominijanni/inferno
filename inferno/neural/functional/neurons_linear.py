@@ -1,8 +1,8 @@
 import torch
 import inferno
 from . import (
-    _voltage_thresholding,
-    _voltage_thresholding_slope_intercept,
+    _voltage_thresholding_discrete,
+    _voltage_thresholding_slope_intercept_discrete,
     apply_adaptive_thresholds,
 )
 from . import adaptive_thresholds_linear_spike
@@ -89,7 +89,7 @@ def leaky_integrate_and_fire_euler(
         v_delta = voltages - rest_v
         return decay * (-v_delta + v_in) + voltages
 
-    spikes, voltages, refracs = _voltage_thresholding(
+    spikes, voltages, refracs = _voltage_thresholding_discrete(
         inputs=inputs,
         refracs=refracs,
         voltage_fn=volt_fn,
@@ -183,7 +183,7 @@ def leaky_integrate_and_fire(
         v_delta = voltages - rest_v
         return v_in + (v_delta - v_in) * decay + rest_v
 
-    spikes, voltages, refracs = _voltage_thresholding(
+    spikes, voltages, refracs = _voltage_thresholding_discrete(
         inputs=inputs,
         refracs=refracs,
         voltage_fn=volt_fn,
@@ -477,7 +477,7 @@ def generalized_leaky_integrate_and_fire_2(
         v_delta = voltages - rest_v
         return v_in + (v_delta - v_in) * decay + rest_v
 
-    spikes, voltages, refracs = _voltage_thresholding_slope_intercept(
+    spikes, voltages, refracs = _voltage_thresholding_slope_intercept_discrete(
         inputs=inputs,
         refracs=refracs,
         voltage_fn=volt_fn,

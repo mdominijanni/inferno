@@ -13,14 +13,17 @@ class Group(Module):
     Args:
         shape (tuple[int, ...] | int): shape of the group being represented, excluding batch size.
         batch_size (int): initial batch size.
-        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None): batch size sensitive module parameters.
+        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None): batch size sensitive
+            module parameters.
         batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None): batch size sensitive module buffers.
         on_batch_resize (Callable[[], None]): function to call when after the batch size is altered.
 
     Raises:
         ValueError: ``batch_size`` must be a positive integer.
-        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.
-        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.
+        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have
+            ``batch_size`` sized :math:`0^\text{th}` dimension.
+        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized
+            :math:`0^\text{th}` dimension.
 
     Note:
         If a pre-defined :py:class:`~torch.Tensor` or :py:class:`~torch.nn.parameter.Parameter` is specified, the
@@ -121,6 +124,15 @@ class Group(Module):
         return (self._batch_size,) + self._shape
 
     @property
+    def count(self) -> int:
+        r"""Number of elements in the group, excluding batch.
+
+        Returns:
+            int: number of elements in the group.
+        """
+        return self._count
+
+    @property
     def bsize(self) -> int:
         r"""Batch size of the group.
 
@@ -180,15 +192,6 @@ class Group(Module):
 
         self.on_batch_resize()
 
-    @property
-    def count(self) -> int:
-        r"""Number of elements in the group, excluding batch.
-
-        Returns:
-            int: number of elements in the group.
-        """
-        return self._count
-
 
 class Neuron(Group, ABC):
     r"""Base class for representing a group of neurons with a common mode of dynamics.
@@ -196,14 +199,19 @@ class Neuron(Group, ABC):
     Args:
         shape (tuple[int, ...] | int): shape of the group being represented, excluding batch size.
         batch_size (int): initial batch size.
-        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None, optional): batch size sensitive module parameters. Defaults to None.
-        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None, optional): batch size sensitive module buffers. Defaults to None.
-        on_batch_resize (Callable[[], None] | None, optional): function to call when after the batch size is altered. Defaults to None.
+        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None, optional): batch size
+            sensitive module parameters. Defaults to None.
+        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None, optional): batch size sensitive module
+            buffers. Defaults to None.
+        on_batch_resize (Callable[[], None] | None, optional): function to call when after the batch size is altered.
+            Defaults to None.
 
     Raises:
         ValueError: ``batch_size`` must be a positive integer.
-        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.
-        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.
+        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have
+            ``batch_size`` sized :math:`0^\text{th}` dimension.
+        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized
+            :math:`0^\text{th}` dimension.
 
     Note:
         If a pre-defined :py:class:`~torch.Tensor` or :py:class:`~torch.nn.parameter.Parameter` is specified, the
@@ -237,14 +245,46 @@ class Neuron(Group, ABC):
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
+        Args:
+            value (float): new simulation time step length.
+
         Returns:
-            float: length of the simulation time step
+            float: length of the simulation time step.
 
         Raises:
             NotImplementedError: ``dt`` must be implemented by the subclass.
         """
         raise NotImplementedError(
             f"Neuron `{type(self).__name__}` must implement the getter for property `dt`"
+        )
+
+    @dt.setter
+    def dt(self, value: float):
+        raise NotImplementedError(
+            f"Neuron `{type(self).__name__}` must implement the setter for property `dt`"
+        )
+
+    @abstractproperty
+    def absrefrac(self) -> float:
+        r"""Length of the absolute refractory period, as an integer multiple of time steps.
+
+        Args:
+            value (float): new absolute refractory period.
+
+        Returns:
+            int: length of the absolute refractory period/
+
+        Raises:
+            NotImplementedError: ``absrefrac`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Neuron `{type(self).__name__}` must implement the getter for property `absrefrac`"
+        )
+
+    @absrefrac.setter
+    def absrefrac(self, value: int):
+        raise NotImplementedError(
+            f"Neuron `{type(self).__name__}` must implement the setter for property `absrefrac`"
         )
 
     @abstractproperty
@@ -312,14 +352,19 @@ class Synapse(Group, ABC):
     Args:
         shape (tuple[int, ...] | int): shape of the group being represented, excluding batch size.
         batch_size (int): initial batch size.
-        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None, optional): batch size sensitive module parameters. Defaults to None.
-        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None, optional): batch size sensitive module buffers. Defaults to None.
-        on_batch_resize (Callable[[], None] | None, optional): function to call when after the batch size is altered. Defaults to None.
+        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None, optional): batch size
+            sensitive module parameters. Defaults to None.
+        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None, optional): batch size sensitive module
+            buffers. Defaults to None.
+        on_batch_resize (Callable[[], None] | None, optional): function to call when after the batch size is altered.
+            Defaults to None.
 
     Raises:
         ValueError: ``batch_size`` must be a positive integer.
-        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.
-        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.
+        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have
+            ``batch_size`` sized :math:`0^\text{th}` dimension.
+        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized
+            :math:`0^\text{th}` dimension.
 
     Note:
         If a pre-defined :py:class:`~torch.Tensor` or :py:class:`~torch.nn.parameter.Parameter` is specified, the
@@ -367,6 +412,9 @@ class Synapse(Group, ABC):
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
+        Args:
+            value (float): new simulation time step length.
+
         Returns:
             float: length of the simulation time step.
 
@@ -375,6 +423,12 @@ class Synapse(Group, ABC):
         """
         raise NotImplementedError(
             f"Synapse `{type(self).__name__}` must implement the getter for property `dt`"
+        )
+
+    @dt.setter
+    def dt(self, value: float):
+        raise NotImplementedError(
+            f"Synapse `{type(self).__name__}` must implement the setter for property `dt`"
         )
 
     @abstractproperty
@@ -519,6 +573,14 @@ class Connection(Module, ABC):
 
     @property
     def synapse(self) -> Synapse:
+        r"""Synapse registered with this connection.
+
+        Args:
+            value (Synapse): replacement synapse for this connection.
+
+        Returns:
+           Synapse: registered synapse.
+        """
         return self.synapses
 
     @synapse.setter
@@ -527,6 +589,21 @@ class Connection(Module, ABC):
 
     @property
     def bsize(self) -> int:
+        r"""Batch size of the connection.
+
+        Args:
+            value (int): new batch size.
+
+        Returns:
+            int: current batch size.
+
+        Raises:
+            ValueError: ``value`` must be a positive integer.
+
+        Note:
+            This calls the property :py:attr:`Synapse.bsize`, assuming the connection
+            itself does not use any batch size dependant tensors.
+        """
         return self.synapse.bsize
 
     @bsize.setter
@@ -535,6 +612,14 @@ class Connection(Module, ABC):
 
     @property
     def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
+
+        Returns:
+            float: length of the simulation time step.
+
+        Raises:
+            This calls the property :py:attr:`Synapse.dt`.
+        """
         return self.synapse.dt
 
     @property
@@ -572,7 +657,9 @@ class Connection(Module, ABC):
         if self.biases is not None:
             self.biases.data = value
         else:
-            raise RuntimeError(f'cannot set `bias` on a {type(self).__name__} without trainable biases')
+            raise RuntimeError(
+                f"cannot set `bias` on a {type(self).__name__} without trainable biases"
+            )
 
     @property
     def delay(self) -> torch.Tensor | None:
@@ -584,7 +671,9 @@ class Connection(Module, ABC):
         if self.delays is not None:
             self.delays.data = value
         else:
-            raise RuntimeError(f'cannot set `delay` on a {type(self).__name__} without trainable delays')
+            raise RuntimeError(
+                f"cannot set `delay` on a {type(self).__name__} without trainable delays"
+            )
 
     def clear(self, *args, **kwargs):
         self.synapse.clear(*args, **kwargs)

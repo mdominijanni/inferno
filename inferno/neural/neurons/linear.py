@@ -28,7 +28,8 @@ class LIF(Neuron):
             :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.
         thresh_v (float): membrane voltage at which action potentials are generated,
             in :math:`\mathrm{mV}`.
-        refrac_ts (int): number of time steps the absolute refractory period lasts.
+        abs_refrac (int): length of time the absolute refractory period lasts,
+            in :math:`\mathrm{ms}`.
         time_constant (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
         resistance (float, optional): resistance across the cell membrane,
@@ -42,6 +43,7 @@ class LIF(Neuron):
         For more details and references, visit
         :ref:`zoo/neurons-linear:Leaky Integrate-and-Fire (LIF)` in the zoo.
     """
+
     def __init__(
         self,
         shape: tuple[int, ...] | int,
@@ -50,7 +52,7 @@ class LIF(Neuron):
         rest_v: float,
         reset_v: float,
         thresh_v: float,
-        refrac_ts: int,
+        abs_refrac: float,
         time_constant: float,
         resistance: float = 1.0,
         batch_size: int = 1,
@@ -63,7 +65,7 @@ class LIF(Neuron):
         # check that the step time is valid
         if float(step_time) <= 0:
             raise ValueError(
-                f"step time must be greater than zero, received {float(step_time)}"
+                f"step time must be positive, received {float(step_time)}"
             )
 
         # register extras
@@ -71,16 +73,17 @@ class LIF(Neuron):
         self.register_extra("time_constant", float(time_constant))
 
         # register buffers
-        self.register_buffer("decay", math.exp(-self.step_time / self.time_constant))
+        self.register_buffer(
+            "decay", torch.tensor(math.exp(-self.step_time / self.time_constant))
+        )
         self.register_buffer("rest_v", torch.tensor(float(rest_v)))
         self.register_buffer("reset_v", torch.tensor(float(reset_v)))
         self.register_buffer("thresh_v", torch.tensor(float(thresh_v)))
-        self.register_buffer("refrac_ts", torch.tensor(int(refrac_ts)))
+        self.register_buffer("abs_refrac", torch.tensor(float(abs_refrac)))
         self.register_buffer("resistance", torch.tensor(float(resistance)))
 
         # set values for parameters
         self.voltages.fill_(self.rest_v)
-        self.refracs.data = self.refrac_ts.data.to(dtype=self.refrac_ts.dtype)
         self.refracs.fill_(0)
 
         # voltage update function
@@ -109,13 +112,14 @@ class LIF(Neuron):
             torch.Tensor: which neurons generated an action potential.
         """
         # use voltage thresholding function
-        spikes, voltages, refracs = nf._voltage_thresholding(
+        spikes, voltages, refracs = nf._voltage_thresholding_continuous(
             inputs=inputs,
             refracs=self.refracs,
             voltage_fn=self._voltfn,
+            step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=self.thresh_v,
-            refrac_ts=self.refrac_ts,
+            abs_refrac=self.abs_refrac,
             voltages=(self.voltages.data if refrac_lock else None),
         )
 
@@ -130,14 +134,42 @@ class LIF(Neuron):
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
+        Args:
+            value (float): new simulation time step length.
+
         Returns:
             float: length of the simulation time step
         """
         return self.step_time
 
+    @dt.setter
+    def dt(self, value: float):
+        if float(value) <= 0:
+            raise ValueError(
+                f"step time must be positive, received {float(value)}"
+            )
+        self.step_time = float(value)
+        self.decay.fill_(math.exp(-self.step_time / self.time_constant))
+
+    @property
+    def arp(self) -> float:
+        r"""Length of the absolute refractory period, in milliseconds.
+
+        Args:
+            value (float): new absolute refractory period.
+
+        Returns:
+            float: length of the absolute refractory period.
+
+        Note:
+            When assigning to ``arp``, changes the current value of neuron refractory timers to zero.
+        """
+
+        return self.abs_refrac
+
     @property
     def voltage(self) -> torch.Tensor:
-        r"""Membrane voltages of the neurons.
+        r"""Membrane voltages of the neurons, in millivolts.
 
         Args:
             value (torch.Tensor): new membrane voltages
@@ -148,8 +180,24 @@ class LIF(Neuron):
         return self.voltages.data
 
     @voltage.setter
-    def voltage(self, value):
+    def voltage(self, value: torch.Tensor):
         self.voltages.data[:] = value
+
+    @property
+    def refrac(self) -> torch.Tensor:
+        r"""Remaining time in neurons refractory period, in milliseconds.
+
+        Args:
+            value (torch.Tensor): new membrane voltages.
+
+        Returns:
+            torch.Tensor: membrane voltages of the neurons.
+        """
+        return self.voltages.data
+
+    @refrac.setter
+    def refrac(self, value: torch.Tensor):
+        self.refrac.data[:] = value
 
 
 class ALIF(Neuron):
@@ -183,9 +231,10 @@ class ALIF(Neuron):
             :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
         reset_v (float): membrane voltage after an action potential is generated,
             :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.
-        eq_thresh_v (float): equilibrium of the firing threshold,
+        thresh_eq_v (float): equilibrium of the firing threshold,
             :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.
-        refrac_ts (int): number of time steps the absolute refractory period lasts.
+        abs_refrac (int): length of time the absolute refractory period lasts,
+            in :math:`\mathrm{ms}`.
         tc_membrane (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
         tc_adaptation (float | tuple[float]): time constant of exponential decay for threshold adaptations,
@@ -205,6 +254,7 @@ class ALIF(Neuron):
         For more details and references, visit
         :ref:`zoo/neurons-linear:Adaptive Leaky Integrate-and-Fire (ALIF)` in the zoo.
     """
+
     def __init__(
         self,
         shape: tuple[int, ...] | int,
@@ -212,15 +262,14 @@ class ALIF(Neuron):
         *,
         rest_v: float,
         reset_v: float,
-        eq_thresh_v: float,
-        refrac_ts: int,
+        thresh_eq_v: float,
+        abs_refrac: float,
         tc_membrane: float,
         tc_adaptation: float | tuple[float],
         spike_adapt_increment: float | tuple[float],
         resistance: float = 1.0,
         batch_size: int = 1,
     ):
-
         # call superclass constructor
         Neuron.__init__(
             self,
@@ -232,7 +281,7 @@ class ALIF(Neuron):
         # check that the step time is valid
         if float(step_time) <= 0:
             raise ValueError(
-                f"step time must be greater than zero, received {float(step_time)}"
+                f"step time must be positive, received {float(step_time)}"
             )
 
         # check that tc_adapt and incr_adapt are of equal length
@@ -261,7 +310,7 @@ class ALIF(Neuron):
 
         # register buffers
         self.register_buffer(
-            "decay_membrane", math.exp(-self.step_time / self.tc_membrane)
+            "decay_membrane", torch.tensor(math.exp(-self.step_time / self.tc_membrane))
         )
         self.register_buffer(
             "decay_adaptation",
@@ -270,8 +319,8 @@ class ALIF(Neuron):
         self.register_buffer("incr_adaptation", torch.tensor(spike_adapt_increment))
         self.register_buffer("rest_v", torch.tensor(float(rest_v)))
         self.register_buffer("reset_v", torch.tensor(float(reset_v)))
-        self.register_buffer("eq_thresh_v", torch.tensor(float(eq_thresh_v)))
-        self.register_buffer("refrac_ts", torch.tensor(int(refrac_ts)))
+        self.register_buffer("thresh_eq_v", torch.tensor(float(thresh_eq_v)))
+        self.register_buffer("abs_refrac", torch.tensor(float(abs_refrac)))
         self.register_buffer("resistance", torch.tensor(float(resistance)))
 
         # register parameter for adaptations
@@ -284,14 +333,13 @@ class ALIF(Neuron):
 
         # set values for parameters
         self.voltages.fill_(self.rest_v)
-        self.refracs.data = self.refrac_ts.data.to(dtype=self.refrac_ts.dtype)
         self.refracs.fill_(0)
 
         # voltage update function
         def voltfn(masked_inputs):
             v_in = self.resistance * masked_inputs
             v_delta = self.voltages.data - self.rest_v
-            return v_in + (v_delta - v_in) * self.decay + self.rest_v
+            return v_in + (v_delta - v_in) * self.decay_membrane + self.rest_v
 
         self._voltfn = voltfn
 
@@ -306,7 +354,9 @@ class ALIF(Neuron):
         if not keep_adaptations:
             self.adaptations.fill_(0)
 
-    def forward(self, inputs: torch.Tensor, adapt: bool | None = None, refrac_lock: bool = True) -> torch.Tensor:
+    def forward(
+        self, inputs: torch.Tensor, adapt: bool | None = None, refrac_lock: bool = True
+    ) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
         Args:
@@ -325,15 +375,16 @@ class ALIF(Neuron):
             training mode but not when it is in evaluation mode.
         """
         # use voltage thresholding function
-        spikes, voltages, refracs = nf._voltage_thresholding(
+        spikes, voltages, refracs = nf._voltage_thresholding_continuous(
             inputs=inputs,
             refracs=self.refracs,
             voltage_fn=self._voltfn,
+            step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=nf.apply_adaptive_thresholds(
-                self.eq_thresh_v, self.adaptations.data
+                self.thresh_eq_v, self.adaptations.data
             ),
-            refrac_ts=self.refrac_ts,
+            abs_refrac=self.abs_refrac,
             voltages=(self.voltages.data if refrac_lock else None),
         )
         self.voltages.data = voltages
@@ -357,10 +408,50 @@ class ALIF(Neuron):
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
+        Args:
+            value (float): new simulation time step length.
+
         Returns:
             float: length of the simulation time step
         """
         return self.step_time
+
+    @dt.setter
+    def dt(self, value: float):
+        if float(value) <= 0:
+            raise ValueError(
+                f"step time must be positive, received {float(value)}"
+            )
+        self.step_time = float(value)
+        self.decay_membrane.fill_(math.exp(-self.step_time / self.time_constant))
+        self.decay_adaptation[:] = torch.tensor(
+            [math.exp(-self.step_time / tc) for tc in self.tc_adaptation]
+        )
+
+    @property
+    def absrefrac(self) -> int:
+        r"""Length of the absolute refractory period, as an integer multiple of time steps.
+
+        Args:
+            value (int): new absolute refractory period.
+
+        Returns:
+            int: length of the absolute refractory period/
+
+        Note:
+            When assigning to ``absrefrac``, changes the current value of neuron refractory timers to zero.
+        """
+
+        return self.abs_refrac.item()
+
+    @absrefrac.setter
+    def absrefrac(self, value: int):
+        if int(value) < 0:
+            raise ValueError(
+                f"refractory period must be non-negative, received {int(value)}"
+            )
+        self.abs_refrac.fill_(value)
+        self.refracs.fill_(0)
 
     @property
     def voltage(self) -> torch.Tensor:
@@ -388,6 +479,7 @@ class GLIF1(Neuron):
         For more details and references, visit
         :ref:`zoo/neurons-linear:generalized leaky integrate-and-fire 1 (glif{sub}\`1\`)` in the zoo.
     """
+
     def __init__(
         self,
         shape: tuple[int, ...] | int,
@@ -396,7 +488,7 @@ class GLIF1(Neuron):
         rest_v: float,
         reset_v: float,
         thresh_v: float,
-        refrac_ts: int,
+        abs_refrac: int,
         time_constant: float,
         resistance: float = 1.0,
         batch_size: int = 1,
@@ -409,7 +501,7 @@ class GLIF1(Neuron):
             rest_v=rest_v,
             reset_v=reset_v,
             thresh_v=thresh_v,
-            refrac_ts=refrac_ts,
+            abs_refrac=abs_refrac,
             time_constant=time_constant,
             resistance=resistance,
             batch_size=batch_size,
@@ -437,10 +529,47 @@ class GLIF1(Neuron):
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
+        Args:
+            value (float): new simulation time step length.
+
         Returns:
             float: length of the simulation time step
         """
         return self.step_time
+
+    @dt.setter
+    def dt(self, value: float):
+        if float(value) <= 0:
+            raise ValueError(
+                f"step time must be positive, received {float(value)}"
+            )
+        self.step_time = float(value)
+        self.decay.fill_(math.exp(-self.step_time / self.time_constant))
+
+    @property
+    def absrefrac(self) -> int:
+        r"""Length of the absolute refractory period, as an integer multiple of time steps.
+
+        Args:
+            value (int): new absolute refractory period.
+
+        Returns:
+            int: length of the absolute refractory period/
+
+        Note:
+            When assigning to ``absrefrac``, changes the current value of neuron refractory timers to zero.
+        """
+
+        return self.abs_refrac.item()
+
+    @absrefrac.setter
+    def absrefrac(self, value: int):
+        if int(value) < 0:
+            raise ValueError(
+                f"refractory period must be non-negative, received {int(value)}"
+            )
+        self.abs_refrac.fill_(value)
+        self.refracs.fill_(0)
 
     @property
     def voltage(self) -> torch.Tensor:
@@ -488,9 +617,10 @@ class GLIF2(Neuron):
             :math:`b_v`, in :math:`\mathrm{mV}`.
         reset_v_mul (float): multiplicative parameter controlling reset voltage,
             :math:`m_v`, unitless.
-        eq_thresh_v (float): equilibrium of the firing threshold,
+        thresh_eq_v (float): equilibrium of the firing threshold,
             :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.
-        refrac_ts (int): number of time steps the absolute refractory period lasts.
+        abs_refrac (int): length of time the absolute refractory period lasts,
+            in :math:`\mathrm{ms}`.
         tc_membrane (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
         tc_adaptation (float | tuple[float]): time constant of exponential decay for threshold adaptations,
@@ -510,6 +640,7 @@ class GLIF2(Neuron):
         For more details and references, visit
         :ref:`zoo/neurons-linear:generalized leaky integrate-and-fire 2 (glif{sub}\`2\`)` in the zoo.
     """
+
     def __init__(
         self,
         shape: tuple[int, ...] | int,
@@ -518,8 +649,8 @@ class GLIF2(Neuron):
         rest_v: float,
         reset_v_add: float,
         reset_v_mul: float,
-        eq_thresh_v: float,
-        refrac_ts: int,
+        thresh_eq_v: float,
+        abs_refrac: int,
         tc_membrane: float,
         tc_adaptation: float | tuple[float],
         spike_adapt_increment: float | tuple[float],
@@ -537,7 +668,7 @@ class GLIF2(Neuron):
         # check that the step time is valid
         if float(step_time) <= 0:
             raise ValueError(
-                f"step time must be greater than zero, received {float(step_time)}"
+                f"step time must be positive, received {float(step_time)}"
             )
 
         # check that tc_adapt and incr_adapt are of equal length
@@ -566,7 +697,7 @@ class GLIF2(Neuron):
 
         # register buffers
         self.register_buffer(
-            "decay_membrane", math.exp(-self.step_time / self.tc_membrane)
+            "decay_membrane", torch.tensor(math.exp(-self.step_time / self.tc_membrane))
         )
         self.register_buffer(
             "decay_adaptation",
@@ -576,8 +707,8 @@ class GLIF2(Neuron):
         self.register_buffer("rest_v", torch.tensor(float(rest_v)))
         self.register_buffer("reset_v_add", torch.tensor(float(reset_v_add)))
         self.register_buffer("reset_v_mul", torch.tensor(float(reset_v_mul)))
-        self.register_buffer("eq_thresh_v", torch.tensor(float(eq_thresh_v)))
-        self.register_buffer("refrac_ts", torch.tensor(int(refrac_ts)))
+        self.register_buffer("thresh_eq_v", torch.tensor(float(thresh_eq_v)))
+        self.register_buffer("abs_refrac", torch.tensor(int(abs_refrac)))
         self.register_buffer("resistance", torch.tensor(float(resistance)))
 
         # register parameter for adaptations
@@ -590,7 +721,7 @@ class GLIF2(Neuron):
 
         # set values for parameters
         self.voltages.fill_(self.rest_v)
-        self.refracs.data = self.refrac_ts.data.to(dtype=self.refrac_ts.dtype)
+        self.refracs.data = self.abs_refrac.data.to(dtype=self.abs_refrac.dtype)
         self.refracs.fill_(0)
 
         # voltage update function
@@ -612,7 +743,9 @@ class GLIF2(Neuron):
         if not keep_adaptations:
             self.adaptations.fill_(0)
 
-    def forward(self, inputs: torch.Tensor, adapt: bool | None = None, refrac_lock: bool = True) -> torch.Tensor:
+    def forward(
+        self, inputs: torch.Tensor, adapt: bool | None = None, refrac_lock: bool = True
+    ) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
         Args:
@@ -631,7 +764,7 @@ class GLIF2(Neuron):
             training mode but not when it is in evaluation mode.
         """
         # use naturalistic voltage thresholding function
-        spikes, voltages, refracs = nf._voltage_thresholding_slope_intercept(
+        spikes, voltages, refracs = nf._voltage_thresholding_slope_intercept_discrete(
             inputs=inputs,
             refracs=self.refracs,
             voltage_fn=self._voltfn,
@@ -639,9 +772,9 @@ class GLIF2(Neuron):
             v_slope=self.reset_v_mul,
             v_intercept=self.reset_v_add,
             thresh_v=nf.apply_adaptive_thresholds(
-                self.eq_thresh_v, self.adaptations.data
+                self.thresh_eq_v, self.adaptations.data
             ),
-            refrac_ts=self.refrac_ts,
+            abs_refrac=self.abs_refrac,
             voltages=(self.voltages.data if refrac_lock else None),
         )
         self.voltages.data = voltages
@@ -665,10 +798,51 @@ class GLIF2(Neuron):
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
+        Args:
+            value (float): new simulation time step length.
+
         Returns:
             float: length of the simulation time step
         """
         return self.step_time
+
+    @dt.setter
+    def dt(self, value: float):
+        if float(value) <= 0:
+            raise ValueError(
+                f"step time must be positive,
+                  received {float(value)}"
+            )
+        self.step_time = float(value)
+        self.decay_membrane.fill_(math.exp(-self.step_time / self.time_constant))
+        self.decay_adaptation[:] = torch.tensor(
+            [math.exp(-self.step_time / tc) for tc in self.tc_adaptation]
+        )
+
+    @property
+    def absrefrac(self) -> int:
+        r"""Length of the absolute refractory period, as an integer multiple of time steps.
+
+        Args:
+            value (int): new absolute refractory period.
+
+        Returns:
+            int: length of the absolute refractory period/
+
+        Note:
+            When assigning to ``absrefrac``, changes the current value of neuron refractory timers to zero.
+        """
+
+        return self.abs_refrac.item()
+
+    @absrefrac.setter
+    def absrefrac(self, value: int):
+        if int(value) < 0:
+            raise ValueError(
+                f"refractory period must be non-negative, received {int(value)}"
+            )
+        self.abs_refrac.fill_(value)
+        self.refracs.fill_(0)
 
     @property
     def voltage(self) -> torch.Tensor:

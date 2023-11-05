@@ -16,7 +16,8 @@ class PassthroughSynapse(Synapse):
         step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
         delay (int, optional): maximum delay to support. Defaults to None.
-        interpolation ("nearest" | "previous", optional): interpolation mode for float-type selectors. Defaults to "nearest".
+        interpolation ("nearest" | "previous", optional): interpolation mode for float-type selectors.
+            Defaults to "nearest".
 
     Note:
         if ``delay`` is None, the internal data structure will be different, and :py:meth:`dcurrent`
@@ -85,7 +86,8 @@ class PassthroughSynapse(Synapse):
         r"""Returns a function with a common signature for synapse construction.
 
         Args:
-            interpolation ("nearest" | "previous", optional): interpolation mode for float-type selectors. Defaults to "nearest".
+            interpolation ("nearest" | "previous", optional): interpolation mode for float-type selectors.
+                Defaults to "nearest".
 
         Returns:
            SynapseConstructor: partial constructor for synapse.
@@ -104,6 +106,10 @@ class PassthroughSynapse(Synapse):
             float: length of the simulation time step
         """
         return self.step_time
+
+    @dt.setter
+    def dt(self, value: float):
+        self.step_time = float(value)
 
     @property
     def delay(self) -> int | None:
