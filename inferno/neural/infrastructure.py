@@ -1,5 +1,5 @@
 from __future__ import annotations
-from abc import ABC, abstractclassmethod, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod, abstractproperty
 from inferno import Module
 import math
 import torch
@@ -407,21 +407,23 @@ class Synapse(Group, ABC):
             on_batch_resize=self.clear if on_batch_resize is None else on_batch_resize,
         )
 
-    @abstractclassmethod
-    def partial(self, *args, **kwargs) -> SynapseConstructor:
+    @classmethod
+    @abstractmethod
+    def partialconstructor(self, *args, **kwargs) -> SynapseConstructor:
         r"""Returns a function with a common signature for synapse construction.
 
         Raises:
-            NotImplementedError: ``partial`` must be implemented by the subclass.
+            NotImplementedError: ``partialconstructor`` must be implemented by the subclass.
 
         Returns:
            SynapseConstructor: partial constructor for synapse.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the method `partial`"
+            f"Synapse `{type(self).__name__}` must implement the method `partialconstructor`"
         )
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
@@ -439,17 +441,19 @@ class Synapse(Group, ABC):
         )
 
     @dt.setter
+    @abstractmethod
     def dt(self, value: float):
         raise NotImplementedError(
             f"Synapse `{type(self).__name__}` must implement the setter for property `dt`"
         )
 
-    @abstractproperty
-    def delay(self) -> int | None:
-        r"""Maximum supported delay, as a multiple of simulation time steps.
+    @property
+    @abstractmethod
+    def delay(self) -> float | None:
+        r"""Maximum supported delay, in milliseconds.
 
         Returns:
-            int | None: maximum number of buffered time steps.
+            float | None: maximum delay, in milliseconds.
 
         Raises:
             NotImplementedError: ``delay`` must be implemented by the subclass.
@@ -458,7 +462,8 @@ class Synapse(Group, ABC):
             f"Synapse `{type(self).__name__}` must implement the getter for property `delay`"
         )
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def current(self) -> torch.Tensor:
         r"""Currents of the synapses.
 
@@ -479,12 +484,14 @@ class Synapse(Group, ABC):
         )
 
     @current.setter
+    @abstractmethod
     def current(self, value: torch.Tensor):
         raise NotImplementedError(
             f"Synapse `{type(self).__name__}` must implement the setter for property `current`"
         )
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def spike(self) -> torch.Tensor:
         r"""Spikes to the synapses.
 
@@ -502,7 +509,7 @@ class Synapse(Group, ABC):
         )
 
     @abstractmethod
-    def dcurrent(
+    def current_at(
         self, selector: torch.Tensor, out: torch.Tensor | None = None
     ) -> torch.Tensor:
         r"""Returns currents at times specified by delays.
@@ -527,7 +534,7 @@ class Synapse(Group, ABC):
         )
 
     @abstractmethod
-    def dspike(
+    def spike_at(
         self, selector: torch.Tensor, out: torch.Tensor | None = None
     ) -> torch.Tensor:
         r"""Returns spikes at times specified by delays.

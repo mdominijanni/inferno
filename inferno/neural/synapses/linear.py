@@ -1,3 +1,5 @@
+import inferno
+import math
 import torch
 import torch.nn as nn
 from typing import Literal
@@ -16,12 +18,16 @@ class PassthroughSynapse(Synapse):
         step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
         delay (int, optional): maximum delay to support. Defaults to None.
-        interpolation ("nearest" | "previous", optional): interpolation mode for float-type selectors.
+        interpolation ("nearest" | "previous", optional): interpolation mode for non-integer multiple selectors.
             Defaults to "nearest".
 
     Note:
-        if ``delay`` is None, the internal data structure will be different, and :py:meth:`dcurrent`
-        and :py:meth:`dspike` will be invalid.
+        If ``delay`` is None, the internal data structure will be different, and :py:meth:`current_at`
+        and :py:meth:`spike_at` will be invalid.
+
+    Note:
+        When ``interpolation`` is set to `"nearest"`, the closest record will be used, even if it is in the future.
+        When it is set to `"previous"` the most recent
 
     Raises:
         ValueError: ``step_time`` must be positive.
@@ -34,8 +40,8 @@ class PassthroughSynapse(Synapse):
         step_time: float,
         *,
         batch_size: int = 1,
-        delay: int | None = None,
-        interpolation: Literal["nearest", "previous"] = "nearest",
+        delay: float | None = None,
+        interpolation: Literal["nearest", "previous"] = "previous",
     ):
         # tuplize shape
         try:
@@ -46,7 +52,7 @@ class PassthroughSynapse(Synapse):
         # call superclass constructor
         if delay is not None:
             currents = nn.Parameter(
-                torch.zeros(batch_size, int(delay) + 1, *shape),
+                torch.zeros(batch_size, math.ceil(delay / step_time) + 1, *shape),
                 requires_grad=False,
             )
             Synapse.__init__(
@@ -63,7 +69,7 @@ class PassthroughSynapse(Synapse):
 
         # register extras
         self.register_extra("step_time", float(step_time))
-        self.register_extra("delay_max", None if delay is None else int(delay))
+        self.register_extra("delay_max", None if delay is None else float(delay))
 
         # non-persistant function
         match interpolation:
@@ -80,8 +86,8 @@ class PassthroughSynapse(Synapse):
         self.currents.fill_(0)
 
     @classmethod
-    def partial(
-        cls, interpolation: Literal["nearest", "previous"] = "nearest"
+    def partialconstructor(
+        cls, interpolation: Literal["nearest", "previous"] = "previous"
     ) -> SynapseConstructor:
         r"""Returns a function with a common signature for synapse construction.
 
@@ -109,14 +115,32 @@ class PassthroughSynapse(Synapse):
 
     @dt.setter
     def dt(self, value: float):
+        if self.delay is not None:
+            oldlen = math.ceil(self.delay / self.step_time) + 1
+            newlen = math.ceil(self.delay / value) + 1
+
+            if self.step_time > value:
+                data = inferno.zeros(
+                    self.currents.data, shape=(self.bsize, newlen, *self.shape)
+                )
+                data[:, (newlen - oldlen):] = self.currents.data  # fmt: skip
+                self.currents.data = data
+
+            if self.step_time < value:
+                data = inferno.zeros(
+                    self.currents.data, shape=(self.bsize, newlen, *self.shape)
+                )
+                data[:] = self.currents.data[:, (oldlen - newlen):]  # fmt: skip
+                self.currents.data = data
+
         self.step_time = float(value)
 
     @property
-    def delay(self) -> int | None:
+    def delay(self) -> float | None:
         r"""Maximum supported delay, as a multiple of simulation time steps.
 
         Returns:
-            int | None: maximum number of buffered time steps.
+            float | None: maximum number of buffered time steps.
         """
         return self.delay_max
 
@@ -151,65 +175,75 @@ class PassthroughSynapse(Synapse):
         """
         return self.currents.data != 0
 
-    def dcurrent(self, selector: torch.Tensor, out=None) -> torch.Tensor:
+    def current_at(
+        self,
+        selector: torch.Tensor,
+        overbound: float = 0.0 | None,
+        out: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         r"""Returns currents at times specified by delays.
 
         Args:
             selector (torch.Tensor): delays for selection of currents.
+            overbound (float | None, optional): value to replace values out of bounds, use values at
+                final record if none. Defaults to 0.0.
             out (torch.Tensor | None, optional): output tensor, if required. Defaults to None.
+
+        Shape:
+            ``selector``:
+
+                :math:`B \times D \times N_0 \times \cdots`, where :math:`B` is the number of batches,
+                :math:`D` is the number of delay selectors, and :math:`N_0 \times \cdots` is the underlying
+                shape.
+
+            ``out``:
+
+                Same shape as ``selector``.
+
+            **outputs**
+
+                Same shape as ``selector``.
 
         Returns:
             torch.Tensor: currents selected at the given times.
-
-        Note:
-            It is expected that if ``selector`` is of a floating point datatype, as assessed
-            by :py:func:`torch.Tensor.is_floating_point`, then it will be assumed to be in
-            :math:`ms`. If it is not, it will be assumed to be an integer multiple of step time.
         """
         if self.delay is None:
-            raise RuntimeError("`currents` is invalid with delayed synapse")
-        else:
-            if selector.is_floating_point():
-                return torch.gather(
-                    self.current,
-                    1,
-                    self.interp(selector / self.dt)
-                    .clamp(min=0, max=self.max_delay)
-                    .long(),
-                    out=out,
-                )
-            else:
-                return torch.gather(self.current, 1, selector.long(), out=out)
+            raise RuntimeError("`current_at` is invalid with delayed synapse")
 
-    def dspike(self, selector: torch.Tensor, out=None) -> torch.Tensor:
+        res = torch.gather(
+            self.current,
+            1,
+            self.interp(selector / self.dt).clamp(min=0, max=self.delay).long(),
+            out=out,
+        )
+        if overbound is not None:
+            res = res.where(self.interp(selector / self.dt) <= self.delay, overbound)
+
+    def spike_at(
+        self, selector: torch.Tensor, overbound: bool = False | None, out=None
+    ) -> torch.Tensor:
         r"""Returns spikes at times specified by delays.
 
         Args:
             selector (torch.Tensor): delays for selection of spikes.
+            overbound (bool | None, optional): value to replace values out of bounds, use values at
+                final record if none. Defaults to False.
             out (torch.Tensor | None, optional): output tensor, if required. Defaults to None.
 
         Returns:
             torch.Tensor: spikes selected at the given times.
-
-        Note:
-            It is expected that if ``selector`` is of a floating point datatype, as assessed
-            by :py:func:`torch.Tensor.is_floating_point`, then it will be assumed to be in
-            :math:`ms`. If it is not, it will be assumed to be an integer multiple of step time.
         """
         if self.delay is None:
             raise RuntimeError("`spikes` is invalid with delayed synapse")
-        else:
-            if selector.is_floating_point():
-                return torch.gather(
-                    self.spike,
-                    1,
-                    self.interp(selector / self.dt)
-                    .clamp(min=0, max=self.max_delay)
-                    .long(),
-                    out=out,
-                )
-            else:
-                return torch.gather(self.spike, 1, selector.long(), out=out)
+
+        res = torch.gather(
+            self.spike,
+            1,
+            self.interp(selector / self.dt).clamp(min=0, max=self.delay).long(),
+            out=out,
+        )
+        if overbound is not None:
+            res = res.where(self.interp(selector / self.dt) <= self.delay, overbound)
 
     def clear(self):
         r"""Resets synapses to their resting state."""
