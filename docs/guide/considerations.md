@@ -18,3 +18,10 @@ In some models, parameters may be included to adapt the behavior of a neuron bas
 This can be done either by reducing either the inputs or the outputs along the batch dimension. The former is more efficient but makes assumptions about how the adaptation is performed. When using Inferno's object-oriented interface, this is performed automatically. But in certain cases when using the functional interface it might be necessary to do this by hand.
 
 Detailed information on minibatch processing with SNNs can be found at [arXiv:1909.02549](https://arxiv.org/abs/1909.02549).
+
+
+## Discrete Time Simulations
+Because Inferno performs simulations over discrete units of time, there are relevant considerations for how the computations match with the theoretical continuous-time descriptions.
+
+### Refractory Periods
+Refractory periods are specified using some length of time, given in milliseconds. On each simulation step, the amount of time that has elapsed is subtracted from the remaining time in the neurons will be in their refractory period (inclusive minimum bound of zero). When equal to zero, a neuron is considered to be out of its refractory period. Therefore, if the refractory period is not evenly divisible by the length of the simualted step time, the practical length of the refractory period is "rounded up" to the next integer multiple of the step time.

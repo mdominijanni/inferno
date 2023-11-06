@@ -522,7 +522,8 @@
             <span class="n">on_batch_resize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clear</span> <span class="k">if</span> <span class="n">on_batch_resize</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">on_batch_resize</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="nd">@abstractproperty</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
@@ -540,43 +541,37 @@
         <span class="p">)</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `dt`&quot;</span>
         <span class="p">)</span>
 
-    <span class="nd">@abstractproperty</span>
-    <span class="k">def</span> <span class="nf">absrefrac</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the absolute refractory period, as an integer multiple of time steps.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (float): new absolute refractory period.</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Which neurons generated an action potential on the last simulation step.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            int: length of the absolute refractory period/</span>
+<span class="sd">            torch.Tensor: if the correspond neuron generated an action potential last step.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``absrefrac`` must be implemented by the subclass.</span>
+<span class="sd">            NotImplementedError: ``spike`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `absrefrac`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `spike`&quot;</span>
         <span class="p">)</span>
 
-    <span class="nd">@absrefrac</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">absrefrac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `absrefrac`&quot;</span>
-        <span class="p">)</span>
-
-    <span class="nd">@abstractproperty</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane voltages of the neurons.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane voltages of the neurons, in millivolts.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new membrane voltages</span>
+<span class="sd">            value (torch.Tensor): new membrane voltages.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: membrane voltages of the neurons.</span>
+<span class="sd">            torch.Tensor: current membrane voltages.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``voltage`` must be implemented by the subclass.</span>
@@ -589,6 +584,24 @@
     <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `voltage`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">refrac</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remaining refractory periods of the neurons, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new remaining refractory periods.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: current remaining refractory periods.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``refrac`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `refrac`&quot;</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="Neuron.clear">

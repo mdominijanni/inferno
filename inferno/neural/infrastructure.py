@@ -241,7 +241,8 @@ class Neuron(Group, ABC):
             on_batch_resize=self.clear if on_batch_resize is None else on_batch_resize,
         )
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
@@ -259,43 +260,37 @@ class Neuron(Group, ABC):
         )
 
     @dt.setter
+    @abstractmethod
     def dt(self, value: float):
         raise NotImplementedError(
             f"Neuron `{type(self).__name__}` must implement the setter for property `dt`"
         )
 
-    @abstractproperty
-    def absrefrac(self) -> float:
-        r"""Length of the absolute refractory period, as an integer multiple of time steps.
-
-        Args:
-            value (float): new absolute refractory period.
+    @property
+    @abstractmethod
+    def spike(self) -> torch.Tensor:
+        r"""Which neurons generated an action potential on the last simulation step.
 
         Returns:
-            int: length of the absolute refractory period/
+            torch.Tensor: if the correspond neuron generated an action potential last step.
 
         Raises:
-            NotImplementedError: ``absrefrac`` must be implemented by the subclass.
+            NotImplementedError: ``spike`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the getter for property `absrefrac`"
+            f"Neuron `{type(self).__name__}` must implement the getter for property `spike`"
         )
 
-    @absrefrac.setter
-    def absrefrac(self, value: int):
-        raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the setter for property `absrefrac`"
-        )
-
-    @abstractproperty
+    @property
+    @abstractmethod
     def voltage(self) -> torch.Tensor:
-        r"""Membrane voltages of the neurons.
+        r"""Membrane voltages of the neurons, in millivolts.
 
         Args:
-            value (torch.Tensor): new membrane voltages
+            value (torch.Tensor): new membrane voltages.
 
         Returns:
-            torch.Tensor: membrane voltages of the neurons.
+            torch.Tensor: current membrane voltages.
 
         Raises:
             NotImplementedError: ``voltage`` must be implemented by the subclass.
@@ -308,6 +303,24 @@ class Neuron(Group, ABC):
     def voltage(self, value: torch.Tensor):
         raise NotImplementedError(
             f"Neuron `{type(self).__name__}` must implement the setter for property `voltage`"
+        )
+
+    @property
+    @abstractmethod
+    def refrac(self) -> torch.Tensor:
+        r"""Remaining refractory periods of the neurons, in milliseconds.
+
+        Args:
+            value (torch.Tensor): new remaining refractory periods.
+
+        Returns:
+            torch.Tensor: current remaining refractory periods.
+
+        Raises:
+            NotImplementedError: ``refrac`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Neuron `{type(self).__name__}` must implement the getter for property `refrac`"
         )
 
     @abstractmethod

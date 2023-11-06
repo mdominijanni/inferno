@@ -1,5 +1,5 @@
-import torch
 import inferno
+import torch
 
 
 def adaptive_currents_linear(
