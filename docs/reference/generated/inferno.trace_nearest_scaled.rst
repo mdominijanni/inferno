@@ -1,6 +1,0 @@
-﻿inferno.trace\_nearest\_scaled
-==============================
-
-.. currentmodule:: inferno
-
-.. autofunction:: trace_nearest_scaled

@@ -1,6 +1,0 @@
-﻿inferno.neural.functional.adaptive\_currents\_linear
-====================================================
-
-.. currentmodule:: inferno.neural.functional
-
-.. autofunction:: adaptive_currents_linear

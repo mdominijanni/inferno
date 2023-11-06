@@ -1,6 +1,0 @@
-﻿inferno.simple\_exponential\_smoothing
-======================================
-
-.. currentmodule:: inferno
-
-.. autofunction:: simple_exponential_smoothing

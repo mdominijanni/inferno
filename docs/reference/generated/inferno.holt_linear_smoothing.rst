@@ -1,6 +1,0 @@
-﻿inferno.holt\_linear\_smoothing
-===============================
-
-.. currentmodule:: inferno
-
-.. autofunction:: holt_linear_smoothing
