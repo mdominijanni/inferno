@@ -1,8 +1,6 @@
 from .neurons import (  # noqa:F401
-    _voltage_thresholding_discrete,
-    _voltage_thresholding_continuous,
-    _voltage_thresholding_slope_intercept_discrete,
-    _voltage_thresholding_slope_intercept_continuous,
+    _voltage_thresholding,
+    _voltage_thresholding_slope_intercept,
     apply_adaptive_currents,
     apply_adaptive_thresholds,
 )

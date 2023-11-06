@@ -295,7 +295,7 @@
     <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">reset_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">thresh_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">refrac_ts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">refrac_t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">lock_voltage_on_refrac</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -318,7 +318,8 @@
 <span class="sd">            :math:`I(t)`, in :math:`\mathrm{nA}`.</span>
 <span class="sd">        voltages (torch.Tensor): voltage across the cell membrane,</span>
 <span class="sd">            :math:`V_m(t)`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refracs (torch.Tensor): number of remaining simulation steps to exit refractory periods.</span>
+<span class="sd">        refracs (torch.Tensor): amount of remaining time needed to exit refractory periods,</span>
+<span class="sd">            in :math:`\mathrm{ms}`.</span>
 <span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
 <span class="sd">            :math:`\Delta t`, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
@@ -327,7 +328,8 @@
 <span class="sd">            :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        thresh_v (float | torch.Tensor): membrane voltage at which action potentials are generated,</span>
 <span class="sd">            in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refrac_ts (int | torch.Tensor): number of time steps the absolute refractory period lasts.</span>
+<span class="sd">        refrac_t (float | torch.Tensor): number of time steps the absolute refractory period lasts,</span>
+<span class="sd">            in :math:`\mathrm{ms}`.</span>
 <span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay for membrane voltage,</span>
 <span class="sd">            :math:`\tau_m`, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        resistance (float | torch.Tensor, optional): resistance across the cell membrane,</span>
@@ -336,24 +338,26 @@
 <span class="sd">            refractory period. Defaults to True.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        tuple[torch.Tensor, torch.Tensor, torch.Tensor]: tuple containing output and updated state:</span>
+<span class="sd">        tuple[torch.Tensor, torch.Tensor, torch.Tensor]: tuple of output and updated state containing:</span>
 
-<span class="sd">            spikes: which neurons generated an action potential.</span>
-
-<span class="sd">            voltages: updated membrane voltages.</span>
-
-<span class="sd">            refracs: updated number of remaining simulation steps to exit refractory periods.</span>
+<span class="sd">            - spikes: which neurons generated an action potential.</span>
+<span class="sd">            - voltages: updated membrane potentials, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            - refracs: amount of remaining time needed to exit refractory periods,</span>
+<span class="sd">              in :math:`\mathrm{ms}`.</span>
 
 <span class="sd">    Shape:</span>
-<span class="sd">        ``inputs``, ``voltages``, and ``refracs``: :math:`[B] \times N_0 \times \cdots`,</span>
-<span class="sd">        where the batch dimension :math:`B` is optional.</span>
+<span class="sd">        ``inputs``, ``voltages``, and ``refracs``:</span>
+
+<span class="sd">            :math:`[B] \times N_0 \times \cdots`, where the batch dimension :math:`B` is optional.</span>
 
 <span class="sd">        **other inputs**:</span>
-<span class="sd">        `broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
-<span class="sd">        ``inputs``, ``voltages``, and ``refracs``.</span>
+
+<span class="sd">            `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
+<span class="sd">            ``inputs``, ``voltages``, and ``refracs``.</span>
 
 <span class="sd">        **outputs**:</span>
-<span class="sd">        same shape as ``inputs``, ``voltages``, and ``refracs``.</span>
+
+<span class="sd">            Same shape as ``inputs``, ``voltages``, and ``refracs``.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        For more details and references, visit</span>
@@ -371,9 +375,10 @@
         <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
         <span class="n">refracs</span><span class="o">=</span><span class="n">refracs</span><span class="p">,</span>
         <span class="n">voltage_fn</span><span class="o">=</span><span class="n">volt_fn</span><span class="p">,</span>
+        <span class="n">step_time</span><span class="o">=</span><span class="n">step_time</span><span class="p">,</span>
         <span class="n">reset_v</span><span class="o">=</span><span class="n">reset_v</span><span class="p">,</span>
         <span class="n">thresh_v</span><span class="o">=</span><span class="n">thresh_v</span><span class="p">,</span>
-        <span class="n">refrac_ts</span><span class="o">=</span><span class="n">refrac_ts</span><span class="p">,</span>
+        <span class="n">refrac_t</span><span class="o">=</span><span class="n">refrac_t</span><span class="p">,</span>
         <span class="n">voltages</span><span class="o">=</span><span class="p">(</span><span class="n">voltages</span> <span class="k">if</span> <span class="n">lock_voltage_on_refrac</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
     <span class="p">)</span>
 
@@ -393,7 +398,7 @@
     <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">reset_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">thresh_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">refrac_ts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">refrac_t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">lock_voltage_on_refrac</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -414,7 +419,8 @@
 <span class="sd">            :math:`I(t)`, in :math:`\mathrm{nA}`.</span>
 <span class="sd">        voltages (torch.Tensor): voltage across the cell membrane,</span>
 <span class="sd">            :math:`V_m(t)`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refracs (torch.Tensor): number of remaining simulation steps to exit refractory periods.</span>
+<span class="sd">        refracs (torch.Tensor): amount of remaining time needed to exit refractory periods,</span>
+<span class="sd">            in :math:`\mathrm{ms}`.</span>
 <span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
 <span class="sd">            :math:`\Delta t`, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
@@ -423,7 +429,8 @@
 <span class="sd">            :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        thresh_v (float | torch.Tensor): membrane voltage at which action potentials are generated,</span>
 <span class="sd">            in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refrac_ts (int | torch.Tensor): number of time steps the absolute refractory period lasts.</span>
+<span class="sd">        refrac_t (float | torch.Tensor): number of time steps the absolute refractory period lasts,</span>
+<span class="sd">            in :math:`\mathrm{ms}`.</span>
 <span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay for membrane voltage,</span>
 <span class="sd">            :math:`\tau_m`, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        resistance (float | torch.Tensor, optional): resistance across the cell membrane,</span>
@@ -434,11 +441,10 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple[torch.Tensor, torch.Tensor, torch.Tensor]: tuple containing output and updated state:</span>
 
-<span class="sd">            spikes: which neurons generated an action potential.</span>
-
-<span class="sd">            voltages: updated membrane voltages.</span>
-
-<span class="sd">            refracs: updated number of remaining simulation steps to exit refractory periods.</span>
+<span class="sd">            - spikes: which neurons generated an action potential.</span>
+<span class="sd">            - voltages: updated membrane potentials, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            - refracs: amount of remaining time needed to exit refractory periods,</span>
+<span class="sd">              in :math:`\mathrm{ms}`.</span>
 
 <span class="sd">    Shape:</span>
 <span class="sd">        ``inputs``, ``voltages``, and ``refracs``: :math:`[B] \times N_0 \times \cdots`,</span>
@@ -455,11 +461,10 @@
 <span class="sd">        For more details and references, visit</span>
 <span class="sd">        :ref:`zoo/neurons-linear:Leaky Integrate-and-Fire (LIF)` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># compute decay for tensors or primitives</span>
-    <span class="n">decay</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
 
     <span class="c1"># update voltages and determine which neurons have spiked</span>
     <span class="k">def</span> <span class="nf">volt_fn</span><span class="p">(</span><span class="n">masked_inputs</span><span class="p">):</span>
+        <span class="n">decay</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
         <span class="n">v_in</span> <span class="o">=</span> <span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span>
         <span class="n">v_delta</span> <span class="o">=</span> <span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span>
         <span class="k">return</span> <span class="n">v_in</span> <span class="o">+</span> <span class="p">(</span><span class="n">v_delta</span> <span class="o">-</span> <span class="n">v_in</span><span class="p">)</span> <span class="o">*</span> <span class="n">decay</span> <span class="o">+</span> <span class="n">rest_v</span>
@@ -468,9 +473,10 @@
         <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
         <span class="n">refracs</span><span class="o">=</span><span class="n">refracs</span><span class="p">,</span>
         <span class="n">voltage_fn</span><span class="o">=</span><span class="n">volt_fn</span><span class="p">,</span>
+        <span class="n">step_time</span><span class="o">=</span><span class="n">step_time</span><span class="p">,</span>
         <span class="n">reset_v</span><span class="o">=</span><span class="n">reset_v</span><span class="p">,</span>
         <span class="n">thresh_v</span><span class="o">=</span><span class="n">thresh_v</span><span class="p">,</span>
-        <span class="n">refrac_ts</span><span class="o">=</span><span class="n">refrac_ts</span><span class="p">,</span>
+        <span class="n">refrac_t</span><span class="o">=</span><span class="n">refrac_t</span><span class="p">,</span>
         <span class="n">voltages</span><span class="o">=</span><span class="p">(</span><span class="n">voltages</span> <span class="k">if</span> <span class="n">lock_voltage_on_refrac</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
     <span class="p">)</span>
 
@@ -490,15 +496,15 @@
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">reset_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">eq_thresh_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">refrac_ts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">thresh_eq_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">refrac_t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">tc_membrane</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">tc_adaptation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">spike_adapt_increment</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">lock_voltage_on_refrac</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">lock_adaptation_on_refrac</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">update_adaptations</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">update_adaptations</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of adaptive leaky integrate-and-fire (ALIF) dynamics.</span>
 
@@ -527,7 +533,8 @@
 <span class="sd">            :math:`I(t)`, in :math:`\mathrm{nA}`.</span>
 <span class="sd">        voltages (torch.Tensor): voltage across the cell membrane,</span>
 <span class="sd">            :math:`V_m(t)`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refracs (torch.Tensor): number of remaining simulation steps to exit refractory periods.</span>
+<span class="sd">        refracs (torch.Tensor): amount of remaining time needed to exit refractory periods,</span>
+<span class="sd">            in :math:`\mathrm{ms}`.</span>
 <span class="sd">        adaptations (torch.Tensor): last adaptations applied to membrane voltage threshold,</span>
 <span class="sd">            :math:`\theta_k`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
@@ -536,9 +543,10 @@
 <span class="sd">            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        reset_v (float | torch.Tensor): membrane voltage after an action potential is generated,</span>
 <span class="sd">            :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        eq_thresh_v (float | torch.Tensor): equilibrium of the firing threshold,</span>
+<span class="sd">        thresh_eq_v (float | torch.Tensor): equilibrium of the firing threshold,</span>
 <span class="sd">            :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refrac_ts (int | torch.Tensor): number of time steps the absolute refractory period lasts.</span>
+<span class="sd">        refrac_t (float | torch.Tensor): length of time the absolute refractory period lasts,</span>
+<span class="sd">            in :math:`\mathrm{ms}`.</span>
 <span class="sd">        tc_membrane (float | torch.Tensor): time constant of exponential decay for membrane voltage,</span>
 <span class="sd">            :math:`\tau_m`, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        tc_adaptation (float | torch.Tensor): time constant of exponential decay for threshold adaptations,</span>
@@ -554,35 +562,43 @@
 <span class="sd">        update_adaptations (bool, optional): if adaptations should be updated. Defaults to True.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: tuple containing output and updated state:</span>
+<span class="sd">        tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: tuple of output and updated state containing:</span>
 
-<span class="sd">            spikes: which neurons generated an action potential.</span>
-
-<span class="sd">            voltages: updated membrane voltage.</span>
-
-<span class="sd">            refracs: updated number of remaining simulation steps to exit refractory periods.</span>
-
-<span class="sd">            adaptations: updated adaptations for membrane voltage thresholds.</span>
+<span class="sd">            - spikes: which neurons generated an action potential.</span>
+<span class="sd">            - voltages: updated membrane potentials, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            - refracs: amount of remaining time needed to exit refractory periods,</span>
+<span class="sd">              in :math:`\mathrm{ms}`.</span>
+<span class="sd">            - adaptations: updated adaptations for membrane voltage thresholds,</span>
+<span class="sd">              in :math:`\mathrm{mV}`.</span>
 
 <span class="sd">    Shape:</span>
-<span class="sd">        ``inputs``, ``voltages``, and ``refracs``: :math:`[B] \times N_0 \times \cdots`,</span>
-<span class="sd">        where the batch dimension :math:`B` is optional.</span>
+<span class="sd">        ``inputs``, ``voltages``, and ``refracs``:</span>
 
-<span class="sd">        ``adaptations``: :math:`N_0 \times \cdots \times k`,</span>
-<span class="sd">        each slice along the last dimension should be shaped like the neuron group to which the adaptation</span>
-<span class="sd">        is being applied, where :math:`k` is the number of parameter tuples.</span>
+<span class="sd">            :math:`[B] \times N_0 \times \cdots`, where the batch dimension :math:`B` is optional.</span>
+
+<span class="sd">        ``adaptations``:</span>
+
+<span class="sd">            :math:`N_0 \times \cdots \times k`,</span>
+<span class="sd">            each slice along the last dimension should be shaped like the neuron group to which the adaptation</span>
+<span class="sd">            is being applied, where :math:`k` is the number of parameter tuples.</span>
 
 <span class="sd">        ``step_time``, ``rest_v``, ``reset_v``, ``thresh_v``, ``refrac_ts``, ``tc_membrane``, ``resistance``:</span>
-<span class="sd">        `broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
-<span class="sd">        ``inputs``, ``voltages``, ``refracs``.</span>
+
+<span class="sd">            `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
+<span class="sd">            ``inputs``, ``voltages``, ``refracs``.</span>
 
 <span class="sd">        ``tc_adaptation`` and ``spike_adapt_increment``:</span>
-<span class="sd">        `broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with ``adaptations``.</span>
 
-<span class="sd">        **outputs (except adaptations)**: same shape as ``inputs``, ``voltages``, and ``refracs``.</span>
+<span class="sd">            `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with ``adaptations``.</span>
 
-<span class="sd">        **outputs (adaptations)**: :math:`[B] \times N_0 \times \cdots \times k`,</span>
-<span class="sd">        where the batch dimension :math:`B` is dependent on inputs.</span>
+<span class="sd">        **outputs (except adaptations)**:</span>
+
+<span class="sd">            Same as ``inputs``, ``voltages``, and ``refracs``.</span>
+
+<span class="sd">        **outputs (adaptations)**:</span>
+
+<span class="sd">            :math:`[B] \times N_0 \times \cdots \times k`,</span>
+<span class="sd">            where the batch dimension :math:`B` is dependent on inputs.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        This function doesn&#39;t automatically reduce resultant adaptations along the batch dimension,</span>
@@ -603,8 +619,8 @@
         <span class="n">step_time</span><span class="o">=</span><span class="n">step_time</span><span class="p">,</span>
         <span class="n">rest_v</span><span class="o">=</span><span class="n">rest_v</span><span class="p">,</span>
         <span class="n">reset_v</span><span class="o">=</span><span class="n">reset_v</span><span class="p">,</span>
-        <span class="n">thresh_v</span><span class="o">=</span><span class="n">apply_adaptive_thresholds</span><span class="p">(</span><span class="n">eq_thresh_v</span><span class="p">,</span> <span class="n">adaptations</span><span class="p">),</span>
-        <span class="n">refrac_ts</span><span class="o">=</span><span class="n">refrac_ts</span><span class="p">,</span>
+        <span class="n">thresh_v</span><span class="o">=</span><span class="n">apply_adaptive_thresholds</span><span class="p">(</span><span class="n">thresh_eq_v</span><span class="p">,</span> <span class="n">adaptations</span><span class="p">),</span>
+        <span class="n">refrac_t</span><span class="o">=</span><span class="n">refrac_t</span><span class="p">,</span>
         <span class="n">time_constant</span><span class="o">=</span><span class="n">tc_membrane</span><span class="p">,</span>
         <span class="n">resistance</span><span class="o">=</span><span class="n">resistance</span><span class="p">,</span>
         <span class="n">lock_voltage_on_refrac</span><span class="o">=</span><span class="n">lock_voltage_on_refrac</span><span class="p">,</span>
@@ -615,9 +631,11 @@
         <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptive_thresholds_linear_spike</span><span class="p">(</span>
             <span class="n">adaptations</span><span class="o">=</span><span class="n">adaptations</span><span class="p">,</span>
             <span class="n">postsyn_spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
-            <span class="n">step_time</span><span class="o">=</span><span class="n">step_time</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step_time</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span>
-            <span class="k">else</span> <span class="n">step_time</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="p">(</span>
+                <span class="n">step_time</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step_time</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span>
+                <span class="k">else</span> <span class="n">step_time</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">),</span>
             <span class="n">time_constant</span><span class="o">=</span><span class="n">tc_adaptation</span><span class="p">,</span>
             <span class="n">spike_increment</span><span class="o">=</span><span class="n">spike_adapt_increment</span><span class="p">,</span>
             <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="n">refracs</span> <span class="k">if</span> <span class="n">lock_adaptation_on_refrac</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
@@ -651,8 +669,8 @@
     <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">reset_v_add</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">reset_v_mul</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">eq_thresh_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">refrac_ts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">thresh_eq_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">refrac_t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">tc_membrane</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">tc_adaptation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">spike_adapt_increment</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -684,7 +702,8 @@
 <span class="sd">            :math:`I(t)`, in :math:`\mathrm{nA}`.</span>
 <span class="sd">        voltages (torch.Tensor): voltage across the cell membrane,</span>
 <span class="sd">            :math:`V_m(t)`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refracs (torch.Tensor): number of remaining simulation steps to exit refractory periods.</span>
+<span class="sd">        refracs (torch.Tensor): amount of remaining time needed to exit refractory periods,</span>
+<span class="sd">            in :math:`\mathrm{ms}`.</span>
 <span class="sd">        adaptations (torch.Tensor): last adaptations applied to membrane voltage threshold,</span>
 <span class="sd">            :math:`\theta_k`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
@@ -695,9 +714,10 @@
 <span class="sd">            :math:`b_v`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        reset_v_mul (float | torch.Tensor): multiplicative parameter controlling reset voltage,</span>
 <span class="sd">            :math:`m_v`, unitless.</span>
-<span class="sd">        eq_thresh_v (float | torch.Tensor): equilibrium of the firing threshold,</span>
+<span class="sd">        thresh_eq_v (float | torch.Tensor): equilibrium of the firing threshold,</span>
 <span class="sd">            :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refrac_ts (int | torch.Tensor): number of time steps the absolute refractory period lasts.</span>
+<span class="sd">        refrac_t (float | torch.Tensor): length of time the absolute refractory period lasts,</span>
+<span class="sd">            in :math:`\mathrm{ms}`.</span>
 <span class="sd">        tc_membrane (float | torch.Tensor): time constant of exponential decay for membrane voltage,</span>
 <span class="sd">            :math:`\tau_m`, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        tc_adaptation (float | torch.Tensor): time constant of exponential decay for threshold adaptations,</span>
@@ -768,25 +788,29 @@
         <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
         <span class="n">refracs</span><span class="o">=</span><span class="n">refracs</span><span class="p">,</span>
         <span class="n">voltage_fn</span><span class="o">=</span><span class="n">volt_fn</span><span class="p">,</span>
+        <span class="n">step_time</span><span class="o">=</span><span class="n">step_time</span><span class="p">,</span>
         <span class="n">rest_v</span><span class="o">=</span><span class="n">rest_v</span><span class="p">,</span>
         <span class="n">v_slope</span><span class="o">=</span><span class="n">reset_v_mul</span><span class="p">,</span>
         <span class="n">v_intercept</span><span class="o">=</span><span class="n">reset_v_add</span><span class="p">,</span>
-        <span class="n">thresh_v</span><span class="o">=</span><span class="n">apply_adaptive_thresholds</span><span class="p">(</span><span class="n">eq_thresh_v</span><span class="p">,</span> <span class="n">adaptations</span><span class="p">),</span>
-        <span class="n">refrac_ts</span><span class="o">=</span><span class="n">refrac_ts</span><span class="p">,</span>
+        <span class="n">thresh_v</span><span class="o">=</span><span class="n">apply_adaptive_thresholds</span><span class="p">(</span><span class="n">thresh_eq_v</span><span class="p">,</span> <span class="n">adaptations</span><span class="p">),</span>
+        <span class="n">refrac_t</span><span class="o">=</span><span class="n">refrac_t</span><span class="p">,</span>
         <span class="n">voltages</span><span class="o">=</span><span class="p">(</span><span class="n">voltages</span> <span class="k">if</span> <span class="n">lock_voltage_on_refrac</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="c1"># update adaptative thresholds based on spiking</span>
-    <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptive_thresholds_linear_spike</span><span class="p">(</span>
-        <span class="n">adaptations</span><span class="o">=</span><span class="n">adaptations</span><span class="p">,</span>
-        <span class="n">postsyn_spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
-        <span class="n">step_time</span><span class="o">=</span><span class="n">step_time</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step_time</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span>
-        <span class="k">else</span> <span class="n">step_time</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
-        <span class="n">time_constant</span><span class="o">=</span><span class="n">tc_adaptation</span><span class="p">,</span>
-        <span class="n">spike_increment</span><span class="o">=</span><span class="n">spike_adapt_increment</span><span class="p">,</span>
-        <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="n">refracs</span> <span class="k">if</span> <span class="n">lock_adaptation_on_refrac</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">update_adaptations</span><span class="p">:</span>
+        <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptive_thresholds_linear_spike</span><span class="p">(</span>
+            <span class="n">adaptations</span><span class="o">=</span><span class="n">adaptations</span><span class="p">,</span>
+            <span class="n">postsyn_spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="p">(</span>
+                <span class="n">step_time</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step_time</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span>
+                <span class="k">else</span> <span class="n">step_time</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">time_constant</span><span class="o">=</span><span class="n">tc_adaptation</span><span class="p">,</span>
+            <span class="n">spike_increment</span><span class="o">=</span><span class="n">spike_adapt_increment</span><span class="p">,</span>
+            <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="n">refracs</span> <span class="k">if</span> <span class="n">lock_adaptation_on_refrac</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">)</span>
 
     <span class="c1"># return generated spikes and updated state</span>
     <span class="k">return</span> <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span><span class="p">,</span> <span class="n">adaptations</span></div>

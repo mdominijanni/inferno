@@ -302,8 +302,8 @@
 <span class="math notranslate nohighlight">\(\tau_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
 <li><p><strong>spike_increment</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – amount by which the adaptive threshold is increased after a spike,
 <span class="math notranslate nohighlight">\(a_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
-<li><p><strong>refracs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – remaining time steps until the neuron exits its refractory period,
-used for masking changes to adaptation when provided. Defaults to None.</p></li>
+<li><p><strong>refracs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – amount of remaining time needed to exit refractory periods,
+used for masking changes to adaptation when provided, in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -314,15 +314,25 @@ used for masking changes to adaptation when provided. Defaults to None.</p></li>
 </dd>
 </dl>
 <dl>
-<dt>Shape:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">adaptations</span></code>: <span class="math notranslate nohighlight">\(N_0 \times \cdots \times k\)</span>,
+<dt>Shape:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">adaptations</span></code>:</p>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\(N_0 \times \cdots \times k\)</span>,
 each slice along the last dimension should be shaped like the neuron group to which the adaptation
 is being applied, where <span class="math notranslate nohighlight">\(k\)</span> is the number of parameter tuples.</p>
-<p><code class="docutils literal notranslate"><span class="pre">postsyn_spikes</span></code> and <code class="docutils literal notranslate"><span class="pre">refracs</span></code>: <span class="math notranslate nohighlight">\([B] \times N_0 \times \cdots\)</span>,
-where the batch dimension <span class="math notranslate nohighlight">\(B\)</span> is optional.</p>
-<p><code class="docutils literal notranslate"><span class="pre">step_time</span></code>, <code class="docutils literal notranslate"><span class="pre">time_constant</span></code>, and <code class="docutils literal notranslate"><span class="pre">spike_increment</span></code>:
-<a class="reference external" href="https://pytorch.org/docs/stable/notes/broadcasting.html">broadcastable</a> with <code class="docutils literal notranslate"><span class="pre">adaptations</span></code>.</p>
-<p><strong>output</strong>: <span class="math notranslate nohighlight">\([B] \times N_0 \times \cdots \times k\)</span>,
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">postsyn_spikes</span></code> and <code class="docutils literal notranslate"><span class="pre">refracs</span></code>:</p>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\([B] \times N_0 \times \cdots\)</span>, where the batch dimension <span class="math notranslate nohighlight">\(B\)</span> is optional.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">step_time</span></code>, <code class="docutils literal notranslate"><span class="pre">time_constant</span></code>, and <code class="docutils literal notranslate"><span class="pre">spike_increment</span></code>:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://pytorch.org/docs/stable/notes/broadcasting.html">Broadcastable</a> with <code class="docutils literal notranslate"><span class="pre">adaptations</span></code>.</p>
+</div></blockquote>
+<p><strong>output</strong>:</p>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\([B] \times N_0 \times \cdots \times k\)</span>,
 where the batch dimension <span class="math notranslate nohighlight">\(B\)</span> is dependent on inputs.</p>
+</div></blockquote>
 </dd>
 </dl>
 <div class="admonition note">

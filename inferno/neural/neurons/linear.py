@@ -810,8 +810,7 @@ class GLIF2(Neuron):
     def dt(self, value: float):
         if float(value) <= 0:
             raise ValueError(
-                f"step time must be positive,
-                  received {float(value)}"
+                f"step time must be positive, received {float(value)}"
             )
         self.step_time = float(value)
         self.decay_membrane.fill_(math.exp(-self.step_time / self.time_constant))

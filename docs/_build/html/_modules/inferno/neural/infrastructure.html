@@ -291,14 +291,17 @@
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group being represented, excluding batch size.</span>
 <span class="sd">        batch_size (int): initial batch size.</span>
-<span class="sd">        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None): batch size sensitive module parameters.</span>
+<span class="sd">        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None): batch size sensitive</span>
+<span class="sd">            module parameters.</span>
 <span class="sd">        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None): batch size sensitive module buffers.</span>
 <span class="sd">        on_batch_resize (Callable[[], None]): function to call when after the batch size is altered.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: ``batch_size`` must be a positive integer.</span>
-<span class="sd">        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.</span>
-<span class="sd">        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.</span>
+<span class="sd">        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have</span>
+<span class="sd">            ``batch_size`` sized :math:`0^\text{th}` dimension.</span>
+<span class="sd">        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized</span>
+<span class="sd">            :math:`0^\text{th}` dimension.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        If a pre-defined :py:class:`~torch.Tensor` or :py:class:`~torch.nn.parameter.Parameter` is specified, the</span>
@@ -399,6 +402,15 @@
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of elements in the group, excluding batch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: number of elements in the group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the group.</span>
 
@@ -456,16 +468,7 @@
             <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">newbuffer</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">on_batch_resize</span><span class="p">()</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of elements in the group, excluding batch.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            int: number of elements in the group.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_batch_resize</span><span class="p">()</span></div>
 
 
 
@@ -477,14 +480,19 @@
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group being represented, excluding batch size.</span>
 <span class="sd">        batch_size (int): initial batch size.</span>
-<span class="sd">        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None, optional): batch size sensitive module parameters. Defaults to None.</span>
-<span class="sd">        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None, optional): batch size sensitive module buffers. Defaults to None.</span>
-<span class="sd">        on_batch_resize (Callable[[], None] | None, optional): function to call when after the batch size is altered. Defaults to None.</span>
+<span class="sd">        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None, optional): batch size</span>
+<span class="sd">            sensitive module parameters. Defaults to None.</span>
+<span class="sd">        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None, optional): batch size sensitive module</span>
+<span class="sd">            buffers. Defaults to None.</span>
+<span class="sd">        on_batch_resize (Callable[[], None] | None, optional): function to call when after the batch size is altered.</span>
+<span class="sd">            Defaults to None.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: ``batch_size`` must be a positive integer.</span>
-<span class="sd">        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.</span>
-<span class="sd">        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.</span>
+<span class="sd">        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have</span>
+<span class="sd">            ``batch_size`` sized :math:`0^\text{th}` dimension.</span>
+<span class="sd">        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized</span>
+<span class="sd">            :math:`0^\text{th}` dimension.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        If a pre-defined :py:class:`~torch.Tensor` or :py:class:`~torch.nn.parameter.Parameter` is specified, the</span>
@@ -518,14 +526,46 @@
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new simulation time step length.</span>
+
 <span class="sd">        Returns:</span>
-<span class="sd">            float: length of the simulation time step</span>
+<span class="sd">            float: length of the simulation time step.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``dt`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `dt`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `dt`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@abstractproperty</span>
+    <span class="k">def</span> <span class="nf">absrefrac</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the absolute refractory period, as an integer multiple of time steps.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new absolute refractory period.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: length of the absolute refractory period/</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``absrefrac`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `absrefrac`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@absrefrac</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">absrefrac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `absrefrac`&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@abstractproperty</span>
@@ -602,14 +642,19 @@
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group being represented, excluding batch size.</span>
 <span class="sd">        batch_size (int): initial batch size.</span>
-<span class="sd">        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None, optional): batch size sensitive module parameters. Defaults to None.</span>
-<span class="sd">        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None, optional): batch size sensitive module buffers. Defaults to None.</span>
-<span class="sd">        on_batch_resize (Callable[[], None] | None, optional): function to call when after the batch size is altered. Defaults to None.</span>
+<span class="sd">        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None, optional): batch size</span>
+<span class="sd">            sensitive module parameters. Defaults to None.</span>
+<span class="sd">        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None, optional): batch size sensitive module</span>
+<span class="sd">            buffers. Defaults to None.</span>
+<span class="sd">        on_batch_resize (Callable[[], None] | None, optional): function to call when after the batch size is altered.</span>
+<span class="sd">            Defaults to None.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: ``batch_size`` must be a positive integer.</span>
-<span class="sd">        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.</span>
-<span class="sd">        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized :math:`0^\text{th}` dimension.</span>
+<span class="sd">        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have</span>
+<span class="sd">            ``batch_size`` sized :math:`0^\text{th}` dimension.</span>
+<span class="sd">        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized</span>
+<span class="sd">            :math:`0^\text{th}` dimension.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        If a pre-defined :py:class:`~torch.Tensor` or :py:class:`~torch.nn.parameter.Parameter` is specified, the</span>
@@ -660,6 +705,9 @@
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new simulation time step length.</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            float: length of the simulation time step.</span>
 
@@ -668,6 +716,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `dt`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `dt`&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@abstractproperty</span>
@@ -824,6 +878,14 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">synapse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Synapse</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Synapse registered with this connection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (Synapse): replacement synapse for this connection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           Synapse: registered synapse.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapses</span>
 
     <span class="nd">@synapse</span><span class="o">.</span><span class="n">setter</span>
@@ -832,6 +894,21 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the connection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (int): new batch size.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: current batch size.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: ``value`` must be a positive integer.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This calls the property :py:attr:`Synapse.bsize`, assuming the connection</span>
+<span class="sd">            itself does not use any batch size dependant tensors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">bsize</span>
 
     <span class="nd">@bsize</span><span class="o">.</span><span class="n">setter</span>
@@ -840,6 +917,14 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: length of the simulation time step.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            This calls the property :py:attr:`Synapse.dt`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">dt</span>
 
     <span class="nd">@property</span>
@@ -877,7 +962,9 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">biases</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">biases</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cannot set `bias` on a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1"> without trainable biases&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;cannot set `bias` on a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> without trainable biases&quot;</span>
+            <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -889,7 +976,9 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delays</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cannot set `delay` on a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1"> without trainable delays&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;cannot set `delay` on a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> without trainable delays&quot;</span>
+            <span class="p">)</span>
 
 <div class="viewcode-block" id="Connection.clear">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.clear">[docs]</a>

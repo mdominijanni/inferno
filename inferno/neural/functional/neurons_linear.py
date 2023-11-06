@@ -1,8 +1,8 @@
 import torch
 import inferno
 from . import (
-    _voltage_thresholding_discrete,
-    _voltage_thresholding_slope_intercept_discrete,
+    _voltage_thresholding,
+    _voltage_thresholding_slope_intercept,
     apply_adaptive_thresholds,
 )
 from . import adaptive_thresholds_linear_spike
@@ -17,7 +17,7 @@ def leaky_integrate_and_fire_euler(
     rest_v: float | torch.Tensor,
     reset_v: float | torch.Tensor,
     thresh_v: float | torch.Tensor,
-    refrac_ts: int | torch.Tensor,
+    refrac_t: float | torch.Tensor,
     time_constant: float | torch.Tensor,
     resistance: float | torch.Tensor = 1.0,
     lock_voltage_on_refrac: bool = True,
@@ -40,7 +40,8 @@ def leaky_integrate_and_fire_euler(
             :math:`I(t)`, in :math:`\mathrm{nA}`.
         voltages (torch.Tensor): voltage across the cell membrane,
             :math:`V_m(t)`, in :math:`\mathrm{mV}`.
-        refracs (torch.Tensor): number of remaining simulation steps to exit refractory periods.
+        refracs (torch.Tensor): amount of remaining time needed to exit refractory periods,
+            in :math:`\mathrm{ms}`.
         step_time (float | torch.Tensor): length of a simulation time step,
             :math:`\Delta t`, in :math:`\mathrm{ms}`.
         rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
@@ -49,7 +50,8 @@ def leaky_integrate_and_fire_euler(
             :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.
         thresh_v (float | torch.Tensor): membrane voltage at which action potentials are generated,
             in :math:`\mathrm{mV}`.
-        refrac_ts (int | torch.Tensor): number of time steps the absolute refractory period lasts.
+        refrac_t (float | torch.Tensor): number of time steps the absolute refractory period lasts,
+            in :math:`\mathrm{ms}`.
         time_constant (float | torch.Tensor): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
         resistance (float | torch.Tensor, optional): resistance across the cell membrane,
@@ -58,24 +60,26 @@ def leaky_integrate_and_fire_euler(
             refractory period. Defaults to True.
 
     Returns:
-        tuple[torch.Tensor, torch.Tensor, torch.Tensor]: tuple containing output and updated state:
+        tuple[torch.Tensor, torch.Tensor, torch.Tensor]: tuple of output and updated state containing:
 
-            spikes: which neurons generated an action potential.
-
-            voltages: updated membrane voltages.
-
-            refracs: updated number of remaining simulation steps to exit refractory periods.
+            - spikes: which neurons generated an action potential.
+            - voltages: updated membrane potentials, in :math:`\mathrm{mV}`.
+            - refracs: amount of remaining time needed to exit refractory periods,
+              in :math:`\mathrm{ms}`.
 
     Shape:
-        ``inputs``, ``voltages``, and ``refracs``: :math:`[B] \times N_0 \times \cdots`,
-        where the batch dimension :math:`B` is optional.
+        ``inputs``, ``voltages``, and ``refracs``:
+
+            :math:`[B] \times N_0 \times \cdots`, where the batch dimension :math:`B` is optional.
 
         **other inputs**:
-        `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
-        ``inputs``, ``voltages``, and ``refracs``.
+
+            `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
+            ``inputs``, ``voltages``, and ``refracs``.
 
         **outputs**:
-        same shape as ``inputs``, ``voltages``, and ``refracs``.
+
+            Same shape as ``inputs``, ``voltages``, and ``refracs``.
 
     Note:
         For more details and references, visit
@@ -89,13 +93,14 @@ def leaky_integrate_and_fire_euler(
         v_delta = voltages - rest_v
         return decay * (-v_delta + v_in) + voltages
 
-    spikes, voltages, refracs = _voltage_thresholding_discrete(
+    spikes, voltages, refracs = _voltage_thresholding(
         inputs=inputs,
         refracs=refracs,
         voltage_fn=volt_fn,
+        step_time=step_time,
         reset_v=reset_v,
         thresh_v=thresh_v,
-        refrac_ts=refrac_ts,
+        refrac_t=refrac_t,
         voltages=(voltages if lock_voltage_on_refrac else None),
     )
 
@@ -112,7 +117,7 @@ def leaky_integrate_and_fire(
     rest_v: float | torch.Tensor,
     reset_v: float | torch.Tensor,
     thresh_v: float | torch.Tensor,
-    refrac_ts: int | torch.Tensor,
+    refrac_t: float | torch.Tensor,
     time_constant: float | torch.Tensor,
     resistance: float | torch.Tensor = 1.0,
     lock_voltage_on_refrac: bool = True,
@@ -133,7 +138,8 @@ def leaky_integrate_and_fire(
             :math:`I(t)`, in :math:`\mathrm{nA}`.
         voltages (torch.Tensor): voltage across the cell membrane,
             :math:`V_m(t)`, in :math:`\mathrm{mV}`.
-        refracs (torch.Tensor): number of remaining simulation steps to exit refractory periods.
+        refracs (torch.Tensor): amount of remaining time needed to exit refractory periods,
+            in :math:`\mathrm{ms}`.
         step_time (float | torch.Tensor): length of a simulation time step,
             :math:`\Delta t`, in :math:`\mathrm{ms}`.
         rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
@@ -142,7 +148,8 @@ def leaky_integrate_and_fire(
             :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.
         thresh_v (float | torch.Tensor): membrane voltage at which action potentials are generated,
             in :math:`\mathrm{mV}`.
-        refrac_ts (int | torch.Tensor): number of time steps the absolute refractory period lasts.
+        refrac_t (float | torch.Tensor): number of time steps the absolute refractory period lasts,
+            in :math:`\mathrm{ms}`.
         time_constant (float | torch.Tensor): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
         resistance (float | torch.Tensor, optional): resistance across the cell membrane,
@@ -153,11 +160,10 @@ def leaky_integrate_and_fire(
     Returns:
         tuple[torch.Tensor, torch.Tensor, torch.Tensor]: tuple containing output and updated state:
 
-            spikes: which neurons generated an action potential.
-
-            voltages: updated membrane voltages.
-
-            refracs: updated number of remaining simulation steps to exit refractory periods.
+            - spikes: which neurons generated an action potential.
+            - voltages: updated membrane potentials, in :math:`\mathrm{mV}`.
+            - refracs: amount of remaining time needed to exit refractory periods,
+              in :math:`\mathrm{ms}`.
 
     Shape:
         ``inputs``, ``voltages``, and ``refracs``: :math:`[B] \times N_0 \times \cdots`,
@@ -174,22 +180,22 @@ def leaky_integrate_and_fire(
         For more details and references, visit
         :ref:`zoo/neurons-linear:Leaky Integrate-and-Fire (LIF)` in the zoo.
     """
-    # compute decay for tensors or primitives
-    decay = inferno.exp(-step_time / time_constant)
 
     # update voltages and determine which neurons have spiked
     def volt_fn(masked_inputs):
+        decay = inferno.exp(-step_time / time_constant)
         v_in = resistance * masked_inputs
         v_delta = voltages - rest_v
         return v_in + (v_delta - v_in) * decay + rest_v
 
-    spikes, voltages, refracs = _voltage_thresholding_discrete(
+    spikes, voltages, refracs = _voltage_thresholding(
         inputs=inputs,
         refracs=refracs,
         voltage_fn=volt_fn,
+        step_time=step_time,
         reset_v=reset_v,
         thresh_v=thresh_v,
-        refrac_ts=refrac_ts,
+        refrac_t=refrac_t,
         voltages=(voltages if lock_voltage_on_refrac else None),
     )
 
@@ -206,15 +212,15 @@ def adaptive_leaky_integrate_and_fire(
     step_time: float | torch.Tensor,
     rest_v: float | torch.Tensor,
     reset_v: float | torch.Tensor,
-    eq_thresh_v: float | torch.Tensor,
-    refrac_ts: int | torch.Tensor,
+    thresh_eq_v: float | torch.Tensor,
+    refrac_t: float | torch.Tensor,
     tc_membrane: float | torch.Tensor,
     tc_adaptation: float | torch.Tensor,
     spike_adapt_increment: float | torch.Tensor,
     resistance: float | torch.Tensor = 1.0,
     lock_voltage_on_refrac: bool = True,
     lock_adaptation_on_refrac: bool = True,
-    update_adaptations: bool = True
+    update_adaptations: bool = True,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     r"""Runs a simulation step of adaptive leaky integrate-and-fire (ALIF) dynamics.
 
@@ -243,7 +249,8 @@ def adaptive_leaky_integrate_and_fire(
             :math:`I(t)`, in :math:`\mathrm{nA}`.
         voltages (torch.Tensor): voltage across the cell membrane,
             :math:`V_m(t)`, in :math:`\mathrm{mV}`.
-        refracs (torch.Tensor): number of remaining simulation steps to exit refractory periods.
+        refracs (torch.Tensor): amount of remaining time needed to exit refractory periods,
+            in :math:`\mathrm{ms}`.
         adaptations (torch.Tensor): last adaptations applied to membrane voltage threshold,
             :math:`\theta_k`, in :math:`\mathrm{mV}`.
         step_time (float | torch.Tensor): length of a simulation time step,
@@ -252,9 +259,10 @@ def adaptive_leaky_integrate_and_fire(
             :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
         reset_v (float | torch.Tensor): membrane voltage after an action potential is generated,
             :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.
-        eq_thresh_v (float | torch.Tensor): equilibrium of the firing threshold,
+        thresh_eq_v (float | torch.Tensor): equilibrium of the firing threshold,
             :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.
-        refrac_ts (int | torch.Tensor): number of time steps the absolute refractory period lasts.
+        refrac_t (float | torch.Tensor): length of time the absolute refractory period lasts,
+            in :math:`\mathrm{ms}`.
         tc_membrane (float | torch.Tensor): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
         tc_adaptation (float | torch.Tensor): time constant of exponential decay for threshold adaptations,
@@ -270,35 +278,43 @@ def adaptive_leaky_integrate_and_fire(
         update_adaptations (bool, optional): if adaptations should be updated. Defaults to True.
 
     Returns:
-        tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: tuple containing output and updated state:
+        tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: tuple of output and updated state containing:
 
-            spikes: which neurons generated an action potential.
-
-            voltages: updated membrane voltage.
-
-            refracs: updated number of remaining simulation steps to exit refractory periods.
-
-            adaptations: updated adaptations for membrane voltage thresholds.
+            - spikes: which neurons generated an action potential.
+            - voltages: updated membrane potentials, in :math:`\mathrm{mV}`.
+            - refracs: amount of remaining time needed to exit refractory periods,
+              in :math:`\mathrm{ms}`.
+            - adaptations: updated adaptations for membrane voltage thresholds,
+              in :math:`\mathrm{mV}`.
 
     Shape:
-        ``inputs``, ``voltages``, and ``refracs``: :math:`[B] \times N_0 \times \cdots`,
-        where the batch dimension :math:`B` is optional.
+        ``inputs``, ``voltages``, and ``refracs``:
 
-        ``adaptations``: :math:`N_0 \times \cdots \times k`,
-        each slice along the last dimension should be shaped like the neuron group to which the adaptation
-        is being applied, where :math:`k` is the number of parameter tuples.
+            :math:`[B] \times N_0 \times \cdots`, where the batch dimension :math:`B` is optional.
+
+        ``adaptations``:
+
+            :math:`N_0 \times \cdots \times k`,
+            each slice along the last dimension should be shaped like the neuron group to which the adaptation
+            is being applied, where :math:`k` is the number of parameter tuples.
 
         ``step_time``, ``rest_v``, ``reset_v``, ``thresh_v``, ``refrac_ts``, ``tc_membrane``, ``resistance``:
-        `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
-        ``inputs``, ``voltages``, ``refracs``.
+
+            `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
+            ``inputs``, ``voltages``, ``refracs``.
 
         ``tc_adaptation`` and ``spike_adapt_increment``:
-        `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with ``adaptations``.
 
-        **outputs (except adaptations)**: same shape as ``inputs``, ``voltages``, and ``refracs``.
+            `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with ``adaptations``.
 
-        **outputs (adaptations)**: :math:`[B] \times N_0 \times \cdots \times k`,
-        where the batch dimension :math:`B` is dependent on inputs.
+        **outputs (except adaptations)**:
+
+            Same as ``inputs``, ``voltages``, and ``refracs``.
+
+        **outputs (adaptations)**:
+
+            :math:`[B] \times N_0 \times \cdots \times k`,
+            where the batch dimension :math:`B` is dependent on inputs.
 
     Note:
         This function doesn't automatically reduce resultant adaptations along the batch dimension,
@@ -319,8 +335,8 @@ def adaptive_leaky_integrate_and_fire(
         step_time=step_time,
         rest_v=rest_v,
         reset_v=reset_v,
-        thresh_v=apply_adaptive_thresholds(eq_thresh_v, adaptations),
-        refrac_ts=refrac_ts,
+        thresh_v=apply_adaptive_thresholds(thresh_eq_v, adaptations),
+        refrac_t=refrac_t,
         time_constant=tc_membrane,
         resistance=resistance,
         lock_voltage_on_refrac=lock_voltage_on_refrac,
@@ -331,9 +347,11 @@ def adaptive_leaky_integrate_and_fire(
         adaptations = adaptive_thresholds_linear_spike(
             adaptations=adaptations,
             postsyn_spikes=spikes,
-            step_time=step_time
-            if not isinstance(step_time, torch.Tensor)
-            else step_time.unsqueeze(-1),
+            step_time=(
+                step_time
+                if not isinstance(step_time, torch.Tensor)
+                else step_time.unsqueeze(-1)
+            ),
             time_constant=tc_adaptation,
             spike_increment=spike_adapt_increment,
             refracs=(refracs if lock_adaptation_on_refrac else None),
@@ -364,8 +382,8 @@ def generalized_leaky_integrate_and_fire_2(
     rest_v: float | torch.Tensor,
     reset_v_add: float | torch.Tensor,
     reset_v_mul: float | torch.Tensor,
-    eq_thresh_v: float | torch.Tensor,
-    refrac_ts: int | torch.Tensor,
+    thresh_eq_v: float | torch.Tensor,
+    refrac_t: float | torch.Tensor,
     tc_membrane: float | torch.Tensor,
     tc_adaptation: float | torch.Tensor,
     spike_adapt_increment: float | torch.Tensor,
@@ -397,7 +415,8 @@ def generalized_leaky_integrate_and_fire_2(
             :math:`I(t)`, in :math:`\mathrm{nA}`.
         voltages (torch.Tensor): voltage across the cell membrane,
             :math:`V_m(t)`, in :math:`\mathrm{mV}`.
-        refracs (torch.Tensor): number of remaining simulation steps to exit refractory periods.
+        refracs (torch.Tensor): amount of remaining time needed to exit refractory periods,
+            in :math:`\mathrm{ms}`.
         adaptations (torch.Tensor): last adaptations applied to membrane voltage threshold,
             :math:`\theta_k`, in :math:`\mathrm{mV}`.
         step_time (float | torch.Tensor): length of a simulation time step,
@@ -408,9 +427,10 @@ def generalized_leaky_integrate_and_fire_2(
             :math:`b_v`, in :math:`\mathrm{mV}`.
         reset_v_mul (float | torch.Tensor): multiplicative parameter controlling reset voltage,
             :math:`m_v`, unitless.
-        eq_thresh_v (float | torch.Tensor): equilibrium of the firing threshold,
+        thresh_eq_v (float | torch.Tensor): equilibrium of the firing threshold,
             :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.
-        refrac_ts (int | torch.Tensor): number of time steps the absolute refractory period lasts.
+        refrac_t (float | torch.Tensor): length of time the absolute refractory period lasts,
+            in :math:`\mathrm{ms}`.
         tc_membrane (float | torch.Tensor): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
         tc_adaptation (float | torch.Tensor): time constant of exponential decay for threshold adaptations,
@@ -477,29 +497,33 @@ def generalized_leaky_integrate_and_fire_2(
         v_delta = voltages - rest_v
         return v_in + (v_delta - v_in) * decay + rest_v
 
-    spikes, voltages, refracs = _voltage_thresholding_slope_intercept_discrete(
+    spikes, voltages, refracs = _voltage_thresholding_slope_intercept(
         inputs=inputs,
         refracs=refracs,
         voltage_fn=volt_fn,
+        step_time=step_time,
         rest_v=rest_v,
         v_slope=reset_v_mul,
         v_intercept=reset_v_add,
-        thresh_v=apply_adaptive_thresholds(eq_thresh_v, adaptations),
-        refrac_ts=refrac_ts,
+        thresh_v=apply_adaptive_thresholds(thresh_eq_v, adaptations),
+        refrac_t=refrac_t,
         voltages=(voltages if lock_voltage_on_refrac else None),
     )
 
     # update adaptative thresholds based on spiking
-    adaptations = adaptive_thresholds_linear_spike(
-        adaptations=adaptations,
-        postsyn_spikes=spikes,
-        step_time=step_time
-        if not isinstance(step_time, torch.Tensor)
-        else step_time.unsqueeze(-1),
-        time_constant=tc_adaptation,
-        spike_increment=spike_adapt_increment,
-        refracs=(refracs if lock_adaptation_on_refrac else None),
-    )
+    if update_adaptations:
+        adaptations = adaptive_thresholds_linear_spike(
+            adaptations=adaptations,
+            postsyn_spikes=spikes,
+            step_time=(
+                step_time
+                if not isinstance(step_time, torch.Tensor)
+                else step_time.unsqueeze(-1)
+            ),
+            time_constant=tc_adaptation,
+            spike_increment=spike_adapt_increment,
+            refracs=(refracs if lock_adaptation_on_refrac else None),
+        )
 
     # return generated spikes and updated state
     return spikes, voltages, refracs, adaptations

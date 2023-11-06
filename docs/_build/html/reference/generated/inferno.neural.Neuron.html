@@ -287,16 +287,21 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>...</em><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – shape of the group being represented, excluding batch size.</p></li>
 <li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – initial batch size.</p></li>
-<li><p><strong>batched_parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>Parameter</em></a><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>...</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – batch size sensitive module parameters. Defaults to None.</p></li>
-<li><p><strong>batched_buffers</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>Tensor</em></a><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>...</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – batch size sensitive module buffers. Defaults to None.</p></li>
-<li><p><strong>on_batch_resize</strong> (<em>Callable</em><em>[</em><em>[</em><em>]</em><em>, </em><em>None</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – function to call when after the batch size is altered. Defaults to None.</p></li>
+<li><p><strong>batched_parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>Parameter</em></a><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>...</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – batch size
+sensitive module parameters. Defaults to None.</p></li>
+<li><p><strong>batched_buffers</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>Tensor</em></a><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>...</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – batch size sensitive module
+buffers. Defaults to None.</p></li>
+<li><p><strong>on_batch_resize</strong> (<em>Callable</em><em>[</em><em>[</em><em>]</em><em>, </em><em>None</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – function to call when after the batch size is altered.
+Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> must be a positive integer.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – all <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code></a> objects of <code class="docutils literal notranslate"><span class="pre">batched_parameters</span></code> must have <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> sized <span class="math notranslate nohighlight">\(0^\text{th}\)</span> dimension.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – all <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a> objects of <code class="docutils literal notranslate"><span class="pre">batched_buffers</span></code> must have <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> sized <span class="math notranslate nohighlight">\(0^\text{th}\)</span> dimension.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – all <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code></a> objects of <code class="docutils literal notranslate"><span class="pre">batched_parameters</span></code> must have
+    <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> sized <span class="math notranslate nohighlight">\(0^\text{th}\)</span> dimension.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – all <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a> objects of <code class="docutils literal notranslate"><span class="pre">batched_buffers</span></code> must have <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> sized
+    <span class="math notranslate nohighlight">\(0^\text{th}\)</span> dimension.</p></li>
 </ul>
 </dd>
 </dl>
@@ -311,6 +316,26 @@ will be set to False.</p>
 <p class="admonition-title">Note</p>
 <p>If no <code class="docutils literal notranslate"><span class="pre">on_batch_resize</span></code> is specified, then <a class="reference internal" href="#inferno.neural.Neuron.clear" title="inferno.neural.Neuron.clear"><code class="xref py py-meth docutils literal notranslate"><span class="pre">clear()</span></code></a> will be called without arguments.</p>
 </div>
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Neuron.absrefrac">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">absrefrac</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><a class="headerlink" href="#inferno.neural.Neuron.absrefrac" title="Link to this definition">#</a></dt>
+<dd><p>Length of the absolute refractory period, as an integer multiple of time steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – new absolute refractory period.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>length of the absolute refractory period/</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">absrefrac</span></code> must be implemented by the subclass.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Neuron.clear">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/infrastructure.html#Neuron.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Neuron.clear" title="Link to this definition">#</a></dt>
@@ -327,14 +352,17 @@ will be set to False.</p>
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><a class="headerlink" href="#inferno.neural.Neuron.dt" title="Link to this definition">#</a></dt>
 <dd><p>Length of the simulation time step, in milliseconds.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>length of the simulation time step</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – new simulation time step length.</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>length of the simulation time step.</p>
 </dd>
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">dt</span></code> must be implemented by the subclass.</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">dt</span></code> must be implemented by the subclass.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -420,6 +448,7 @@ will be set to False.</p>
             <ul>
 <li><a class="reference internal" href="#">Neuron</a><ul>
 <li><a class="reference internal" href="#inferno.neural.Neuron"><code class="docutils literal notranslate"><span class="pre">Neuron</span></code></a><ul>
+<li><a class="reference internal" href="#inferno.neural.Neuron.absrefrac"><code class="docutils literal notranslate"><span class="pre">Neuron.absrefrac</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Neuron.clear"><code class="docutils literal notranslate"><span class="pre">Neuron.clear()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Neuron.dt"><code class="docutils literal notranslate"><span class="pre">Neuron.dt</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Neuron.voltage"><code class="docutils literal notranslate"><span class="pre">Neuron.voltage</span></code></a></li>

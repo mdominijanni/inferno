@@ -7,8 +7,8 @@ def adaptive_currents_linear(
     voltages: torch.Tensor,
     postsyn_spikes: torch.Tensor,
     *,
-    rest_v: float | torch.Tensor,
     step_time: float | torch.Tensor,
+    rest_v: float | torch.Tensor,
     time_constant: float | torch.Tensor,
     voltage_coupling: float | torch.Tensor,
     spike_increment: float | torch.Tensor,
@@ -33,38 +33,45 @@ def adaptive_currents_linear(
         voltages (torch.Tensor): membrane potential difference,
             :math:`V_m(t)`, in :math:`\mathrm{mV}`.
         postsyn_spikes (torch.Tensor): postsynaptic spikes, unitless.
-        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
-            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
         step_time (float | torch.Tensor): length of a simulation time step,
             :math:`\Delta t`, in :math:`\mathrm{ms}`.
+        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
+            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
         time_constant (float | torch.Tensor): time constant of exponential decay,
             :math:`\tau_k`, in :math:`\mathrm{ms}`.
         voltage_coupling (float | torch.Tensor): strength of coupling to membrane voltage,
             :math:`a_k`, in :math:`\mathrm{\mu S}`.
         spike_increment (float | torch.Tensor): amount by which the adaptive current is increased after a spike,
             :math:`b_k`, in :math:`\mathrm{nA}`.
-        refracs (torch.Tensor | None): remaining time steps until the neuron exits its refractory period,
-            used for masking changes to adaptation when provided. Defaults to None.
+        refracs (torch.Tensor | None): amount of remaining time needed to exit refractory periods,
+            used for masking changes to adaptation when provided, in :math:`\mathrm{ms}`. Defaults to None.
 
     Returns:
         torch.Tensor: updated adaptations for input currents.
 
     Shape:
-        ``adaptations``: :math:`N_0 \times \cdots \times k`,
-        each slice along the last dimension should be shaped like the neuron group to which the adaptation
-        is being applied, where :math:`k` is the number of parameter tuples.
+        ``adaptations``:
 
-        ``voltages``, ``postsyn_spikes``, and ``refracs``: :math:`[B] \times N_0 \times \cdots`,
-        where the batch dimension :math:`B` is optional.
+            :math:`N_0 \times \cdots \times k`,
+            each slice along the last dimension should be shaped like the neuron group to which the adaptation
+            is being applied, where :math:`k` is the number of parameter tuples.
 
-        ``rest_v``: `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
-        ``postsyn_spikes`` and ``voltages``.
+        ``voltages``, ``postsyn_spikes``, and ``refracs``:
+
+            :math:`[B] \times N_0 \times \cdots`, where the batch dimension :math:`B` is optional.
+
+        ``rest_v``:
+
+            `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
+            ``postsyn_spikes`` and ``voltages``.
 
         ``step_time``, ``voltage_coupling``, ``spike_increment``, and ``time_constant``:
-        `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with ``adaptations``.
 
-        **output**: :math:`[B] \times N_0 \times \cdots \times k`,
-        where the batch dimension :math:`B` is dependent on inputs.
+            `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with ``adaptations``.
+
+        **output**:
+
+            :math:`[B] \times N_0 \times \cdots \times k`, where the batch dimension :math:`B` is dependent on inputs.
 
     Note:
         This function doesn't automatically reduce along the batch dimension, this should generally be done
@@ -97,8 +104,8 @@ def adaptive_thresholds_linear_voltage(
     adaptations: torch.Tensor,
     voltages: torch.Tensor,
     *,
-    rest_v: float | torch.Tensor,
     step_time: float | torch.Tensor,
+    rest_v: float | torch.Tensor,
     adaptation_rate: float | torch.Tensor,
     rebound_rate: float | torch.Tensor,
     adaptation_reset_min: float | torch.Tensor | None = None,
@@ -123,10 +130,10 @@ def adaptive_thresholds_linear_voltage(
             :math:`\theta_k`, in :math:`\mathrm{mV}`.
         voltages (torch.Tensor): membrane potential difference,
             :math:`V_m(t)`, in :math:`\mathrm{mV}`.
-        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
-            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
         step_time (float | torch.Tensor): length of a simulation time step,
             :math:`\Delta t`, in :math:`\mathrm{ms}`.
+        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
+            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
         adaptation_rate (float | torch.Tensor): rate constant of exponential decay for membrane voltage term,
             :math:`a_k`, in :math:`\mathrm{ms^{-1}}`.
         rebound_rate (float | torch.Tensor): rate constant of exponential decay for threshold voltage term,
@@ -134,28 +141,36 @@ def adaptive_thresholds_linear_voltage(
         adaptation_reset_min (float | torch.Tensor | None, optional): minimum threshold adaptation permitted after
             a postsynaptic potential. Defaults to None.
         postsyn_spikes (torch.Tensor | None, optional): postsynaptic spikes, unitless. Defaults to None.
-        refracs (torch.Tensor | None): remaining time steps until the neuron exits its refractory period,
-            used for masking changes to adaptation when provided. Defaults to None.
+        refracs (torch.Tensor | None): amount of remaining time needed to exit refractory periods,
+            used for masking changes to adaptation when provided, in :math:`\mathrm{ms}`. Defaults to None.
 
     Returns:
         torch.Tensor: updated adaptations for membrane voltage thresholds.
 
     Shape:
-        ``adaptations``: :math:`N_0 \times \cdots \times k`,
-        each slice along the last dimension should be shaped like the neuron group to which the adaptation
-        is being applied, where :math:`k` is the number of parameter tuples.
+        ``adaptations``:
 
-        ``voltages``, ``postsyn_spikes``, and ``refracs``: :math:`[B] \times N_0 \times \cdots`,
-        where the batch dimension :math:`B` is optional.
+            :math:`N_0 \times \cdots \times k`,
+            each slice along the last dimension should be shaped like the neuron group to which the adaptation
+            is being applied, where :math:`k` is the number of parameter tuples.
 
-        ``rest_v``: `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
-        ``voltages`` and ``postsyn_spikes``.
+        ``voltages``, ``postsyn_spikes``, and ``refracs``:
+
+            :math:`[B] \times N_0 \times \cdots`, where the batch dimension :math:`B` is optional.
+
+        ``rest_v``:
+
+            Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
+            ``voltages`` and ``postsyn_spikes``.
 
         ``step_time``, ``adaptation_rate``, ``rebound_rate``, and ``adaptation_reset_min``:
-        `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with ``adaptations``.
 
-        **output**: :math:`[B] \times N_0 \times \cdots \times k`,
-        where the batch dimension :math:`B` is dependent on inputs.
+            `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with ``adaptations``.
+
+        **output**:
+
+            :math:`[B] \times N_0 \times \cdots \times k`,
+            where the batch dimension :math:`B` is dependent on inputs.
 
     Note:
         If either ``adaptation_reset_min`` or ``postsyn_spikes`` is None, then the adaptation limiting
@@ -222,25 +237,31 @@ def adaptive_thresholds_linear_spike(
             :math:`\tau_k`, in :math:`\mathrm{ms}`.
         spike_increment (float | torch.Tensor): amount by which the adaptive threshold is increased after a spike,
             :math:`a_k`, in :math:`\mathrm{mV}`.
-        refracs (torch.Tensor | None): remaining time steps until the neuron exits its refractory period,
-            used for masking changes to adaptation when provided. Defaults to None.
+        refracs (torch.Tensor | None): amount of remaining time needed to exit refractory periods,
+            used for masking changes to adaptation when provided, in :math:`\mathrm{ms}`. Defaults to None.
 
     Returns:
         torch.Tensor: updated adaptations for membrane voltage thresholds.
 
     Shape:
-        ``adaptations``: :math:`N_0 \times \cdots \times k`,
-        each slice along the last dimension should be shaped like the neuron group to which the adaptation
-        is being applied, where :math:`k` is the number of parameter tuples.
+        ``adaptations``:
 
-        ``postsyn_spikes`` and ``refracs``: :math:`[B] \times N_0 \times \cdots`,
-        where the batch dimension :math:`B` is optional.
+            :math:`N_0 \times \cdots \times k`,
+            each slice along the last dimension should be shaped like the neuron group to which the adaptation
+            is being applied, where :math:`k` is the number of parameter tuples.
+
+        ``postsyn_spikes`` and ``refracs``:
+
+            :math:`[B] \times N_0 \times \cdots`, where the batch dimension :math:`B` is optional.
 
         ``step_time``, ``time_constant``, and ``spike_increment``:
-        `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with ``adaptations``.
 
-        **output**: :math:`[B] \times N_0 \times \cdots \times k`,
-        where the batch dimension :math:`B` is dependent on inputs.
+            `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with ``adaptations``.
+
+        **output**:
+
+            :math:`[B] \times N_0 \times \cdots \times k`,
+            where the batch dimension :math:`B` is dependent on inputs.
 
     Note:
         This function doesn't automatically reduce along the batch dimension, this should generally be done
@@ -274,7 +295,7 @@ def _adaptive_thresholds_linear_spike(
     spike_increment: torch.Tensor,
     refracs: torch.Tensor | None = None
 ) -> torch.Tensor:
-    r"""Faster internal update adaptive thresholds based on postsynaptic spikes.
+    r"""Faster update adaptive thresholds based on postsynaptic spikes, used internally.
 
     .. math::
         \theta_k(t + \Delta t) = \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
@@ -292,25 +313,32 @@ def _adaptive_thresholds_linear_spike(
             :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
         spike_increment (torch.Tensor): amount by which the adaptive threshold is increased after a spike,
             :math:`a_k`, in :math:`\mathrm{mV}`.
-        refracs (torch.Tensor | None): remaining time steps until the neuron exits its refractory period,
-            used for masking changes to adaptation when provided. Defaults to None.
+        refracs (torch.Tensor | None): amount of remaining time needed to exit refractory periods,
+            used for masking changes to adaptation when provided, in :math:`\mathrm{ms}`. Defaults to None.
 
     Returns:
         torch.Tensor: updated adaptations for membrane voltage thresholds.
 
     Shape:
-        ``adaptations``: :math:`N_0 \times \cdots \times k`,
-        each slice along the last dimension should be shaped like the neuron group to which the adaptation
-        is being applied, where :math:`k` is the number of parameter tuples.
+        ``adaptations``:
 
-        ``postsyn_spikes`` and ``refracs``: :math:`[B] \times N_0 \times \cdots`,
-        where the batch dimension :math:`B` is optional.
+            :math:`N_0 \times \cdots \times k`,
+            each slice along the last dimension should be shaped like the neuron group to which the adaptation
+            is being applied, where :math:`k` is the number of parameter tuples.
+
+        ``postsyn_spikes`` and ``refracs``:
+
+            :math:`[B] \times N_0 \times \cdots`,
+            where the batch dimension :math:`B` is optional.
 
         ``decay``, and ``spike_increment``:
-        `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with ``adaptations``.
 
-        **output**: :math:`[B] \times N_0 \times \cdots \times k`,
-        where the batch dimension :math:`B` is dependent on inputs.
+            `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with ``adaptations``.
+
+        **output**:
+
+            :math:`[B] \times N_0 \times \cdots \times k`,
+            where the batch dimension :math:`B` is dependent on inputs.
 
     Note:
         This function doesn't automatically reduce along the batch dimension, this should generally be done
