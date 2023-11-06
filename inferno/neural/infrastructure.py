@@ -1,5 +1,5 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from inferno import Module
 import math
 import torch
@@ -268,21 +268,6 @@ class Neuron(Group, ABC):
 
     @property
     @abstractmethod
-    def spike(self) -> torch.Tensor:
-        r"""Which neurons generated an action potential on the last simulation step.
-
-        Returns:
-            torch.Tensor: if the correspond neuron generated an action potential last step.
-
-        Raises:
-            NotImplementedError: ``spike`` must be implemented by the subclass.
-        """
-        raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the getter for property `spike`"
-        )
-
-    @property
-    @abstractmethod
     def voltage(self) -> torch.Tensor:
         r"""Membrane voltages of the neurons, in millivolts.
 
@@ -303,6 +288,21 @@ class Neuron(Group, ABC):
     def voltage(self, value: torch.Tensor):
         raise NotImplementedError(
             f"Neuron `{type(self).__name__}` must implement the setter for property `voltage`"
+        )
+
+    @property
+    @abstractmethod
+    def spike(self) -> torch.Tensor:
+        r"""Which neurons generated an action potential on the last simulation step.
+
+        Returns:
+            torch.Tensor: if the correspond neuron generated an action potential last step.
+
+        Raises:
+            NotImplementedError: ``spike`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Neuron `{type(self).__name__}` must implement the getter for property `spike`"
         )
 
     @property
@@ -523,11 +523,6 @@ class Synapse(Group, ABC):
 
         Raises:
             NotImplementedError: ``currents`` must be implemented by the subclass.
-
-        Note:
-            It is expected that if ``selector`` is of a floating point datatype, as assessed
-            by :py:func:`torch.Tensor.is_floating_point`, then it will be assumed to be in
-            :math:`ms`. If it is not, it will be assumed to be an integer multiple of step time.
         """
         raise NotImplementedError(
             f"Synapse `{type(self).__name__}` must implement the method `dcurrent`"
@@ -548,11 +543,6 @@ class Synapse(Group, ABC):
 
         Raises:
             NotImplementedError: ``spikes`` must be implemented by the subclass.
-
-        Note:
-            It is expected that if ``selector`` is of a floating point datatype, as assessed
-            by :py:func:`torch.Tensor.is_floating_point`, then it will be assumed to be in
-            :math:`ms`. If it is not, it will be assumed to be an integer multiple of step time.
         """
         raise NotImplementedError(
             f"Synapse `{type(self).__name__}` must implement the method `dspike`"
@@ -617,9 +607,6 @@ class Connection(Module, ABC):
         Returns:
             int: current batch size.
 
-        Raises:
-            ValueError: ``value`` must be a positive integer.
-
         Note:
             This calls the property :py:attr:`Synapse.bsize`, assuming the connection
             itself does not use any batch size dependant tensors.
@@ -631,27 +618,84 @@ class Connection(Module, ABC):
         self.synapse.bsize = value
 
     @property
+    @abstractmethod
+    def inshape(self) -> tuple[int]:
+        r"""Shape of inputs to the connection, excluding the batch dimension.
+
+        Returns:
+            tuple[int]: shape of inputs to the connection.
+
+        Raises:
+            NotImplementedError: ``inshape`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the getter for property `inshape`"
+        )
+
+    @property
+    @abstractmethod
+    def outshape(self) -> tuple[int]:
+        r"""Shape of outputs from the connection, excluding the batch dimension.
+
+        Returns:
+            tuple[int]: shape of outputs from the connection.
+
+        Raises:
+            NotImplementedError: ``outshape`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the getter for property `outshape`"
+        )
+
+    @property
+    def insize(self) -> int:
+        r"""Number of inputs to the connection, excluding the batch dimension.
+
+        Returns:
+            int: number of inputs to the connection.
+        """
+        return math.prod(self.inshape)
+
+    @property
+    def outsize(self) -> tuple[int]:
+        r"""Number of outputs from the connection, excluding the batch dimension.
+
+        Returns:
+            int: number of outputs from the connection.
+        """
+        return math.prod(self.outshape)
+
+    @property
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
         Returns:
             float: length of the simulation time step.
 
-        Raises:
+        Note:
             This calls the property :py:attr:`Synapse.dt`.
         """
         return self.synapse.dt
 
     @property
-    def insize(self) -> int:
-        return math.prod(self.inshape)
+    def biased(self) -> bool:
+        r"""If the connection has learnable biases.
+
+        Returns:
+            bool: if the connection has learnable biases.
+        """
+        return self.bias is None
 
     @property
-    def outsize(self) -> tuple[int]:
-        return math.prod(self.outshape)
+    def delayed(self) -> float | None:
+        r"""Maxmimum length of the learned delays, in milliseconds.
 
-    @property
-    def delayed(self) -> int | float | None:
+        Returns:
+            float | None: maxmimum length of the learned delays, none if no delays.
+
+        Note:
+            This calls the property :py:attr:`Synapse.dt`.
+        """
         if self.delay is None:
             return None
         elif self.delay.is_floating_point():
@@ -661,51 +705,78 @@ class Connection(Module, ABC):
 
     @property
     def weight(self) -> torch.Tensor:
-        return self.weights.data
+        r"""Learnable weights of the connection.
+
+        Args:
+            value (torch.Tensor): new weights.
+
+        Returns:
+            torch.Tensor: current weights.
+
+        Raises:
+            NotImplementedError: ``weight`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the getter for property `weight`"
+        )
 
     @weight.setter
     def weight(self, value: torch.Tensor):
-        self.weights.data = value
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the setter for property `weight`"
+        )
 
     @property
     def bias(self) -> torch.Tensor | None:
-        if self.biases is not None:
-            return self.biases.data
+        r"""Learnable biases of the connection.
+
+        Args:
+            value (torch.Tensor): new biases.
+
+        Returns:
+            torch.Tensor | None: current biases, if the connection has any.
+
+        Raises:
+            NotImplementedError: ``bias`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the getter for property `bias`"
+        )
 
     @bias.setter
     def bias(self, value: torch.Tensor):
-        if self.biases is not None:
-            self.biases.data = value
-        else:
-            raise RuntimeError(
-                f"cannot set `bias` on a {type(self).__name__} without trainable biases"
-            )
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the setter for property `bias`"
+        )
 
     @property
     def delay(self) -> torch.Tensor | None:
-        if self.delays is not None:
-            return self.delays.data
+        r"""Learnable delays of the connection.
+
+        Args:
+            value (torch.Tensor): new delays.
+
+        Returns:
+            torch.Tensor | None: current delays, if the connection has any.
+
+        Raises:
+            NotImplementedError: ``delay`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the getter for property `delay`"
+        )
 
     @delay.setter
     def delay(self, value: torch.Tensor):
-        if self.delays is not None:
-            self.delays.data = value
-        else:
-            raise RuntimeError(
-                f"cannot set `delay` on a {type(self).__name__} without trainable delays"
-            )
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the setter for property `delay`"
+        )
 
     def clear(self, *args, **kwargs):
+        r"""Resets the state of the connection.
+
+        Note:
+            This calls the method :py:method:`Synapse.clear`, assuming the connection
+            itself maintains no clearable state.
+        """
         self.synapse.clear(*args, **kwargs)
-
-    @abstractproperty
-    def inshape(self) -> tuple[int]:
-        raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the getter for property `inshape`"
-        )
-
-    @abstractproperty
-    def outshape(self) -> tuple[int]:
-        raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the getter for property `outshape`"
-        )
