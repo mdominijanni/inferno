@@ -184,6 +184,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/generated/inferno.neural.PassthroughSynapse.html">PassthroughSynapse</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/generated/inferno.neural.DenseLinear.html">DenseLinear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/generated/inferno.neural.DirectLinear.html">DirectLinear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/generated/inferno.neural.LateralLinear.html">LateralLinear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/generated/inferno.neural.SynapseConstructor.html">SynapseConstructor</a></li>
 </ul>
 </li>
@@ -275,7 +276,7 @@
         <article role="main">
           <h1>Source code for inferno.neural.infrastructure</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractclassmethod</span><span class="p">,</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">abstractproperty</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">Module</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -549,21 +550,6 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Which neurons generated an action potential on the last simulation step.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: if the correspond neuron generated an action potential last step.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``spike`` must be implemented by the subclass.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `spike`&quot;</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane voltages of the neurons, in millivolts.</span>
 
@@ -584,6 +570,21 @@
     <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `voltage`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Which neurons generated an action potential on the last simulation step.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: if the correspond neuron generated an action potential last step.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``spike`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `spike`&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -697,24 +698,26 @@
             <span class="n">on_batch_resize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clear</span> <span class="k">if</span> <span class="n">on_batch_resize</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">on_batch_resize</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Synapse.partial">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.partial">[docs]</a>
-    <span class="nd">@abstractclassmethod</span>
-    <span class="k">def</span> <span class="nf">partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynapseConstructor</span><span class="p">:</span>
+<div class="viewcode-block" id="Synapse.partialconstructor">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.partialconstructor">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynapseConstructor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for synapse construction.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``partial`` must be implemented by the subclass.</span>
+<span class="sd">            NotImplementedError: ``partialconstructor`` must be implemented by the subclass.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">           SynapseConstructor: partial constructor for synapse.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `partial`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `partialconstructor`&quot;</span>
         <span class="p">)</span></div>
 
 
-    <span class="nd">@abstractproperty</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
@@ -732,17 +735,19 @@
         <span class="p">)</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `dt`&quot;</span>
         <span class="p">)</span>
 
-    <span class="nd">@abstractproperty</span>
-    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maximum supported delay, as a multiple of simulation time steps.</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maximum supported delay, in milliseconds.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            int | None: maximum number of buffered time steps.</span>
+<span class="sd">            float | None: maximum delay, in milliseconds.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``delay`` must be implemented by the subclass.</span>
@@ -751,7 +756,8 @@
             <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `delay`&quot;</span>
         <span class="p">)</span>
 
-    <span class="nd">@abstractproperty</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses.</span>
 
@@ -772,12 +778,14 @@
         <span class="p">)</span>
 
     <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `current`&quot;</span>
         <span class="p">)</span>
 
-    <span class="nd">@abstractproperty</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes to the synapses.</span>
 
@@ -794,10 +802,10 @@
             <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `spike`&quot;</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Synapse.dcurrent">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.dcurrent">[docs]</a>
+<div class="viewcode-block" id="Synapse.current_at">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.current_at">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">dcurrent</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">current_at</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns currents at times specified by delays.</span>
@@ -811,21 +819,16 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``currents`` must be implemented by the subclass.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            It is expected that if ``selector`` is of a floating point datatype, as assessed</span>
-<span class="sd">            by :py:func:`torch.Tensor.is_floating_point`, then it will be assumed to be in</span>
-<span class="sd">            :math:`ms`. If it is not, it will be assumed to be an integer multiple of step time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `dcurrent`&quot;</span>
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Synapse.dspike">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.dspike">[docs]</a>
+<div class="viewcode-block" id="Synapse.spike_at">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.spike_at">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">dspike</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">spike_at</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns spikes at times specified by delays.</span>
@@ -839,11 +842,6 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``spikes`` must be implemented by the subclass.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            It is expected that if ``selector`` is of a floating point datatype, as assessed</span>
-<span class="sd">            by :py:func:`torch.Tensor.is_floating_point`, then it will be assumed to be in</span>
-<span class="sd">            :math:`ms`. If it is not, it will be assumed to be an integer multiple of step time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `dspike`&quot;</span>
@@ -915,9 +913,6 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            int: current batch size.</span>
 
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: ``value`` must be a positive integer.</span>
-
 <span class="sd">        Note:</span>
 <span class="sd">            This calls the property :py:attr:`Synapse.bsize`, assuming the connection</span>
 <span class="sd">            itself does not use any batch size dependant tensors.</span>
@@ -929,87 +924,180 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">bsize</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            float: length of the simulation time step.</span>
+<span class="sd">            tuple[int]: shape of inputs to the connection.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            This calls the property :py:attr:`Synapse.dt`.</span>
+<span class="sd">            NotImplementedError: ``inshape`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">dt</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">insize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inshape</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">outsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">delayed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">is_floating_point</span><span class="p">():</span>
-            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">delay</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">delay</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">data</span>
-
-    <span class="nd">@weight</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">biases</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">biases</span><span class="o">.</span><span class="n">data</span>
-
-    <span class="nd">@bias</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">biases</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">biases</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;cannot set `bias` on a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> without trainable biases&quot;</span>
-            <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delays</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="o">.</span><span class="n">data</span>
-
-    <span class="nd">@delay</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delays</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;cannot set `delay` on a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> without trainable delays&quot;</span>
-            <span class="p">)</span>
-
-<div class="viewcode-block" id="Connection.clear">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.clear">[docs]</a>
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
-
-    <span class="nd">@abstractproperty</span>
-    <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `inshape`&quot;</span>
         <span class="p">)</span>
 
-    <span class="nd">@abstractproperty</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int]: shape of outputs from the connection.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``outshape`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `outshape`&quot;</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">insize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of inputs to the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: number of inputs to the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inshape</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of outputs from the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: number of outputs from the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new length of the simulation time step.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: current length of the simulation time step.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This calls the property :py:attr:`Synapse.dt`, assuming the</span>
+<span class="sd">            connection itself is not dependent on step time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">dt</span>
+
+    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">biased</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;If the connection has learnable biases.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the connection has learnable biases.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">delayed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maxmimum length of the learned delays, in milliseconds.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float | None: maxmimum length of the learned delays, none if no delays.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This calls the property :py:attr:`Synapse.delay`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">delay</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable weights of the connection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new weights.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: current weights.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``weight`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `weight`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@weight</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `weight`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable biases of the connection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new biases.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor | None: current biases, if the connection has any.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``bias`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `bias`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@bias</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `bias`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable delays of the connection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new delays.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor | None: current delays, if the connection has any.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``delay`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `delay`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@delay</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `delay`&quot;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Connection.clear">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.clear">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets the state of the connection.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This calls the method :py:meth:`Synapse.clear`, assuming the connection</span>
+<span class="sd">            itself maintains no clearable state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
         </article>

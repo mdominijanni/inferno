@@ -184,6 +184,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../../reference/generated/inferno.neural.PassthroughSynapse.html">PassthroughSynapse</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../reference/generated/inferno.neural.DenseLinear.html">DenseLinear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../reference/generated/inferno.neural.DirectLinear.html">DirectLinear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../reference/generated/inferno.neural.LateralLinear.html">LateralLinear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../reference/generated/inferno.neural.SynapseConstructor.html">SynapseConstructor</a></li>
 </ul>
 </li>
@@ -281,90 +282,100 @@
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">SynapseConstructor</span>
+<span class="kn">from</span> <span class="nn">.._mixins</span> <span class="kn">import</span> <span class="n">WeightBiasDelayMixin</span>
 
 
 <div class="viewcode-block" id="DenseLinear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DenseLinear.html#inferno.neural.DenseLinear">[docs]</a>
-<span class="k">class</span> <span class="nc">DenseLinear</span><span class="p">(</span><span class="n">Connection</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">DenseLinear</span><span class="p">(</span><span class="n">WeightBiasDelayMixin</span><span class="p">,</span> <span class="n">Connection</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linear all-to-all connection.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        y = x W^\intercal + b</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        in_shape (tuple[int, ...] | int): expected shape of input tensor, excluding batch.</span>
+<span class="sd">        out_shape (tuple[int, ...] | int): expected shape of output tensor, excluding batch.</span>
+<span class="sd">        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.</span>
+<span class="sd">        synapse (SynapseConstructor): partial constructor for inner :py:class:`~inferno.neural.Synapse`.</span>
+<span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
+<span class="sd">        bias (bool, optional): if the connection should include learnable additive bias. Defaults to False.</span>
+<span class="sd">        delay (float | None, optional): length of time the connection should support delays for. Defaults to None.</span>
+<span class="sd">        weight_init (OneToOne | None, optional): initializer for weights. Defaults to None.</span>
+<span class="sd">        bias_init (OneToOne | None, optional): initializer for biases. Defaults to None.</span>
+<span class="sd">        delay_init (OneToOne | None, optional): initializer for delays. Defaults to None.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: step time must be a positive real.</span>
+<span class="sd">        ValueError: delay, if not none, must be a positive real.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">input_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">output_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">in_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">out_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">synapse</span><span class="p">:</span> <span class="n">SynapseConstructor</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">weight_init</span><span class="p">:</span> <span class="n">OneToOne</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">bias_init</span><span class="p">:</span> <span class="n">OneToOne</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">delay_init</span><span class="p">:</span> <span class="n">OneToOne</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># convert shapes</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">input_shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">input_shape</span><span class="p">),)</span>
+            <span class="n">in_shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">in_shape</span><span class="p">),)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="n">input_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">input_shape</span><span class="p">)</span>
+            <span class="n">in_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">in_shape</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">output_shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">output_shape</span><span class="p">),)</span>
+            <span class="n">out_shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">out_shape</span><span class="p">),)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="n">output_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">output_shape</span><span class="p">)</span>
+            <span class="n">out_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">out_shape</span><span class="p">)</span>
 
-        <span class="n">input_size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
-        <span class="n">output_size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">output_shape</span><span class="p">)</span>
+        <span class="n">input_size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">in_shape</span><span class="p">)</span>
+        <span class="n">output_size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span>
 
         <span class="c1"># check that the step time is valid</span>
         <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;step time must be greater than zero, received </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;step time must be positive, received </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># check that the delay is valid</span>
-        <span class="k">if</span> <span class="n">delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">delay</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;delay, if not none, it must be greater than zero, received </span><span class="si">{</span><span class="n">delay</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-
-        <span class="c1"># build parameters</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">bias</span><span class="p">:</span>
-            <span class="n">biases</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">biases</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="k">if</span> <span class="n">delay</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-                <span class="n">synapse_delay</span> <span class="o">=</span> <span class="n">delay</span>
-                <span class="n">delays</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
-                    <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
-                    <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                <span class="n">synapse_delay</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">delay</span> <span class="o">//</span> <span class="n">step_time</span><span class="p">)</span>
-                <span class="n">delays</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
-                    <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">),</span>
-                    <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">synapse_delay</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">delays</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;delay, if not none, must be positive, received </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># call superclass constructor</span>
         <span class="n">Connection</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">synapse</span><span class="o">=</span><span class="n">synapse</span><span class="p">(</span>
-                <span class="n">input_size</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">batch_size</span><span class="p">),</span> <span class="n">synapse_delay</span>
+                <span class="n">input_size</span><span class="p">,</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">),</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">batch_size</span><span class="p">),</span>
+                <span class="kc">None</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">delay</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">delay</span><span class="p">),</span>
             <span class="p">),</span>
-            <span class="n">weight</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
-            <span class="n">bias</span><span class="o">=</span><span class="n">biases</span><span class="p">,</span>
-            <span class="n">delay</span><span class="o">=</span><span class="n">delays</span><span class="p">,</span>
+            <span class="n">weight</span><span class="o">=</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">),</span>
+            <span class="n">bias</span><span class="o">=</span><span class="p">(</span>
+                <span class="kc">None</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">bias</span>
+                <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">delay</span><span class="o">=</span><span class="p">(</span>
+                <span class="kc">None</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">delay</span>
+                <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">),</span>
+                    <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
         <span class="p">)</span>
 
         <span class="c1"># register extras</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;input_shape&quot;</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;output_shape&quot;</span><span class="p">,</span> <span class="n">output_shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;in_shape&quot;</span><span class="p">,</span> <span class="n">in_shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;out_shape&quot;</span><span class="p">,</span> <span class="n">out_shape</span><span class="p">)</span>
 
         <span class="c1"># initialize parameters</span>
         <span class="k">if</span> <span class="n">weight_init</span><span class="p">:</span>
@@ -376,20 +387,24 @@
         <span class="k">if</span> <span class="n">delay_init</span> <span class="ow">and</span> <span class="n">delay</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="n">delay_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">)</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_shape</span>
-
 <div class="viewcode-block" id="DenseLinear.forward">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DenseLinear.html#inferno.neural.DenseLinear.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates connection output from inputs, after passing through the synapse.</span>
+
+<span class="sd">        Outputs are determened as the learned linear transformation applied to synaptic</span>
+<span class="sd">        currents, after new input is applied to the synapse. These are reshaped according</span>
+<span class="sd">        to the specified output shape.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (torch.Tensor): inputs to the connection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: outputs from the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span><span class="p">:</span>
             <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="p">(</span><span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">))</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">dcurrent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">current_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">res</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
@@ -401,13 +416,51 @@
             <span class="n">res</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span></div>
-</div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int]: shape of inputs to the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_shape</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int]: shape of outputs from the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_shape</span></div>
 
 
 
 <div class="viewcode-block" id="DirectLinear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DirectLinear.html#inferno.neural.DirectLinear">[docs]</a>
-<span class="k">class</span> <span class="nc">DirectLinear</span><span class="p">(</span><span class="n">Connection</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">DirectLinear</span><span class="p">(</span><span class="n">WeightBiasDelayMixin</span><span class="p">,</span> <span class="n">Connection</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linear one-to-one connection.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        y = x \odot w + b</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shape (tuple[int, ...] | int): expected shape of input/output tensor, excluding batch.</span>
+<span class="sd">        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.</span>
+<span class="sd">        synapse (SynapseConstructor): partial constructor for inner :py:class:`~inferno.neural.Synapse`.</span>
+<span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
+<span class="sd">        bias (bool, optional): if the connection should include learnable additive bias. Defaults to False.</span>
+<span class="sd">        delay (float | None, optional): length of time the connection should support delays for. Defaults to None.</span>
+<span class="sd">        weight_init (OneToOne | None, optional): initializer for weights. Defaults to None.</span>
+<span class="sd">        bias_init (OneToOne | None, optional): initializer for biases. Defaults to None.</span>
+<span class="sd">        delay_init (OneToOne | None, optional): initializer for delays. Defaults to None.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: step time must be a positive real.</span>
+<span class="sd">        ValueError: delay, if not none, must be a positive real.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
@@ -416,7 +469,7 @@
         <span class="n">synapse</span><span class="p">:</span> <span class="n">SynapseConstructor</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">weight_init</span><span class="p">:</span> <span class="n">OneToOne</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">bias_init</span><span class="p">:</span> <span class="n">OneToOne</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">delay_init</span><span class="p">:</span> <span class="n">OneToOne</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -436,44 +489,34 @@
             <span class="p">)</span>
 
         <span class="c1"># check that the delay is valid</span>
-        <span class="k">if</span> <span class="n">delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">delay</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;delay, if not none, it must be greater than zero, received </span><span class="si">{</span><span class="n">delay</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-
-        <span class="c1"># build parameters</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">size</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">bias</span><span class="p">:</span>
-            <span class="n">biases</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">size</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">biases</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="k">if</span> <span class="n">delay</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-                <span class="n">synapse_delay</span> <span class="o">=</span> <span class="n">delay</span>
-                <span class="n">delays</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
-                    <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
-                    <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                <span class="n">synapse_delay</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">delay</span> <span class="o">//</span> <span class="n">step_time</span><span class="p">)</span>
-                <span class="n">delays</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
-                    <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">size</span><span class="p">),</span>
-                    <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">synapse_delay</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">delays</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;delay, if not none, must be positive, received </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># call superclass constructor</span>
         <span class="n">Connection</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">synapse</span><span class="o">=</span><span class="n">synapse</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">batch_size</span><span class="p">),</span> <span class="n">synapse_delay</span><span class="p">),</span>
-            <span class="n">weight</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
-            <span class="n">bias</span><span class="o">=</span><span class="n">biases</span><span class="p">,</span>
-            <span class="n">delay</span><span class="o">=</span><span class="n">delays</span><span class="p">,</span>
+            <span class="n">synapse</span><span class="o">=</span><span class="n">synapse</span><span class="p">(</span>
+                <span class="n">size</span><span class="p">,</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">),</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">batch_size</span><span class="p">),</span>
+                <span class="kc">None</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">delay</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">delay</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">weight</span><span class="o">=</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">size</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+            <span class="n">bias</span><span class="o">=</span><span class="p">(</span>
+                <span class="kc">None</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">bias</span>
+                <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">size</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">delay</span><span class="o">=</span><span class="p">(</span>
+                <span class="kc">None</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">delay</span>
+                <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">size</span><span class="p">),</span>
+                    <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
         <span class="p">)</span>
 
         <span class="c1"># register extras</span>
@@ -489,21 +532,25 @@
         <span class="k">if</span> <span class="n">delay_init</span> <span class="ow">and</span> <span class="n">delay</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="n">delay_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">)</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span>
-
 <div class="viewcode-block" id="DirectLinear.forward">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DirectLinear.html#inferno.neural.DirectLinear.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates connection output from inputs, after passing through the synapse.</span>
+
+<span class="sd">        Outputs are determened as the learned linear transformation applied to synaptic</span>
+<span class="sd">        currents, after new input is applied to the synapse. These are reshaped according</span>
+<span class="sd">        to the specified output shape.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (torch.Tensor): inputs to the connection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: outputs from the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span><span class="p">:</span>
             <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="p">(</span><span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">))</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">dcurrent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="s2">&quot;b 1 n -&gt; b n&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">current_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="s2">&quot;b 1 n -&gt; b n&quot;</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -520,7 +567,173 @@
                 <span class="n">res</span> <span class="o">=</span> <span class="n">res</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span>
 
         <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span></div>
-</div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int]: shape of inputs to the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int]: shape of outputs from the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span></div>
+
+
+
+<div class="viewcode-block" id="LateralLinear">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LateralLinear.html#inferno.neural.LateralLinear">[docs]</a>
+<span class="k">class</span> <span class="nc">LateralLinear</span><span class="p">(</span><span class="n">WeightBiasDelayMixin</span><span class="p">,</span> <span class="n">Connection</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linear all-to-&quot;all but one&quot; connection.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        y = x \left(W^\intercal \odot (1 - I\right)) + b</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shape (tuple[int, ...] | int): expected shape of input/output tensor, excluding batch.</span>
+<span class="sd">        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.</span>
+<span class="sd">        synapse (SynapseConstructor): partial constructor for inner :py:class:`~inferno.neural.Synapse`.</span>
+<span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
+<span class="sd">        bias (bool, optional): if the connection should include learnable additive bias. Defaults to False.</span>
+<span class="sd">        delay (float | None, optional): length of time the connection should support delays for. Defaults to None.</span>
+<span class="sd">        weight_init (OneToOne | None, optional): initializer for weights. Defaults to None.</span>
+<span class="sd">        bias_init (OneToOne | None, optional): initializer for biases. Defaults to None.</span>
+<span class="sd">        delay_init (OneToOne | None, optional): initializer for delays. Defaults to None.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: step time must be a positive real.</span>
+<span class="sd">        ValueError: delay, if not none, must be a positive real.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">synapse</span><span class="p">:</span> <span class="n">SynapseConstructor</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">weight_init</span><span class="p">:</span> <span class="n">OneToOne</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bias_init</span><span class="p">:</span> <span class="n">OneToOne</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">delay_init</span><span class="p">:</span> <span class="n">OneToOne</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># convert shapes</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">shape</span><span class="p">),)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># check that the step time is valid</span>
+        <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;step time must be positive, received </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># check that the delay is valid</span>
+        <span class="k">if</span> <span class="n">delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;delay, if not none, must be positive, received </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># call superclass constructor</span>
+        <span class="n">Connection</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">synapse</span><span class="o">=</span><span class="n">synapse</span><span class="p">(</span>
+                <span class="n">size</span><span class="p">,</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">),</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">batch_size</span><span class="p">),</span>
+                <span class="kc">None</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">delay</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">delay</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">weight</span><span class="o">=</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">size</span><span class="p">)),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">),</span>
+            <span class="n">bias</span><span class="o">=</span><span class="p">(</span>
+                <span class="kc">None</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">bias</span>
+                <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">delay</span><span class="o">=</span><span class="p">(</span>
+                <span class="kc">None</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">delay</span>
+                <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">),</span>
+                    <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># register buffer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;_mask&quot;</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+
+        <span class="c1"># register extras</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># initialize parameters</span>
+        <span class="k">if</span> <span class="n">weight_init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">bias_init</span> <span class="ow">and</span> <span class="n">bias</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">bias_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">delay_init</span> <span class="ow">and</span> <span class="n">delay</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="n">delay_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LateralLinear.forward">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LateralLinear.html#inferno.neural.LateralLinear.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates connection output from inputs, after passing through the synapse.</span>
+
+<span class="sd">        Outputs are determened as the learned linear transformation applied to synaptic</span>
+<span class="sd">        currents, after new input is applied to the synapse. These are reshaped according</span>
+<span class="sd">        to the specified output shape.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (torch.Tensor): inputs to the connection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: outputs from the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="p">(</span><span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">))</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">current_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">res</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">res</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="p">(</span><span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">))</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int]: shape of inputs to the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int]: shape of outputs from the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span></div>
 
 </pre></div>
         </article>

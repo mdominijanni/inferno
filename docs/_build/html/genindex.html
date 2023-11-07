@@ -183,6 +183,7 @@
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/inferno.neural.PassthroughSynapse.html">PassthroughSynapse</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/inferno.neural.DenseLinear.html">DenseLinear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/inferno.neural.DirectLinear.html">DirectLinear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/inferno.neural.LateralLinear.html">LateralLinear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/inferno.neural.SynapseConstructor.html">SynapseConstructor</a></li>
 </ul>
 </li>
@@ -313,10 +314,12 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.bias">bias (Connection property)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.Group.html#inferno.neural.Group.bshape">bshape (Group property)</a>
+        <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.biased">biased (Connection property)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.Group.html#inferno.neural.Group.bshape">bshape (Group property)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.bsize">bsize (Connection property)</a>
 
         <ul>
@@ -373,6 +376,12 @@
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.current">(Synapse property)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.current_at">current_at() (PassthroughSynapse method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.current_at">(Synapse method)</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -385,12 +394,6 @@
 
         <ul>
           <li><a href="reference/generated/inferno.observe.MapReducer.html#inferno.observe.MapReducer.datato">(MapReducer method)</a>
-</li>
-        </ul></li>
-        <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.dcurrent">dcurrent() (PassthroughSynapse method)</a>
-
-        <ul>
-          <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.dcurrent">(Synapse method)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.delay">delay (Connection property)</a>
@@ -415,12 +418,6 @@
 </li>
         <li><a href="reference/generated/inferno.neural.DirectLinear.html#inferno.neural.DirectLinear">DirectLinear (class in inferno.neural)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.dspike">dspike() (PassthroughSynapse method)</a>
-
-        <ul>
-          <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.dspike">(Synapse method)</a>
-</li>
-        </ul></li>
         <li><a href="reference/generated/inferno.neural.ALIF.html#inferno.neural.ALIF.dt">dt (ALIF property)</a>
 
         <ul>
@@ -508,6 +505,8 @@
 </li>
           <li><a href="reference/generated/inferno.neural.GLIF2.html#inferno.neural.GLIF2.forward">(GLIF2 method)</a>
 </li>
+          <li><a href="reference/generated/inferno.neural.LateralLinear.html#inferno.neural.LateralLinear.forward">(LateralLinear method)</a>
+</li>
           <li><a href="reference/generated/inferno.neural.LIF.html#inferno.neural.LIF.forward">(LIF method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.forward">(PassthroughSynapse method)</a>
@@ -591,6 +590,8 @@
 </li>
           <li><a href="reference/generated/inferno.neural.DirectLinear.html#inferno.neural.DirectLinear.inshape">(DirectLinear property)</a>
 </li>
+          <li><a href="reference/generated/inferno.neural.LateralLinear.html#inferno.neural.LateralLinear.inshape">(LateralLinear property)</a>
+</li>
         </ul></li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.insize">insize (Connection property)</a>
 </li>
@@ -604,10 +605,12 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.functional.lateral_linear.html#inferno.neural.functional.lateral_linear">lateral_linear() (in module inferno.neural.functional)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.functional.leaky_integrate_and_fire.html#inferno.neural.functional.leaky_integrate_and_fire">leaky_integrate_and_fire() (in module inferno.neural.functional)</a>
+        <li><a href="reference/generated/inferno.neural.LateralLinear.html#inferno.neural.LateralLinear">LateralLinear (class in inferno.neural)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.functional.leaky_integrate_and_fire.html#inferno.neural.functional.leaky_integrate_and_fire">leaky_integrate_and_fire() (in module inferno.neural.functional)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.functional.leaky_integrate_and_fire_euler.html#inferno.neural.functional.leaky_integrate_and_fire_euler">leaky_integrate_and_fire_euler() (in module inferno.neural.functional)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.LIF.html#inferno.neural.LIF">LIF (class in inferno.neural)</a>
@@ -698,6 +701,8 @@
 </li>
           <li><a href="reference/generated/inferno.neural.DirectLinear.html#inferno.neural.DirectLinear.outshape">(DirectLinear property)</a>
 </li>
+          <li><a href="reference/generated/inferno.neural.LateralLinear.html#inferno.neural.LateralLinear.outshape">(LateralLinear property)</a>
+</li>
         </ul></li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.outsize">outsize (Connection property)</a>
 </li>
@@ -709,10 +714,10 @@
   <h2>P</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.partial">partial() (PassthroughSynapse class method)</a>
+        <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.partialconstructor">partialconstructor() (PassthroughSynapse class method)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.partial">(Synapse class method)</a>
+          <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.partialconstructor">(Synapse class method)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse">PassthroughSynapse (class in inferno.neural)</a>
@@ -779,14 +784,20 @@
 </li>
         <li><a href="reference/generated/inferno.simple_exponential_smoothing.html#inferno.simple_exponential_smoothing">simple_exponential_smoothing() (in module inferno)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.spike">spike (Neuron property)</a>
 
         <ul>
           <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.spike">(PassthroughSynapse property)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.spike">(Synapse property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.spike_at">spike_at() (PassthroughSynapse method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.spike_at">(Synapse method)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse">Synapse (class in inferno.neural)</a>

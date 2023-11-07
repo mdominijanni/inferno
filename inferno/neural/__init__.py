@@ -20,4 +20,5 @@ from .synapses import (  # noqa:F401
 from .connections import (  # noqa:F401
     DenseLinear,
     DirectLinear,
+    LateralLinear,
 )

@@ -669,13 +669,21 @@ class Connection(Module, ABC):
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
+        Args:
+            value (float): new length of the simulation time step.
+
         Returns:
-            float: length of the simulation time step.
+            float: current length of the simulation time step.
 
         Note:
-            This calls the property :py:attr:`Synapse.dt`.
+            This calls the property :py:attr:`Synapse.dt`, assuming the
+            connection itself is not dependent on step time.
         """
         return self.synapse.dt
+
+    @dt.setter
+    def dt(self, value: float):
+        self.synapse.dt = value
 
     @property
     def biased(self) -> bool:
@@ -694,16 +702,12 @@ class Connection(Module, ABC):
             float | None: maxmimum length of the learned delays, none if no delays.
 
         Note:
-            This calls the property :py:attr:`Synapse.dt`.
+            This calls the property :py:attr:`Synapse.delay`.
         """
-        if self.delay is None:
-            return None
-        elif self.delay.is_floating_point():
-            return float(self.synapse.delay * self.dt)
-        else:
-            return int(self.synapse.delay)
+        return self.synapse.delay
 
     @property
+    @abstractmethod
     def weight(self) -> torch.Tensor:
         r"""Learnable weights of the connection.
 
@@ -721,12 +725,14 @@ class Connection(Module, ABC):
         )
 
     @weight.setter
+    @abstractmethod
     def weight(self, value: torch.Tensor):
         raise NotImplementedError(
             f"Connection `{type(self).__name__}` must implement the setter for property `weight`"
         )
 
     @property
+    @abstractmethod
     def bias(self) -> torch.Tensor | None:
         r"""Learnable biases of the connection.
 
@@ -744,12 +750,14 @@ class Connection(Module, ABC):
         )
 
     @bias.setter
+    @abstractmethod
     def bias(self, value: torch.Tensor):
         raise NotImplementedError(
             f"Connection `{type(self).__name__}` must implement the setter for property `bias`"
         )
 
     @property
+    @abstractmethod
     def delay(self) -> torch.Tensor | None:
         r"""Learnable delays of the connection.
 
@@ -767,6 +775,7 @@ class Connection(Module, ABC):
         )
 
     @delay.setter
+    @abstractmethod
     def delay(self, value: torch.Tensor):
         raise NotImplementedError(
             f"Connection `{type(self).__name__}` must implement the setter for property `delay`"
@@ -776,7 +785,7 @@ class Connection(Module, ABC):
         r"""Resets the state of the connection.
 
         Note:
-            This calls the method :py:method:`Synapse.clear`, assuming the connection
+            This calls the method :py:meth:`Synapse.clear`, assuming the connection
             itself maintains no clearable state.
         """
         self.synapse.clear(*args, **kwargs)

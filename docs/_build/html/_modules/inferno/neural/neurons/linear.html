@@ -184,6 +184,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../../reference/generated/inferno.neural.PassthroughSynapse.html">PassthroughSynapse</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../reference/generated/inferno.neural.DenseLinear.html">DenseLinear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../reference/generated/inferno.neural.DirectLinear.html">DirectLinear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../reference/generated/inferno.neural.LateralLinear.html">LateralLinear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../reference/generated/inferno.neural.SynapseConstructor.html">SynapseConstructor</a></li>
 </ul>
 </li>
@@ -287,7 +288,7 @@
 <div class="viewcode-block" id="LIF">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LIF.html#inferno.neural.LIF">[docs]</a>
 <span class="k">class</span> <span class="nc">LIF</span><span class="p">(</span><span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">RefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of leaky integrate-and-fire (LIF) neuron dynamics</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of leaky integrate-and-fire (LIF) neuron dynamics.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\mathrm{rest} - R_mI(t)\right]</span>
@@ -438,7 +439,7 @@
 <div class="viewcode-block" id="ALIF">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.ALIF.html#inferno.neural.ALIF">[docs]</a>
 <span class="k">class</span> <span class="nc">ALIF</span><span class="p">(</span><span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">RefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of adaptive leaky integrate-and-fire (ALIF) neuron dynamics</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of adaptive leaky integrate-and-fire (ALIF) neuron dynamics.</span>
 
 <span class="sd">    ALIF is implemented as a step of leaky integrate-and-fire applying existing adaptations,</span>
 <span class="sd">    using linear spike-dependent adaptive thresholds, then updating those adaptations for the</span>
@@ -672,7 +673,7 @@
 <div class="viewcode-block" id="GLIF1">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.GLIF1.html#inferno.neural.GLIF1">[docs]</a>
 <span class="k">class</span> <span class="nc">GLIF1</span><span class="p">(</span><span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">RefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of generalized leaky integrate-and-fire 1 (GLIF\ :sub:`1`) neuron dynamics</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of generalized leaky integrate-and-fire 1 (GLIF\ :sub:`1`) neuron dynamics.</span>
 
 <span class="sd">    Alias for :py:class:`~inferno.neural.LIF`.</span>
 
@@ -753,7 +754,7 @@
 <div class="viewcode-block" id="GLIF2">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.GLIF2.html#inferno.neural.GLIF2">[docs]</a>
 <span class="k">class</span> <span class="nc">GLIF2</span><span class="p">(</span><span class="n">Neuron</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of generalized leaky integrate-and-fire 2 (GLIF\ :sub:`2`) neuron dynamics</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of generalized leaky integrate-and-fire 2 (GLIF\ :sub:`2`) neuron dynamics.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        \begin{align*}</span>

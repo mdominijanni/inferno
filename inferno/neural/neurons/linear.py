@@ -9,7 +9,7 @@ from .._mixins import VoltageMixin, RefractoryMixin
 
 
 class LIF(VoltageMixin, RefractoryMixin, Neuron):
-    r"""Simulation of leaky integrate-and-fire (LIF) neuron dynamics
+    r"""Simulation of leaky integrate-and-fire (LIF) neuron dynamics.
 
     .. math::
         V_m(t + \Delta t) = \left[V_m(t) - V_\mathrm{rest} - R_mI(t)\right]
@@ -151,7 +151,7 @@ class LIF(VoltageMixin, RefractoryMixin, Neuron):
 
 
 class ALIF(VoltageMixin, RefractoryMixin, Neuron):
-    r"""Simulation of adaptive leaky integrate-and-fire (ALIF) neuron dynamics
+    r"""Simulation of adaptive leaky integrate-and-fire (ALIF) neuron dynamics.
 
     ALIF is implemented as a step of leaky integrate-and-fire applying existing adaptations,
     using linear spike-dependent adaptive thresholds, then updating those adaptations for the
@@ -376,7 +376,7 @@ class ALIF(VoltageMixin, RefractoryMixin, Neuron):
 
 
 class GLIF1(VoltageMixin, RefractoryMixin, Neuron):
-    r"""Simulation of generalized leaky integrate-and-fire 1 (GLIF\ :sub:`1`) neuron dynamics
+    r"""Simulation of generalized leaky integrate-and-fire 1 (GLIF\ :sub:`1`) neuron dynamics.
 
     Alias for :py:class:`~inferno.neural.LIF`.
 
@@ -448,7 +448,7 @@ class GLIF1(VoltageMixin, RefractoryMixin, Neuron):
 
 
 class GLIF2(Neuron):
-    r"""Simulation of generalized leaky integrate-and-fire 2 (GLIF\ :sub:`2`) neuron dynamics
+    r"""Simulation of generalized leaky integrate-and-fire 2 (GLIF\ :sub:`2`) neuron dynamics.
 
     .. math::
         \begin{align*}

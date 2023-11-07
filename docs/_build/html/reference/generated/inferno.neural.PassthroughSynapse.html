@@ -185,6 +185,7 @@
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">PassthroughSynapse</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.DenseLinear.html">DenseLinear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.DirectLinear.html">DirectLinear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.LateralLinear.html">LateralLinear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.SynapseConstructor.html">SynapseConstructor</a></li>
 </ul>
 </li>
@@ -279,7 +280,7 @@
 <h1>PassthroughSynapse<a class="headerlink" href="#passthroughsynapse" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.neural.PassthroughSynapse">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PassthroughSynapse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'nearest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'previous'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'nearest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PassthroughSynapse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'nearest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'previous'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'previous'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_overbound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spike_overbound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="inferno.neural.Synapse.html#inferno.neural.Synapse" title="inferno.neural.infrastructure.Synapse"><code class="xref py py-class docutils literal notranslate"><span class="pre">Synapse</span></code></a></p>
 <p>Synapse which directly returns values inputted.</p>
 <p>This generally acts as a “placeholder” synapse, when the inputs which are given are
@@ -292,15 +293,24 @@ to the <a class="reference internal" href="#inferno.neural.PassthroughSynapse.fo
 <li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of a simulation time step, in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
 <li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – size of input batches for simualtion. Defaults to 1.</p></li>
 <li><p><strong>delay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – maximum delay to support. Defaults to None.</p></li>
-<li><p><strong>interpolation</strong> (<em>&quot;nearest&quot;</em><em> | </em><em>&quot;previous&quot;</em><em>, </em><em>optional</em>) – interpolation mode for float-type selectors.
+<li><p><strong>interpolation</strong> (<em>&quot;nearest&quot;</em><em> | </em><em>&quot;previous&quot;</em><em>, </em><em>optional</em>) – interpolation mode for non-integer multiple selectors.
 Defaults to “nearest”.</p></li>
+<li><p><strong>current_overbound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – value to replace values out of bounds, use values at
+final record if none. Defaults to 0.0.</p></li>
+<li><p><strong>spike_overbound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – value to replace values out of bounds, use values at
+final record if none. Defaults to False.</p></li>
 </ul>
 </dd>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>if <code class="docutils literal notranslate"><span class="pre">delay</span></code> is None, the internal data structure will be different, and <a class="reference internal" href="#inferno.neural.PassthroughSynapse.dcurrent" title="inferno.neural.PassthroughSynapse.dcurrent"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dcurrent()</span></code></a>
-and <a class="reference internal" href="#inferno.neural.PassthroughSynapse.dspike" title="inferno.neural.PassthroughSynapse.dspike"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dspike()</span></code></a> will be invalid.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">delay</span></code> is None, the internal data structure will be different, and <a class="reference internal" href="#inferno.neural.PassthroughSynapse.current_at" title="inferno.neural.PassthroughSynapse.current_at"><code class="xref py py-meth docutils literal notranslate"><span class="pre">current_at()</span></code></a>
+and <a class="reference internal" href="#inferno.neural.PassthroughSynapse.spike_at" title="inferno.neural.PassthroughSynapse.spike_at"><code class="xref py py-meth docutils literal notranslate"><span class="pre">spike_at()</span></code></a> will be invalid.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">interpolation</span></code> is set to <cite>“nearest”</cite>, the closest record will be used, even if it is in the future.
+When it is set to <cite>“previous”</cite> the most recent</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
@@ -338,69 +348,58 @@ and <a class="reference internal" href="#inferno.neural.PassthroughSynapse.dspik
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.PassthroughSynapse.dcurrent">
-<span class="sig-name descname"><span class="pre">dcurrent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse.dcurrent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse.dcurrent" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.neural.PassthroughSynapse.current_at">
+<span class="sig-name descname"><span class="pre">current_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse.current_at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse.current_at" title="Link to this definition">#</a></dt>
 <dd><p>Returns currents at times specified by delays.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>selector</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – delays for selection of currents.</p></li>
+<li><p><strong>overbound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – value to replace values out of bounds, use values at
+final record if none. Defaults to 0.0.</p></li>
 <li><p><strong>out</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – output tensor, if required. Defaults to None.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>currents selected at the given times.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
+</dl>
+<dl>
+<dt>Shape:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">selector</span></code>:</p>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\(B \times D \times N_0 \times \cdots\)</span>, where <span class="math notranslate nohighlight">\(B\)</span> is the number of batches,
+<span class="math notranslate nohighlight">\(D\)</span> is the number of delay selectors, and <span class="math notranslate nohighlight">\(N_0 \times \cdots\)</span> is the underlying
+shape.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">out</span></code>:</p>
+<blockquote>
+<div><p>Same shape as <code class="docutils literal notranslate"><span class="pre">selector</span></code>.</p>
+</div></blockquote>
+<p><strong>outputs</strong></p>
+<blockquote>
+<div><p>Same shape as <code class="docutils literal notranslate"><span class="pre">selector</span></code>.</p>
+</div></blockquote>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It is expected that if <code class="docutils literal notranslate"><span class="pre">selector</span></code> is of a floating point datatype, as assessed
-by <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.Tensor.is_floating_point()</span></code>, then it will be assumed to be in
-<span class="math notranslate nohighlight">\(ms\)</span>. If it is not, it will be assumed to be an integer multiple of step time.</p>
-</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>currents selected at the given times.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.PassthroughSynapse.delay">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delay</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.PassthroughSynapse.delay" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delay</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.PassthroughSynapse.delay" title="Link to this definition">#</a></dt>
 <dd><p>Maximum supported delay, as a multiple of simulation time steps.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>maximum number of buffered time steps.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a> | None</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a> | None</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.PassthroughSynapse.dspike">
-<span class="sig-name descname"><span class="pre">dspike</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse.dspike"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse.dspike" title="Link to this definition">#</a></dt>
-<dd><p>Returns spikes at times specified by delays.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>selector</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – delays for selection of spikes.</p></li>
-<li><p><strong>out</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – output tensor, if required. Defaults to None.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>spikes selected at the given times.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It is expected that if <code class="docutils literal notranslate"><span class="pre">selector</span></code> is of a floating point datatype, as assessed
-by <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.Tensor.is_floating_point()</span></code>, then it will be assumed to be in
-<span class="math notranslate nohighlight">\(ms\)</span>. If it is not, it will be assumed to be an integer multiple of step time.</p>
-</div>
 </dd></dl>
 
 <dl class="py property">
@@ -435,8 +434,8 @@ by <code class="xref py py-func docutils literal notranslate"><span class="pre">
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.PassthroughSynapse.partial">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'nearest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'previous'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'nearest'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.SynapseConstructor.html#inferno.neural.SynapseConstructor" title="inferno.neural.infrastructure.SynapseConstructor"><span class="pre">SynapseConstructor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse.partial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse.partial" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.neural.PassthroughSynapse.partialconstructor">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partialconstructor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'nearest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'previous'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'previous'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_overbound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spike_overbound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.SynapseConstructor.html#inferno.neural.SynapseConstructor" title="inferno.neural.infrastructure.SynapseConstructor"><span class="pre">SynapseConstructor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse.partialconstructor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse.partialconstructor" title="Link to this definition">#</a></dt>
 <dd><p>Returns a function with a common signature for synapse construction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -468,6 +467,26 @@ Defaults to “nearest”.</p>
 <p class="admonition-title">Note</p>
 <p>This will return the spikes over the entire delay history.</p>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.PassthroughSynapse.spike_at">
+<span class="sig-name descname"><span class="pre">spike_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse.spike_at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse.spike_at" title="Link to this definition">#</a></dt>
+<dd><p>Returns spikes at times specified by delays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>selector</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – delays for selection of spikes.</p></li>
+<li><p><strong>out</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – output tensor, if required. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>spikes selected at the given times.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -533,13 +552,13 @@ Defaults to “nearest”.</p>
 <li><a class="reference internal" href="#inferno.neural.PassthroughSynapse"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse</span></code></a><ul>
 <li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.clear"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.clear()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.current"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.current</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.dcurrent"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.dcurrent()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.current_at"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.current_at()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.delay"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.delay</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.dspike"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.dspike()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.dt"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.dt</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.forward"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.forward()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.partial"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.partial()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.partialconstructor"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.partialconstructor()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.spike"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.spike</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.PassthroughSynapse.spike_at"><code class="docutils literal notranslate"><span class="pre">PassthroughSynapse.spike_at()</span></code></a></li>
 </ul>
 </li>
 </ul>

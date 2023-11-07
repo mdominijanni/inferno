@@ -39,7 +39,7 @@ class RefractoryMixin:
         return self.refracs.data
 
 
-class ConnectionParameterMixin:
+class WeightBiasDelayMixin:
     @property
     def weight(self) -> torch.Tensor:
         r"""Learnable weights of the connection.

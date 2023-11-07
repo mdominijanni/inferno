@@ -45,6 +45,7 @@
 
     DenseLinear
     DirectLinear
+    LateralLinear
 ```
 
 ## Types
