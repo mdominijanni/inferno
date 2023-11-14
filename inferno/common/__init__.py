@@ -3,6 +3,7 @@ from .infrastructure import (  # noqa: F401
     WrapperModule,
     Configuration,
     Hook,
+    BatchedMixin,
 )
 
 from .series import (  # noqa: F401

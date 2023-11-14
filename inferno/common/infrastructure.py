@@ -1,6 +1,7 @@
 import attrs
 from collections import OrderedDict
 from collections.abc import Mapping
+from inferno._internal import rsetattr
 import torch
 import torch.nn as nn
 from typing import Any, Callable
@@ -57,7 +58,8 @@ class Module(nn.Module):
     def get_extra(self, target: str) -> Any:
         r"""Returns the extra given by ``target`` if it exists, otherwise throws an error.
 
-        This functions similarly to, and has the same specification of ``target`` as :py:meth:`~torch.nn.Module.get_submodule`.
+        This functions similarly to, and has the same specification of ``target`` as
+        :py:meth:`~torch.nn.Module.get_submodule`.
 
         Args:
             target (str): fully-qualified string name of the extra for which to look.
@@ -209,17 +211,26 @@ class Hook:
     r"""Provides forward hook/prehook functionality for subclasses.
 
     `Hook` provides functionality to register and deregister itself as
-    forward hook with a :py:class:`torch.nn.Module` object. This is performed using :py:meth:`~torch.nn.Module.register_forward_hook`
-    to register itself as a forward hook and it manages the returned :py:class:`~torch.utils.hooks.RemovableHandle` to deregister itself.
+    forward hook with a :py:class:`torch.nn.Module` object. This is performed using
+    :py:meth:`~torch.nn.Module.register_forward_hook` to register itself as a forward
+    hook and it manages the returned :py:class:`~torch.utils.hooks.RemovableHandle`
+    to deregister itself.
 
     Args:
-        prehook (Callable | None, optional): function to call before registrant's :py:meth:`~torch.nn.Module.forward`. Defaults to None.
-        posthook (Callable | None, optional): function to call after registrant's :py:meth:`~torch.nn.Module.forward`. Defaults to None.
-        prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to None.
-        posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to :py:meth:`~torch.nn.Module.register_forward_hook`. Defaults to None.
-        train_update (bool, optional): if the hooks should be run when registrant is in train mode. Defaults to True.
-        eval_update (bool, optional): if the hooks should be run when registrant is in eval mode. Defaults to True.
-        module (nn.Module, optional): PyTorch module to which the forward hook will be registered. Defaults to `None`.
+        prehook (Callable | None, optional): function to call before registrant's
+            :py:meth:`~torch.nn.Module.forward`. Defaults to None.
+        posthook (Callable | None, optional): function to call after registrant's
+            :py:meth:`~torch.nn.Module.forward`. Defaults to None.
+        prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
+            :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to None.
+        posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
+            :py:meth:`~torch.nn.Module.register_forward_hook`. Defaults to None.
+        train_update (bool, optional): if the hooks should be run when registrant is
+            in train mode. Defaults to True.
+        eval_update (bool, optional): if the hooks should be run when registrant is
+            in eval mode. Defaults to True.
+        module (nn.Module, optional): PyTorch module to which the forward hook will
+            be registered. Defaults to `None`.
 
     Note:
         If not None, the signature of the prehook must be of the following form.
@@ -347,7 +358,8 @@ class Hook:
             TypeError: parameter `module` must be an instance of :py:class:`nn.Module`
 
         Warns:
-            RuntimeWarning: each `Hook` can only be registered to one :py:class:`torch.nn.Module` and will ignore :py:meth:`register` if already registered.
+            RuntimeWarning: each `Hook` can only be registered to one :py:class:`torch.nn.Module`
+            and will ignore :py:meth:`register` if already registered.
         """
         if not self._prehook_handle or not self._posthook_handle:
             if not isinstance(module, nn.Module):
@@ -369,10 +381,158 @@ class Hook:
             )
 
     def deregister(self) -> None:
-        """Deregisters the `Hook` as a forward hook/prehook from registered :py:class:`torch.nn.Module`, iff it is already registered."""
+        """Deregisters the `Hook` as a forward hook/prehook from registered :py:class:`torch.nn.Module`,
+        iff it is already registered."""
         if self._prehook_handle:
             self._prehook_handle.remove()
             self._prehook_handle = None
         if self._posthook_handle:
             self._posthook_handle.remove()
             self._posthook_handle = None
+
+
+class BatchedMixin:
+    """Mixin for modules with batch-size dependent parameters or buffers.
+
+    Args:
+        size (int): initial batch size.
+        on_resize (Callable[[], None]): function to call when after the batch size is altered.
+
+    Raises:
+        RuntimeError: batch size must be positive.
+
+    Note:
+        This must be added to a class which inherits from :py:class:`Module`.
+
+    Note:
+        The mixin constructor must be called after the constructor for the class
+        which calls the :py:class:`Module` constructor is.
+    """
+
+    def __init__(
+        self,
+        batch_size: int,
+        on_batch_resize: Callable[[], None],
+    ):
+        if int(batch_size) < 1:
+            raise RuntimeError(f"size must be positive, received {int(batch_size)}")
+
+        # register non-persistent
+        self._on_batch_resize = on_batch_resize
+
+        # register extras
+        self.register_extra("_batch_size", int(batch_size))
+        self.register_extra("_batched_buffers", set())
+        self.register_extra("_batched_parameters", set())
+
+    def register_batched(self, attr: str):
+        try:
+            buffer = self.get_buffer(attr)
+        except AttributeError:
+            pass
+        else:
+            if (
+                buffer is not None
+                and buffer.numel > 0
+                and buffer.shape[0] != self._batch_size
+            ):
+                raise RuntimeError(
+                    f"attribute {attr} has zeroth dimension of size "
+                    f"{buffer.shape[0]} which does not match "
+                    f"batch size {self._batch_size}"
+                )
+            else:
+                self._batched_buffers.add(attr)
+
+        try:
+            parameter = self.get_parameter(attr)
+        except AttributeError:
+            pass
+        else:
+            if (
+                parameter is not None
+                and parameter.numel > 0
+                and parameter.shape[0] != self._batch_size
+            ):
+                raise RuntimeError(
+                    f"attribute {attr} has zeroth dimension of size "
+                    f"{parameter.shape[0]} which does not match "
+                    f"batch size {self._batch_size}"
+                )
+            else:
+                self._batched_parameters.add(attr)
+
+        raise AttributeError(
+            f"attribute {attr} is not a registered buffer or parameter"
+        )
+
+    def deregister_batched(self, attr: str):
+        if attr in self._batched_buffers:
+            self._batched_buffers.remove(attr)
+
+        if attr in self._batched_parameters:
+            self._batched_parameters.remove(attr)
+
+    @property
+    def bsize(self) -> int:
+        r"""Batch size of the group.
+
+        Args:
+            value (int): new batch size.
+
+        Returns:
+            int: current batch size.
+
+        Raises:
+            ValueError: ``value`` must be a positive integer.
+
+        Note:
+            When reallocating tensors for batched parameters and buffers, memory is not pinned
+            and the default ``torch.contiguous_format``
+            `memory format <https://pytorch.org/docs/stable/tensor_attributes.html#torch.memory_format>_` is used.
+
+        Note:
+           Batched tensors are reallocated using :py:func:`torch.empty`. After reallocation, ``on_batch_resize``
+           from initialization is called. Any additional processing should be done there.
+        """
+        return self._batch_size
+
+    @bsize.setter
+    def bsize(self, value):
+        if int(value) == self._batch_size:
+            return
+        if int(value) < 1:
+            raise ValueError(f"batch size must be positive, received {int(value)}")
+
+        self._batch_size = int(value)
+
+        for param in self._batched_parameters:
+            rsetattr(
+                self,
+                param,
+                nn.Parameter(
+                    torch.empty(
+                        (self._batch_size,) + self._shape,
+                        dtype=getattr(self, param).data.dtype,
+                        layout=getattr(self, param).data.layout,
+                        device=getattr(self, param).data.device,
+                        requires_grad=getattr(self, param).data.requires_grad,
+                    ),
+                    requires_grad=getattr(self, param).requires_grad,
+                ),
+            )
+
+        for buffer in self._batched_buffers:
+            rsetattr(
+                self,
+                buffer,
+                torch.empty(
+                    (self._batch_size,) + self._shape,
+                    dtype=getattr(self, buffer).dtype,
+                    layout=getattr(self, buffer).layout,
+                    device=getattr(self, buffer).device,
+                    requires_grad=getattr(self, buffer).requires_grad,
+                ),
+            )
+
+        self._on_batch_resize()

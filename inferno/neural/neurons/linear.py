@@ -94,7 +94,7 @@ class LIF(VoltageMixin, RefractoryMixin, Neuron):
 
         self._volt_fn = types.MethodType(vfn, self)
 
-    def clear(self):
+    def clear(self, **kwargs):
         r"""Resets neurons to their resting state."""
         self.voltages.fill_(self.rest_v)
         self.refracs.fill_(0)
@@ -291,7 +291,7 @@ class ALIF(VoltageMixin, RefractoryMixin, Neuron):
 
         self._volt_fn = types.MethodType(vfn, self)
 
-    def clear(self, keep_adaptations=True):
+    def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
 
         Args:
@@ -412,7 +412,7 @@ class GLIF1(VoltageMixin, RefractoryMixin, Neuron):
             batch_size=batch_size,
         )
 
-    def clear(self):
+    def clear(self, **kwargs):
         r"""Resets neurons to their resting state."""
         LIF.clear(self)
 
@@ -588,7 +588,7 @@ class GLIF2(Neuron):
 
         self._volt_fn = types.MethodType(vfn, self)
 
-    def clear(self, keep_adaptations=True):
+    def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
 
         Args:

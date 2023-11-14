@@ -108,7 +108,7 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         if delay_init and delay:
             self.delay = delay_init(self.delay)
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
         Outputs are determened as the learned linear transformation applied to synaptic
@@ -120,9 +120,13 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
 
         Returns:
             torch.Tensor: outputs from the connection.
+
+        Note:
+            Keyword arguments are passed to :py:class:`~inferno.neural.Synapse`
+            :py:meth:`~inferno.neural.Synapse.forward` call.
         """
         if self.delayed:
-            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"))
+            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
             res = self.synapse.current_at(self.delay)
 
             if self.bias is not None:
@@ -131,7 +135,7 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
                 res = torch.sum(res * self.weight, dim=-1)
 
         else:
-            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"))
+            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
             res = F.linear(res, self.weight, self.bias)
 
         return res.view(-1, *self.outshape)
@@ -247,7 +251,7 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
         if delay_init and delay:
             self.delay = delay_init(self.delay)
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
         Outputs are determened as the learned linear transformation applied to synaptic
@@ -259,9 +263,13 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
 
         Returns:
             torch.Tensor: outputs from the connection.
+
+        Note:
+            Keyword arguments are passed to :py:class:`~inferno.neural.Synapse`
+            :py:meth:`~inferno.neural.Synapse.forward` call.
         """
         if self.delayed:
-            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"))
+            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
             res = ein.rearrange(
                 self.synapse.current_at(self.delay.view(-1, 1)), "b 1 n -> b n"
             )
@@ -272,7 +280,7 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
                 res = res * self.weight
 
         else:
-            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"))
+            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
 
             if self.bias is not None:
                 res = res * self.weight + self.bias
@@ -395,7 +403,7 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
         if delay_init and delay:
             self.delay = delay_init(self.delay)
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
         Outputs are determened as the learned linear transformation applied to synaptic
@@ -407,9 +415,13 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
 
         Returns:
             torch.Tensor: outputs from the connection.
+
+        Note:
+            Keyword arguments are passed to :py:class:`~inferno.neural.Synapse`
+            :py:meth:`~inferno.neural.Synapse.forward` call.
         """
         if self.delayed:
-            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"))
+            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
             res = self.synapse.current_at(self.delay * self._mask)
 
             if self.bias is not None:
@@ -418,7 +430,7 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
                 res = torch.sum(res * self.weight * self._mask, dim=-1)
 
         else:
-            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"))
+            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
             res = F.linear(res, self.weight * self._mask, self.bias)
 
         return res.view(-1, *self.outshape)

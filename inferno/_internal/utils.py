@@ -43,3 +43,19 @@ def rgetattr(obj: object, attr: str, *args) -> Any:
         return getattr(obj, attr, *args)
 
     return reduce(getattr_, [obj] + attr.split("."))
+
+
+def rsetattr(obj: object, attr: str, val: Any):
+    r"""Sets an object attribute recursively using dot notation.
+
+    For example, if we have an object ``obj`` and a string ``"so1.so2.so3"``, to which some value
+    ``v`` is being assigned, this function will retrieve ``obj.so1.so2`` recursively using ``getattr()``,
+    then assign ``v`` to ``so3`` in the object ``so2`` using ``setattr()``.
+
+    Args:
+        obj (object): object to which the nested attribute will be set.
+        attr (str): string in dot notation for the nested attribute to set, excluding the initial dot.
+        val (Any): value to which the attribute will be set.
+    """
+    pre, _, post = attr.rpartition('.')
+    return setattr(rgetattr(obj, pre) if pre else obj, post, val)

@@ -1,5 +1,8 @@
 from .infrastructure import (  # noqa:F401
     Group,
+)
+
+from base import (  # noqa:F401
     Neuron,
     Synapse,
     Connection,
