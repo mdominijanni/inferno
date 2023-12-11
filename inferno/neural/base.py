@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from inferno import Module
+from inferno import Module, Batched
 import math
 import torch
 import torch.nn as nn

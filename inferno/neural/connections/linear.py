@@ -163,7 +163,7 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
     r"""Linear one-to-one connection.
 
     .. math::
-        y = x \odot w + b
+        y = x \left(W^\intercal \odot I\right) + b
 
     Args:
         shape (tuple[int, ...] | int): expected shape of input/output tensor, excluding batch.

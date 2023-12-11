@@ -17,7 +17,7 @@ class PassthroughSynapse(Synapse):
         shape (tuple[int, ...] | int): shape of the group of synapses being simulated.
         step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
-        delay (int, optional): maximum delay to support. Defaults to None.
+        delay (float, optional): maximum delay to support. Defaults to None.
         interpolation ("nearest" | "previous", optional): interpolation mode for non-integer multiple selectors.
             Defaults to "nearest".
         current_overbound (float | None, optional): value to replace values out of bounds, use values at
@@ -161,7 +161,7 @@ class PassthroughSynapse(Synapse):
         r"""Length of the simulation time step, in milliseconds.
 
         Returns:
-            float: length of the simulation time step
+            float: length of the simulation time step.
         """
         return self.step_time
 

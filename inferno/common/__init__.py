@@ -3,7 +3,6 @@ from .infrastructure import (  # noqa: F401
     WrapperModule,
     Configuration,
     Hook,
-    BatchedMixin,
 )
 
 from .series import (  # noqa: F401
@@ -19,3 +18,8 @@ from .series import (  # noqa: F401
 from .math import exp  # noqa: F401
 
 from .tensor import zeros, empty  # noqa: F401
+
+from .mixins import (  # noqa: F401
+    Batched,
+    Temporal,
+)
