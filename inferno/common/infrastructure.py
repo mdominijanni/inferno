@@ -1,6 +1,10 @@
+from inferno._internal import rsetattr
+from .math import Interpolation
 import attrs
-from collections import OrderedDict
+from collections import deque, OrderedDict
 from collections.abc import Mapping
+from functools import cached_property
+import math
 import torch
 import torch.nn as nn
 from typing import Any, Callable
@@ -388,3 +392,730 @@ class Hook:
         if self._posthook_handle:
             self._posthook_handle.remove()
             self._posthook_handle = None
+
+
+class DimensionalModule(Module):
+    """Module with support for dimensionally constrained buffers and parameters.
+
+    Args:
+        constraints (tuple[int, int]): tuple of (dim, size) dimensional constraints for
+            constrained buffers and parameters.
+
+    Raises:
+        RuntimeError: at least one constraint must be specified.
+        ValueError: constraints must specify a positive number of elements.
+        RuntimeError: no two constraints may share a dimension.
+
+    Note:
+        Each argument must be a 2-tuple of integers, where the first element is the dimension to
+        which a constraint is applied and the second is the size of that dimension. Dimensions can
+        be negative.
+    """
+
+    def __init__(
+        self,
+        *constraints: tuple[int, int],
+    ):
+        # call superclass constructor
+        Module.__init__(self)
+
+        # disallow empty constraints
+        if not len(constraints):
+            raise RuntimeError("no constraints were specified")
+
+        # register extras
+        self.register_extra("_constraints", dict())
+        self.register_extra("_constrained_buffers", set())
+        self.register_extra("_constrained_parameters", set())
+
+        # check for consistent constraints
+        for dim, size in constraints:
+            dim, size = int(dim), int(size)
+            if size < 1:
+                raise ValueError(
+                    f"constraint {(dim, size)} specifies an invalid (non-positive) number of elements."
+                )
+            if dim in self._constraints:
+                raise RuntimeError(
+                    f"constraint {(dim, size)} conflicts with constraint {dim, self._constraints[dim]}."
+                )
+            self._constraints[dim] = size
+
+    @cached_property
+    def constraints(self) -> dict[int, int]:
+        """Returns the constraint dictionary, sorted by dimension.
+
+        Returns:
+            dict[int, int]: active constraints, represented as a dictionary.
+        """
+        fwd, rev = [], []
+        for dim, size in sorted(self._constraints.items()):
+            rev.append((dim, size)) if dim < 0 else fwd.append((dim, size))
+
+        return dict(fwd + rev)
+
+    @cached_property
+    def constraints_repr(self) -> str:
+        """Returns a string representation of constraints.
+
+        Returns:
+            str: active constraints, represented as a string.
+        """
+        # split constraints into forward and reverse (negative) indices, sorted
+        fwd, rev = [], []
+        for dim in dict(sorted(self._constraints.items())):
+            rev.append(dim) if dim < 0 else fwd.append(dim)
+
+        # representation elements
+        elems = []
+
+        # forward indexed constraints
+        # expect dimension 0
+        expc = 0
+        for dim in fwd:
+            # add unconstrained placeholders
+            elems.extend(["_" for _ in range(dim - expc)])
+            # add contraint value
+            elems.append(f"{self._contraints[dim]}")
+            # set expected next dimension
+            expc = dim + 1
+
+        # aribtrary separation
+        elems.append("...")
+
+        # reverse indexed constraints
+        # no expected dimension
+        expc = None
+        for dim in rev:
+            # add unconstrained placeholders
+            if expc is not None:
+                elems.extend(["_" for _ in range(dim - expc)])
+            # add contraint value
+            elems.append(f"{self._contraints[dim]}")
+            # set expected next dimension
+            expc = dim + 1
+
+        return f"({', '.join(elems)})"
+
+    def compatible(
+        self, value: torch.Tensor, constraints: dict[int, int] | None = None
+    ) -> bool:
+        """Test if a tensor is compatible with the module's constraints.
+
+        Args:
+            value (torch.Tensor): tensor to test.
+            constraints (dict[int, int] | None, optional): constraint dictionary to test with,
+                uses current constraints if None. Defaults to None.
+
+        Returns:
+            bool: if the tensor is compatible.
+        """
+        # select constraints
+        if constraints is None:
+            constraints = self._constraints
+
+        # compute necessary minimum number of dimensions
+        maxc = max(constraints)
+        minc = min(constraints)
+
+        # check if value has fewer than minimum required number of dimensions
+        if value.ndim < (maxc + 1 if maxc >= 0 else 0) - (minc if minc <= -1 else 0):
+            return False
+
+        # check if constraints are met
+        for dim, size in constraints:
+            if value.shape[dim] != size:
+                return False
+
+        return True
+
+    def compatible_like(
+        self,
+        shape: tuple[int],
+        add_dims: bool = False,
+        constraints: dict[int, int] | None = None,
+    ) -> tuple[int]:
+        """Generates a shape like the input, but compatible with constraints.
+
+        Args:
+            shape (tuple[int]): shape to make compatible
+            add_dims (bool, optional): if constrained dimensions should be added. Defaults to False.
+            constraints (dict[int, int] | None, optional): constraint dictionary to test with,
+                uses current constraints if None. Defaults to None.
+
+        Raises:
+            RuntimeError: without adding dimensions, the dimensionality of shape is insufficient.
+            RuntimeError: even with adding dimensions, the dimensionality of shape is insufficient.
+
+        Returns:
+            tuple[int]: compatiblized shape.
+        """
+        # select constraints
+        if constraints is None:
+            constraints = self._constraints
+
+        # modify existing dimensions
+        if not add_dims:
+            # ensure shape is of sufficient dimensionality
+            maxc = max(constraints)
+            minc = min(constraints)
+            req_ndims = (maxc + 1 if maxc >= 0 else 0) - (minc if minc <= -1 else 0)
+
+            if len(shape) < req_ndims:
+                raise RuntimeError(
+                    f"shape {shape} with dimensionality {len(shape)} cannot be made compatible, "
+                    f"requires a minimum dimensionality of {req_ndims}"
+                )
+
+            # create new shape
+            return tuple(
+                size if dim not in constraints else constraints[dim]
+                for dim, size in enumerate(shape)
+            )
+
+        # create new dimensions
+        else:
+            # construct minimal forward shape with placeholders
+            fwd, expc = deque(), 0
+            for dim, size in sorted(self._constraints.items()):
+                if dim >= 0:
+                    fwd.extend([None for _ in range(expc, dim)] + [size])
+                    expc = dim + 1
+
+            # construct minimal reverse shape with placeholders
+            rev, expc = deque(), -1
+            for dim, size in sorted(self._constraints.items(), reverse=True):
+                if dim <= -1:
+                    rev.extendleft([None for _ in range(dim, expc)] + [size])
+                    expc = dim - 1
+
+            # ensure shape is of sufficient dimensionality
+            req_ndims = fwd.count(None) + rev.count(None)
+
+            if len(shape) < req_ndims:
+                raise RuntimeError(
+                    f"shape {shape} with dimensionality {len(shape)} cannot be made compatible, "
+                    f"requires a minimum dimensionality of {req_ndims}"
+                )
+
+            # create new shape
+            shape = deque(shape)
+            fwd = [size if size is not None else shape.popleft() for size in fwd]
+            rev = reversed(
+                [size if size is not None else shape.pop() for size in reversed(rev)]
+            )
+            return fwd + list(shape) + rev
+
+    def reconstrain(self, dim: int, size: int | None):
+        """Edits existing constraints and reshapes constrained buffers and parameters accordingly.
+
+        Args:
+            dim (int): dimension to which a constraint should be added, removed, or modified.
+            size (int | None): size of the new constraint, or None if the constraint should be removed.
+
+        Raises:
+            RuntimeError: constrained buffer or parameter had its shape modified externally and is no longer compatible.
+            ValueError: size must specify a positive number of elements.
+            RuntimeError: added constraint is incompatible with existing buffer or parameter.
+        """
+        # delete cache for constraint properties
+        del self.constraints
+        del self.constraints_repr
+
+        # remove deleted buffers and parameters as constrained
+        for name in tuple(self._constrained_buffers):
+            try:
+                _ = self.get_buffer(name)
+            except AttributeError:
+                self.deregister_constrained(name)
+
+        for name in tuple(self._constrained_parameters):
+            try:
+                _ = self.get_parameter(name)
+            except AttributeError:
+                self.deregister_constrained(name)
+
+        # ensure buffers and parameters are still properly constrained
+        for name in self._constrained_buffers:
+            buffer = self.get_buffer(name)
+            if (
+                buffer is not None
+                and buffer.numel() > 0
+                and not self.compatible(buffer)
+            ):
+                raise RuntimeError(f"constrained buffer {name} has been invalidated.")
+        for name in self._constrained_parameters:
+            param = self.get_parameter(name)
+            if param is not None and param.numel() > 0 and not self.compatible(param):
+                raise RuntimeError(
+                    f"constrained parameter {name} has been invalidated."
+                )
+
+        # convert to integers
+        dim, size = int(dim), None if size is None else int(size)
+
+        # check for valid size constraint
+        if size is not None and size < 1:
+            raise ValueError(
+                f"size {size} specifies an invalid (non-positive) number of elements."
+            )
+
+        # addition of constraint
+        if dim not in self._constraints and size is not None:
+            # create constraints with new addition
+            constraints = {
+                d: s for d, s in tuple(self._constraints.items()) + ((dim, size),)
+            }
+
+            # ensure constrained buffers and parameters are compatible
+            for name in self._constrained_buffers:
+                buffer = self.get_buffer(name)
+                if (
+                    buffer is not None
+                    and buffer.numel() > 0
+                    and not self.compatible(buffer, constraints=constraints)
+                ):
+                    raise RuntimeError(
+                        f"constraint cannot be added, incompatible with buffer {name}."
+                    )
+
+            for name in self._constrained_parameters:
+                param = self.get_parameter(name)
+                if (
+                    param is not None
+                    and param.numel() > 0
+                    and not self.compatible(param, constraints=constraints)
+                ):
+                    raise RuntimeError(
+                        f"constraint cannot be added, incompatible with parameter {name}."
+                    )
+
+            # add new constraint
+            self._constraints[dim] = size
+
+        else:
+            # removal of constraint
+            if size is None:
+                del self._constraints[dim]
+
+            # alteration of constraint
+            else:
+                # create constraints with new addition
+                constraints = {
+                    d: s for d, s in tuple(self._constraints.items()) + ((dim, size),)
+                }
+
+                # reallocate buffers
+                for name in self._constrained_buffers:
+                    buffer = self.get_buffer(name)
+
+                    if buffer is not None and buffer.numel() > 0:
+                        rsetattr(
+                            self,
+                            name,
+                            torch.zeros(
+                                self.compatible_like(
+                                    buffer.shape,
+                                    add_dims=False,
+                                    constraints=constraints,
+                                ),
+                                dtype=buffer.dtype,
+                                layout=buffer.layout,
+                                device=buffer.device,
+                                requires_grad=buffer.requires_grad,
+                            ),
+                        )
+
+                # reallocate parameters
+                for name in self._constrained_parameters:
+                    param = self.get_parameter(name)
+
+                    if param is not None and param.numel() > 0:
+                        rsetattr(
+                            self,
+                            name,
+                            nn.Parameter(
+                                torch.zeros(
+                                    self.compatible_like(
+                                        param.shape,
+                                        add_dims=False,
+                                        constraints=constraints,
+                                    ),
+                                    dtype=param.dtype,
+                                    layout=param.layout,
+                                    device=param.device,
+                                    requires_grad=param.data.requires_grad,
+                                ),
+                                requires_grad=param.requires_grad,
+                            ),
+                        )
+
+                self._constraints[dim] = size
+
+    def register_constrained(self, name: str):
+        """Registers an existing buffer or parameter as constrained.
+
+        Args:
+            name (str): fully-qualified string name of the buffer or parameter to register.
+
+        Raises:
+            RuntimeError: dimension of attribute does not match constraint.
+            AttributeError: attribute is not a registered buffer or parameter.
+        """
+        # calculate required number of dimensions
+        maxc = max(self._constraints)
+        minc = min(self._constraints)
+        req_ndims = (maxc + 1 if maxc >= 0 else 0) - (minc if minc <= -1 else 0)
+
+        # attempts to register buffer
+        try:
+            buffer = self.get_buffer(name)
+        except AttributeError:
+            pass
+        else:
+            if (
+                buffer is not None
+                and buffer.numel() > 0
+                and not self.compatible(buffer)
+            ):
+                raise RuntimeError(
+                    f"buffer {name} has shape of {tuple(buffer.shape)} "
+                    f"incompatible with constrained shape {self.constraints_repr}, "
+                    f"dimensions must match and must have at least {req_ndims} dimensions"
+                )
+            else:
+                self._constrained_buffers.add(name)
+            return
+
+        # attempts to register parameter
+        try:
+            param = self.get_parameter(name)
+        except AttributeError:
+            pass
+        else:
+            if param is not None and param.numel() > 0 and not self.compatible(param):
+                raise RuntimeError(
+                    f"parameter {name} has shape of {tuple(param.shape)} "
+                    f"incompatible with constrained shape {self.constraints_repr}, "
+                    f"dimensions must match and must have at least {req_ndims} dimensions"
+                )
+            else:
+                self._constrained_parameters.add(name)
+            return
+
+        raise AttributeError(
+            f"name {name} does not specify a registered buffer or parameter."
+        )
+
+    def deregister_constrained(self, name: str):
+        """Deregisters a buffer or parameter as constrained.
+
+        Args:
+            name (str): fully-qualified string name of the buffer or parameter to register.
+        """
+        # remove if in buffers
+        if name in self._constrained_buffers:
+            self._constrained_buffers.remove(name)
+
+        # remove if in parameters
+        if name in self._constrained_parameters:
+            self._constrained_parameters.remove(name)
+
+
+class HistoryModule(DimensionalModule):
+    def __init__(
+        self,
+        step_time: float,
+        history_len: float,
+    ):
+        # ensure valid step time and history length parameters
+        step_time, history_len = float(step_time), float(history_len)
+        if step_time <= 0:
+            raise ValueError(f"step time must be positive, received {step_time}")
+
+        if history_len < 0:
+            raise ValueError(
+                f"history length must be non-negative, received {history_len}"
+            )
+
+        # calculate size of time dimension
+        history_size = math.ceil(history_len / step_time) + 1
+
+        # call superclass constructor
+        DimensionalModule.__init__(self, (-1, history_size))
+
+        # register extras
+        self.register_extra("_pointer", dict())
+        self.register_extra("_step_time", step_time)
+        self.register_extra("_history_len", history_len)
+
+    @property
+    def dt(self) -> float:
+        return self._step_time
+
+    @dt.setter
+    def dt(self, value: float) -> None:
+        # cast value as float
+        value = float(value)
+
+        # ensure valid step time
+        if value <= 0:
+            raise RuntimeError(f"step time must be positive, received {value}")
+
+        # compute revised time dimension size
+        hsize = math.ceil(self.hlen / value) + 1
+
+        # reconstrain if required
+        if hsize != self.hsize:
+            self.reconstrain(-1, hsize)
+
+        # set revised step time
+        self._step_time = value
+
+    @property
+    def hlen(self) -> float:
+        return self._history_len
+
+    @hlen.setter
+    def hlen(self, value: float) -> None:
+        # cast value as float
+        value = float(value)
+
+        # ensure valid history length
+        if value < 0:
+            raise RuntimeError(f"history length must be non-negative, received {value}")
+
+        # compute revised time dimension size
+        hsize = math.ceil(value / self.dt) + 1
+
+        # reconstrain if required
+        if hsize != self.hsize:
+            self.reconstrain(-1, hsize)
+
+        # set revised history length
+        self._history_len = value
+
+    @property
+    def hsize(self) -> int:
+        return self.constraints.get(-1)
+
+    def tick(self, name: str) -> None:
+        if name in self._pointer:
+            self._pointer[name] = (self._pointer[name] + 1) % self.hsize
+        else:
+            warnings.warn(
+                f"{name} has not correctly been registered as a constrained attribute, call ignored.",
+                category=RuntimeWarning,
+            )
+
+    def register_constrained(self, name: str):
+        DimensionalModule.register_constrained(self, name)
+        if name not in self._pointer:
+            self._pointer[name] = 0
+
+    def deregister_constrained(self, name: str):
+        DimensionalModule.deregister_constrained(self, name)
+        if name not in self._pointer:
+            del self._pointer[name]
+
+    def select(
+        self,
+        name: str,
+        time: float | torch.Tensor,
+        interpolation: Interpolation,
+        tolerance: float = 1e-7,
+        offset: int = 1,
+    ) -> torch.Tensor:
+        r"""Selects elements of a constrained attribute based on prior time.
+
+        Args:
+            name (str): name of the attribute to target.
+            time (float | torch.Tensor): time before present to select from.
+            interpolation (Interpolate): method to interpolate between discrete time steps.
+            tolerance (float, optional): maximum difference in time from a discrete sample to
+                consider it at the same time as that sample. Defaults to 1e-7.
+            offset (int, optional): window index offset, number of :py:meth:`tick` calls back. Defaults to 1.
+
+        Returns:
+            torch.Tensor: interpolated tensor selected at a prior time.
+
+        Note:
+            By default, `offset` is set to `1`. This is the correct configuration to use under normal
+            circumstances where :py:meth:`pushto` is used for element insertion. Also this is useful for
+            when :py:meth:`tick` is called after a call to :py:meth:`insert` and before :py:meth:`select`.
+            This should be set to `0` if :py:meth:`tick` has not been called since the last :py:meth:`insert`.
+
+        Note:
+            The argument `interpolate` is a function which takes in five arguments, as follows.
+
+                - tensor: nearest observed state before the selected time.
+                - tensor: nearest observed state after the selected time.
+                - tensor: time after the "before state" for which results should be produced.
+                - float: difference in time between the before and after state.
+
+            It must return a tensor of values interpolated between the samples at the two times.
+
+        Note:
+            In cases where the times selected are a match for an observed index within the tolerance,
+            the interpolation function is still called and its results still used. The interpolation
+            function should test if the two samples are from the same time.
+        """
+        # access underlying buffer or parameter
+        if name in self._constrained_buffers:
+            data = self.get_buffer(name)
+        elif name in self._constrained_parameters:
+            data = self.get_parameter(name)
+        else:
+            raise AttributeError(
+                f"name {name} does not specify a constrained buffer or parameter."
+            )
+
+        # convert time to a tensor iff necessary and ensure device matches data
+        if not isinstance(data, torch.Tensor):
+            time = torch.full(data.shape[:-1], float(time), device=data.device)
+            if not time.is_floating_point():
+                time = time.to(dtype=torch.float32)
+        else:
+            time = time.to(device=data.device)
+
+        # validate that time values are correct
+        if torch.any(time < 0):
+            raise ValueError("time must contain only non-negative values.")
+        if torch.any(time - tolerance > (self.hsize - 1) * self.dt):
+            raise ValueError(
+                f"time contains a value which exceeds maximum of {(self.hsize - 1) * self.dt}."
+            )
+
+        # compute indicies, corrected for tolerance
+        indices = time / self.dt
+        indices = torch.where(
+            torch.abs(indices.round() - indices) * self.dt < tolerance,
+            indices.round(),
+            indices,
+        )
+
+        # correct time based on indices
+        time = indices * self.dt
+
+        # offset pointer
+        pointer = (self._pointer[name] - offset) % self.hsize
+
+        # observation before sample, index ceiling
+        prev_data = torch.gather(
+            data,
+            -1,
+            (pointer - indices.ceil().long()).unsqueeze(-1) % self.hsize,
+        )
+
+        # observation after sample, index floor
+        next_data = torch.gather(
+            data,
+            -1,
+            (pointer - indices.floor().long()).unsqueeze(-1) % self.hsize,
+        )
+
+        # return interpolation
+        return interpolation(
+            prev_data.squeeze(-1),
+            next_data.squeeze(-1),
+            torch.clamp((indices.ceil() / self.dt) - time, min=0, max=self.dt),
+            self.dt,
+        )
+
+    def pushto(self, name: str, data: torch.Tensor) -> None:
+        r"""Inserts a slice at the current time into a constrained attribute and advances to the next time.
+
+        Args:
+            name (str): name of the attribute to target.
+            data (torch.Tensor): data to insert.
+
+        Raises:
+            RuntimeError: cannot push to an uninitialized buffer or parameter.
+            RuntimeError: data has an incompatible shape with buffer or parameter.
+            AttributeError: specified name is not a constrained buffer or parameter.
+        """
+        if name in self._constrained_buffers:
+            buffer = self.get_buffer(name)
+            if buffer is None:
+                raise RuntimeError(
+                    f"cannot push to {name}, buffer is uninitialized."
+                )
+            if tuple(data.shape) + (self.hlen,) != buffer.shape:
+                raise RuntimeError(
+                    f"data has a shape of {tuple(data.shape)}, "
+                    f"required shape is {tuple(buffer.shape[:-1])}"
+                )
+            buffer[..., self._pointer[name]] = data
+            self.tick(name)
+        elif name in self._constrained_parameters:
+            param = self.get_parameter(name)
+            if param is None:
+                raise RuntimeError(
+                    f"cannot push to {name}, parameter is uninitialized."
+                )
+            if tuple(data.shape) + (self.hlen,) != param.shape:
+                raise RuntimeError(
+                    f"data has a shape of {tuple(data.shape)}, "
+                    f"required shape is {tuple(param.shape[:-1])}"
+                )
+            param[..., self._pointer[name]] = data
+            self.tick(name)
+        else:
+            raise AttributeError(
+                f"name {name} does not specify a constrained buffer or parameter."
+            )
+
+    def latest(self, name: str, offset: int = 1) -> torch.Tensor:
+        r"""Retrieves the most recent slice of a constrained attribute.
+
+        Args:
+            name (str): name of the attribute to target.
+            offset (int, optional): window index offset, number of :py:meth:`tick` calls back. Defaults to 1.
+
+        Raises:
+            AttributeError: specified name is not a constrained buffer or parameter.
+
+        Returns:
+            torch.Tensor: most recent slice of the tensor selected.
+        """
+        # access underlying buffer or parameter
+        if name in self._constrained_buffers:
+            data = self.get_buffer(name)
+        elif name in self._constrained_parameters:
+            data = self.get_parameter(name)
+        else:
+            raise AttributeError(
+                f"name {name} does not specify a constrained buffer or parameter."
+            )
+
+        return data[..., (self._pointer[name] - offset) % self.hlen]
+
+    def record(self, name: str, offset: int = 1, latest_first=True) -> torch.Tensor:
+        r"""Retrieves the recorded history of a constrained attribute.
+
+        Args:
+            name (str): name of the attribute to target.
+            offset (int, optional): window index offset, number of :py:meth:`tick` calls back. Defaults to 1.
+            latest_first (bool, optional): if the most recent sample should be at the zeroth index. Defaults to False.
+
+        Returns:
+            torch.Tensor: value of the attribute at every observed time.
+        """
+        # access underlying buffer or parameter
+        if name in self._constrained_buffers:
+            data = self.get_buffer(name)
+        elif name in self._constrained_parameters:
+            data = self.get_parameter(name)
+        else:
+            raise AttributeError(
+                f"name {name} does not specify a constrained buffer or parameter."
+            )
+
+        # sorted latest last
+        data = torch.roll(data, offset - self._pointer[name] - 1, -1)
+
+        # reverse if required
+        if latest_first:
+            data = data.flip(-1)
+
+        return data

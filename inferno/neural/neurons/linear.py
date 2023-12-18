@@ -5,7 +5,7 @@ import math
 import torch
 import torch.nn as nn
 import types
-from .._mixins import VoltageMixin, RefractoryMixin
+from ..infrastructure import VoltageMixin, RefractoryMixin
 
 
 class LIF(VoltageMixin, RefractoryMixin, Neuron):
@@ -83,6 +83,7 @@ class LIF(VoltageMixin, RefractoryMixin, Neuron):
         self.register_buffer("resistance", torch.tensor(float(resistance)))
 
         # set values for parameters
+        self.voltages = nn.Parameter(torch.full(, self.rest_v))
         self.voltages.fill_(self.rest_v)
         self.refracs.fill_(0)
 

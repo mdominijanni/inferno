@@ -3,6 +3,8 @@ from .infrastructure import (  # noqa: F401
     WrapperModule,
     Configuration,
     Hook,
+    DimensionalModule,
+    HistoryModule,
 )
 
 from .series import (  # noqa: F401
@@ -15,11 +17,14 @@ from .series import (  # noqa: F401
     holt_linear_smoothing,
 )
 
-from .math import exp  # noqa: F401
+from .math import (  # noqa: F401
+    exp,
+    Interpolation,
+    interp_previous,
+    interp_nearest,
+    interp_linear,
+    interp_exp_decay,
+    gen_interp_exp_decay,
+)
 
 from .tensor import zeros, empty  # noqa: F401
-
-from .mixins import (  # noqa: F401
-    Batched,
-    Temporal,
-)

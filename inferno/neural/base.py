@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from inferno import Module, Batched
+from inferno import Module
 import math
 import torch
 import torch.nn as nn
@@ -49,12 +49,29 @@ class Neuron(Group, ABC):
         # superclass constructor
         Group.__init__(
             self,
-            shape,
-            batch_size,
+            shape=shape,
+            batch_size=batch_size,
             batched_parameters=batched_parameters,
             batched_buffers=batched_buffers,
             on_batch_resize=self.clear if on_batch_resize is None else on_batch_resize,
         )
+
+        # register buffers and parameters
+        for param in batched_parameters if batched_parameters else []:
+            self.register_parameter(param, None)
+            self.register_batched(param)
+
+        for buffer in batched_buffers if batched_buffers else []:
+            self.register_buffer(buffer, None)
+            self.register_batched(buffer)
+
+        # register extras
+        try:
+            self.register_extra("_shape", (int(shape),))
+        except TypeError:
+            self.register_extra("_shape", tuple(int(s) for s in shape))
+
+        self.register_extra("_count", math.prod(self._shape))
 
     @property
     @abstractmethod
