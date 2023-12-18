@@ -1,14 +1,14 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from inferno import Module
+from inferno import DimensionalModule, HistoryModule, Module
 import math
 import torch
 import torch.nn as nn
-from typing import Callable, Protocol
-from . import Group
+from typing import Protocol
+from . import ShapeMixin
 
 
-class Neuron(Group, ABC):
+class Neuron(ShapeMixin, DimensionalModule, ABC):
     r"""Base class for representing a group of neurons with a common mode of dynamics.
 
     Args:
@@ -42,36 +42,19 @@ class Neuron(Group, ABC):
         self,
         shape: tuple[int, ...] | int,
         batch_size: int,
-        batched_parameters: tuple[str, ...] | None,
-        batched_buffers: tuple[str, ...] | None,
-        on_batch_resize: Callable[[], None] | None = None,
     ):
-        # superclass constructor
-        Group.__init__(
-            self,
-            shape=shape,
-            batch_size=batch_size,
-            batched_parameters=batched_parameters,
-            batched_buffers=batched_buffers,
-            on_batch_resize=self.clear if on_batch_resize is None else on_batch_resize,
-        )
+        # superclass constructors
+        DimensionalModule.__init__(self)
+        ShapeMixin.__init__(self, shape, batch_size)
 
-        # register buffers and parameters
-        for param in batched_parameters if batched_parameters else []:
-            self.register_parameter(param, None)
-            self.register_batched(param)
+    @property
+    def bsize(self) -> int:
+        return ShapeMixin.bsize.fget(self)
 
-        for buffer in batched_buffers if batched_buffers else []:
-            self.register_buffer(buffer, None)
-            self.register_batched(buffer)
-
-        # register extras
-        try:
-            self.register_extra("_shape", (int(shape),))
-        except TypeError:
-            self.register_extra("_shape", tuple(int(s) for s in shape))
-
-        self.register_extra("_count", math.prod(self._shape))
+    @bsize.setter
+    def bsize(self, value: int) -> None:
+        ShapeMixin.bsize.fset(self, value)
+        self.clear()
 
     @property
     @abstractmethod
@@ -155,6 +138,12 @@ class Neuron(Group, ABC):
             f"Neuron `{type(self).__name__}` must implement the getter for property `refrac`"
         )
 
+    @refrac.setter
+    def refrac(self, value: torch.Tensor) -> torch.Tensor:
+        raise NotImplementedError(
+            f"Neuron `{type(self).__name__}` must implement the setter for property `refrac`"
+        )
+
     @abstractmethod
     def clear(self, **kwargs):
         r"""Resets the state of the neurons.
@@ -191,7 +180,7 @@ class SynapseConstructor(Protocol):
         ...
 
 
-class Synapse(Group, ABC):
+class Synapse(ShapeMixin, HistoryModule, ABC):
     r"""Base class for representing the input synapses for a connection.
 
     Args:
@@ -224,20 +213,14 @@ class Synapse(Group, ABC):
     def __init__(
         self,
         shape: tuple[int, ...] | int,
-        batch_size: int,
-        batched_parameters: tuple[str, ...] | None,
-        batched_buffers: tuple[str, ...] | None,
-        on_batch_resize: Callable[[], None] | None = None,
+        step_time: float,
+        *,
+        batch_size: int = 1,
+        delay: float = 0.0,
     ):
-        # superclass constructor
-        Group.__init__(
-            self,
-            shape,
-            batch_size,
-            batched_parameters=batched_parameters,
-            batched_buffers=batched_buffers,
-            on_batch_resize=self.clear if on_batch_resize is None else on_batch_resize,
-        )
+        # superclass constructors
+        HistoryModule.__init__(self, step_time, delay)
+        ShapeMixin.__init__(self, shape, batch_size)
 
     @classmethod
     @abstractmethod
@@ -255,7 +238,6 @@ class Synapse(Group, ABC):
         )
 
     @property
-    @abstractmethod
     def dt(self) -> float:
         r"""Length of the simulation time step, in milliseconds.
 
@@ -264,23 +246,15 @@ class Synapse(Group, ABC):
 
         Returns:
             float: length of the simulation time step.
-
-        Raises:
-            NotImplementedError: ``dt`` must be implemented by the subclass.
         """
-        raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the getter for property `dt`"
-        )
+        return HistoryModule.dt.fget(self)
 
     @dt.setter
-    @abstractmethod
     def dt(self, value: float):
-        raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the setter for property `dt`"
-        )
+        HistoryModule.dt.fset(self, value)
+        self.clear()
 
     @property
-    @abstractmethod
     def delay(self) -> float | None:
         r"""Maximum supported delay, in milliseconds.
 
@@ -290,9 +264,14 @@ class Synapse(Group, ABC):
         Raises:
             NotImplementedError: ``delay`` must be implemented by the subclass.
         """
-        raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the getter for property `delay`"
-        )
+        if self.hsize == 0:
+            return None
+        else:
+            return self.hlen
+
+    @delay.setter
+    def delay(self, value: float) -> None:
+        self.hlen = value
 
     @property
     @abstractmethod
@@ -406,7 +385,7 @@ class Connection(Module, ABC):
         Module.__init__(self)
 
         # register submodule
-        self.register_module("synapses", synapse)
+        self.register_module("_synapse", synapse)
 
         # register parameters
         self.register_parameter("weights", weight)
@@ -423,7 +402,7 @@ class Connection(Module, ABC):
         Returns:
            Synapse: registered synapse.
         """
-        return self.synapses
+        return self._synapse
 
     @synapse.setter
     def synapse(self, value: Synapse):

@@ -3,6 +3,8 @@ from .common import (  # noqa: F401
     WrapperModule,
     Configuration,
     Hook,
+    DimensionalModule,
+    HistoryModule,
 )
 
 from .common import (  # noqa: F401
@@ -15,6 +17,15 @@ from .common import (  # noqa: F401
     holt_linear_smoothing,
 )
 
-from .common import exp  # noqa: F401
+from .common import (  # noqa: F401
+    exp,
+    Interpolation,
+    interp_previous,
+    interp_nearest,
+    interp_linear,
+    interp_exp_decay,
+    gen_interp_exp_decay,
+    rescale,
+)
 
 from .common import zeros, empty  # noqa: F401

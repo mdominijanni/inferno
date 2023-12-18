@@ -1,13 +1,32 @@
 from __future__ import annotations
 from functools import cached_property
 import math
+from inferno import rescale
 import torch
+
+
+class AdaptationMixin:
+    @property
+    def adaptation(self) -> torch.Tensor:
+        r"""Membrane adaptations.
+
+        Args:
+            value (torch.Tensor): new membrane adaptations.
+
+        Returns:
+            torch.Tensor: current membrane adaptations.
+        """
+        return self.adaptations.data
+
+    @adaptation.setter
+    def adaptation(self, value: torch.Tensor):
+        self.adaptations[:] = value
 
 
 class VoltageMixin:
     @property
     def voltage(self) -> torch.Tensor:
-        r"""Membrane voltages of the neurons, in millivolts.
+        r"""Membrane voltages in millivolts.
 
         Args:
             value (torch.Tensor): new membrane voltages.
@@ -19,18 +38,38 @@ class VoltageMixin:
 
     @voltage.setter
     def voltage(self, value: torch.Tensor):
-        self.voltages.data[:] = value
+        self.voltages[:] = value
 
 
-class RefractoryMixin:
+class SpikeRefractoryMixin:
     @property
     def spike(self) -> torch.Tensor:
-        r"""Which neurons generated an action potential on the last simulation step.
+        r"""Action potentials last generated.
 
         Returns:
             torch.Tensor: if the correspond neuron generated an action potential last step.
         """
-        return self.refracs.data == self.refrac_t
+        return self.refracs == self.refrac_t
+
+    @property
+    def arp(self) -> float:
+        return self.refrac_t.item()
+
+    @arp.setter
+    def arp(self, value: float) -> None:
+        # cast to float and ensure correctness
+        value = float(value)
+        if value < 0:
+            raise ValueError(f"cannot assign negative value {value} to absolute refractory period")
+
+        # scale and recompute remaining refractory periods
+        if value > 0:
+            self.refrac = rescale(self.refrac, 0.0, self.arp, src_min=0.0, src_max=value)
+        else:
+            self.refrac = torch.zeros_like(self.refrac)
+
+        # replace absolute refractory period
+        self.refrac_t.fill_(value)
 
     @property
     def refrac(self) -> torch.Tensor:
@@ -40,6 +79,10 @@ class RefractoryMixin:
             torch.Tensor: current remaining refractory periods.
         """
         return self.refracs.data
+
+    @refrac.setter
+    def refrac(self, value: torch.Tensor) -> None:
+        self.refracs[:] = value
 
 
 class WeightBiasDelayMixin:
@@ -57,7 +100,7 @@ class WeightBiasDelayMixin:
 
     @weight.setter
     def weight(self, value: torch.Tensor):
-        self.weights.data = value
+        self.weights[:] = value
 
     @property
     def bias(self) -> torch.Tensor | None:
@@ -78,7 +121,7 @@ class WeightBiasDelayMixin:
     @bias.setter
     def bias(self, value: torch.Tensor):
         if self.biases is not None:
-            self.biases.data = value
+            self.biases[:] = value
         else:
             raise RuntimeError(
                 f"cannot set `bias` on a {type(self).__name__} without trainable biases"
@@ -103,7 +146,7 @@ class WeightBiasDelayMixin:
     @delay.setter
     def delay(self, value: torch.Tensor):
         if self.delays is not None:
-            self.delays.data = value
+            self.delays[:] = value
         else:
             raise RuntimeError(
                 f"cannot set `delay` on a {type(self).__name__} without trainable delays"

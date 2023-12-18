@@ -51,7 +51,21 @@ def _(x: np.number) -> np.number:
 
 
 class Interpolation(Protocol):
-    r"""Callable used to interpolate in time between two tensors."""
+    r"""Callable used to interpolate in time between two tensors.
+
+    Args:
+        prev_data (torch.Tensor): most recent observation prior to sample time.
+        next_data (torch.Tensor): most recent observation subsequent to sample time.
+        sample_at (torch.Tensor): relative time at which to sample data.
+        step_data (float): length of time between the prior and subsequent observations.
+
+    Returns:
+        torch.Tensor: interpolated data at sample time.
+
+    Note:
+        `sample_at` is measured as the amount of time after the time at which
+        `prev_data` was sampled.
+    """
 
     def __call__(
         self,
@@ -60,21 +74,7 @@ class Interpolation(Protocol):
         sample_at: torch.Tensor,
         step_data: float,
     ) -> torch.Tensor:
-        r"""Callback protocol function.
-
-        Args:
-            prev_data (torch.Tensor): most recent observation prior to sample time.
-            next_data (torch.Tensor): most recent observation subsequent to sample time.
-            sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float): length of time between the prior and subsequent observations.
-
-        Returns:
-            torch.Tensor: interpolated data at sample time.
-
-        Note:
-            `sample_at` is measured as the amount of time after the time at which
-            `prev_data` was sampled.
-        """
+        r"""Callback protocol function."""
         ...
 
 
@@ -123,3 +123,18 @@ def gen_interp_exp_decay(
     return lambda prev_data, next_data, sample_at, step_time: interp_exp_decay(
         prev_data, next_data, sample_at, step_time, time_constant=time_constant
     )
+
+
+def rescale(
+    data: torch.Tensor,
+    tgt_min: float,
+    tgt_max: float,
+    src_min: float | None = None,
+    src_max: float | None = None,
+) -> torch.Tensor:
+    if src_min is None:
+        src_min = torch.amin(data)
+    if src_max is None:
+        src_max = torch.amax(data)
+
+    return tgt_min + ((data - src_min) * (tgt_max - tgt_min)) / (src_max - src_min)

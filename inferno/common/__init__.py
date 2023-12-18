@@ -25,6 +25,7 @@ from .math import (  # noqa: F401
     interp_linear,
     interp_exp_decay,
     gen_interp_exp_decay,
+    rescale,
 )
 
 from .tensor import zeros, empty  # noqa: F401
