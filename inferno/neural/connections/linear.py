@@ -2,10 +2,9 @@ import einops as ein
 from inferno.typing import OneToOne
 import math
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from .. import Connection, SynapseConstructor
-from .._mixins import WeightBiasDelayMixin
+from ..infrastructure import WeightBiasDelayMixin
 
 
 class DenseLinear(WeightBiasDelayMixin, Connection):
@@ -30,6 +29,7 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         ValueError: step time must be a positive real.
         ValueError: delay, if not none, must be a positive real.
     """
+
     def __init__(
         self,
         in_shape: tuple[int, ...] | int,
@@ -76,22 +76,14 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
                 int(batch_size),
                 None if not delay else float(delay),
             ),
-            weight=nn.Parameter(
-                torch.rand(output_size, input_size), requires_grad=False
-            ),
-            bias=(
-                None
-                if not bias
-                else nn.Parameter(torch.rand(output_size, 1), requires_grad=False)
-            ),
-            delay=(
-                None
-                if not delay
-                else nn.Parameter(
-                    torch.zeros(output_size, input_size),
-                    requires_grad=False,
-                )
-            ),
+        )
+
+        # call mixin constructor
+        WeightBiasDelayMixin.__init__(
+            weight=torch.rand(output_size, input_size),
+            bias=(None if not bias else torch.rand(output_size, 1)),
+            delay=(None if not bias else torch.zeros(output_size, input_size)),
+            requires_grad=False,
         )
 
         # register extras
@@ -180,6 +172,7 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
         ValueError: step time must be a positive real.
         ValueError: delay, if not none, must be a positive real.
     """
+
     def __init__(
         self,
         shape: tuple[int, ...] | int,
@@ -222,20 +215,14 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
                 int(batch_size),
                 None if not delay else float(delay),
             ),
-            weight=nn.Parameter(torch.rand(size), requires_grad=False),
-            bias=(
-                None
-                if not bias
-                else nn.Parameter(torch.rand(size), requires_grad=False)
-            ),
-            delay=(
-                None
-                if not delay
-                else nn.Parameter(
-                    torch.zeros(size),
-                    requires_grad=False,
-                )
-            ),
+        )
+
+        # call mixin constructor
+        WeightBiasDelayMixin.__init__(
+            weight=torch.rand(size),
+            bias=(None if not bias else torch.rand(size)),
+            delay=(None if not bias else torch.zeros(size)),
+            requires_grad=False,
         )
 
         # register extras
@@ -329,6 +316,7 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
         ValueError: step time must be a positive real.
         ValueError: delay, if not none, must be a positive real.
     """
+
     def __init__(
         self,
         shape: tuple[int, ...] | int,
@@ -369,26 +357,18 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
                 int(batch_size),
                 None if not delay else float(delay),
             ),
-            weight=nn.Parameter(
-                torch.rand(size, size) * (1 - torch.eye(size)), requires_grad=False
-            ),
-            bias=(
-                None
-                if not bias
-                else nn.Parameter(torch.rand(size, 1), requires_grad=False)
-            ),
-            delay=(
-                None
-                if not delay
-                else nn.Parameter(
-                    torch.zeros(size, size),
-                    requires_grad=False,
-                )
-            ),
+        )
+
+        # call mixin constructor
+        WeightBiasDelayMixin.__init__(
+            weight=torch.rand(size, size) * (1 - torch.eye(size)),
+            bias=(None if not bias else torch.rand(size, 1)),
+            delay=(None if not bias else torch.zeros(size, size)),
+            requires_grad=False,
         )
 
         # register buffer
-        self.register_buffer("_mask", 1 - torch.eye(size))
+        self.register_buffer("mask", 1 - torch.eye(size))
 
         # register extras
         self.register_extra("shape", shape)
@@ -422,16 +402,16 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
         """
         if self.delayed:
             _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
-            res = self.synapse.current_at(self.delay * self._mask)
+            res = self.synapse.current_at(self.delay)
 
             if self.bias is not None:
-                res = torch.sum(res * self.weight * self._mask + self.bias, dim=-1)
+                res = torch.sum(res * self.weight + self.bias, dim=-1)
             else:
-                res = torch.sum(res * self.weight * self._mask, dim=-1)
+                res = torch.sum(res * self.weight, dim=-1)
 
         else:
             res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
-            res = F.linear(res, self.weight * self._mask, self.bias)
+            res = F.linear(res, self.weight, self.bias)
 
         return res.view(-1, *self.outshape)
 
@@ -452,3 +432,41 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
             tuple[int]: shape of outputs from the connection.
         """
         return self.shape
+
+    @property
+    def weight(self) -> torch.Tensor:
+        r"""Learnable weights of the connection.
+
+        Args:
+            value (torch.Tensor): new weights.
+
+        Returns:
+            torch.Tensor: current weights.
+        """
+        return WeightBiasDelayMixin.weight.fget(self)
+
+    @weight.setter
+    def weight(self, value: torch.Tensor):
+        WeightBiasDelayMixin.weight.fset(self, value * self.mask)
+
+    @property
+    def delay(self) -> torch.Tensor | None:
+        r"""Learnable delays of the connection.
+
+        Args:
+            value (torch.Tensor): new delays.
+
+        Returns:
+            torch.Tensor | None: current delays, if the connection has any.
+
+        Raises:
+            RuntimeError: ``delay`` cannot be set on a connection without learnable delays.
+        """
+        WeightBiasDelayMixin.delay.fget(self)
+
+    @delay.setter
+    def delay(self, value: torch.Tensor):
+        if self.delay_ is not None:
+            WeightBiasDelayMixin.weight.fset(self, value * self.mask)
+        else:
+            WeightBiasDelayMixin.weight.fset(self, value)

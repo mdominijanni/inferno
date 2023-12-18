@@ -1,29 +1,72 @@
 from __future__ import annotations
 from functools import cached_property
 import math
-from inferno import rescale
 import torch
+import torch.nn as nn
 
 
 class AdaptationMixin:
+    r"""Mixin for neurons with membrane adaptations.
+
+    Args:
+        adaptation (torch.Tensor): initial membrane adaptations.
+        requires_grad (bool, optional): if the parameters created require gradients. Defaults to False.
+
+    Note:
+        This must be added to a class which inherits from :py:class:`DimensionalModule`.
+
+    Note:
+        The mixin constructor must be called after the :py:class:`~inferno.DimensionalModule` constructor.
+    """
+
+    def __init__(self, adaptation, requires_grad=False):
+        self.register_parameter("adaptation_", nn.Parameter(adaptation, requires_grad))
+        self.register_constrained("adaptation_")
+
     @property
     def adaptation(self) -> torch.Tensor:
         r"""Membrane adaptations.
 
         Args:
-            value (torch.Tensor): new membrane adaptations.
+            value (torch.Tensor): membrane adaptations.
 
         Returns:
-            torch.Tensor: current membrane adaptations.
+            torch.Tensor: membrane adaptations.
         """
-        return self.adaptations.data
+        return self.adaptation_.data
 
     @adaptation.setter
     def adaptation(self, value: torch.Tensor):
-        self.adaptations[:] = value
+        self.adaptation_.data = value
+
+
+class CurrentMixin:
+    def __init__(self, data, requires_grad=False):
+        self.register_parameter("current_", nn.Parameter(data, requires_grad))
+        self.register_constrained("current_")
+
+    @property
+    def current(self) -> torch.Tensor:
+        r"""Membrane currents in nanoamperes.
+
+        Args:
+            value (torch.Tensor): new membrane currents.
+
+        Returns:
+            torch.Tensor: current membrane currents.
+        """
+        return self.current_.data
+
+    @current.setter
+    def current(self, value: torch.Tensor):
+        self.current_.data = value
 
 
 class VoltageMixin:
+    def __init__(self, data, requires_grad=False):
+        self.register_parameter("voltage_", nn.Parameter(data, requires_grad))
+        self.register_constrained("voltage_")
+
     @property
     def voltage(self) -> torch.Tensor:
         r"""Membrane voltages in millivolts.
@@ -34,58 +77,86 @@ class VoltageMixin:
         Returns:
             torch.Tensor: current membrane voltages.
         """
-        return self.voltages.data
+        return self.voltage_.data
 
     @voltage.setter
     def voltage(self, value: torch.Tensor):
-        self.voltages[:] = value
+        self.voltage_.data = value
 
 
-class SpikeRefractoryMixin:
+class RefractoryMixin:
+    r"""Mixin for neurons with refractory periods.
+
+    Args:
+        refrac (torch.Tensor): initial remaining refractory periods, in :math:`\mathrm{ms}`.
+        requires_grad (bool, optional): if the parameters created require gradients. Defaults to False.
+
+    Note:
+        This must be added to a class which inherits from :py:class:`DimensionalModule`.
+
+    Note:
+        The mixin constructor must be called after the :py:class:`~inferno.DimensionalModule` constructor.
+    """
+
+    def __init__(self, refrac, requires_grad=False):
+        self.register_parameter("refrac_", nn.Parameter(refrac, requires_grad))
+        self.register_constrained("refrac_")
+
+    @property
+    def refrac(self) -> torch.Tensor:
+        r"""Remaining refractory periods, in milliseconds.
+
+        Args:
+            value (torch.Tensor): remaining refractory periods, in :math:`\mathrm{ms}`.
+
+        Returns:
+            torch.Tensor: remaining refractory periods, in :math:`\mathrm{ms}`.
+        """
+        return self.refrac_.data
+
+    @refrac.setter
+    def refrac(self, value: torch.Tensor) -> None:
+        self.refrac_.data = value
+
+
+class SpikeRefractoryMixin(RefractoryMixin):
+    r"""Mixin for neurons with refractory periods and spikes based off of them.
+
+    Args:
+        refrac (torch.Tensor): initial remaining refractory periods, in :math:`\mathrm{ms}`.
+        requires_grad (bool, optional): if the parameters created require gradients. Defaults to False.
+
+    Note:
+        This must be added to a class which inherits from :py:class:`DimensionalModule`.
+
+    Note:
+        This must be added to a class with instances containing a variable ``refrac_t``,
+        representing the length of the absolute refractory period in milliseconds.
+
+    Note:
+        The mixin constructor must be called after the :py:class:`~inferno.DimensionalModule` constructor.
+    """
+
+    def __init__(self, refrac, requires_grad=False):
+        RefractoryMixin.__init__(self, refrac, requires_grad)
+
     @property
     def spike(self) -> torch.Tensor:
         r"""Action potentials last generated.
 
         Returns:
-            torch.Tensor: if the correspond neuron generated an action potential last step.
+            torch.Tensor: if the corresponding neuron generated an action potential last step.
         """
         return self.refracs == self.refrac_t
 
-    @property
-    def arp(self) -> float:
-        return self.refrac_t.item()
 
-    @arp.setter
-    def arp(self, value: float) -> None:
-        # cast to float and ensure correctness
-        value = float(value)
-        if value < 0:
-            raise ValueError(f"cannot assign negative value {value} to absolute refractory period")
+class WeightBiasMixin:
+    def __init__(
+        self, weight: torch.Tensor, bias: torch.Tensor | None, requires_grad=False
+    ):
+        self.register_parameter("weight_", nn.Parameter(weight, requires_grad))
+        self.register_parameter("bias_", nn.Parameter(bias, requires_grad))
 
-        # scale and recompute remaining refractory periods
-        if value > 0:
-            self.refrac = rescale(self.refrac, 0.0, self.arp, src_min=0.0, src_max=value)
-        else:
-            self.refrac = torch.zeros_like(self.refrac)
-
-        # replace absolute refractory period
-        self.refrac_t.fill_(value)
-
-    @property
-    def refrac(self) -> torch.Tensor:
-        r"""Remaining refractory periods of the neurons, in milliseconds.
-
-        Returns:
-            torch.Tensor: current remaining refractory periods.
-        """
-        return self.refracs.data
-
-    @refrac.setter
-    def refrac(self, value: torch.Tensor) -> None:
-        self.refracs[:] = value
-
-
-class WeightBiasDelayMixin:
     @property
     def weight(self) -> torch.Tensor:
         r"""Learnable weights of the connection.
@@ -96,11 +167,11 @@ class WeightBiasDelayMixin:
         Returns:
             torch.Tensor: current weights.
         """
-        return self.weights.data
+        return self.weight_.data
 
     @weight.setter
     def weight(self, value: torch.Tensor):
-        self.weights[:] = value
+        self.weight_.data = value
 
     @property
     def bias(self) -> torch.Tensor | None:
@@ -115,17 +186,29 @@ class WeightBiasDelayMixin:
         Raises:
             RuntimeError: ``bias`` cannot be set on a connection without learnable biases.
         """
-        if self.biases is not None:
-            return self.biases.data
+        if self.bias_ is not None:
+            return self.bias_.data
 
     @bias.setter
     def bias(self, value: torch.Tensor):
-        if self.biases is not None:
-            self.biases[:] = value
+        if self.bias_ is not None:
+            self.bias_.data = value
         else:
             raise RuntimeError(
                 f"cannot set `bias` on a {type(self).__name__} without trainable biases"
             )
+
+
+class WeightBiasDelayMixin(WeightBiasMixin):
+    def __init__(
+        self,
+        weight: torch.Tensor,
+        bias: torch.Tensor | None,
+        delay: torch.Tensor | None,
+        requires_grad=False,
+    ):
+        WeightBiasMixin.__init__(self, weight, bias, requires_grad)
+        self.register_parameter("delay_", nn.Parameter(delay, requires_grad))
 
     @property
     def delay(self) -> torch.Tensor | None:
@@ -140,13 +223,13 @@ class WeightBiasDelayMixin:
         Raises:
             RuntimeError: ``delay`` cannot be set on a connection without learnable delays.
         """
-        if self.delays is not None:
-            return self.delays.data
+        if self.delay_ is not None:
+            return self.delay_.data
 
     @delay.setter
     def delay(self, value: torch.Tensor):
-        if self.delays is not None:
-            self.delays[:] = value
+        if self.delay_ is not None:
+            self.delay_.data = value
         else:
             raise RuntimeError(
                 f"cannot set `delay` on a {type(self).__name__} without trainable delays"
@@ -170,6 +253,7 @@ class BatchMixin:
         The mixin constructor must be called after the constructor for the class
         which calls the :py:class:`~inferno.DimensionalModule` constructor is.
     """
+
     def __init__(
         self,
         batch_size: int,
@@ -183,8 +267,10 @@ class BatchMixin:
 
         # check that a conflicting constraint doesn't exist
         if 0 in self.constraints:
-            raise RuntimeError(f"{type(self).__name__} object already contains"
-                               f"constraint size={self.constraints[0]} at dim={0}.")
+            raise RuntimeError(
+                f"{type(self).__name__} object already contains"
+                f"constraint size={self.constraints[0]} at dim={0}."
+            )
 
         # register new constraint
         self.reconstrain(dim=0, size=batch_size)
@@ -224,6 +310,7 @@ class ShapeMixin(BatchMixin):
         The mixin constructor must be called after the constructor for the class
         which calls the :py:class:`~inferno.DimensionalModule` constructor is.
     """
+
     def __init__(self, shape: tuple[int, ...] | int, batch_size: int):
         # call superclass constructor
         BatchMixin.__init__(self, batch_size)

@@ -2,10 +2,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from inferno import DimensionalModule, HistoryModule, Module
 import math
+from functools import cached_property
 import torch
-import torch.nn as nn
 from typing import Protocol
-from . import ShapeMixin
+from .infrastructure import ShapeMixin
 
 
 class Neuron(ShapeMixin, DimensionalModule, ABC):
@@ -377,20 +377,12 @@ class Connection(Module, ABC):
     def __init__(
         self,
         synapse: Synapse,
-        weight: nn.Parameter | None,
-        bias: nn.Parameter | None,
-        delay: nn.Parameter | None,
     ):
         # superclass constructor
         Module.__init__(self)
 
         # register submodule
-        self.register_module("_synapse", synapse)
-
-        # register parameters
-        self.register_parameter("weights", weight)
-        self.register_parameter("biases", bias)
-        self.register_parameter("delays", delay)
+        self.register_module("synapse_", synapse)
 
     @property
     def synapse(self) -> Synapse:
@@ -402,7 +394,7 @@ class Connection(Module, ABC):
         Returns:
            Synapse: registered synapse.
         """
-        return self._synapse
+        return self.synapse_
 
     @synapse.setter
     def synapse(self, value: Synapse):
@@ -458,7 +450,7 @@ class Connection(Module, ABC):
             f"Connection `{type(self).__name__}` must implement the getter for property `outshape`"
         )
 
-    @property
+    @cached_property
     def insize(self) -> int:
         r"""Number of inputs to the connection, excluding the batch dimension.
 
@@ -467,7 +459,7 @@ class Connection(Module, ABC):
         """
         return math.prod(self.inshape)
 
-    @property
+    @cached_property
     def outsize(self) -> tuple[int]:
         r"""Number of outputs from the connection, excluding the batch dimension.
 
