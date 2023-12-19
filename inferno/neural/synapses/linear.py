@@ -1,8 +1,8 @@
 import inferno
-import math
 import torch
 import torch.nn as nn
 from typing import Literal
+import warnings
 from .. import Synapse, SynapseConstructor
 
 
@@ -20,6 +20,8 @@ class PassthroughSynapse(Synapse):
         delay (float, optional): maximum delay to support. Defaults to None.
         interpolation ("nearest" | "previous", optional): interpolation mode for non-integer multiple selectors.
             Defaults to "nearest".
+        spikes_from_currents (bool, optional): if spiking input should be assumed from current-like input.
+            Defaults to True.
         current_overbound (float | None, optional): value to replace values out of bounds, use values at
                 final record if none. Defaults to 0.0.
         spike_overbound (bool | None, optional): value to replace values out of bounds, use values at
@@ -31,7 +33,7 @@ class PassthroughSynapse(Synapse):
 
     Note:
         When ``interpolation`` is set to `"nearest"`, the closest record will be used, even if it is in the future.
-        When it is set to `"previous"` the most recent
+        When it is set to `"previous"` the most recent will be used.
 
     Raises:
         ValueError: ``step_time`` must be positive.
@@ -46,6 +48,7 @@ class PassthroughSynapse(Synapse):
         batch_size: int = 1,
         delay: float | None = None,
         interpolation: Literal["nearest", "previous"] = "previous",
+        spikes_from_currents: bool = True,
         current_overbound: float | None = 0.0,
         spike_overbound: bool | None = False,
     ):
@@ -68,55 +71,60 @@ class PassthroughSynapse(Synapse):
             )
 
         # call superclass constructor
-        if delay:
-            currents = nn.Parameter(
-                torch.zeros(batch_size, math.ceil(delay / step_time) + 1, *shape),
-                requires_grad=False,
-            )
-            Synapse.__init__(
-                self, shape, batch_size, batched_parameters=(("currents", currents))
-            )
-        else:
-            Synapse.__init__(self, shape, batch_size, batched_parameters=("currents",))
+        Synapse.__init__(self, shape, step_time, batch_size, delay)
 
-        # check that the step time is valid
-        if float(step_time) <= 0:
-            raise ValueError(
-                f"step time must be positive, received {float(step_time)}."
+        # register parameters
+        self.register_parameter(
+            "current_", nn.Parameter(torch.zeros(*self.bshape, self.hsize), False)
+        )
+        self.register_constrained("current_")
+
+        if not spikes_from_currents:
+            self.register_parameter(
+                "spike_",
+                nn.Parameter(
+                    torch.zeros(*self.bshape, self.hsize, dtype=torch.bool), False
+                ),
             )
+            self.register_constrained("spike_")
 
         # register extras
-        self.register_extra("step_time", float(step_time))
-        self.register_extra("delay_max", None if delay is None else float(delay))
         self.register_extra("current_overbound", current_overbound)
         self.register_extra("spike_overbound", spike_overbound)
 
-        # non-persistant function
-        match interpolation:
+        # add non-persistant interpolation
+        match interpolation.lower():
             case "nearest":
-                self.interp = torch.round
+                self.interpolation = inferno.interp_nearest
             case "previous":
-                self.interp = torch.ceil
+                self.interpolation = inferno.interp_previous
             case _:
                 raise RuntimeError(
                     f"invalid `interpolation` of '{interpolation}' received"
                 )
 
-        # set values for parameters
-        self.currents.fill_(0)
+        # function for conversion of currents to spikes
+        self._current_to_spike = lambda c: c > 0
 
     @classmethod
     def partialconstructor(
         cls,
         interpolation: Literal["nearest", "previous"] = "previous",
+        spikes_from_currents: bool = True,
         current_overbound: float | None = 0.0,
         spike_overbound: bool | None = False,
     ) -> SynapseConstructor:
         r"""Returns a function with a common signature for synapse construction.
 
         Args:
-            interpolation ("nearest" | "previous", optional): interpolation mode for float-type selectors.
+            interpolation ("nearest" | "previous", optional): interpolation mode for non-integer multiple selectors.
                 Defaults to "nearest".
+            spikes_from_currents (bool, optional): if spiking input should be assumed from current-like input.
+                Defaults to True.
+            current_overbound (float | None, optional): value to replace values out of bounds, use values at
+                    final record if none. Defaults to 0.0.
+            spike_overbound (bool | None, optional): value to replace values out of bounds, use values at
+                    final record if none. Defaults to False.
 
         Returns:
            SynapseConstructor: partial constructor for synapse.
@@ -129,6 +137,7 @@ class PassthroughSynapse(Synapse):
                 batch_size,
                 delay,
                 interpolation=interpolation,
+                spikes_from_currents=spikes_from_currents,
                 current_overbound=current_overbound,
                 spike_overbound=spike_overbound,
             )
@@ -137,117 +146,86 @@ class PassthroughSynapse(Synapse):
 
     def clear(self):
         r"""Resets synapses to their resting state."""
-        self.currents.fill_(0)
+        self.reset("current_", 0)
+        if hasattr(self, "spike_"):
+            self.reset("spike_", False)
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, inputs: torch.Tensor, spikes: torch.Tensor | None = None, **kwargs
+    ) -> torch.Tensor:
         r"""Runs a simulation step of the synaptic kinetics.
 
         Args:
-            inputs (torch.Tensor): spike-like input.
+            inputs (torch.Tensor): main input to the synapse, treated like a current.
+            spikes (torch.Tensor | None, optional): spiking input if distinct from input current.
+                Defaults to None.
 
         Returns:
             torch.Tensor: currents resulting from the kinetics.
         """
-        if self.delay is None:
-            self.currents.data[:] = inputs
-            return self.currents.data
-        else:
-            self.currents.data = torch.roll(self.currents.data, shifts=1, dims=1)
-            self.currents.data[:, 0] = inputs
-            return self.currents.data[:, 0]
+        if hasattr(self, "spike_") and spikes is None:
+            raise RuntimeError(
+                f"{type(self).__name__} object initialized with `spikes_from_currents` "
+                "set to True, requires `spikes` argument on __call__()."
+            )
+        if not hasattr(self, "spike_") and spikes is not None:
+            warnings.warn(
+                f"{type(self).__name__} object initialized with `spikes_from_currents` "
+                "set to False, ignoring `spikes`.",
+                category=RuntimeWarning,
+            )
 
-    @property
-    def dt(self) -> float:
-        r"""Length of the simulation time step, in milliseconds.
+        self.current = inputs
 
-        Returns:
-            float: length of the simulation time step.
-        """
-        return self.step_time
+        if spikes is not None:
+            self.pushto("spikes_", spikes)
 
-    @dt.setter
-    def dt(self, value: float):
-        if self.delay:
-            oldlen = math.ceil(self.delay / self.step_time) + 1
-            newlen = math.ceil(self.delay / value) + 1
-
-            if self.step_time > value:
-                data = inferno.zeros(
-                    self.currents.data, shape=(self.bsize, newlen, *self.shape)
-                )
-                data[:, (newlen - oldlen):] = self.currents.data  # fmt: skip
-                self.currents.data = data
-
-            if self.step_time < value:
-                data = inferno.zeros(
-                    self.currents.data, shape=(self.bsize, newlen, *self.shape)
-                )
-                data[:] = self.currents.data[:, (oldlen - newlen):]  # fmt: skip
-                self.currents.data = data
-
-        self.step_time = float(value)
-
-    @property
-    def delay(self) -> float | None:
-        r"""Maximum supported delay, as a multiple of simulation time steps.
-
-        Returns:
-            float | None: maximum number of buffered time steps.
-        """
-        return self.delay_max
+        return self.current
 
     @property
     def current(self) -> torch.Tensor:
-        r"""Currents of the synapses.
+        r"""Currents of the synapses at the present time.
 
         Args:
             value (torch.Tensor): new synapse currents.
 
         Returns:
             torch.Tensor: currents of the synapses.
-
-        Note:
-            This will return the currents over the entire delay history.
         """
-        return self.currents.data
+        return self.latest("current_")
 
     @current.setter
     def current(self, value: torch.Tensor):
-        self.currents.data = value
+        self.pushto("current_", value)
 
     @property
     def spike(self) -> torch.Tensor:
-        r"""Spikes to the synapses.
+        r"""Spikes to the synapses at the present time.
 
         Returns:
             torch.Tensor: spikes to the synapses.
 
         Note:
-            This will return the spikes over the entire delay history.
+            Spikes are computed as inputs greater than zero. If currents rather than spikes
+            are passed into this object's :py:meth:`forward` method, this property will
+            return incorrect values.
         """
-        return self.currents.data != 0
+        if hasattr(self, "spike_"):
+            return self.latest("spike_")
+        else:
+            return self._current_to_spike(self.current)
 
-    def current_at(
-        self, selector: torch.Tensor, out: torch.Tensor | None = None
-    ) -> torch.Tensor:
+    def current_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Returns currents at times specified by delays.
 
         Args:
             selector (torch.Tensor): delays for selection of currents.
-            overbound (float | None, optional): value to replace values out of bounds, use values at
-                final record if none. Defaults to 0.0.
-            out (torch.Tensor | None, optional): output tensor, if required. Defaults to None.
 
         Shape:
             ``selector``:
 
-                :math:`B \times D \times N_0 \times \cdots`, where :math:`B` is the number of batches,
-                :math:`D` is the number of delay selectors, and :math:`N_0 \times \cdots` is the underlying
-                shape.
-
-            ``out``:
-
-                Same shape as ``selector``.
+                :math:`B \times N_0 \times \cdots \times D`, where :math:`B` is the number of batches,
+                :math:`N_0 \times \cdots` is the underlying shape, and :math:`D` is the number of delay selectors.
 
             **outputs**
 
@@ -256,40 +234,82 @@ class PassthroughSynapse(Synapse):
         Returns:
             torch.Tensor: currents selected at the given times.
         """
-        if self.delay is None:
-            raise RuntimeError("`current_at` is invalid with delayed synapse")
-
-        res = torch.gather(
-            self.current,
-            1,
-            self.interp(selector / self.dt).clamp(min=0, max=self.delay).long(),
-            out=out,
-        )
-        if self.current_overbound is not None:
-            res = res.where(
-                self.interp(selector / self.dt) <= self.delay, self.current_overbound
+        if not self.delayed:
+            if self.current_overbound is not None:
+                return torch.where(selector == 0, self.current, self.current_overbound)
+            else:
+                return self.current
+        else:
+            res = self.select(
+                name="current_",
+                time=selector.clamp(min=0, max=((self.hsize - 1) * self.dt)),
+                interpolation=self.interpolation,
             )
+            if self.current_overbound is not None:
+                return torch.where(
+                    selector == selector.clamp(min=0, max=((self.hsize - 1) * self.dt)),
+                    res,
+                    self.current_overbound,
+                )
+            else:
+                return res
 
-    def spike_at(self, selector: torch.Tensor, out=None) -> torch.Tensor:
+    def spike_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Returns spikes at times specified by delays.
 
         Args:
             selector (torch.Tensor): delays for selection of spikes.
-            out (torch.Tensor | None, optional): output tensor, if required. Defaults to None.
+
+        Shape:
+            ``selector``:
+
+                :math:`B \times N_0 \times \cdots \times D`, where :math:`B` is the number of batches,
+                :math:`N_0 \times \cdots` is the underlying shape, and :math:`D` is the number of delay selectors.
+
+            **outputs**
+
+                Same shape as ``selector``.
 
         Returns:
             torch.Tensor: spikes selected at the given times.
         """
-        if self.delay is None:
-            raise RuntimeError("`spike_at` is invalid with delayed synapse")
-
-        res = torch.gather(
-            self.spike,
-            1,
-            self.interp(selector / self.dt).clamp(min=0, max=self.delay).long(),
-            out=out,
-        )
-        if self.spike_overbound is not None:
-            res = res.where(
-                self.interp(selector / self.dt) <= self.delay, self.spike_overbound
-            )
+        if hasattr(self, "spike_"):
+            if not self.delayed:
+                if self.spike_overbound is not None:
+                    return torch.where(selector == 0, self.spike, self.spike_overbound)
+                else:
+                    return self.spike
+            else:
+                res = self.select(
+                    name="spike_",
+                    time=selector.clamp(min=0, max=((self.hsize - 1) * self.dt)),
+                    interpolation=self.interpolation,
+                )
+                if self.spike_overbound is not None:
+                    return torch.where(
+                        selector == selector.clamp(min=0, max=((self.hsize - 1) * self.dt)),
+                        res,
+                        self.spike_overbound,
+                    )
+                else:
+                    return res
+        else:
+            if not self.delayed:
+                if self.spike_overbound is not None:
+                    return torch.where(selector == 0, self._current_to_spike(self.current), self.spike_overbound)
+                else:
+                    return self._current_to_spike(self.current)
+            else:
+                res = self.select(
+                    name="current_",
+                    time=selector.clamp(min=0, max=((self.hsize - 1) * self.dt)),
+                    interpolation=self.interpolation,
+                )
+                if self.spike_overbound is not None:
+                    return torch.where(
+                        selector == selector.clamp(min=0, max=((self.hsize - 1) * self.dt)),
+                        self._current_to_spike(res),
+                        self.spike_overbound,
+                    )
+                else:
+                    return self._current_to_spike(res)

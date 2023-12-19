@@ -4,7 +4,7 @@ import math
 import torch
 import torch.nn.functional as F
 from .. import Connection, SynapseConstructor
-from ..infrastructure import WeightBiasDelayMixin
+from ._mixins import WeightBiasDelayMixin
 
 
 class DenseLinear(WeightBiasDelayMixin, Connection):

@@ -205,21 +205,17 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         size of its :math:`0^\text{th}` dimension must equal ``batch_size``. If unspecified, an empty tensor of shape
         (batch_size, \*shape) will be constructed for each, and for parameter construction ``requires_grad``
         will be set to False.
-
-    Note:
-        If no ``on_batch_resize`` is specified, then :py:meth:`clear` will be called without arguments.
     """
 
     def __init__(
         self,
         shape: tuple[int, ...] | int,
         step_time: float,
-        *,
-        batch_size: int = 1,
-        delay: float = 0.0,
+        batch_size: int,
+        delay: float | None,
     ):
         # superclass constructors
-        HistoryModule.__init__(self, step_time, delay)
+        HistoryModule.__init__(self, step_time, delay if delay is not None else 0.0)
         ShapeMixin.__init__(self, shape, batch_size)
 
     @classmethod
@@ -271,12 +267,15 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
 
     @delay.setter
     def delay(self, value: float) -> None:
+        hsize = self.hsize
         self.hlen = value
+        if hsize != self.hsize:
+            self.clear()
 
     @property
     @abstractmethod
     def current(self) -> torch.Tensor:
-        r"""Currents of the synapses.
+        r"""Currents of the synapses at the present time.
 
         Args:
             value (torch.Tensor): new synapse currents.
@@ -286,9 +285,6 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
 
         Raises:
             NotImplementedError: ``current`` must be implemented by the subclass.
-
-        Note:
-            This will return the currents over the entire delay history.
         """
         raise NotImplementedError(
             f"Synapse `{type(self).__name__}` must implement the getter for property `current`"
@@ -304,56 +300,47 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
     @property
     @abstractmethod
     def spike(self) -> torch.Tensor:
-        r"""Spikes to the synapses.
+        r"""Spikes to the synapses at the present time.
 
         Returns:
             torch.Tensor: spikes to the synapses.
 
         Raises:
             NotImplementedError: ``spike`` must be implemented by the subclass.
-
-        Note:
-            This will return the spikes over the entire delay history.
         """
         raise NotImplementedError(
             f"Synapse `{type(self).__name__}` must implement the getter for property `spike`"
         )
 
     @abstractmethod
-    def current_at(
-        self, selector: torch.Tensor, out: torch.Tensor | None = None
-    ) -> torch.Tensor:
+    def current_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Returns currents at times specified by delays.
 
         Args:
             selector (torch.Tensor): delays for selection of currents.
-            out (torch.Tensor | None, optional): output tensor, if required. Defaults to None.
 
         Returns:
             torch.Tensor: currents selected at the given times.
 
         Raises:
-            NotImplementedError: ``currents`` must be implemented by the subclass.
+            NotImplementedError: ``current_at`` must be implemented by the subclass.
         """
         raise NotImplementedError(
             f"Synapse `{type(self).__name__}` must implement the method `dcurrent`"
         )
 
     @abstractmethod
-    def spike_at(
-        self, selector: torch.Tensor, out: torch.Tensor | None = None
-    ) -> torch.Tensor:
+    def spike_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Returns spikes at times specified by delays.
 
         Args:
             selector (torch.Tensor): delays for selection of spikes.
-            out (torch.Tensor | None, optional): output tensor, if required. Defaults to None.
 
         Returns:
             torch.Tensor: spikes selected at the given times.
 
         Raises:
-            NotImplementedError: ``spikes`` must be implemented by the subclass.
+            NotImplementedError: ``spike_at`` must be implemented by the subclass.
         """
         raise NotImplementedError(
             f"Synapse `{type(self).__name__}` must implement the method `dspike`"

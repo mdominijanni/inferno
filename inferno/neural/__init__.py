@@ -1,5 +1,6 @@
 from .infrastructure import (  # noqa:F401
-    Group,
+    BatchMixin,
+    ShapeMixin,
 )
 
 from base import (  # noqa:F401

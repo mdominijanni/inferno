@@ -910,12 +910,12 @@ class HistoryModule(DimensionalModule):
 
     def register_constrained(self, name: str):
         DimensionalModule.register_constrained(self, name)
-        if name not in self._pointer:
+        if name in self._pointer:
             self._pointer[name] = 0
 
     def deregister_constrained(self, name: str):
         DimensionalModule.deregister_constrained(self, name)
-        if name not in self._pointer:
+        if name in self._pointer:
             del self._pointer[name]
 
     def select(
@@ -923,6 +923,7 @@ class HistoryModule(DimensionalModule):
         name: str,
         time: float | torch.Tensor,
         interpolation: Interpolation,
+        *,
         tolerance: float = 1e-7,
         offset: int = 1,
     ) -> torch.Tensor:
@@ -938,6 +939,13 @@ class HistoryModule(DimensionalModule):
 
         Returns:
             torch.Tensor: interpolated tensor selected at a prior time.
+
+        Shape:
+            ``time``:
+
+                :math:`B \times D \times N_0 \times \cdots`, where :math:`B` is the number of batches,
+                :math:`D` is the number of delay selectors, and :math:`N_0 \times \cdots` is the underlying
+                shape.
 
         Note:
             By default, `offset` is set to `1`. This is the correct configuration to use under normal
@@ -978,6 +986,16 @@ class HistoryModule(DimensionalModule):
         else:
             time = time.to(device=data.device)
 
+        # determine if output dimension should be squeezed
+        if time.ndim == data.ndim - 1:
+            squeeze_res = True
+            time = time.unsqueeze(-1)
+        elif time.ndim == data.ndim:
+            squeeze_res = False
+        else:
+            raise RuntimeError(f"time has incompatible number of dimensions {time.ndim}, "
+                               f"must have number of dimensions equal to {data.ndim} or {data.ndim - 1}")
+
         # validate that time values are correct
         if torch.any(time < 0):
             raise ValueError("time must contain only non-negative values.")
@@ -1004,23 +1022,57 @@ class HistoryModule(DimensionalModule):
         prev_data = torch.gather(
             data,
             -1,
-            (pointer - indices.ceil().long()).unsqueeze(-1) % self.hsize,
+            (pointer - indices.ceil().long()) % self.hsize,
         )
 
         # observation after sample, index floor
         next_data = torch.gather(
             data,
             -1,
-            (pointer - indices.floor().long()).unsqueeze(-1) % self.hsize,
+            (pointer - indices.floor().long()) % self.hsize,
         )
 
-        # return interpolation
-        return interpolation(
-            prev_data.squeeze(-1),
-            next_data.squeeze(-1),
+        # interpolate and reshape if necessary
+        res = interpolation(
+            prev_data,
+            next_data,
             torch.clamp((indices.ceil() / self.dt) - time, min=0, max=self.dt),
             self.dt,
         )
+        if squeeze_res:
+            return res.squeeze(-1)
+        else:
+            return res
+
+    def reset(self, name: str, data: Any) -> None:
+        r"""Resets a constrained attribute to some value or values.
+
+        Args:
+            name (str): name of the attribute to target.
+            data (Any): data to insert.
+
+        Raises:
+            RuntimeError: cannot reset an uninitialized buffer or parameter.
+        """
+        if name in self._constrained_buffers:
+            buffer = self.get_buffer(name)
+            if buffer is None or buffer.numel() == 0:
+                raise RuntimeError(
+                    f"cannot reset {name}, buffer is uninitialized."
+                )
+            buffer[:] = data
+            self._pointer[name] = 0
+        elif name in self._constrained_parameters:
+            param = self.get_parameter(name)
+            if param is None or param.numel() == 0:
+                raise RuntimeError(
+                    f"cannot reset {name}, parameter is uninitialized."
+                )
+            param[:] = data
+        else:
+            raise AttributeError(
+                f"name {name} does not specify a constrained buffer or parameter."
+            )
 
     def pushto(self, name: str, data: torch.Tensor) -> None:
         r"""Inserts a slice at the current time into a constrained attribute and advances to the next time.

@@ -3,7 +3,7 @@ from .. import functional as nf
 import math
 import torch
 import types
-from ..infrastructure import AdaptationMixin, SpikeRefractoryMixin, VoltageMixin
+from ._mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
 
 
 class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
@@ -63,6 +63,10 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         # check that the step time is valid
         if float(step_time) <= 0:
             raise ValueError(f"step time must be positive, received {float(step_time)}")
+
+        # check that absolute refractory period is valid
+        if float(refrac_t) <= 0:
+            raise ValueError(f"refrac_t be positive, received {float(refrac_t)}")
 
         # register extras
         self.register_extra("step_time", float(step_time))
@@ -222,6 +226,10 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         # check that the step time is valid
         if float(step_time) <= 0:
             raise ValueError(f"step time must be positive, received {float(step_time)}")
+
+        # check that absolute refractory period is valid
+        if float(refrac_t) <= 0:
+            raise ValueError(f"refrac_t be positive, received {float(refrac_t)}")
 
         # check that tc_adapt and incr_adapt are of equal length
         if isinstance(tc_adaptation, list | tuple):
@@ -511,6 +519,10 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         # check that the step time is valid
         if float(step_time) <= 0:
             raise ValueError(f"step time must be positive, received {float(step_time)}")
+
+        # check that absolute refractory period is valid
+        if float(refrac_t) <= 0:
+            raise ValueError(f"refrac_t be positive, received {float(refrac_t)}")
 
         # check that tc_adapt and incr_adapt are of equal length
         if isinstance(tc_adaptation, list | tuple):
