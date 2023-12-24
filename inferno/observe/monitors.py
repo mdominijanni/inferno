@@ -1,22 +1,30 @@
 from inferno import Module, WrapperModule, Hook
 from inferno._internal import rgetattr
+from inferno.typing import ManyToMany
 import torch
 from typing import Any, Callable
 from . import Reducer
 
 
-class Monitor(WrapperModule, Hook):
+class Monitor(Module, Hook):
     r"""Base class for recording input, output, or state of a Module.
 
     Args:
         reducer (Reducer): underlying means for reducing samples over time and storing them.
-        module (Module, optional): module to register as the target for monitoring, can be modified after construction. Defaults to None.
-        prehook (Callable | None, optional): function to call before registrant's :py:meth:`~torch.nn.Module.forward`. Defaults to None.
-        posthook (Callable | None, optional): function to call after registrant's :py:meth:`~torch.nn.Module.forward`. Defaults to None.
-        prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to None.
-        posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to :py:meth:`~torch.nn.Module.register_forward_hook`. Defaults to None.
-        train_update (bool, optional): if this monitor should be called when the module being monitored is in train mode. Defaults to True.
-        eval_update (bool, optional): if this monitor should be called when the module being monitored is in eval mode. Defaults to True.
+        module (Module, optional): module to register as the target for monitoring,
+            can be modified after construction. Defaults to None.
+        prehook (Callable | None, optional): function to call before registrant's
+            :py:meth:`~torch.nn.Module.forward`. Defaults to None.
+        posthook (Callable | None, optional): function to call after registrant's
+            :py:meth:`~torch.nn.Module.forward`. Defaults to None.
+        prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
+            :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to None.
+        posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
+            :py:meth:`~torch.nn.Module.register_forward_hook`. Defaults to None.
+        train_update (bool, optional): if this monitor should be called when the module
+            being monitored is in train mode. Defaults to True.
+        eval_update (bool, optional): if this monitor should be called when the module
+            being monitored is in eval mode. Defaults to True.
     """
 
     def __init__(
@@ -31,7 +39,7 @@ class Monitor(WrapperModule, Hook):
         eval_update: bool = True,
     ):
         # construct module superclasses
-        WrapperModule.__init__(self, reducer)
+        Module.__init__(self)
         Hook.__init__(
             self,
             prehook=prehook,
@@ -43,14 +51,12 @@ class Monitor(WrapperModule, Hook):
             module=module,
         )
 
-    @property
-    def reducer(self) -> Reducer:
-        """Reducer associated with the monitor.
+        # register submodule
+        self.reducer_ = reducer
 
-        Returns:
-            Reducer: reducer used for storing samples over time.
-        """
-        return self.submodule
+    @property
+    def reducer(self):
+        return self.reducer_
 
 
 class InputMonitor(Monitor):
@@ -58,18 +64,22 @@ class InputMonitor(Monitor):
 
     Args:
         reducer (Reducer): underlying means for reducing samples over time and storing them.
-        module (Module, optional): module to register as the target for monitoring, can be modified after construction. Defaults to None.
-        train_update (bool, optional): if this monitor should be called when the module being monitored is in train mode. Defaults to True.
-        eval_update (bool, optional): if this monitor should be called when the module being monitored is in eval mode. Defaults to True.
-        prepend (bool, optional): if this monitor should be called before other registered forward pre-hooks. Defaults to False.
-        mapfn(Callable[[tuple[torch.Tensor]], tuple[torch.Tensor]] | None, optional): modifies/selects inputs to forward to reducer. Defaults to None.
+        module (Module, optional): module to register as the target for monitoring,
+            can be modified after construction.Defaults to None.
+        train_update (bool, optional): if this monitor should be called when the module
+            being monitored is in train mode. Defaults to True.
+        eval_update (bool, optional): if this monitor should be called when the module
+            being monitored is in eval mode. Defaults to True.
+        prepend (bool, optional): if this monitor should be called before other
+            registered forward hooks. Defaults to False.
+        map_fn(Callable[[tuple[torch.Tensor]], tuple[torch.Tensor]] | None, optional): modifies/selects
+            which inputs to forward to reducer. Defaults to None.
 
     Note:
         The inputs, which are received as a tuple, will be unpacked and sent to the reducer.
         Most built-in reducers will select the input at index 0. Custom behavior can be defined
-        by specifying a custom ``mapfn`` or ``mapmeth`` there. Defining a custom ``mapfn`` here
-        will behave similarly and is expected to produce a tuple which will be unpacked by
-        the reducer.
+        by specifying a custom ``map_fn``. Defining a custom ``map_fn`` here will behave similarly
+        and is expected to produce a tuple which will be unpacked into the reducer.
     """
 
     def __init__(
@@ -79,13 +89,15 @@ class InputMonitor(Monitor):
         train_update: bool = True,
         eval_update: bool = True,
         prepend: bool = False,
-        mapfn: Callable[[tuple[torch.Tensor]], tuple[torch.Tensor]] | None = None,
+        map_fn: ManyToMany[torch.Tensor] | None = None,
     ):
         # determine arguments for superclass constructor
-        if mapfn:
-            prehook = lambda m, a: reducer(*mapfn(a))
+        if map_fn:
+            def prehook(module, args):
+                return reducer(*map_fn(*args))
         else:
-            prehook = lambda m, a: reducer(*a)
+            def prehook(module, args):
+                return reducer(*args)
 
         # construct superclass
         Monitor.__init__(
@@ -104,19 +116,26 @@ class OutputMonitor(WrapperModule, Hook):
 
     Args:
         reducer (Reducer): underlying means for reducing samples over time and storing them.
-        module (Module, optional): module to register as the target for monitoring, can be modified after construction. Defaults to None.
-        train_update (bool, optional): if this monitor should be called when the module being monitored is in train mode. Defaults to True.
-        eval_update (bool, optional): if this monitor should be called when the module being monitored is in eval mode. Defaults to True.
-        prepend (bool, optional): if this monitor should be called before other registered forward hooks. Defaults to False.
-        mapfn(Callable[[torch.Tensor | tuple[torch.Tensor]], tuple[torch.Tensor]] | None, optional): modifies/selects outputs to forward to reducer. Defaults to None.
+        module (Module, optional): module to register as the target for monitoring,
+            can be modified after construction.Defaults to None.
+        train_update (bool, optional): if this monitor should be called when the module
+            being monitored is in train mode. Defaults to True.
+        eval_update (bool, optional): if this monitor should be called when the module
+            being monitored is in eval mode. Defaults to True.
+        prepend (bool, optional): if this monitor should be called before other
+            registered forward hooks. Defaults to False.
+        map_fn(Callable[[torch.Tensor | tuple[torch.Tensor]], tuple[torch.Tensor]] | None, optional): modifies/selects
+            outputs to forward to reducer. Defaults to None.
 
     Note:
         The manner in which outputs are received depends on the module being called. Because reducers
-        receive unpacked inputs (which will treat a single tensor as a 1-tuple), they are by default
-        unmodified. Most built-in reducers will select the input at index 0. Custom behavior can be defined
-        by specifying a custom ``mapfn`` or ``mapmeth`` there. Defining a custom ``mapfn`` here
-        will behave similarly and is expected to produce a tuple which will be unpacked by
-        the reducer. For consistency, the default ``mapfn`` will wrap the output in a tuple if it not already one.
+        receive unpacked inputs. If the output is a tuple, it will automatically be unpacked
+        Custom behavior can be defined by specifying a custom ``map_fn``. Defining a custom
+        ``map_fn`` here will behave similarly and is expected to produce a tuple which will
+        be unpacked into the reducer.
+
+    Note:
+        If the output is an instance of :py:class:`tuple`, it will be unpacked automatically.
     """
 
     def __init__(
@@ -126,19 +145,29 @@ class OutputMonitor(WrapperModule, Hook):
         train_update: bool = True,
         eval_update: bool = True,
         prepend: bool = False,
-        mapfn: Callable[[torch.Tensor | tuple[torch.Tensor]], tuple[torch.Tensor]]
+        map_fn: Callable[[Any], tuple[torch.Tensor, ...]]
         | None = None,
     ):
         # determine arguments for superclass constructor
-        if not mapfn:
-            mapfn = lambda x: x if isinstance(x, tuple | list) else (x,)
+        if map_fn:
+            def posthook(module, args, output):
+                if isinstance(output, tuple):
+                    return reducer(*map_fn(*output))
+                else:
+                    return reducer(*map_fn(output))
+        else:
+            def posthook(module, args, output):
+                if isinstance(output, tuple):
+                    return reducer(*output)
+                else:
+                    return reducer(output)
 
         # construct superclass
         Monitor.__init__(
             self,
             reducer=reducer,
             module=module,
-            posthook=lambda m, a, o: reducer(*mapfn(o)),
+            posthook=posthook,
             posthook_kwargs={"prepend": prepend},
             train_update=train_update,
             eval_update=eval_update,
@@ -151,16 +180,22 @@ class StateMonitor(WrapperModule, Hook):
     Args:
         reducer (Reducer): underlying means for reducing samples over time and storing them.
         attr (str): attribute or nested attribute to target.
-        module (Module, optional): module to register as the target for monitoring, can be modified after construction. Defaults to None.
-        as_prehook (bool, optional): if the monitor should be called before the registrant's :py:meth:`~torch.nn.Module.forward` call. Defaults to False.
-        train_update (bool, optional): if this monitor should be called when the module being monitored is in train mode. Defaults to True.
-        eval_update (bool, optional): if this monitor should be called when the module being monitored is in eval mode. Defaults to True.
-        prepend (bool, optional): if this monitor should be called before other registered forward hooks. Defaults to False.
+        module (Module, optional): module to register as the target for monitoring,
+            can be modified after construction.Defaults to None.
+        train_update (bool, optional): if this monitor should be called when the module
+            being monitored is in train mode. Defaults to True.
+        eval_update (bool, optional): if this monitor should be called when the module
+            being monitored is in eval mode. Defaults to True.
+        prepend (bool, optional): if this monitor should be called before other
+            registered forward hooks. Defaults to False.
 
     Note:
         The nested attribute should be specified with dot notation. For instance, if the registrant has an attribute
         ``a`` which in turn has an attribute ``b`` that should be monitored, then ``attr`` should be ``'a.b'``. Even
         with nested attributes, the monitor's hook will be tied to the registrant.
+
+    Note:
+        If the monitored attribute is an instance of :py:class:`tuple`, it will be unpacked automatically.
     """
 
     def __init__(
@@ -175,14 +210,27 @@ class StateMonitor(WrapperModule, Hook):
     ):
         # determine arguments for superclass constructor
         if as_prehook:
-            prehook = lambda m, a: reducer(rgetattr(m, attr))
+            def prehook(module, args):
+                value = rgetattr(module, attr)
+                if isinstance(value, tuple):
+                    return reducer(*value)
+                else:
+                    return reducer(value)
             prehook_kwargs = {"prepend": prepend}
+
             posthook = None
             posthook_kwargs = None
+
         else:
             prehook = None
-            prehook_kwargs = lambda m, a, o: reducer(rgetattr(m, attr))
-            posthook = None
+            prehook_kwargs = None
+
+            def posthook(module, args, output):
+                value = rgetattr(module, attr)
+                if isinstance(value, tuple):
+                    return reducer(*value)
+                else:
+                    return reducer(value)
             posthook_kwargs = {"prepend": prepend}
 
         # construct superclass

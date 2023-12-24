@@ -1,6 +1,5 @@
 from .common import (  # noqa: F401
     Module,
-    WrapperModule,
     Configuration,
     Hook,
     DimensionalModule,

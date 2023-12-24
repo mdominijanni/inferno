@@ -141,42 +141,6 @@ class Module(nn.Module):
         return sorted(keys)
 
 
-class WrapperModule(Module):
-    r"""Module which translucently wraps a submodule.
-
-    Attributes or methods which have no definition on the parent will instead be called
-    on the primary submodule.
-
-    Args:
-        submodule (Module): module which is being wrapped.
-
-    Raises:
-        TypeError: ``submodule`` cannot be an instance of :py:class:`WrapperModule`.
-
-    Note:
-        Some methods, such as :py:class:`~torch.nn.Module.forward`, are defined on the parent even when
-        not overridden, and as such are not made transparent. Additionally assignment cannot be performed
-        on the submodule.
-    """
-
-    def __init__(self, submodule):
-        nn.Module.__init__(self)
-        if isinstance(submodule, WrapperModule):
-            raise TypeError(
-                f"`submodule` of type {type(submodule)} "
-                "cannot be an instance of WrapperModule"
-            )
-        self.submodule = submodule
-
-    def __getattr__(self, name):
-        if name != "submodule":
-            try:
-                return super().__getattr__(name)
-            except AttributeError:
-                return getattr(self.submodule, name)
-        return super().__getattr__(name)
-
-
 class Configuration(Mapping):
     r"""Class which provides unpacking functionality when used in conjunction with
     the `attrs library <https://www.attrs.org/en/stable/>`_.
