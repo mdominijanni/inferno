@@ -1,10 +1,7 @@
 from __future__ import annotations
-from typing import Callable
 import torch
 from .base import FoldingReducer
 import inferno
-from inferno._internal import newtensor
-from inferno.typing import OneToOneMethod, ManyToOneMethod
 
 
 class EMAReducer(FoldingReducer):
@@ -16,43 +13,50 @@ class EMAReducer(FoldingReducer):
             s_{t + 1} &= \alpha x_{t + 1}  + (1 - \alpha) s_t
         \end{align*}
 
-    For the smoothed data (state) :math:`s` and observation :math:`x`.
+    For the smoothed data (state) :math:`s` and observation :math:`x` and
+    where smoothing factor :math:`\alpha` is as follows.
+
+    .. math::
+        \alpha = 1 - \exp \left(\frac{-\Delta t}{\tau}\right)
+
+    For some time constant :math:`\tau`.
 
     Args:
-        alpha (float | int | torch.Tensor): data smoothing factor, :math:`\alpha`.
-        mapmeth (OneToOneMethod[EMAReducer, torch.Tensor] | ManyToOneMethod[EMAReducer, torch.Tensor] | None, optional): transformation
-            to apply to inputs, no transformation if None. Defaults to None.
-        filtermeth (Callable[[EMAReducer, torch.Tensor], bool] | None, optional): conditional test if transformed
-            input should be integrated, always will if None. Defaults to None.
+        alpha (float): exponential smoothing factor, :math:`\alpha`.
+        step_time (float): length of time between observations, :math:`\Delta t`.
+        history_len (float): length of time over which results should be stored, in the same units as :math:`\Delta t`.
     """
 
     def __init__(
         self,
-        alpha: float | int | torch.Tensor,
+        alpha: float,
+        step_time: float,
         *,
-        mapmeth: OneToOneMethod[EMAReducer, torch.Tensor]
-        | ManyToOneMethod[EMAReducer, torch.Tensor]
-        | None = None,
-        filtermeth: Callable[[EMAReducer, torch.Tensor], bool] | None = None,
+        history_len: float = 0.0,
     ):
-        # call superclass constructor, overriding instance methods if specified
-        FoldingReducer.__init__(self, mapmeth=mapmeth, filtermeth=filtermeth)
+        # call superclass constructor
+        FoldingReducer.__init__(self, step_time, history_len)
 
         # register state
-        self.register_buffer("_alpha", newtensor(alpha))
+        self.register_buffer("alpha", torch.tensor(float(alpha)))
 
-    def fold_fn(self, obs: torch.Tensor, state: torch.Tensor) -> torch.Tensor:
-        return self._alpha * obs + (1 - self._alpha) * state
+    def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
+        if state is None:
+            return obs
+        else:
+            return self.alpha * obs + (1 - self.alpha) * state
 
-    def map_fn(self, *inputs: torch.Tensor) -> torch.Tensor:
+    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
         return inputs[0]
 
-    def filter_fn(self, inputs: torch.Tensor) -> bool:
-        return True
+    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
+        return inputs.fill_(0)
 
-    def init_fn(self, inputs: torch.Tensor) -> torch.Tensor:
-        newdata = inferno.zeros(self._data, shape=inputs.shape)
-        newdata[:] = inputs
-        return (
-            newdata
-        )
+    def interpolate(
+        self,
+        prev_data: torch.Tensor,
+        next_data: torch.Tensor,
+        sample_at: torch.Tensor,
+        step_time: float,
+    ) -> torch.Tensor:
+        return inferno.interp_linear(prev_data, next_data, sample_at, step_time)

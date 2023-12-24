@@ -1,10 +1,8 @@
 from __future__ import annotations
-from typing import Callable
 import torch
 from .base import FoldingReducer
 import inferno
-from inferno._internal import newtensor
-from inferno.typing import OneToOneMethod, ManyToOneMethod, OneToOne
+from inferno.typing import OneToOne
 
 
 class NearestTraceReducer(FoldingReducer):
@@ -20,76 +18,83 @@ class NearestTraceReducer(FoldingReducer):
     For the trace (state) :math:`x` and observation :math:`f`.
 
     Args:
-        step_time (float | torch.Tensor): length of the discrete step time, :math:`\Delta t`.
-        time_constant (float | torch.Tensor): time constant of exponential decay, :math:`\tau`.
-        amplitude (int | float | complex | torch.Tensor): value to set trace to for matching elements, :math:`a`.
-        target (int | float | bool | complex | torch.Tensor): target value to set trace to, :math:`f^*`.
-        tolerance (int | float | torch.Tensor | None, optional): allowable absolute difference to
+        step_time (float): length of the discrete step time, :math:`\Delta t`.
+        time_constant (float): time constant of exponential decay, :math:`\tau`.
+        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.
+        target (int | float | bool | complex): target value to set trace to, :math:`f^*`.
+        tolerance (int | float | None, optional): allowable absolute difference to
             still count as a match, :math:`\epsilon`. Defaults to None.
-        mapmeth (OneToOneMethod[NearestTraceReducer, torch.Tensor] | ManyToOneMethod[NearestTraceReducer, torch.Tensor] | None, optional): transformation
-            to apply to inputs, where the first argument is the reducer itself, no transformation if None. Defaults to None.
-        filtermeth (Callable[[NearestTraceReducer, torch.Tensor], bool] | None, optional): conditional test if transformed
-            input should be integrated, where the first argument is the reducer itself, always will if None. Defaults to None.
+        history_len (float, optional): length of time over which results should be stored,
+            in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
-        By default, only a single input tensor can be provided to :py:meth:`forward` for this class. A custom
-        ``mapmeth`` must be passed in for multiple input support.
+        Only a single input tensor can be provided to :py:meth:`forward` for this class.
     """
 
     def __init__(
         self,
-        step_time: float | torch.Tensor,
-        time_constant: float | torch.Tensor,
-        amplitude: int | float | complex | torch.Tensor,
-        target: int | float | bool | complex | torch.Tensor,
-        tolerance: int | float | torch.Tensor | None = None,
+        step_time: float,
+        time_constant: float,
+        amplitude: int | float | complex,
+        target: int | float | bool | complex,
+        tolerance: int | float | None = None,
         *,
-        mapmeth: OneToOneMethod[NearestTraceReducer, torch.Tensor]
-        | ManyToOneMethod[NearestTraceReducer, torch.Tensor]
-        | None = None,
-        filtermeth: Callable[[NearestTraceReducer, torch.Tensor], bool] | None = None,
+        history_len: float = 0.0,
     ):
-        # call superclass constructor, overriding instance methods if specified
-        FoldingReducer.__init__(self, mapmeth=mapmeth, filtermeth=filtermeth)
+        # call superclass constructor
+        FoldingReducer.__init__(self, step_time, history_len)
 
         # register state
-        decay = inferno.exp(-step_time / time_constant)
-        self.register_buffer("_decay", newtensor(decay))
-        self.register_buffer("_amplitude", newtensor(amplitude))
-        self.register_buffer("_target", newtensor(target))
+        self.register_extra("time_constant", float(time_constant))
+        self.register_buffer("decay", torch.tensor(inferno.exp(-self.dt / self.time_constant)))
+        self.register_buffer("amplitude", torch.tensor(amplitude))
+        self.register_buffer("target", torch.tensor(target))
+        self.register_buffer("tolerance", None if tolerance is None else float(tolerance))
 
-        # register tolerance, construct foldfn closure, and assign
-        if tolerance is not None:
-            self.register_buffer("_tolerance", newtensor(tolerance))
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
 
-            def foldfn(observation, trace, decay, amplitude, target, tolerance):
-                mask = torch.abs(observation - target) <= tolerance
-                return torch.where(mask, amplitude, decay * trace)
+        Args:
+            value (float): new simulation time step length.
 
-            self._inner_foldfn = foldfn
+        Returns:
+            float: length of the simulation time step.
+        """
+        return FoldingReducer.dt.fget(self)
 
+    @dt.setter
+    def dt(self, value: float):
+        FoldingReducer.dt.fset(self, value)
+        self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
+
+    def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
+        # create mask
+        if self.tolerance is None:
+            mask = obs == self.target
         else:
-            self.register_buffer("_tolerance", None)
+            mask = torch.abs(obs - self.target) <= self.tolerance
 
-            def foldfn(observation, trace, decay, amplitude, target, _):
-                mask = observation == target
-                return torch.where(mask, amplitude, decay * trace)
+        # compute new state
+        if state is None:
+            return self.amplitude * mask
+        else:
+            return torch.where(mask, self.amplitude, self.decay * state)
 
-            self._inner_foldfn = foldfn
-
-    def fold_fn(self, obs: torch.Tensor, state: torch.Tensor) -> torch.Tensor:
-        return self._inner_foldfn(
-            obs, state, self._decay, self._amplitude, self._target, self._tolerance
-        )
-
-    def map_fn(self, *inputs: torch.Tensor) -> torch.Tensor:
+    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
         return inputs[0]
 
-    def filter_fn(self, inputs: torch.Tensor) -> bool:
-        return True
+    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
+        return inputs.fill_(0)
 
-    def init_fn(self, inputs: torch.Tensor) -> torch.Tensor:
-        return inferno.zeros(self._data, shape=inputs.shape)
+    def interpolate(
+        self,
+        prev_data: torch.Tensor,
+        next_data: torch.Tensor,
+        sample_at: torch.Tensor,
+        step_time: float,
+    ) -> torch.Tensor:
+        return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
 
 
 class CumulativeTraceReducer(FoldingReducer):
@@ -105,77 +110,82 @@ class CumulativeTraceReducer(FoldingReducer):
     For the trace (state) :math:`x` and observation :math:`f`.
 
     Args:
-        step_time (float | torch.Tensor): length of the discrete step time, :math:`\Delta t`.
-        time_constant (float | torch.Tensor): time constant of exponential decay, :math:`\tau`.
-        amplitude (int | float | complex | torch.Tensor): value to set trace to for matching elements, :math:`a`.
-        target (int | float | bool | complex | torch.Tensor): target value to set trace to, :math:`f^*`.
-        tolerance (int | float | torch.Tensor | None, optional): allowable absolute difference to
+        step_time (float): length of the discrete step time, :math:`\Delta t`.
+        time_constant (float): time constant of exponential decay, :math:`\tau`.
+        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.
+        target (int | float | bool | complex): target value to set trace to, :math:`f^*`.
+        tolerance (int | float | None, optional): allowable absolute difference to
             still count as a match, :math:`\epsilon`. Defaults to None.
-        mapmeth (OneToOneMethod[CumulativeTraceReducer, torch.Tensor] | ManyToOneMethod[CumulativeTraceReducer, torch.Tensor] | None, optional): transformation
-            to apply to inputs, where the first argument is the reducer itself, no transformation if None. Defaults to None.
-        filtermeth (Callable[[CumulativeTraceReducer, torch.Tensor], bool] | None, optional): conditional test if transformed
-            input should be integrated, where the first argument is the reducer itself, always will if None. Defaults to None.
+        history_len (float): length of time over which results should be stored, in the same units as :math:`\Delta t`.
 
     Note:
-        By default, only a single input tensor can be provided to :py:meth:`forward` for this class. A custom
-        ``mapmeth`` must be passed in for multiple input support.
+        Only a single input tensor can be provided to :py:meth:`forward` for this class.
     """
 
     def __init__(
         self,
-        step_time: float | torch.Tensor,
-        time_constant: float | torch.Tensor,
-        amplitude: int | float | complex | torch.Tensor,
-        target: int | float | bool | complex | torch.Tensor,
-        tolerance: int | float | torch.Tensor | None = None,
+        step_time: float,
+        time_constant: float,
+        amplitude: int | float | complex,
+        target: int | float | bool | complex,
+        tolerance: int | float | None = None,
         *,
-        mapmeth: OneToOneMethod[CumulativeTraceReducer, torch.Tensor]
-        | ManyToOneMethod[CumulativeTraceReducer, torch.Tensor]
-        | None = None,
-        filtermeth: Callable[[CumulativeTraceReducer, torch.Tensor], bool]
-        | None = None,
+        history_len: float = 0.0,
     ):
-        # call superclass constructor, overriding instance methods if specified
-        FoldingReducer.__init__(self, mapmeth=mapmeth, filtermeth=filtermeth)
+        # call superclass constructor
+        FoldingReducer.__init__(self, step_time, history_len)
 
         # register state
-        decay = inferno.exp(-step_time / time_constant)
-        self.register_buffer("_decay", newtensor(decay))
-        self.register_buffer("_amplitude", newtensor(amplitude))
-        self.register_buffer("_target", newtensor(target))
+        self.register_extra("time_constant", float(time_constant))
+        self.register_buffer("decay", torch.tensor(inferno.exp(-self.dt / self.time_constant)))
+        self.register_buffer("amplitude", torch.tensor(amplitude))
+        self.register_buffer("target", torch.tensor(target))
+        self.register_buffer("tolerance", None if tolerance is None else float(tolerance))
 
-        # register tolerance, construct foldfn closure, and assign
-        if tolerance is not None:
-            self.register_buffer("_tolerance", newtensor(tolerance))
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
 
-            def foldfn(observation, trace, decay, amplitude, target, tolerance):
-                mask = torch.abs(observation - target) <= tolerance
-                return (decay * trace) + (amplitude * mask)
+        Args:
+            value (float): new simulation time step length.
 
-            self._inner_foldfn = foldfn
+        Returns:
+            float: length of the simulation time step.
+        """
+        return FoldingReducer.dt.fget(self)
 
+    @dt.setter
+    def dt(self, value: float):
+        FoldingReducer.dt.fset(self, value)
+        self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
+
+    def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
+        # create mask
+        if self.tolerance is None:
+            mask = obs == self.target
         else:
-            self.register_buffer("_tolerance", None)
+            mask = torch.abs(obs - self.target) <= self.tolerance
 
-            def foldfn(observation, trace, decay, amplitude, target, _):
-                mask = observation == target
-                return (decay * trace) + (amplitude * mask)
+        # compute new state
+        if state is None:
+            return self.amplitude * mask
+        else:
+            return (self.decay * state) + (self.amplitude * mask)
 
-            self._inner_foldfn = foldfn
-
-    def fold_fn(self, obs: torch.Tensor, state: torch.Tensor) -> torch.Tensor:
-        return self._inner_foldfn(
-            obs, state, self._decay, self._amplitude, self._target, self._tolerance
-        )
-
-    def map_fn(self, *inputs: torch.Tensor) -> torch.Tensor:
+    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
         return inputs[0]
 
-    def filter_fn(self, inputs: torch.Tensor) -> bool:
-        return True
+    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
+        return inputs.fill_(0)
 
-    def init_fn(self, inputs: torch.Tensor) -> torch.Tensor:
-        return inferno.zeros(self._data, shape=inputs.shape)
+    def interpolate(
+        self,
+        prev_data: torch.Tensor,
+        next_data: torch.Tensor,
+        sample_at: torch.Tensor,
+        step_time: float,
+    ) -> torch.Tensor:
+        return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
 
 
 class ScaledNearestTraceReducer(FoldingReducer):
@@ -191,64 +201,84 @@ class ScaledNearestTraceReducer(FoldingReducer):
     For the trace (state) :math:`x` and observation :math:`f`.
 
     Args:
-        step_time (float | torch.Tensor): length of the discrete step time, :math:`\Delta t`.
-        time_constant (float | torch.Tensor): time constant of exponential decay, :math:`\tau`.
-        amplitude (int | float | complex | torch.Tensor): value to set trace to for matching elements, :math:`a`.
-        scale (int | float | complex | torch.Tensor): multiplicitive scale for contributions to trace, :math:`S`.
-        criterion (OneToOne[torch.Tensor]): function to test if the input is considered a match for the purpose of tracing, :math:`K`.
-        mapmeth (OneToOneMethod[ScaledNearestTraceReducer, torch.Tensor] | ManyToOneMethod[ScaledNearestTraceReducer, torch.Tensor] | None, optional): transformation
-            to apply to inputs, where the first argument is the reducer itself, no transformation if None. Defaults to None.
-        filtermeth (Callable[[ScaledNearestTraceReducer, torch.Tensor], bool] | None, optional): conditional test if transformed
-            input should be integrated, always will if None. Defaults to None.
+        step_time (float): length of the discrete step time, :math:`\Delta t`.
+        time_constant (float): time constant of exponential decay, :math:`\tau`.
+        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.
+        scale (int | float | complex): multiplicitive scale for contributions to trace, :math:`S`.
+        criterion (OneToOne[torch.Tensor]): function to test if the input is considered a match for the
+            purpose of tracing, :math:`K`.
+        history_len (float): length of time over which results should be stored, in the same units as :math:`\Delta t`.
 
     Note:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of :py:data:`torch.bool`.
 
     Note:
-        By default, only a single input tensor can be provided to :py:meth:`forward` for this class. A custom
-        ``mapmeth`` must be passed in for multiple input support.
+        Only a single input tensor can be provided to :py:meth:`forward` for this class.
     """
 
     def __init__(
         self,
-        step_time: float | torch.Tensor,
-        time_constant: float | torch.Tensor,
-        amplitude: int | float | complex | torch.Tensor,
-        scale: int | float | complex | torch.Tensor,
+        step_time: float,
+        time_constant: float,
+        amplitude: int | float | complex,
+        scale: int | float | complex,
         criterion: OneToOne[torch.Tensor],
         *,
-        mapmeth: OneToOneMethod[ScaledNearestTraceReducer, torch.Tensor]
-        | ManyToOneMethod[ScaledNearestTraceReducer, torch.Tensor]
-        | None = None,
-        filtermeth: Callable[[ScaledNearestTraceReducer, torch.Tensor], bool]
-        | None = None,
+        history_len: float = 0.0,
     ):
-        # call superclass constructor, overriding instance methods if specified
-        FoldingReducer.__init__(self, mapmeth=mapmeth, filtermeth=filtermeth)
+        # call superclass constructor
+        FoldingReducer.__init__(self, step_time, history_len)
 
         # register state
-        decay = inferno.exp(-step_time / time_constant)
-        self.register_buffer("_decay", newtensor(decay))
-        self.register_buffer("_amplitude", newtensor(amplitude))
-        self.register_buffer("_scale", newtensor(scale))
+        self.register_extra("time_constant", float(time_constant))
+        self.register_buffer("decay", torch.tensor(inferno.exp(-self.dt / self.time_constant)))
+        self.register_buffer("amplitude", torch.tensor(amplitude))
+        self.register_buffer("scale", torch.tensor(scale))
 
         # set non-persistent function
-        self._criterion = criterion
+        self.criterion = criterion
 
-    def fold_fn(self, obs: torch.Tensor, state: torch.Tensor) -> torch.Tensor:
-        mask = self._criterion(obs)
-        return torch.where(
-            mask, self._amplitude + self._scale * obs, self._decay * state
-        )
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
 
-    def map_fn(self, *inputs: torch.Tensor) -> torch.Tensor:
+        Args:
+            value (float): new simulation time step length.
+
+        Returns:
+            float: length of the simulation time step.
+        """
+        return FoldingReducer.dt.fget(self)
+
+    @dt.setter
+    def dt(self, value: float):
+        FoldingReducer.dt.fset(self, value)
+        self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
+
+    def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
+        # create mask
+        mask = self.criterion(obs)
+
+        # compute new state
+        if state is None:
+            return (self.amplitude + self.scale * obs) * mask
+        else:
+            return torch.where(mask, self.amplitude + self.scale * obs, self.decay * state)
+
+    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
         return inputs[0]
 
-    def filter_fn(self, inputs: torch.Tensor) -> bool:
-        return True
+    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
+        return inputs.fill_(0)
 
-    def init_fn(self, inputs: torch.Tensor) -> torch.Tensor:
-        return inferno.zeros(self._data, shape=inputs.shape)
+    def interpolate(
+        self,
+        prev_data: torch.Tensor,
+        next_data: torch.Tensor,
+        sample_at: torch.Tensor,
+        step_time: float,
+    ) -> torch.Tensor:
+        return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
 
 
 class ScaledCumulativeTraceReducer(FoldingReducer):
@@ -264,61 +294,81 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
     For the trace (state) :math:`x` and observation :math:`f`.
 
     Args:
-        step_time (float | torch.Tensor): length of the discrete step time, :math:`\Delta t`.
-        time_constant (float | torch.Tensor): time constant of exponential decay, :math:`\tau`.
-        amplitude (int | float | complex | torch.Tensor): value to set trace to for matching elements, :math:`a`.
-        scale (int | float | complex | torch.Tensor): multiplicitive scale for contributions to trace, :math:`S`.
-        criterion (OneToOne[torch.Tensor]): function to test if the input is considered a match for the purpose of tracing, :math:`K`.
-        mapmeth (OneToOneMethod[ScaledNearestTraceReducer, torch.Tensor] | ManyToOneMethod[ScaledNearestTraceReducer, torch.Tensor] | None, optional): transformation
-            to apply to inputs, where the first argument is the reducer itself, no transformation if None. Defaults to None.
-        filtermeth (Callable[[ScaledNearestTraceReducer, torch.Tensor], bool] | None, optional): conditional test if transformed
-            input should be integrated, always will if None. Defaults to None.
+        step_time (float): length of the discrete step time, :math:`\Delta t`.
+        time_constant (float): time constant of exponential decay, :math:`\tau`.
+        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.
+        scale (int | float | complex): multiplicitive scale for contributions to trace, :math:`S`.
+        criterion (OneToOne[torch.Tensor]): function to test if the input is considered a match for the
+            purpose of tracing, :math:`K`.
+        history_len (float): length of time over which results should be stored, in the same units as :math:`\Delta t`.
 
     Note:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of :py:data:`torch.bool`.
 
     Note:
-        By default, only a single input tensor can be provided to :py:meth:`forward` for this class. A custom
-        ``mapmeth`` must be passed in for multiple input support.
+        Only a single input tensor can be provided to :py:meth:`forward` for this class.
     """
 
     def __init__(
         self,
-        step_time: float | torch.Tensor,
-        time_constant: float | torch.Tensor,
-        amplitude: int | float | complex | torch.Tensor,
-        scale: int | float | complex | torch.Tensor,
+        step_time: float,
+        time_constant: float,
+        amplitude: int | float | complex,
+        scale: int | float | complex,
         criterion: OneToOne[torch.Tensor],
         *,
-        mapmeth: OneToOneMethod[ScaledNearestTraceReducer, torch.Tensor]
-        | ManyToOneMethod[ScaledNearestTraceReducer, torch.Tensor]
-        | None = None,
-        filtermeth: Callable[[ScaledNearestTraceReducer, torch.Tensor], bool]
-        | None = None,
+        history_len: float = 0.0,
     ):
-        # call superclass constructor, overriding instance methods if specified
-        FoldingReducer.__init__(self, mapmeth=mapmeth, filtermeth=filtermeth)
+        # call superclass constructor
+        FoldingReducer.__init__(self, step_time, history_len)
 
         # register state
-        decay = inferno.exp(-step_time / time_constant)
-        self.register_buffer("_decay", newtensor(decay))
-        self.register_buffer("_amplitude", newtensor(amplitude))
-        self.register_buffer("_scale", newtensor(scale))
+        self.register_extra("time_constant", float(time_constant))
+        self.register_buffer("decay", torch.tensor(inferno.exp(-self.dt / self.time_constant)))
+        self.register_buffer("amplitude", torch.tensor(amplitude))
+        self.register_buffer("scale", torch.tensor(scale))
 
         # set non-persistent function
-        self._criterion = criterion
+        self.criterion = criterion
 
-    def fold_fn(self, obs: torch.Tensor, state: torch.Tensor) -> torch.Tensor:
-        mask = self._criterion(obs)
-        return self._decay * state + torch.where(
-            mask, self._amplitude + self._scale * self._observation, 0
-        )
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
 
-    def map_fn(self, *inputs: torch.Tensor) -> torch.Tensor:
+        Args:
+            value (float): new simulation time step length.
+
+        Returns:
+            float: length of the simulation time step.
+        """
+        return FoldingReducer.dt.fget(self)
+
+    @dt.setter
+    def dt(self, value: float):
+        FoldingReducer.dt.fset(self, value)
+        self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
+
+    def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
+        # create mask
+        mask = self.criterion(obs)
+
+        # compute new state
+        if state is None:
+            return (self.amplitude + self.scale * obs) * mask
+        else:
+            return (self.decay * state) + (self.amplitude + self.scale * obs) * mask
+
+    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
         return inputs[0]
 
-    def filter_fn(self, inputs: torch.Tensor) -> bool:
-        return True
+    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
+        return inputs.fill_(0)
 
-    def init_fn(self, inputs: torch.Tensor) -> torch.Tensor:
-        return inferno.zeros(self._data, shape=inputs.shape)
+    def interpolate(
+        self,
+        prev_data: torch.Tensor,
+        next_data: torch.Tensor,
+        sample_at: torch.Tensor,
+        step_time: float,
+    ) -> torch.Tensor:
+        return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
