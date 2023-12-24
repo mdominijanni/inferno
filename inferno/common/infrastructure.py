@@ -12,7 +12,7 @@ import warnings
 
 
 class Module(nn.Module):
-    r"""An extension of `PyTorch's Module
+    r"""An extension of PyTorch's `Module
     <https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module>`_ class.
 
     This extends :py:class:`torch.nn.Module` so that "extra state" is handled in a way similar to regular
@@ -366,7 +366,6 @@ class DimensionalModule(Module):
             constrained buffers and parameters.
 
     Raises:
-        RuntimeError: at least one constraint must be specified.
         ValueError: constraints must specify a positive number of elements.
         RuntimeError: no two constraints may share a dimension.
 
@@ -411,6 +410,11 @@ class DimensionalModule(Module):
 
         Returns:
             dict[int, int]: active constraints, represented as a dictionary.
+
+        Note:
+            The results will be sorted by dimension, from low to high. Therefore,
+            positive dimensions are presented first, in increasing order, then negative
+            dimensions also in increasing order.
         """
         fwd, rev = [], []
         for dim, size in sorted(self._constraints.items()):
@@ -424,11 +428,16 @@ class DimensionalModule(Module):
 
         Returns:
             str: active constraints, represented as a string.
+
+        Note:
+            Like with :py:meth:`constraints`, dimensions are sorted from low to high.
+            Underscores represent dimensions which must be present in the constrained
+            tensor but with an unspecified value.
         """
         # split constraints into forward and reverse (negative) indices, sorted
         fwd, rev = [], []
-        for dim in dict(sorted(self._constraints.items())):
-            rev.append(dim) if dim < 0 else fwd.append(dim)
+        for dim, size in self.constraints:
+            rev.append((dim, size)) if dim < 0 else fwd.append((dim, size))
 
         # representation elements
         elems = []
@@ -787,6 +796,16 @@ class DimensionalModule(Module):
 
 
 class HistoryModule(DimensionalModule):
+    """Module which keeps track of previous attribute values.
+
+    Args:
+        step_time (float): length of time between stored values in history.
+        history_len (float): length of time over which prior values are stored.
+
+    Raises:
+        ValueError: step time must be positive.
+        ValueError: history length must be non-negative.
+    """
     def __init__(
         self,
         step_time: float,
@@ -815,6 +834,14 @@ class HistoryModule(DimensionalModule):
 
     @property
     def dt(self) -> float:
+        r"""Length of time between stored values in history.
+
+        Args:
+            value (float): new time step length.
+
+        Returns:
+            float: length of the time step.
+        """
         return self._step_time
 
     @dt.setter
@@ -838,6 +865,11 @@ class HistoryModule(DimensionalModule):
 
     @property
     def hlen(self) -> float:
+        r"""Length of time over which prior values are stored.
+
+        Returns:
+            float: length of the history, in units of time.
+        """
         return self._history_len
 
     @hlen.setter
@@ -861,9 +893,19 @@ class HistoryModule(DimensionalModule):
 
     @property
     def hsize(self) -> int:
+        r"""Number of stored time slices for each history tensor.
+
+        Returns:
+            float: length of the history, in units of time.
+        """
         return self.constraints.get(-1)
 
     def tick(self, name: str) -> None:
+        r"""Manually increment the time, by the step time, for a specified attribute.
+
+        Args:
+            name (str): attribute for which time should be incremented.
+        """
         if name in self._pointer:
             self._pointer[name] = (self._pointer[name] + 1) % self.hsize
         else:
@@ -873,11 +915,32 @@ class HistoryModule(DimensionalModule):
             )
 
     def register_constrained(self, name: str):
+        r"""Sets a registered buffer or parameter as constrained.
+
+        Args:
+            name (str): attribute to constrain.
+
+        Note:
+            This implies the attribute will have its history tracked, and therefore
+            must have a final dimension of size :py:attr:`hsize`. Because this is
+            implemented using :py:class:`DimensionalModule` constraints, it must meet
+            any other constraints that have been added.
+        """
         DimensionalModule.register_constrained(self, name)
         if name in self._pointer:
             self._pointer[name] = 0
 
     def deregister_constrained(self, name: str):
+        r"""Sets a registered buffer or parameter as unconstrained.
+
+        Args:
+            name (str): attribute to constrain.
+
+        Note:
+            This implies the attribute will not have its history tracked. Because
+            this is implemented using :py:class:`DimensionalModule` constraints, it
+            will also be freed of any other constraints.
+        """
         DimensionalModule.deregister_constrained(self, name)
         if name in self._pointer:
             del self._pointer[name]
@@ -905,11 +968,14 @@ class HistoryModule(DimensionalModule):
             torch.Tensor: interpolated tensor selected at a prior time.
 
         Shape:
-            ``time``:
+            ``time``: `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
+            :math:`B \times N_0 \times \cdots \times [D]`, where :math:`B` is the number of
+            batches, :math:`N_0 \times \cdots` is the underlying shape, and :math:`D` is
+            the number of delay selectors.
 
-                :math:`B \times D \times N_0 \times \cdots`, where :math:`B` is the number of batches,
-                :math:`D` is the number of delay selectors, and :math:`N_0 \times \cdots` is the underlying
-                shape.
+            **outputs**:
+            :math:`B \times N_0 \times \cdots` \times [D]`, where :math:`D` is only included if
+            it was in ``time``.
 
         Note:
             By default, `offset` is set to `1`. This is the correct configuration to use under normal
@@ -926,11 +992,12 @@ class HistoryModule(DimensionalModule):
                 - float: difference in time between the before and after state.
 
             It must return a tensor of values interpolated between the samples at the two times.
+            Some functions which meet the :py:class:`Interpolation` type are included in the library.
 
         Note:
             In cases where the times selected are a match for an observed index within the tolerance,
-            the interpolation function is still called and its results still used. The interpolation
-            function should test if the two samples are from the same time.
+            the interpolation function is still called and its results still used. The ``select_at``
+            values will be altered to either ``0`` or :py:attr:`self.dt`.
         """
         # access underlying buffer or parameter
         if name in self._constrained_buffers:
@@ -1093,6 +1160,12 @@ class HistoryModule(DimensionalModule):
 
         Returns:
             torch.Tensor: most recent slice of the tensor selected.
+
+        Note:
+            By default, `offset` is set to `1`. This is the correct configuration to use under normal
+            circumstances where :py:meth:`pushto` is used for element insertion. Also this is useful for
+            when :py:meth:`tick` is called after a call to :py:meth:`insert` and before :py:meth:`select`.
+            This should be set to `0` if :py:meth:`tick` has not been called since the last :py:meth:`insert`.
         """
         # access underlying buffer or parameter
         if name in self._constrained_buffers:
@@ -1106,7 +1179,7 @@ class HistoryModule(DimensionalModule):
 
         return data[..., (self._pointer[name] - offset) % self.hlen]
 
-    def record(self, name: str, offset: int = 1, latest_first=True) -> torch.Tensor:
+    def history(self, name: str, offset: int = 1, latest_first=True) -> torch.Tensor:
         r"""Retrieves the recorded history of a constrained attribute.
 
         Args:
