@@ -201,14 +201,18 @@ class Hook:
 
     Note:
         If not None, the signature of the prehook must be of the following form.
-        .. signature::
+
+        .. code-block:: python
+
             hook(module, args) -> None or modified input
 
         See :py:meth:`torch.nn.Module.register_forward_pre_hook` for further information.
 
     Note:
         If not None, the signature of the posthook must be of the following form.
-        .. signature::
+
+        .. code-block:: python
+
             hook(module, args, output) -> None or modified output
 
         See :py:meth:`torch.nn.Module.register_forward_hook` for further information.
@@ -217,7 +221,7 @@ class Hook:
     Raises:
         RuntimeError: at least one of ``prehook`` and ``posthook`` must not be None.
         RuntimeError: at least one of ``train_update`` and ``eval_update`` must not be True.
-        TypeError: if parameter `module` is not `None`, then it must be an instance of :py:class:`torch.nn.Module`.
+        TypeError: if parameter ``module`` is not ``None``, then it must be an instance of :py:class:`torch.nn.Module`.
     """
 
     def __init__(
@@ -316,16 +320,16 @@ class Hook:
             self.register(module)
 
     def register(self, module: nn.Module) -> None:
-        """Registers the `Hook` as a forward hook/prehook with specified :py:class:`torch.nn.Module`.
+        """Registers the hook as a forward hook/prehook with specified :py:class:`torch.nn.Module`.
 
         Args:
             module (nn.Module): PyTorch module to which the forward hook will be registered.
 
         Raises:
-            TypeError: parameter `module` must be an instance of :py:class:`nn.Module`
+            TypeError: parameter ``module`` must be an instance of :py:class:`nn.Module`
 
         Warns:
-            RuntimeWarning: each `Hook` can only be registered to one :py:class:`torch.nn.Module`
+            RuntimeWarning: each :py:class:`Hook` can only be registered to one :py:class:`~torch.nn.Module`
             and will ignore :py:meth:`register` if already registered.
         """
         if not self._prehook_handle or not self._posthook_handle:
@@ -348,8 +352,8 @@ class Hook:
             )
 
     def deregister(self) -> None:
-        """Deregisters the `Hook` as a forward hook/prehook from registered :py:class:`torch.nn.Module`,
-        iff it is already registered."""
+        """Deregisters the hook as a forward hook/prehook from registered :py:class:`~torch.nn.Module`,
+        if it is already registered."""
         if self._prehook_handle:
             self._prehook_handle.remove()
             self._prehook_handle = None
@@ -841,6 +845,9 @@ class HistoryModule(DimensionalModule):
 
         Returns:
             float: length of the time step.
+
+        Note:
+            In the same units as :py:attr:`self.hlen`.
         """
         return self._step_time
 
@@ -867,8 +874,14 @@ class HistoryModule(DimensionalModule):
     def hlen(self) -> float:
         r"""Length of time over which prior values are stored.
 
+        Args:
+            value (float): new length of the history to store.
+
         Returns:
-            float: length of the history, in units of time.
+            float: length of the history.
+
+        Note:
+            In the same units as :py:attr:`self.dt`.
         """
         return self._history_len
 
@@ -968,13 +981,12 @@ class HistoryModule(DimensionalModule):
             torch.Tensor: interpolated tensor selected at a prior time.
 
         Shape:
-            ``time``: `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
-            :math:`B \times N_0 \times \cdots \times [D]`, where :math:`B` is the number of
-            batches, :math:`N_0 \times \cdots` is the underlying shape, and :math:`D` is
-            the number of delay selectors.
+            ``time``: `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_
+            with :math:`N_0 \times \cdots \times [D]`, where :math:`N_0 \times \cdots` is the
+            underlying shape, and :math:`D` is the number of delay selectors.
 
             **outputs**:
-            :math:`B \times N_0 \times \cdots` \times [D]`, where :math:`D` is only included if
+            :math:`N_0 \times \cdots` \times [D]`, where :math:`D` is only included if
             it was in ``time``.
 
         Note:

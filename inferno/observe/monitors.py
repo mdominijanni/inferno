@@ -55,7 +55,12 @@ class Monitor(Module, Hook):
         self.reducer_ = reducer
 
     @property
-    def reducer(self):
+    def reducer(self) -> Reducer:
+        r"""Underlying reducer used by the monitor.
+
+        Returns:
+            Reducer: underlying reducer.
+        """
         return self.reducer_
 
 

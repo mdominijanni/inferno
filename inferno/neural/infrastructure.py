@@ -44,6 +44,14 @@ class BatchMixin:
 
     @property
     def bsize(self) -> int:
+        r"""Batch size of the module.
+
+        Args:
+            value (int): new batch size.
+
+        Returns:
+            int: current batch size.
+        """
         return self.constraints.get(0)
 
     @bsize.setter
@@ -90,6 +98,14 @@ class ShapeMixin(BatchMixin):
 
     @property
     def bsize(self) -> int:
+        r"""Batch size of the module.
+
+        Args:
+            value (int): new batch size.
+
+        Returns:
+            int: current batch size.
+        """
         return BatchMixin.bsize.fget(self)
 
     @bsize.setter

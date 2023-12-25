@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Configuration" href="inferno.Configuration.html" /><link rel="prev" title="Module" href="inferno.Module.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="inferno.interp_exp_decay" href="inferno.interp_exp_decay.html" /><link rel="prev" title="inferno.interp_nearest" href="inferno.interp_nearest.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
-        <title>WrapperModule - Inferno</title>
+        <title>inferno.interp_linear - Inferno</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
@@ -160,10 +160,15 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children"><a class="reference internal" href="../inferno.html">inferno</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of inferno</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="inferno.Module.html">Module</a></li>
-<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">WrapperModule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.DimensionalModule.html">DimensionalModule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.HistoryModule.html">HistoryModule</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.Configuration.html">Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.Hook.html">Hook</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.exp.html">inferno.exp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.interp_previous.html">inferno.interp_previous</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.interp_nearest.html">inferno.interp_nearest</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">inferno.interp_linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.interp_exp_decay.html">inferno.interp_exp_decay</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.trace_nearest.html">inferno.trace_nearest</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.trace_cumulative.html">inferno.trace_cumulative</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.trace_nearest_scaled.html">inferno.trace_nearest_scaled</a></li>
@@ -171,10 +176,10 @@
 <li class="toctree-l3"><a class="reference internal" href="inferno.cumulative_average.html">inferno.cumulative_average</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.simple_exponential_smoothing.html">inferno.simple_exponential_smoothing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.holt_linear_smoothing.html">inferno.holt_linear_smoothing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.Interpolation.html">Interpolation</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../neural.html">inferno.neural</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of inferno.neural</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.Group.html">Group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.Neuron.html">Neuron</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.Synapse.html">Synapse</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.Connection.html">Connection</a></li>
@@ -205,15 +210,15 @@
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../observe.html">inferno.observe</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of inferno.observe</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="inferno.observe.Reducer.html">Reducer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.observe.MapReducer.html">MapReducer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.observe.FoldReducer.html">FoldReducer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.observe.MappingReducer.html">MappingReducer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.observe.FoldingReducer.html">FoldingReducer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.observe.NearestTraceReducer.html">NearestTraceReducer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.observe.CumulativeTraceReducer.html">CumulativeTraceReducer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.observe.ScaledNearestTraceReducer.html">ScaledNearestTraceReducer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.observe.ScaledCumulativeTraceReducer.html">ScaledCumulativeTraceReducer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.observe.EMAReducer.html">EMAReducer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.observe.EventReducer.html">EventReducer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.observe.PassthroughReducer.html">PassthroughReducer</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../typing.html">inferno.typing</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of inferno.typing</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -276,29 +281,32 @@
           </label>
         </div>
         <article role="main">
-          <section id="wrappermodule">
-<h1>WrapperModule<a class="headerlink" href="#wrappermodule" title="Link to this heading">#</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="inferno.WrapperModule">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WrapperModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">submodule</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/common/infrastructure.html#WrapperModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.WrapperModule" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.common.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
-<p>Module which translucently wraps a submodule.</p>
-<p>Attributes or methods which have no definition on the parent will instead be called
-on the primary submodule.</p>
+          <section id="inferno-interp-linear">
+<h1>inferno.interp_linear<a class="headerlink" href="#inferno-interp-linear" title="Link to this heading">#</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="inferno.interp_linear">
+<span class="sig-name descname"><span class="pre">interp_linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prev_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_at</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/common/math.html#interp_linear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.interp_linear" title="Link to this definition">#</a></dt>
+<dd><p>Interpolates between previous and next states linearlly.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[D_{t=s} = \frac{D_{t=T} - D_{t=0}}{T} s + D_{t=0}\]</div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>submodule</strong> (<a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.Module"><em>Module</em></a>) – module which is being wrapped.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prev_data</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – most recent observation prior to sample time, <span class="math notranslate nohighlight">\(D_{t=0}\)</span>.</p></li>
+<li><p><strong>next_data</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – most recent observation subsequent to sample time, <span class="math notranslate nohighlight">\(D_{t=T}\)</span>.</p></li>
+<li><p><strong>sample_at</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – relative time at which to sample data, <span class="math notranslate nohighlight">\(s\)</span>.</p></li>
+<li><p><strong>step_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of time between the prior and subsequent observations, <span class="math notranslate nohighlight">\(T\)</span>.</p></li>
+</ul>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.12)"><strong>TypeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">submodule</span></code> cannot be an instance of <a class="reference internal" href="#inferno.WrapperModule" title="inferno.WrapperModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">WrapperModule</span></code></a>.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>interpolated data at sample time, <span class="math notranslate nohighlight">\(D_{t=s}\)</span>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Some methods, such as <code class="xref py py-class docutils literal notranslate"><span class="pre">forward</span></code>, are defined on the parent even when
-not overridden, and as such are not made transparent. Additionally assignment cannot be performed
-on the submodule.</p>
-</div>
 </dd></dl>
 
 </section>
@@ -308,23 +316,23 @@ on the submodule.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.Configuration.html">
+          <a class="next-page" href="inferno.interp_exp_decay.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Configuration</div>
+                <div class="title">inferno.interp_exp_decay</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.Module.html">
+          <a class="prev-page" href="inferno.interp_nearest.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Module</div>
+                <div class="title">inferno.interp_nearest</div>
                 
               </div>
             </a>
@@ -358,8 +366,8 @@ on the submodule.</p>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">WrapperModule</a><ul>
-<li><a class="reference internal" href="#inferno.WrapperModule"><code class="docutils literal notranslate"><span class="pre">WrapperModule</span></code></a></li>
+<li><a class="reference internal" href="#">inferno.interp_linear</a><ul>
+<li><a class="reference internal" href="#inferno.interp_linear"><code class="docutils literal notranslate"><span class="pre">interp_linear()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -376,5 +384,7 @@ on the submodule.</p>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>

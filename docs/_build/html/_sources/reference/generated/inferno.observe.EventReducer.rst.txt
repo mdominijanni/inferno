@@ -3,10 +3,10 @@
 .. currentmodule:: inferno.observe
 
 
-MappingReducer
-==============
+EventReducer
+============
 
-.. autoclass:: MappingReducer
+.. autoclass:: EventReducer
     :members:
     :undoc-members:
     :show-inheritance:

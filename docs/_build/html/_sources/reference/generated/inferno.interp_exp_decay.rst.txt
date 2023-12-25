@@ -1,0 +1,6 @@
+﻿inferno.interp\_exp\_decay
+==========================
+
+.. currentmodule:: inferno
+
+.. autofunction:: interp_exp_decay

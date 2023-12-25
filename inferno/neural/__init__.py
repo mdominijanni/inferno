@@ -3,7 +3,7 @@ from .infrastructure import (  # noqa:F401
     ShapeMixin,
 )
 
-from base import (  # noqa:F401
+from .base import (  # noqa:F401
     Neuron,
     Synapse,
     Connection,

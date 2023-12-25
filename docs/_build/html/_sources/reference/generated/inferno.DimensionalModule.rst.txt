@@ -1,0 +1,12 @@
+﻿.. role:: hidden
+    :class: hidden-section
+.. currentmodule:: inferno
+
+
+DimensionalModule
+=================
+
+.. autoclass:: DimensionalModule
+    :members:
+    :undoc-members:
+    :show-inheritance:

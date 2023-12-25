@@ -23,8 +23,6 @@ from .common import (  # noqa: F401
     interp_nearest,
     interp_linear,
     interp_exp_decay,
-    gen_interp_exp_decay,
-    rescale,
 )
 
 from .common import zeros, empty  # noqa: F401

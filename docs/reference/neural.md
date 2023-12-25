@@ -10,7 +10,6 @@
     :nosignatures:
     :toctree: generated
 
-    Group
     Neuron
     Synapse
     Connection

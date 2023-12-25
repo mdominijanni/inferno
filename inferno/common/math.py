@@ -63,8 +63,8 @@ class Interpolation(Protocol):
         torch.Tensor: interpolated data at sample time.
 
     Note:
-        `sample_at` is measured as the amount of time after the time at which
-        `prev_data` was sampled.
+        ``sample_at`` is measured as the amount of time after the time at which
+        ``prev_data`` was sampled.
     """
 
     def __call__(
@@ -84,6 +84,20 @@ def interp_previous(
     sample_at: torch.Tensor,
     step_time: float,
 ) -> torch.Tensor:
+    r"""Interpolates by selecting the previous state.
+
+    .. math::
+        D_{t=s} = D_{t=0}
+
+    Args:
+        prev_data (torch.Tensor): most recent observation prior to sample time, :math:`D_{t=0}`.
+        next_data (torch.Tensor): most recent observation subsequent to sample time, :math:`D_{t=T}`.
+        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.
+        step_data (float): length of time between the prior and subsequent observations, :math:`T`.
+
+    Returns:
+        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.
+    """
     return prev_data
 
 
@@ -93,6 +107,24 @@ def interp_nearest(
     sample_at: torch.Tensor,
     step_time: float,
 ) -> torch.Tensor:
+    r"""Interpolates by selecting the nearest state.
+
+    .. math::
+        D_{t=s} =
+        \begin{cases}
+            D_{t=T} &T - s > s\\
+            D_{t=0} &\text{otherwise}
+        \end{cases}
+
+    Args:
+        prev_data (torch.Tensor): most recent observation prior to sample time, :math:`D_{t=0}`.
+        next_data (torch.Tensor): most recent observation subsequent to sample time, :math:`D_{t=T}`.
+        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.
+        step_data (float): length of time between the prior and subsequent observations, :math:`T`.
+
+    Returns:
+        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.
+    """
     return torch.where(sample_at / step_time > 0.5, next_data, prev_data)
 
 
@@ -102,6 +134,20 @@ def interp_linear(
     sample_at: torch.Tensor,
     step_time: float,
 ) -> torch.Tensor:
+    r"""Interpolates between previous and next states linearlly.
+
+    .. math::
+        D_{t=s} = \frac{D_{t=T} - D_{t=0}}{T} s + D_{t=0}
+
+    Args:
+        prev_data (torch.Tensor): most recent observation prior to sample time, :math:`D_{t=0}`.
+        next_data (torch.Tensor): most recent observation subsequent to sample time, :math:`D_{t=T}`.
+        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.
+        step_data (float): length of time between the prior and subsequent observations, :math:`T`.
+
+    Returns:
+        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.
+    """
     slope = (next_data - prev_data) / step_time
     return prev_data + slope * sample_at
 
@@ -112,29 +158,21 @@ def interp_exp_decay(
     sample_at: torch.Tensor,
     step_time: float,
     *,
-    time_constant: float | torch.Tensor,
+    time_constant: float,
 ) -> torch.Tensor:
+    r"""Interpolates by exponentially decaying value from previous state.
+
+    .. math::
+        D_{t=s} = D_{t=0} \exp\left(-\frac{s}{\tau}\right)
+
+    Args:
+        prev_data (torch.Tensor): most recent observation prior to sample time, :math:`D_{t=0}`.
+        next_data (torch.Tensor): most recent observation subsequent to sample time, :math:`D_{t=T}`.
+        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.
+        step_data (float): length of time between the prior and subsequent observations, :math:`T`.
+        time_constant (float): time constant of exponential decay, :math:`tau`.
+
+    Returns:
+        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.
+    """
     return prev_data * torch.exp(-sample_at / time_constant)
-
-
-def gen_interp_exp_decay(
-    time_constant: float | torch.Tensor,
-) -> Interpolation:
-    return lambda prev_data, next_data, sample_at, step_time: interp_exp_decay(
-        prev_data, next_data, sample_at, step_time, time_constant=time_constant
-    )
-
-
-def rescale(
-    data: torch.Tensor,
-    tgt_min: float,
-    tgt_max: float,
-    src_min: float | None = None,
-    src_max: float | None = None,
-) -> torch.Tensor:
-    if src_min is None:
-        src_min = torch.amin(data)
-    if src_max is None:
-        src_max = torch.amax(data)
-
-    return tgt_min + ((data - src_min) * (tgt_max - tgt_min)) / (src_max - src_min)

@@ -11,7 +11,8 @@
     :toctree: generated
 
     Module
-    WrapperModule
+    DimensionalModule
+    HistoryModule
     Configuration
     Hook
 ```
@@ -23,6 +24,10 @@
     :toctree: generated
 
     exp
+    interp_previous
+    interp_nearest
+    interp_linear
+    interp_exp_decay
 ```
 
 ## Time Series Functions
@@ -38,4 +43,13 @@
     cumulative_average
     simple_exponential_smoothing
     holt_linear_smoothing
+```
+
+## Types
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    Interpolation
 ```

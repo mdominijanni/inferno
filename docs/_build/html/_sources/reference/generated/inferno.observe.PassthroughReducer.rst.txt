@@ -3,10 +3,10 @@
 .. currentmodule:: inferno.observe
 
 
-MapReducer
-==========
+PassthroughReducer
+==================
 
-.. autoclass:: MapReducer
+.. autoclass:: PassthroughReducer
     :members:
     :undoc-members:
     :show-inheritance:

@@ -49,6 +49,14 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
 
     @property
     def bsize(self) -> int:
+        r"""Batch size of the neuron group.
+
+        Args:
+            value (int): new batch size.
+
+        Returns:
+            int: current batch size.
+        """
         return ShapeMixin.bsize.fget(self)
 
     @bsize.setter

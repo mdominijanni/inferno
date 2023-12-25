@@ -3,10 +3,10 @@
 .. currentmodule:: inferno
 
 
-WrapperModule
+Interpolation
 =============
 
-.. autoclass:: WrapperModule
+.. autoclass:: Interpolation
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,12 +1,12 @@
 ﻿.. role:: hidden
     :class: hidden-section
-.. currentmodule:: inferno.neural
+.. currentmodule:: inferno
 
 
-Group
-=====
+HistoryModule
+=============
 
-.. autoclass:: Group
+.. autoclass:: HistoryModule
     :members:
     :undoc-members:
     :show-inheritance:

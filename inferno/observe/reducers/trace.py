@@ -69,6 +69,16 @@ class NearestTraceReducer(FoldingReducer):
         self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
+        r"""Application of nearest trace.
+
+        Args:
+            obs (torch.Tensor): observation to incorporate into state.
+            state (torch.Tensor | None): state from the prior time step,
+                None if no prior observations.
+
+        Returns:
+            torch.Tensor: state for the current time step.
+        """
         # create mask
         if self.tolerance is None:
             mask = obs == self.target
@@ -82,9 +92,28 @@ class NearestTraceReducer(FoldingReducer):
             return torch.where(mask, self.amplitude, self.decay * state)
 
     def map(self, *inputs: torch.Tensor) -> torch.Tensor:
+        r"""Selection of first input tensor.
+
+        Args:
+            *inputs (torch.Tensor): tensor inputs to combine.
+
+        Returns:
+            torch.Tensor: resultant observation.
+        """
         return inputs[0]
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
+        r"""Setting of entire state history to zero.
+
+        Args:
+            inputs (torch.Tensor): empty tensor of state.
+
+        Raises:
+            NotImplementedError: abstract methods must be implemented by subclass.
+
+        Returns:
+            torch.Tensor: filled state tensor.
+        """
         return inputs.fill_(0)
 
     def interpolate(
@@ -94,6 +123,17 @@ class NearestTraceReducer(FoldingReducer):
         sample_at: torch.Tensor,
         step_time: float,
     ) -> torch.Tensor:
+        r"""Exponential decay interpolation between observations.
+
+        Args:
+            prev_data (torch.Tensor): most recent observation prior to sample time.
+            next_data (torch.Tensor): most recent observation subsequent to sample time.
+            sample_at (torch.Tensor): relative time at which to sample data.
+            step_data (float): length of time between the prior and subsequent observations.
+
+        Returns:
+            torch.Tensor: interpolated data at sample time.
+        """
         return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
 
 
@@ -116,7 +156,8 @@ class CumulativeTraceReducer(FoldingReducer):
         target (int | float | bool | complex): target value to set trace to, :math:`f^*`.
         tolerance (int | float | None, optional): allowable absolute difference to
             still count as a match, :math:`\epsilon`. Defaults to None.
-        history_len (float): length of time over which results should be stored, in the same units as :math:`\Delta t`.
+        history_len (float, optional): length of time over which results should be stored,
+            in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
         Only a single input tensor can be provided to :py:meth:`forward` for this class.
@@ -160,6 +201,16 @@ class CumulativeTraceReducer(FoldingReducer):
         self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
+        r"""Application of cumulative trace.
+
+        Args:
+            obs (torch.Tensor): observation to incorporate into state.
+            state (torch.Tensor | None): state from the prior time step,
+                None if no prior observations.
+
+        Returns:
+            torch.Tensor: state for the current time step.
+        """
         # create mask
         if self.tolerance is None:
             mask = obs == self.target
@@ -173,9 +224,28 @@ class CumulativeTraceReducer(FoldingReducer):
             return (self.decay * state) + (self.amplitude * mask)
 
     def map(self, *inputs: torch.Tensor) -> torch.Tensor:
+        r"""Selection of first input tensor.
+
+        Args:
+            *inputs (torch.Tensor): tensor inputs to combine.
+
+        Returns:
+            torch.Tensor: resultant observation.
+        """
         return inputs[0]
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
+        r"""Setting of entire state history to zero.
+
+        Args:
+            inputs (torch.Tensor): empty tensor of state.
+
+        Raises:
+            NotImplementedError: abstract methods must be implemented by subclass.
+
+        Returns:
+            torch.Tensor: filled state tensor.
+        """
         return inputs.fill_(0)
 
     def interpolate(
@@ -185,6 +255,17 @@ class CumulativeTraceReducer(FoldingReducer):
         sample_at: torch.Tensor,
         step_time: float,
     ) -> torch.Tensor:
+        r"""Exponential decay interpolation between observations.
+
+        Args:
+            prev_data (torch.Tensor): most recent observation prior to sample time.
+            next_data (torch.Tensor): most recent observation subsequent to sample time.
+            sample_at (torch.Tensor): relative time at which to sample data.
+            step_data (float): length of time between the prior and subsequent observations.
+
+        Returns:
+            torch.Tensor: interpolated data at sample time.
+        """
         return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
 
 
@@ -207,7 +288,8 @@ class ScaledNearestTraceReducer(FoldingReducer):
         scale (int | float | complex): multiplicitive scale for contributions to trace, :math:`S`.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered a match for the
             purpose of tracing, :math:`K`.
-        history_len (float): length of time over which results should be stored, in the same units as :math:`\Delta t`.
+        history_len (float, optional): length of time over which results should be stored,
+            in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of :py:data:`torch.bool`.
@@ -256,6 +338,16 @@ class ScaledNearestTraceReducer(FoldingReducer):
         self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
+        r"""Application of scaled nearest trace.
+
+        Args:
+            obs (torch.Tensor): observation to incorporate into state.
+            state (torch.Tensor | None): state from the prior time step,
+                None if no prior observations.
+
+        Returns:
+            torch.Tensor: state for the current time step.
+        """
         # create mask
         mask = self.criterion(obs)
 
@@ -266,9 +358,28 @@ class ScaledNearestTraceReducer(FoldingReducer):
             return torch.where(mask, self.amplitude + self.scale * obs, self.decay * state)
 
     def map(self, *inputs: torch.Tensor) -> torch.Tensor:
+        r"""Selection of first input tensor.
+
+        Args:
+            *inputs (torch.Tensor): tensor inputs to combine.
+
+        Returns:
+            torch.Tensor: resultant observation.
+        """
         return inputs[0]
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
+        r"""Setting of entire state history to zero.
+
+        Args:
+            inputs (torch.Tensor): empty tensor of state.
+
+        Raises:
+            NotImplementedError: abstract methods must be implemented by subclass.
+
+        Returns:
+            torch.Tensor: filled state tensor.
+        """
         return inputs.fill_(0)
 
     def interpolate(
@@ -278,6 +389,17 @@ class ScaledNearestTraceReducer(FoldingReducer):
         sample_at: torch.Tensor,
         step_time: float,
     ) -> torch.Tensor:
+        r"""Exponential decay interpolation between observations.
+
+        Args:
+            prev_data (torch.Tensor): most recent observation prior to sample time.
+            next_data (torch.Tensor): most recent observation subsequent to sample time.
+            sample_at (torch.Tensor): relative time at which to sample data.
+            step_data (float): length of time between the prior and subsequent observations.
+
+        Returns:
+            torch.Tensor: interpolated data at sample time.
+        """
         return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
 
 
@@ -300,7 +422,8 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         scale (int | float | complex): multiplicitive scale for contributions to trace, :math:`S`.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered a match for the
             purpose of tracing, :math:`K`.
-        history_len (float): length of time over which results should be stored, in the same units as :math:`\Delta t`.
+        history_len (float, optional): length of time over which results should be stored,
+            in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of :py:data:`torch.bool`.
@@ -349,6 +472,16 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
+        r"""Application of scaled cumulative trace.
+
+        Args:
+            obs (torch.Tensor): observation to incorporate into state.
+            state (torch.Tensor | None): state from the prior time step,
+                None if no prior observations.
+
+        Returns:
+            torch.Tensor: state for the current time step.
+        """
         # create mask
         mask = self.criterion(obs)
 
@@ -359,9 +492,28 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
             return (self.decay * state) + (self.amplitude + self.scale * obs) * mask
 
     def map(self, *inputs: torch.Tensor) -> torch.Tensor:
+        r"""Selection of first input tensor.
+
+        Args:
+            *inputs (torch.Tensor): tensor inputs to combine.
+
+        Returns:
+            torch.Tensor: resultant observation.
+        """
         return inputs[0]
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
+        r"""Setting of entire state history to zero.
+
+        Args:
+            inputs (torch.Tensor): empty tensor of state.
+
+        Raises:
+            NotImplementedError: abstract methods must be implemented by subclass.
+
+        Returns:
+            torch.Tensor: filled state tensor.
+        """
         return inputs.fill_(0)
 
     def interpolate(
@@ -371,4 +523,15 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         sample_at: torch.Tensor,
         step_time: float,
     ) -> torch.Tensor:
+        r"""Exponential decay interpolation between observations.
+
+        Args:
+            prev_data (torch.Tensor): most recent observation prior to sample time.
+            next_data (torch.Tensor): most recent observation subsequent to sample time.
+            sample_at (torch.Tensor): relative time at which to sample data.
+            step_data (float): length of time between the prior and subsequent observations.
+
+        Returns:
+            torch.Tensor: interpolated data at sample time.
+        """
         return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)

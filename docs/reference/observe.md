@@ -11,13 +11,13 @@
     :toctree: generated
 
     Reducer
-    MapReducer
     FoldReducer
-    MappingReducer
     FoldingReducer
     NearestTraceReducer
     CumulativeTraceReducer
     ScaledNearestTraceReducer
     ScaledCumulativeTraceReducer
     EMAReducer
+    EventReducer
+    PassthroughReducer
 ```
