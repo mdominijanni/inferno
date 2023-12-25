@@ -1,7 +1,7 @@
 from inferno._internal import rsetattr
 from .math import Interpolation
 import attrs
-from collections import deque, OrderedDict
+from collections import OrderedDict
 from collections.abc import Mapping
 from functools import cached_property
 import math
@@ -440,7 +440,7 @@ class DimensionalModule(Module):
         """
         # split constraints into forward and reverse (negative) indices, sorted
         fwd, rev = [], []
-        for dim, size in self.constraints:
+        for dim, size in self.constraints.items():
             rev.append((dim, size)) if dim < 0 else fwd.append((dim, size))
 
         # representation elements
@@ -449,11 +449,11 @@ class DimensionalModule(Module):
         # forward indexed constraints
         # expect dimension 0
         expc = 0
-        for dim in fwd:
+        for dim, size in fwd:
             # add unconstrained placeholders
             elems.extend(["_" for _ in range(dim - expc)])
             # add contraint value
-            elems.append(f"{self._contraints[dim]}")
+            elems.append(f"{size}")
             # set expected next dimension
             expc = dim + 1
 
@@ -463,14 +463,17 @@ class DimensionalModule(Module):
         # reverse indexed constraints
         # no expected dimension
         expc = None
-        for dim in rev:
+        for dim, size in rev:
             # add unconstrained placeholders
             if expc is not None:
                 elems.extend(["_" for _ in range(dim - expc)])
             # add contraint value
-            elems.append(f"{self._contraints[dim]}")
+            elems.append(f"{size}")
             # set expected next dimension
             expc = dim + 1
+        # final cases
+        if expc is not None:
+            elems.extend(["_" for _ in range(expc, 0)])
 
         return f"({', '.join(elems)})"
 
@@ -500,7 +503,7 @@ class DimensionalModule(Module):
             return False
 
         # check if constraints are met
-        for dim, size in constraints:
+        for dim, size in constraints.items():
             if value.shape[dim] != size:
                 return False
 
@@ -509,20 +512,18 @@ class DimensionalModule(Module):
     def compatible_like(
         self,
         shape: tuple[int],
-        add_dims: bool = False,
         constraints: dict[int, int] | None = None,
     ) -> tuple[int]:
         """Generates a shape like the input, but compatible with constraints.
 
         Args:
             shape (tuple[int]): shape to make compatible
-            add_dims (bool, optional): if constrained dimensions should be added. Defaults to False.
             constraints (dict[int, int] | None, optional): constraint dictionary to test with,
                 uses current constraints if None. Defaults to None.
 
         Raises:
-            RuntimeError: without adding dimensions, the dimensionality of shape is insufficient.
-            RuntimeError: even with adding dimensions, the dimensionality of shape is insufficient.
+            RuntimeError: dimensionality of shape is insufficient.
+            RuntimeError: constraints contains non-positive sized dimensions.
 
         Returns:
             tuple[int]: compatiblized shape.
@@ -531,57 +532,27 @@ class DimensionalModule(Module):
         if constraints is None:
             constraints = self._constraints
 
-        # modify existing dimensions
-        if not add_dims:
-            # ensure shape is of sufficient dimensionality
-            maxc = max(constraints)
-            minc = min(constraints)
-            req_ndims = (maxc + 1 if maxc >= 0 else 0) - (minc if minc <= -1 else 0)
+        # ensure shape is of sufficient dimensionality
+        maxc = max(constraints)
+        minc = min(constraints)
+        req_ndims = (maxc + 1 if maxc >= 0 else 0) - (minc if minc <= -1 else 0)
 
-            if len(shape) < req_ndims:
-                raise RuntimeError(
-                    f"shape {shape} with dimensionality {len(shape)} cannot be made compatible, "
-                    f"requires a minimum dimensionality of {req_ndims}"
-                )
-
-            # create new shape
-            return tuple(
-                size if dim not in constraints else constraints[dim]
-                for dim, size in enumerate(shape)
+        if len(shape) < req_ndims:
+            raise RuntimeError(
+                f"shape {shape} with dimensionality {len(shape)} cannot be made compatible, "
+                f"requires a minimum dimensionality of {req_ndims}"
             )
 
-        # create new dimensions
-        else:
-            # construct minimal forward shape with placeholders
-            fwd, expc = deque(), 0
-            for dim, size in sorted(self._constraints.items()):
-                if dim >= 0:
-                    fwd.extend([None for _ in range(expc, dim)] + [size])
-                    expc = dim + 1
-
-            # construct minimal reverse shape with placeholders
-            rev, expc = deque(), -1
-            for dim, size in sorted(self._constraints.items(), reverse=True):
-                if dim <= -1:
-                    rev.extendleft([None for _ in range(dim, expc)] + [size])
-                    expc = dim - 1
-
-            # ensure shape is of sufficient dimensionality
-            req_ndims = fwd.count(None) + rev.count(None)
-
-            if len(shape) < req_ndims:
+        # create new shape
+        new_shape = list(shape)
+        for dim, size in constraints.items():
+            if size < 1:
                 raise RuntimeError(
-                    f"shape {shape} with dimensionality {len(shape)} cannot be made compatible, "
-                    f"requires a minimum dimensionality of {req_ndims}"
+                    f"shape {shape} cannot contain non-positive sized dimensions."
                 )
-
-            # create new shape
-            shape = deque(shape)
-            fwd = [size if size is not None else shape.popleft() for size in fwd]
-            rev = reversed(
-                [size if size is not None else shape.pop() for size in reversed(rev)]
-            )
-            return fwd + list(shape) + rev
+            else:
+                new_shape[dim] = size
+        return tuple(new_shape)
 
     def reconstrain(self, dim: int, size: int | None):
         """Edits existing constraints and reshapes constrained buffers and parameters accordingly.
@@ -596,8 +567,14 @@ class DimensionalModule(Module):
             RuntimeError: added constraint is incompatible with existing buffer or parameter.
         """
         # delete cache for constraint properties
-        del self.constraints
-        del self.constraints_repr
+        try:
+            del self.constraints
+        except AttributeError:
+            pass
+        try:
+            del self.constraints_repr
+        except AttributeError:
+            pass
 
         # remove deleted buffers and parameters as constrained
         for name in tuple(self._constrained_buffers):
@@ -669,65 +646,69 @@ class DimensionalModule(Module):
 
             # add new constraint
             self._constraints[dim] = size
+            return
 
-        else:
-            # removal of constraint
-            if size is None:
-                del self._constraints[dim]
-
-            # alteration of constraint
+        # removal of constraint
+        if dim in self._constraints and size is None:
+            if len(self._constraints) == 1:
+                raise RuntimeError(
+                    f"cannot remove constraint on {dim}, final constraint."
+                )
             else:
-                # create constraints with new addition
-                constraints = {
-                    d: s for d, s in tuple(self._constraints.items()) + ((dim, size),)
-                }
+                del self._constraints[dim]
+            return
 
-                # reallocate buffers
-                for name in self._constrained_buffers:
-                    buffer = self.get_buffer(name)
+        # alteration of constraint
+        if dim in self._constraints and size is not None:
+            # create constraints with new addition
+            constraints = {
+                d: s for d, s in tuple(self._constraints.items()) + ((dim, size),)
+            }
 
-                    if buffer is not None and buffer.numel() > 0:
-                        rsetattr(
-                            self,
-                            name,
+            # reallocate buffers
+            for name in self._constrained_buffers:
+                buffer = self.get_buffer(name)
+                if buffer is not None and buffer.numel() > 0:
+                    rsetattr(
+                        self,
+                        name,
+                        torch.zeros(
+                            self.compatible_like(
+                                buffer.shape,
+                                constraints=constraints,
+                            ),
+                            dtype=buffer.dtype,
+                            layout=buffer.layout,
+                            device=buffer.device,
+                            requires_grad=buffer.requires_grad,
+                        ),
+                    )
+
+            # reallocate parameters
+            for name in self._constrained_parameters:
+                param = self.get_parameter(name)
+
+                if param is not None and param.numel() > 0:
+                    rsetattr(
+                        self,
+                        name,
+                        nn.Parameter(
                             torch.zeros(
                                 self.compatible_like(
-                                    buffer.shape,
-                                    add_dims=False,
+                                    param.shape,
                                     constraints=constraints,
                                 ),
-                                dtype=buffer.dtype,
-                                layout=buffer.layout,
-                                device=buffer.device,
-                                requires_grad=buffer.requires_grad,
+                                dtype=param.dtype,
+                                layout=param.layout,
+                                device=param.device,
+                                requires_grad=param.data.requires_grad,
                             ),
-                        )
+                            requires_grad=param.requires_grad,
+                        ),
+                    )
 
-                # reallocate parameters
-                for name in self._constrained_parameters:
-                    param = self.get_parameter(name)
-
-                    if param is not None and param.numel() > 0:
-                        rsetattr(
-                            self,
-                            name,
-                            nn.Parameter(
-                                torch.zeros(
-                                    self.compatible_like(
-                                        param.shape,
-                                        add_dims=False,
-                                        constraints=constraints,
-                                    ),
-                                    dtype=param.dtype,
-                                    layout=param.layout,
-                                    device=param.device,
-                                    requires_grad=param.data.requires_grad,
-                                ),
-                                requires_grad=param.requires_grad,
-                            ),
-                        )
-
-                self._constraints[dim] = size
+            self._constraints[dim] = size
+            return
 
     def register_constrained(self, name: str):
         """Registers an existing buffer or parameter as constrained.
@@ -810,6 +791,7 @@ class HistoryModule(DimensionalModule):
         ValueError: step time must be positive.
         ValueError: history length must be non-negative.
     """
+
     def __init__(
         self,
         step_time: float,
@@ -1036,8 +1018,10 @@ class HistoryModule(DimensionalModule):
         elif time.ndim == data.ndim:
             squeeze_res = False
         else:
-            raise RuntimeError(f"time has incompatible number of dimensions {time.ndim}, "
-                               f"must have number of dimensions equal to {data.ndim} or {data.ndim - 1}")
+            raise RuntimeError(
+                f"time has incompatible number of dimensions {time.ndim}, "
+                f"must have number of dimensions equal to {data.ndim} or {data.ndim - 1}"
+            )
 
         # validate that time values are correct
         if torch.any(time < 0):
@@ -1100,17 +1084,13 @@ class HistoryModule(DimensionalModule):
         if name in self._constrained_buffers:
             buffer = self.get_buffer(name)
             if buffer is None or buffer.numel() == 0:
-                raise RuntimeError(
-                    f"cannot reset {name}, buffer is uninitialized."
-                )
+                raise RuntimeError(f"cannot reset {name}, buffer is uninitialized.")
             buffer[:] = data
             self._pointer[name] = 0
         elif name in self._constrained_parameters:
             param = self.get_parameter(name)
             if param is None or param.numel() == 0:
-                raise RuntimeError(
-                    f"cannot reset {name}, parameter is uninitialized."
-                )
+                raise RuntimeError(f"cannot reset {name}, parameter is uninitialized.")
             param[:] = data
         else:
             raise AttributeError(
@@ -1132,9 +1112,7 @@ class HistoryModule(DimensionalModule):
         if name in self._constrained_buffers:
             buffer = self.get_buffer(name)
             if buffer is None:
-                raise RuntimeError(
-                    f"cannot push to {name}, buffer is uninitialized."
-                )
+                raise RuntimeError(f"cannot push to {name}, buffer is uninitialized.")
             if tuple(data.shape) + (self.hlen,) != buffer.shape:
                 raise RuntimeError(
                     f"data has a shape of {tuple(data.shape)}, "
