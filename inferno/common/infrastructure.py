@@ -719,6 +719,9 @@ class DimensionalModule(Module):
         Raises:
             RuntimeError: dimension of attribute does not match constraint.
             AttributeError: attribute is not a registered buffer or parameter.
+
+        Note:
+            Registered parameters of type ``None`` cannot be constrained.
         """
         # calculate required number of dimensions
         maxc = max(self._constraints)
@@ -922,7 +925,7 @@ class HistoryModule(DimensionalModule):
             any other constraints that have been added.
         """
         DimensionalModule.register_constrained(self, name)
-        if name in self._pointer:
+        if name not in self._pointer:
             self._pointer[name] = 0
 
     def deregister_constrained(self, name: str):
@@ -989,9 +992,12 @@ class HistoryModule(DimensionalModule):
             Some functions which meet the :py:class:`Interpolation` type are included in the library.
 
         Note:
-            In cases where the times selected are a match for an observed index within the tolerance,
-            the interpolation function is still called and its results still used. The ``select_at``
-            values will be altered to either ``0`` or :py:attr:`self.dt`.
+            If ``time`` is an scalar and is within tolerance of an integer index, then
+            a slice will be returned without ever attempting interpolation.
+
+            If ``time`` is a tensor, interpolation will be called regardless, and ``select_at``
+            will be altered to either ``0`` or :py:attr:`self.dt`. Interpolation results are
+            then overwritten with exact values before returning.
         """
         # access underlying buffer or parameter
         if name in self._constrained_buffers:
@@ -1003,73 +1009,125 @@ class HistoryModule(DimensionalModule):
                 f"name {name} does not specify a constrained buffer or parameter."
             )
 
-        # convert time to a tensor iff necessary and ensure device matches data
-        if not isinstance(data, torch.Tensor):
-            time = torch.full(data.shape[:-1], float(time), device=data.device)
+        # check that constrained is registered via HistoryModule
+        if name not in self._pointer:
+            raise RuntimeError(
+                f"name {name} references an improperly registered constrained attribute."
+            )
+
+        # check that constrained is initialized
+        if data is None or data.numel() == 0:
+            raise AttributeError(
+                f"name {name} references an uninitialized constrained attribute."
+            )
+
+        # computed values
+        tmax = self.dt * (self.hsize - 1)
+
+        # scalar time
+        if not isinstance(time, torch.Tensor):
+            # cast values
+            time, offset = float(time), int(offset)
+
+            # check that time is in valid range
+            if time + tolerance < 0:
+                raise ValueError(f"time must be non-negative, received {time}.")
+            if time - tolerance > tmax:
+                raise ValueError(f"time must not exceed {tmax}, received {time}.")
+
+            # convert time into continuous index
+            index = time / self.dt
+            r_index = round(index)
+            if abs(self.dt * r_index - time) < tolerance:
+                index = r_index
+
+            # apply offset to pointer
+            pointer = (self._pointer[name] - offset) % self.hsize
+
+            # access data by index and interpolate
+            if isinstance(index, int):
+                return data[(pointer - index) % self.hsize]
+            else:
+                prev_data = data[..., (pointer - int(index + 1)) % self.hsize]
+                next_data = data[..., (pointer - int(index)) % self.hsize]
+                return interpolation(
+                    prev_data.unsqueeze(-1),
+                    next_data.unsqueeze(-1),
+                    torch.full(
+                        data.shape[:-1],
+                        self.dt * (index % 1),
+                        dtype=data.dtype,
+                        device=data.device,
+                    ).unsqueeze(-1),
+                    self.dt,
+                ).squeeze(-1)
+
+        # tensor time
+        else:
+            # ensure time is of correct datatype and on correct device
+            time = time.to(device=data.device)
             if not time.is_floating_point():
                 time = time.to(dtype=torch.float32)
-        else:
-            time = time.to(device=data.device)
 
-        # determine if output dimension should be squeezed
-        if time.ndim == data.ndim - 1:
-            squeeze_res = True
-            time = time.unsqueeze(-1)
-        elif time.ndim == data.ndim:
-            squeeze_res = False
-        else:
-            raise RuntimeError(
-                f"time has incompatible number of dimensions {time.ndim}, "
-                f"must have number of dimensions equal to {data.ndim} or {data.ndim - 1}"
+            # determine if output dimension should be squeezed
+            if time.ndim == data.ndim - 1:
+                squeeze_res = True
+                time = time.unsqueeze(-1)
+            elif time.ndim == data.ndim:
+                squeeze_res = False
+            else:
+                raise RuntimeError(
+                    f"time has incompatible number of dimensions {time.ndim}, "
+                    f"must have number of dimensions equal to {data.ndim} or {data.ndim - 1}"
+                )
+
+            # check that time values are in valid range
+            if torch.any(time + tolerance < 0):
+                raise ValueError(
+                    f"time must only be non-negative, received {time.amin().item()}."
+                )
+            if torch.any(time - tolerance > tmax):
+                raise ValueError(
+                    f"time must never exceed {tmax}, received {time.amax().item()}."
+                )
+
+            # convert time into continuous indices
+            indices = time / self.dt
+            r_indices = indices.round()
+            indices = torch.where(
+                (self.dt * r_indices - time).abs() < tolerance,
+                r_indices,
+                indices,
             )
 
-        # validate that time values are correct
-        if torch.any(time < 0):
-            raise ValueError("time must contain only non-negative values.")
-        if torch.any(time - tolerance > (self.hsize - 1) * self.dt):
-            raise ValueError(
-                f"time contains a value which exceeds maximum of {(self.hsize - 1) * self.dt}."
+            # apply offset to pointer
+            pointer = (self._pointer[name] - offset) % self.hsize
+
+            # access data by index and interpolate
+            prev_idx = (pointer - indices.ceil().long()) % self.hsize
+            prev_data = torch.gather(
+                data,
+                -1,
+                prev_idx,
             )
 
-        # compute indicies, corrected for tolerance
-        indices = time / self.dt
-        indices = torch.where(
-            torch.abs(indices.round() - indices) * self.dt < tolerance,
-            indices.round(),
-            indices,
-        )
+            next_idx = (pointer - indices.floor().long()) % self.hsize
+            next_data = torch.gather(
+                data,
+                -1,
+                next_idx,
+            )
 
-        # correct time based on indices
-        time = indices * self.dt
+            res = interpolation(prev_data, next_data, self.dt * (indices % 1), self.dt)
 
-        # offset pointer
-        pointer = (self._pointer[name] - offset) % self.hsize
+            # use direct values where indices are exact
+            res = torch.where(prev_idx == next_idx, prev_data, res)
 
-        # observation before sample, index ceiling
-        prev_data = torch.gather(
-            data,
-            -1,
-            (pointer - indices.ceil().long()) % self.hsize,
-        )
-
-        # observation after sample, index floor
-        next_data = torch.gather(
-            data,
-            -1,
-            (pointer - indices.floor().long()) % self.hsize,
-        )
-
-        # interpolate and reshape if necessary
-        res = interpolation(
-            prev_data,
-            next_data,
-            torch.clamp((indices.ceil() / self.dt) - time, min=0, max=self.dt),
-            self.dt,
-        )
-        if squeeze_res:
-            return res.squeeze(-1)
-        else:
-            return res
+            # unsqueeze result if necessary to match input
+            if squeeze_res:
+                return res.squeeze(-1)
+            else:
+                return res
 
     def reset(self, name: str, data: Any) -> None:
         r"""Resets a constrained attribute to some value or values.
@@ -1092,6 +1150,7 @@ class HistoryModule(DimensionalModule):
             if param is None or param.numel() == 0:
                 raise RuntimeError(f"cannot reset {name}, parameter is uninitialized.")
             param[:] = data
+            self._pointer[name] = 0
         else:
             raise AttributeError(
                 f"name {name} does not specify a constrained buffer or parameter."
@@ -1113,7 +1172,7 @@ class HistoryModule(DimensionalModule):
             buffer = self.get_buffer(name)
             if buffer is None:
                 raise RuntimeError(f"cannot push to {name}, buffer is uninitialized.")
-            if tuple(data.shape) + (self.hlen,) != buffer.shape:
+            if data.shape != buffer.shape[:-1]:
                 raise RuntimeError(
                     f"data has a shape of {tuple(data.shape)}, "
                     f"required shape is {tuple(buffer.shape[:-1])}"
@@ -1126,7 +1185,7 @@ class HistoryModule(DimensionalModule):
                 raise RuntimeError(
                     f"cannot push to {name}, parameter is uninitialized."
                 )
-            if tuple(data.shape) + (self.hlen,) != param.shape:
+            if data.shape != param.shape[:-1]:
                 raise RuntimeError(
                     f"data has a shape of {tuple(data.shape)}, "
                     f"required shape is {tuple(param.shape[:-1])}"
@@ -1137,6 +1196,28 @@ class HistoryModule(DimensionalModule):
             raise AttributeError(
                 f"name {name} does not specify a constrained buffer or parameter."
             )
+
+    def update(self, name: str, data: torch.Tensor, offset: int = 0) -> None:
+        r"""Updates time slice of a tensor at a specific index.
+
+        Args:
+            name (str): name of the attribute to target.
+            data (torch.Tensor): data to insert into history.
+            offset (int, optional): number of steps before present to update. Defaults to 0.
+        """
+        # access underlying buffer or parameter
+        if name in self._constrained_buffers:
+            data = self.get_buffer(name)
+        elif name in self._constrained_parameters:
+            data = self.get_parameter(name)
+        else:
+            raise AttributeError(
+                f"name {name} does not specify a constrained buffer or parameter."
+            )
+
+        # insert new time slice
+        pointer = (self._pointer[name] - int(offset)) % self.hsize
+        data[..., pointer] = data
 
     def latest(self, name: str, offset: int = 1) -> torch.Tensor:
         r"""Retrieves the most recent slice of a constrained attribute.
@@ -1167,7 +1248,7 @@ class HistoryModule(DimensionalModule):
                 f"name {name} does not specify a constrained buffer or parameter."
             )
 
-        return data[..., (self._pointer[name] - offset) % self.hlen]
+        return data[..., (self._pointer[name] - offset) % self.hsize]
 
     def history(self, name: str, offset: int = 1, latest_first=True) -> torch.Tensor:
         r"""Retrieves the recorded history of a constrained attribute.
