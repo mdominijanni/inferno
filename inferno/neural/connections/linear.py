@@ -103,7 +103,7 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
     def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
-        Outputs are determened as the learned linear transformation applied to synaptic
+        Outputs are determined as the learned linear transformation applied to synaptic
         currents, after new input is applied to the synapse. These are reshaped according
         to the specified output shape.
 
@@ -241,7 +241,7 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
     def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
-        Outputs are determened as the learned linear transformation applied to synaptic
+        Outputs are determined as the learned linear transformation applied to synaptic
         currents, after new input is applied to the synapse. These are reshaped according
         to the specified output shape.
 
@@ -386,7 +386,7 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
     def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
-        Outputs are determened as the learned linear transformation applied to synaptic
+        Outputs are determined as the learned linear transformation applied to synaptic
         currents, after new input is applied to the synapse. These are reshaped according
         to the specified output shape.
 

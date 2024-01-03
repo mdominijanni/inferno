@@ -1,4 +1,4 @@
-from inferno import Module, WrapperModule, Hook
+from inferno import Module, Hook
 from inferno._internal import rgetattr
 from inferno.typing import ManyToMany
 import torch
@@ -116,7 +116,7 @@ class InputMonitor(Monitor):
         )
 
 
-class OutputMonitor(WrapperModule, Hook):
+class OutputMonitor(Monitor):
     r"""Records the outputs returned from a Module.
 
     Args:
@@ -179,7 +179,7 @@ class OutputMonitor(WrapperModule, Hook):
         )
 
 
-class StateMonitor(WrapperModule, Hook):
+class StateMonitor(Monitor):
     r"""Records the state of an attribute in a Module.
 
     Args:

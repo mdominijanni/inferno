@@ -8,7 +8,9 @@ class WeightBiasMixin:
         self, weight: torch.Tensor, bias: torch.Tensor | None, requires_grad=False
     ):
         self.register_parameter("weight_", nn.Parameter(weight, requires_grad))
-        self.register_parameter("bias_", nn.Parameter(bias, requires_grad))
+        self.register_parameter(
+            "bias_", None if bias is None else nn.Parameter(bias, requires_grad)
+        )
 
     @property
     def weight(self) -> torch.Tensor:
@@ -61,7 +63,9 @@ class WeightBiasDelayMixin(WeightBiasMixin):
         requires_grad=False,
     ):
         WeightBiasMixin.__init__(self, weight, bias, requires_grad)
-        self.register_parameter("delay_", nn.Parameter(delay, requires_grad))
+        self.register_parameter(
+            "delay_", None if delay is None else nn.Parameter(delay, requires_grad)
+        )
 
     @property
     def delay(self) -> torch.Tensor | None:

@@ -26,3 +26,7 @@ from .connections import (  # noqa:F401
     DirectLinear,
     LateralLinear,
 )
+
+from .modeling import (  # noqa:F401
+    Layer,
+)
