@@ -2,11 +2,8 @@ import einops as ein
 from inferno.typing import OneToOne
 import math
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from typing import Literal
 from .. import Connection, SynapseConstructor
-from .._mixins import WeightBiasDelayMixin
+from ._mixins import WeightBiasDelayMixin
 
 
 class Conv2D(WeightBiasDelayMixin, Connection):
@@ -201,7 +198,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             )
 
         if self.biased:
-            pass  # add bias component and return
+            return res + ein.rearrange(self.bias, "f -> 1 f 1 1")
         else:
             return res
 
