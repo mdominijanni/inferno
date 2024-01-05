@@ -61,17 +61,6 @@ class EMAReducer(FoldingReducer):
         else:
             return self.alpha * obs + (1 - self.alpha) * state
 
-    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
-        r"""Selection of first input tensor.
-
-        Args:
-            *inputs (torch.Tensor): tensor inputs to combine.
-
-        Returns:
-            torch.Tensor: resultant observation.
-        """
-        return inputs[0]
-
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.
 

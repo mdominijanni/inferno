@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import inferno
 from inferno import HistoryModule
-from inferno.typing import OneToOne, ManyToOne
+from inferno.typing import OneToOne
 import torch
 from typing import Callable
 
@@ -14,7 +14,7 @@ class Reducer(HistoryModule, ABC):
         HistoryModule.__init__(self, step_time, history_len)
 
     @abstractmethod
-    def clear(self, *args, **kwargs) -> None:
+    def clear(self, **kwargs) -> None:
         r"""Reinitializes the reducer's state."""
         raise NotImplementedError(
             f"'Reducer.clear()' is abstract, {type(self).__name__} "
@@ -46,15 +46,15 @@ class Reducer(HistoryModule, ABC):
         )
 
     @abstractmethod
-    def push(self, inputs: torch.Tensor) -> None:
+    def push(self, inputs: torch.Tensor, **kwargs) -> None:
         r"""Incorporates inputs into the reducer's state."""
         raise NotImplementedError(
             f"'Reducer.push()' is abstract, {type(self).__name__} "
             "must implement the 'push' method"
         )
 
-    def forward(self, *inputs: torch.Tensor, **kwargs) -> None:
-        """Incorporates inputs into the reducer's state."""
+    def forward(self, inputs: torch.Tensor, **kwargs) -> None:
+        """Initializes state and incorporates inputs into the reducer's state."""
         raise NotImplementedError(
             f"'Reducer.forward()' is abstract, {type(self).__name__} "
             "must implement the 'forward' method"
@@ -71,9 +71,7 @@ class FoldReducer(Reducer):
         history_len (float): length of time for which observations should be stored.
         interpolation (inferno.Interpolation, optional): interpolation function to use when retrieving
             data between observations. Defaults to inferno.interp_nearest.
-        map_fn (OneToOne[torch.Tensor] | ManyToOne[torch.Tensor] | None, optional): transformation
-            to apply to inputs, no transformation if None. Defaults to None.
-        init_fn (OneToOne[torch.Tensor] | None, optional): function to set the initial state,
+        initializer (OneToOne[torch.Tensor] | None, optional): function to set the initial state,
             zeroes when None. Defaults to None.
 
     Note:
@@ -92,8 +90,7 @@ class FoldReducer(Reducer):
         history_len: float,
         *,
         interpolation: inferno.Interpolation = inferno.interp_nearest,
-        map_fn: OneToOne[torch.Tensor] | ManyToOne[torch.Tensor] | None = None,
-        init_fn: OneToOne[torch.Tensor] | None = None,
+        initializer: OneToOne[torch.Tensor] | None = None,
     ):
         # call superclass constructor
         Reducer.__init__(self, step_time, history_len)
@@ -101,8 +98,7 @@ class FoldReducer(Reducer):
         # set non-persistant functions
         self.fold_ = fold_fn
         self.interpolate_ = interpolation
-        self.map_ = map_fn if map_fn else lambda x: x
-        self.initialize_ = init_fn if init_fn else lambda x: x.fill_(0)
+        self.initialize_ = initializer if initializer else lambda x: x.fill_(0)
 
         # register data buffer and helpers
         self.register_buffer("_data", torch.empty(0))
@@ -184,7 +180,7 @@ class FoldReducer(Reducer):
         Reducer.hlen.fset(self, value)
         self.clear(keepshape=True)
 
-    def clear(self, keepshape=False) -> None:
+    def clear(self, keepshape=False, **kwargs) -> None:
         r"""Reinitializes the reducer's state.
 
         Args:
@@ -230,7 +226,7 @@ class FoldReducer(Reducer):
         if self.data.numel() != 0:
             return self.select("_data", time, self.interpolate_, tolerance=tolerance)
 
-    def dump(self) -> torch.Tensor | None:
+    def dump(self, **kwargs) -> torch.Tensor | None:
         r"""Returns the reducer's state over all observations.
 
         Returns:
@@ -247,7 +243,7 @@ class FoldReducer(Reducer):
         if self.data.numel() != 0:
             return self.record("_data", latest_first=True)
 
-    def peek(self) -> torch.Tensor | None:
+    def peek(self, **kwargs) -> torch.Tensor | None:
         r"""Returns the reducer's current state.
 
         Returns:
@@ -260,7 +256,7 @@ class FoldReducer(Reducer):
         if self.data.numel() != 0:
             return self.latest("_data")
 
-    def push(self, inputs: torch.Tensor) -> None:
+    def push(self, inputs: torch.Tensor, **kwargs) -> None:
         r"""Incorporates inputs into the reducer's state.
 
         Args:
@@ -268,21 +264,19 @@ class FoldReducer(Reducer):
         """
         self.pushto("_data", inputs)
 
-    def forward(self, *inputs: torch.Tensor, **kwargs) -> None:
-        """Incorporates inputs into the reducer's state.
+    def forward(self, inputs: torch.Tensor, **kwargs) -> None:
+        """Initializes state and incorporates inputs into the reducer's state.
 
         This performs any required initialization steps, maps the inputs, and pushes the new data.
 
         Args:
             *inputs (torch.Tensor): inputs to be mapped, then pushed.
         """
-        # apply map to inputs
-        inputs = self.map_(*inputs)
-
         # initialize data iff uninitialized
         if self.data.numel() == 0:
-            self._data = inferno.empty(self.data, shape=(inputs.shape + (self.hlen,)))
+            self._data = inferno.empty(self._data, shape=(inputs.shape + (self.hlen,)))
             self.data = self.initialize_(self.data)
+
         # integrate inputs
         if not self._initial:
             self.push(self.fold_(self.latest("_data"), inputs))
@@ -305,8 +299,7 @@ class FoldingReducer(FoldReducer, ABC):
             step_time=step_time,
             history_len=history_len,
             interpolation=self.interpolate,
-            map_fn=self.map,
-            init_fn=self.initialize,
+            initializer=self.initialize,
         )
 
     @abstractmethod
@@ -327,24 +320,6 @@ class FoldingReducer(FoldReducer, ABC):
         raise NotImplementedError(
             f"'FoldingReducer.fold()' is abstract, {type(self).__name__} "
             "must implement the 'fold' method"
-        )
-
-    @abstractmethod
-    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
-        r"""Combination and processing of input tensors into a single observation tensor.
-
-        Args:
-            *inputs (torch.Tensor): tensor inputs to combine.
-
-        Raises:
-            NotImplementedError: abstract methods must be implemented by subclass.
-
-        Returns:
-            torch.Tensor: resultant observation.
-        """
-        raise NotImplementedError(
-            f"'FoldingReducer.map()' is abstract, {type(self).__name__} "
-            "must implement the 'map' method"
         )
 
     @abstractmethod

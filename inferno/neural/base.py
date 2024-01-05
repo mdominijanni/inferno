@@ -320,6 +320,13 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
             f"Synapse `{type(self).__name__}` must implement the getter for property `spike`"
         )
 
+    @spike.setter
+    @abstractmethod
+    def spike(self, value: torch.Tensor):
+        raise NotImplementedError(
+            f"Synapse `{type(self).__name__}` must implement the setter for property `spike`"
+        )
+
     @abstractmethod
     def current_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Returns currents at times specified by delays.
@@ -577,6 +584,36 @@ class Connection(Module, ABC):
     def delay(self, value: torch.Tensor):
         raise NotImplementedError(
             f"Connection `{type(self).__name__}` must implement the setter for property `delay`"
+        )
+
+    @property
+    @abstractmethod
+    def syncurrent(self) -> torch.Tensor:
+        r"""Currents from the synapse at the time last used by the connection.
+
+        Returns:
+             torch.Tensor: delay-offset synaptic currents.
+
+        Raises:
+            NotImplementedError: ``syncurrent`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the getter for property `inshape`"
+        )
+
+    @property
+    @abstractmethod
+    def synspike(self) -> torch.Tensor:
+        r"""Spikes to the synapse at the time last used by the connection.
+
+        Returns:
+             torch.Tensor: delay-offset synaptic spikes.
+
+        Raises:
+            NotImplementedError: ``synspike`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the getter for property `inshape`"
         )
 
     def clear(self, **kwargs):

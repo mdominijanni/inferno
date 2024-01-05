@@ -49,17 +49,6 @@ class EventReducer(FoldingReducer):
         else:
             return torch.where(self.criterion(obs), 0, state + self.dt)
 
-    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
-        r"""Selection of first input tensor.
-
-        Args:
-            *inputs (torch.Tensor): tensor inputs to combine.
-
-        Returns:
-            torch.Tensor: resultant observation.
-        """
-        return inputs[0]
-
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to infinity.
 
@@ -124,17 +113,6 @@ class PassthroughReducer(FoldingReducer):
             torch.Tensor: state for the current time step.
         """
         return obs
-
-    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
-        r"""Selection of first input tensor.
-
-        Args:
-            *inputs (torch.Tensor): tensor inputs to combine.
-
-        Returns:
-            torch.Tensor: resultant observation.
-        """
-        return inputs[0]
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.

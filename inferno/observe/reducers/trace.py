@@ -91,17 +91,6 @@ class NearestTraceReducer(FoldingReducer):
         else:
             return torch.where(mask, self.amplitude, self.decay * state)
 
-    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
-        r"""Selection of first input tensor.
-
-        Args:
-            *inputs (torch.Tensor): tensor inputs to combine.
-
-        Returns:
-            torch.Tensor: resultant observation.
-        """
-        return inputs[0]
-
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.
 
@@ -222,17 +211,6 @@ class CumulativeTraceReducer(FoldingReducer):
             return self.amplitude * mask
         else:
             return (self.decay * state) + (self.amplitude * mask)
-
-    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
-        r"""Selection of first input tensor.
-
-        Args:
-            *inputs (torch.Tensor): tensor inputs to combine.
-
-        Returns:
-            torch.Tensor: resultant observation.
-        """
-        return inputs[0]
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.
@@ -357,17 +335,6 @@ class ScaledNearestTraceReducer(FoldingReducer):
         else:
             return torch.where(mask, self.amplitude + self.scale * obs, self.decay * state)
 
-    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
-        r"""Selection of first input tensor.
-
-        Args:
-            *inputs (torch.Tensor): tensor inputs to combine.
-
-        Returns:
-            torch.Tensor: resultant observation.
-        """
-        return inputs[0]
-
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.
 
@@ -490,17 +457,6 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
             return (self.amplitude + self.scale * obs) * mask
         else:
             return (self.decay * state) + (self.amplitude + self.scale * obs) * mask
-
-    def map(self, *inputs: torch.Tensor) -> torch.Tensor:
-        r"""Selection of first input tensor.
-
-        Args:
-            *inputs (torch.Tensor): tensor inputs to combine.
-
-        Returns:
-            torch.Tensor: resultant observation.
-        """
-        return inputs[0]
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.

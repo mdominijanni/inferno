@@ -8,7 +8,3 @@ from .functional import (  # noqa:F401
     OneToManyMethod,
     ManyToManyMethod,
 )
-
-from .objective import (  # noqa:F401
-    ShapeConstructor,
-)

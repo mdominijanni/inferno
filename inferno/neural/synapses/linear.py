@@ -2,7 +2,6 @@ import inferno
 import torch
 import torch.nn as nn
 from typing import Literal
-import warnings
 from .. import Synapse, SynapseConstructor
 
 
@@ -151,34 +150,20 @@ class PassthroughSynapse(Synapse):
             self.reset("spike_", False)
 
     def forward(
-        self, inputs: torch.Tensor, spikes: torch.Tensor | None = None, **kwargs
+        self, inputs: torch.Tensor, current: torch.Tensor | None = None, **kwargs
     ) -> torch.Tensor:
         r"""Runs a simulation step of the synaptic kinetics.
 
         Args:
-            inputs (torch.Tensor): main input to the synapse, treated like a current.
-            spikes (torch.Tensor | None, optional): spiking input if distinct from input current.
+            inputs (torch.Tensor): main input to the synapse, treated like spiking input.
+            current (torch.Tensor | None, optional): input current if not equivalent to input spikes.
                 Defaults to None.
 
         Returns:
             torch.Tensor: currents resulting from the kinetics.
         """
-        if hasattr(self, "spike_") and spikes is None:
-            raise RuntimeError(
-                f"{type(self).__name__} object initialized with `spikes_from_currents` "
-                "set to True, requires `spikes` argument on __call__()."
-            )
-        if not hasattr(self, "spike_") and spikes is not None:
-            warnings.warn(
-                f"{type(self).__name__} object initialized with `spikes_from_currents` "
-                "set to False, ignoring `spikes`.",
-                category=RuntimeWarning,
-            )
-
-        self.current = inputs
-
-        if spikes is not None:
-            self.pushto("spikes_", spikes)
+        self.spike = inputs
+        self.current = current if current is not None else inputs
 
         return self.current
 
@@ -206,14 +191,21 @@ class PassthroughSynapse(Synapse):
             torch.Tensor: spikes to the synapses.
 
         Note:
-            Spikes are computed as inputs greater than zero. If currents rather than spikes
-            are passed into this object's :py:meth:`forward` method, this property will
-            return incorrect values.
+            If initialized with ``spikes_from_currents``, the getter computes
+            spikes as input currents greater than zero.
+
+        Note:
+            If initialized with ``spikes_from_currents``, the setter does nothing.
         """
         if hasattr(self, "spike_"):
             return self.latest("spike_")
         else:
             return self._current_to_spike(self.current)
+
+    @spike.setter
+    def spike(self, value: torch.Tensor):
+        if hasattr(self, "spike_"):
+            self.pushto("spike_", value)
 
     def current_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Returns currents at times specified by delays.

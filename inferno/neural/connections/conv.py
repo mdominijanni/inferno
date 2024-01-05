@@ -166,16 +166,9 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             :py:meth:`~inferno.neural.Synapse.forward` call.
         """
         if self.delayed:
-            self.synapse(inputs, **kwargs)
+            _ = self.synapse(inputs, **kwargs)
 
-            data = ein.rearrange(
-                self.synapse.current_at(
-                    ein.rearrange(self.delay, "f c h w -> 1 (c h w) 1 f").expand(
-                        self.bsize, -1, self.synapse.shape[-1], -1
-                    )
-                ),
-                "b n l f -> b f n l",
-            )
+            data = ein.rearrange(self.syncurrent, "b n l f -> b f n l")
             kernel = ein.rearrange(self.weight, "f c h w -> f 1 (c h w)")
 
             res = ein.rearrange(
@@ -185,9 +178,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 ow=self.outshape[1],
             )
         else:
-            self.synapse(inputs, **kwargs)
-
-            data = self.synapse.current()  # B N L
+            data = self.synapse(inputs, **kwargs)  # B N L
             kernel = ein.rearrange(self.weight, "f c h w -> f (c h w)")
 
             res = ein.rearrange(
@@ -201,6 +192,38 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             return res + ein.rearrange(self.bias, "f -> 1 f 1 1")
         else:
             return res
+
+    @property
+    def syncurrent(self) -> torch.Tensor:
+        r"""Currents from the synapse at the time last used by the connection.
+
+        Returns:
+             torch.Tensor: delay-offset synaptic currents.
+        """
+        if self.delayed:
+            return self.synapse.current_at(
+                ein.rearrange(self.delay, "f c h w -> 1 (c h w) 1 f").expand(
+                    self.bsize, -1, self.synapse.shape[-1], -1
+                )
+            )
+        else:
+            return self.synapse.current
+
+    @property
+    def synspike(self) -> torch.Tensor:
+        r"""Spikes to the synapse at the time last used by the connection.
+
+        Returns:
+             torch.Tensor: delay-offset synaptic spikes.
+        """
+        if self.delayed:
+            return self.synapse.spike_at(
+                ein.rearrange(self.delay, "f c h w -> 1 (c h w) 1 f").expand(
+                    self.bsize, -1, self.synapse.shape[-1], -1
+                )
+            )
+        else:
+            return self.synapse.spike
 
     @property
     def inshape(self) -> tuple[int, int, int]:

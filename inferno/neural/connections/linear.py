@@ -119,18 +119,46 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         """
         if self.delayed:
             _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
-            res = self.synapse.current_at(self.delay)
+            res = self.syncurrent
 
             if self.bias is not None:
-                res = torch.sum(res * self.weight + self.bias, dim=-1)
+                res = torch.sum(res * self.weight.t() + self.bias, dim=1)
             else:
-                res = torch.sum(res * self.weight, dim=-1)
+                res = torch.sum(res * self.weight.t(), dim=1)
 
         else:
             res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
             res = F.linear(res, self.weight, self.bias)
 
         return res.view(-1, *self.outshape)
+
+    @property
+    def syncurrent(self) -> torch.Tensor:
+        r"""Currents from the synapse at the time last used by the connection.
+
+        Returns:
+             torch.Tensor: delay-offset synaptic currents.
+        """
+        if self.delayed:
+            return self.synapse.current_at(
+                ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
+            )
+        else:
+            return self.synapse.current
+
+    @property
+    def synspike(self) -> torch.Tensor:
+        r"""Spikes to the synapse at the time last used by the connection.
+
+        Returns:
+             torch.Tensor: delay-offset synaptic spikes.
+        """
+        if self.delayed:
+            return self.synapse.spike_at(
+                ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
+            )
+        else:
+            return self.synapse.spike
 
     @property
     def inshape(self) -> tuple[int]:
@@ -257,24 +285,44 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
         """
         if self.delayed:
             _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
-            res = ein.rearrange(
-                self.synapse.current_at(self.delay.view(-1, 1)), "b 1 n -> b n"
-            )
-
-            if self.bias is not None:
-                res = res * self.weight + self.bias
-            else:
-                res = res * self.weight
-
+            res = ein.rearrange(self.current, "b n 1 -> b n")
         else:
             res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
 
-            if self.bias is not None:
-                res = res * self.weight + self.bias
-            else:
-                res = res * self.weight
+        if self.bias is not None:
+            res = res * self.weight + self.bias
+        else:
+            res = res * self.weight
 
         return res.view(-1, *self.outshape)
+
+    @property
+    def syncurrent(self) -> torch.Tensor:
+        r"""Currents from the synapse at the time last used by the connection.
+
+        Returns:
+             torch.Tensor: delay-offset synaptic currents.
+        """
+        if self.delayed:
+            return self.synapse.current_at(
+                ein.rearrange(self.delay, "n -> 1 n 1").expand(self.bsize, -1, -1)
+            )
+        else:
+            return self.synapse.current
+
+    @property
+    def synspike(self) -> torch.Tensor:
+        r"""Spikes to the synapse at the time last used by the connection.
+
+        Returns:
+             torch.Tensor: delay-offset synaptic spikes.
+        """
+        if self.delayed:
+            return self.synapse.spike_at(
+                ein.rearrange(self.delay, "n -> 1 n 1").expand(self.bsize, -1, -1)
+            )
+        else:
+            return self.synapse.spike
 
     @property
     def inshape(self) -> tuple[int]:
@@ -402,18 +450,46 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
         """
         if self.delayed:
             _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
-            res = self.synapse.current_at(self.delay)
+            res = self.syncurrent
 
             if self.bias is not None:
-                res = torch.sum(res * self.weight + self.bias, dim=-1)
+                res = torch.sum(res * self.weight.t() + self.bias, dim=1)
             else:
-                res = torch.sum(res * self.weight, dim=-1)
+                res = torch.sum(res * self.weight.t(), dim=1)
 
         else:
             res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
             res = F.linear(res, self.weight, self.bias)
 
         return res.view(-1, *self.outshape)
+
+    @property
+    def syncurrent(self) -> torch.Tensor:
+        r"""Currents from the synapse at the time last used by the connection.
+
+        Returns:
+             torch.Tensor: delay-offset synaptic currents.
+        """
+        if self.delayed:
+            return self.synapse.current_at(
+                ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
+            )
+        else:
+            return self.synapse.current
+
+    @property
+    def synspike(self) -> torch.Tensor:
+        r"""Spikes to the synapse at the time last used by the connection.
+
+        Returns:
+             torch.Tensor: delay-offset synaptic spikes.
+        """
+        if self.delayed:
+            return self.synapse.spike_at(
+                ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
+            )
+        else:
+            return self.synapse.spike
 
     @property
     def inshape(self) -> tuple[int]:

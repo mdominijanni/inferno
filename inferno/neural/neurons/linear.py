@@ -99,7 +99,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
 
-    def forward(self, inputs: torch.Tensor, refrac_lock=True) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, refrac_lock=True, **kwargs) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
         Args:
@@ -302,7 +302,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             self.adaptation = torch.zeros_like(self.adaptation)
 
     def forward(
-        self, inputs: torch.Tensor, adapt: bool | None = None, refrac_lock: bool = True
+        self, inputs: torch.Tensor, adapt: bool | None = None, refrac_lock: bool = True, **kwargs
     ) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
@@ -413,7 +413,7 @@ class GLIF1(VoltageMixin, SpikeRefractoryMixin, Neuron):
         r"""Resets neurons to their resting state."""
         LIF.clear(self)
 
-    def forward(self, inputs: torch.Tensor, refrac_lock=True) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, refrac_lock=True, **kwargs) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
         Args:
@@ -595,7 +595,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             self.adaptation = torch.zeros_like(self.adaptation)
 
     def forward(
-        self, inputs: torch.Tensor, adapt: bool | None = None, refrac_lock: bool = True
+        self, inputs: torch.Tensor, adapt: bool | None = None, refrac_lock: bool = True, **kwargs
     ) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
