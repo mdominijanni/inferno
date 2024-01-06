@@ -1,0 +1,6 @@
+﻿inferno.empty
+=============
+
+.. currentmodule:: inferno
+
+.. autofunction:: empty

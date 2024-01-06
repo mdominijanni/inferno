@@ -56,19 +56,13 @@ class EMAReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        if state is None:
-            return obs
-        else:
-            return self.alpha * obs + (1 - self.alpha) * state
+        return inferno.simple_exponential_smoothing(obs, state, alpha=self.alpha)
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.
 
         Args:
             inputs (torch.Tensor): empty tensor of state.
-
-        Raises:
-            NotImplementedError: abstract methods must be implemented by subclass.
 
         Returns:
             torch.Tensor: filled state tensor.

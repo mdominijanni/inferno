@@ -46,10 +46,14 @@ class NearestTraceReducer(FoldingReducer):
 
         # register state
         self.register_extra("time_constant", float(time_constant))
-        self.register_buffer("decay", torch.tensor(inferno.exp(-self.dt / self.time_constant)))
+        self.register_buffer(
+            "decay", torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        )
         self.register_buffer("amplitude", torch.tensor(amplitude))
         self.register_buffer("target", torch.tensor(target))
-        self.register_buffer("tolerance", None if tolerance is None else float(tolerance))
+        self.register_buffer(
+            "tolerance", None if tolerance is None else float(tolerance)
+        )
 
     @property
     def dt(self) -> float:
@@ -79,26 +83,20 @@ class NearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        # create mask
-        if self.tolerance is None:
-            mask = obs == self.target
-        else:
-            mask = torch.abs(obs - self.target) <= self.tolerance
-
-        # compute new state
-        if state is None:
-            return self.amplitude * mask
-        else:
-            return torch.where(mask, self.amplitude, self.decay * state)
+        return inferno.trace_nearest(
+            obs,
+            state,
+            decay=self.decay,
+            amplitude=self.amplitude,
+            target=self.target,
+            tolerance=self.tolerance,
+        )
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.
 
         Args:
             inputs (torch.Tensor): empty tensor of state.
-
-        Raises:
-            NotImplementedError: abstract methods must be implemented by subclass.
 
         Returns:
             torch.Tensor: filled state tensor.
@@ -123,7 +121,9 @@ class NearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
+        return inferno.interp_exp_decay(
+            prev_data, next_data, sample_at, step_time, self.time_constant
+        )
 
 
 class CumulativeTraceReducer(FoldingReducer):
@@ -167,10 +167,14 @@ class CumulativeTraceReducer(FoldingReducer):
 
         # register state
         self.register_extra("time_constant", float(time_constant))
-        self.register_buffer("decay", torch.tensor(inferno.exp(-self.dt / self.time_constant)))
+        self.register_buffer(
+            "decay", torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        )
         self.register_buffer("amplitude", torch.tensor(amplitude))
         self.register_buffer("target", torch.tensor(target))
-        self.register_buffer("tolerance", None if tolerance is None else float(tolerance))
+        self.register_buffer(
+            "tolerance", None if tolerance is None else float(tolerance)
+        )
 
     @property
     def dt(self) -> float:
@@ -200,26 +204,20 @@ class CumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        # create mask
-        if self.tolerance is None:
-            mask = obs == self.target
-        else:
-            mask = torch.abs(obs - self.target) <= self.tolerance
-
-        # compute new state
-        if state is None:
-            return self.amplitude * mask
-        else:
-            return (self.decay * state) + (self.amplitude * mask)
+        return inferno.trace_nearest(
+            obs,
+            state,
+            decay=self.decay,
+            amplitude=self.amplitude,
+            target=self.target,
+            tolerance=self.tolerance,
+        )
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.
 
         Args:
             inputs (torch.Tensor): empty tensor of state.
-
-        Raises:
-            NotImplementedError: abstract methods must be implemented by subclass.
 
         Returns:
             torch.Tensor: filled state tensor.
@@ -244,7 +242,9 @@ class CumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
+        return inferno.interp_exp_decay(
+            prev_data, next_data, sample_at, step_time, self.time_constant
+        )
 
 
 class ScaledNearestTraceReducer(FoldingReducer):
@@ -291,7 +291,9 @@ class ScaledNearestTraceReducer(FoldingReducer):
 
         # register state
         self.register_extra("time_constant", float(time_constant))
-        self.register_buffer("decay", torch.tensor(inferno.exp(-self.dt / self.time_constant)))
+        self.register_buffer(
+            "decay", torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        )
         self.register_buffer("amplitude", torch.tensor(amplitude))
         self.register_buffer("scale", torch.tensor(scale))
 
@@ -326,23 +328,20 @@ class ScaledNearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        # create mask
-        mask = self.criterion(obs)
-
-        # compute new state
-        if state is None:
-            return (self.amplitude + self.scale * obs) * mask
-        else:
-            return torch.where(mask, self.amplitude + self.scale * obs, self.decay * state)
+        return inferno.trace_nearest_scaled(
+            obs,
+            state,
+            decay=self.decay,
+            amplitude=self.amplitude,
+            scale=self.scale,
+            matchfn=self.criterion,
+        )
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.
 
         Args:
             inputs (torch.Tensor): empty tensor of state.
-
-        Raises:
-            NotImplementedError: abstract methods must be implemented by subclass.
 
         Returns:
             torch.Tensor: filled state tensor.
@@ -367,7 +366,9 @@ class ScaledNearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
+        return inferno.interp_exp_decay(
+            prev_data, next_data, sample_at, step_time, self.time_constant
+        )
 
 
 class ScaledCumulativeTraceReducer(FoldingReducer):
@@ -414,7 +415,9 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
 
         # register state
         self.register_extra("time_constant", float(time_constant))
-        self.register_buffer("decay", torch.tensor(inferno.exp(-self.dt / self.time_constant)))
+        self.register_buffer(
+            "decay", torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        )
         self.register_buffer("amplitude", torch.tensor(amplitude))
         self.register_buffer("scale", torch.tensor(scale))
 
@@ -449,23 +452,20 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        # create mask
-        mask = self.criterion(obs)
-
-        # compute new state
-        if state is None:
-            return (self.amplitude + self.scale * obs) * mask
-        else:
-            return (self.decay * state) + (self.amplitude + self.scale * obs) * mask
+        return inferno.trace_cumulative_scaled(
+            obs,
+            state,
+            decay=self.decay,
+            amplitude=self.amplitude,
+            scale=self.scale,
+            matchfn=self.criterion,
+        )
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.
 
         Args:
             inputs (torch.Tensor): empty tensor of state.
-
-        Raises:
-            NotImplementedError: abstract methods must be implemented by subclass.
 
         Returns:
             torch.Tensor: filled state tensor.
@@ -490,4 +490,6 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return inferno.interp_exp_decay(prev_data, next_data, sample_at, step_time, self.time_constant)
+        return inferno.interp_exp_decay(
+            prev_data, next_data, sample_at, step_time, self.time_constant
+        )

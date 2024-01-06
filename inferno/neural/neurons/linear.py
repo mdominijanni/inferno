@@ -2,7 +2,6 @@ from .. import Neuron
 from .. import functional as nf
 import math
 import torch
-import types
 from ._mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
 
 
@@ -86,13 +85,14 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
 
-        # create linear voltage function
-        def vfn(neuron, masked_inputs):
-            v_in = neuron.resistance * masked_inputs
-            v_delta = neuron.voltage - neuron.rest_v
-            return v_in + (v_delta - v_in) * neuron.decay + neuron.rest_v
-
-        self._volt_fn = types.MethodType(vfn, self)
+    def _integrate_v(self, masked_inputs):
+        return nf.voltage_integration_linear(
+            masked_inputs,
+            self.voltage,
+            decay=self.decay,
+            rest_v=self.rest_v,
+            resistance=self.resistance,
+        )
 
     def clear(self, **kwargs):
         r"""Resets neurons to their resting state."""
@@ -112,10 +112,10 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
             torch.Tensor: which neurons generated an action potential.
         """
         # use voltage thresholding function
-        spikes, voltages, refracs = nf._voltage_thresholding(
+        spikes, voltages, refracs = nf.voltage_thresholding(
             inputs=inputs,
             refracs=self.refrac,
-            voltage_fn=self._volt_fn,
+            voltage_fn=self._integrate_v,
             step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=self.thresh_v,
@@ -280,15 +280,18 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
-        AdaptationMixin.__init__(self, torch.zeros(*self.shape, self.decay_adaptation.shape[-1]), False)
+        AdaptationMixin.__init__(
+            self, torch.zeros(*self.shape, self.decay_adaptation.shape[-1]), False
+        )
 
-        # create linear voltage function
-        def vfn(neuron, masked_inputs):
-            v_in = neuron.resistance * masked_inputs
-            v_delta = neuron.voltage - neuron.rest_v
-            return v_in + (v_delta - v_in) * neuron.decay + neuron.rest_v
-
-        self._volt_fn = types.MethodType(vfn, self)
+    def _integrate_v(self, masked_inputs):
+        return nf.voltage_integration_linear(
+            masked_inputs,
+            self.voltage,
+            decay=self.decay,
+            rest_v=self.rest_v,
+            resistance=self.resistance,
+        )
 
     def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
@@ -302,7 +305,11 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             self.adaptation = torch.zeros_like(self.adaptation)
 
     def forward(
-        self, inputs: torch.Tensor, adapt: bool | None = None, refrac_lock: bool = True, **kwargs
+        self,
+        inputs: torch.Tensor,
+        adapt: bool | None = None,
+        refrac_lock: bool = True,
+        **kwargs,
     ) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
@@ -322,13 +329,15 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             training mode but not when it is in evaluation mode.
         """
         # use voltage thresholding function
-        spikes, voltages, refracs = nf._voltage_thresholding(
+        spikes, voltages, refracs = nf.voltage_thresholding(
             inputs=inputs,
             refracs=self.refrac,
-            voltage_fn=self._volt_fn,
+            voltage_fn=self._integrate_v,
             step_time=self.step_time,
             reset_v=self.reset_v,
-            thresh_v=nf.apply_adaptive_thresholds(self.thresh_eq_v, self.adaptations),
+            thresh_v=nf.neuron_adaptation.apply_adaptive_thresholds(
+                self.thresh_eq_v, self.adaptations
+            ),
             refrac_t=self.refrac_t,
             voltages=(self.voltage if refrac_lock else None),
         )
@@ -337,7 +346,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
 
         # use adaptive thresholds update function
         if adapt or (adapt is None and self.training):
-            adaptations = nf._adaptive_thresholds_linear_spike(
+            adaptations = nf.adaptive_thresholds_linear_spike(
                 adaptations=self.adaptation,
                 postsyn_spikes=spikes,
                 decay=self.decay_adaptation,
@@ -409,9 +418,12 @@ class GLIF1(VoltageMixin, SpikeRefractoryMixin, Neuron):
             batch_size=batch_size,
         )
 
+    def _integrate_v(self, masked_inputs):
+        return LIF._integrate_v(self, masked_inputs)
+
     def clear(self, **kwargs):
         r"""Resets neurons to their resting state."""
-        LIF.clear(self)
+        LIF.clear(self, **kwargs)
 
     def forward(self, inputs: torch.Tensor, refrac_lock=True, **kwargs) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
@@ -573,15 +585,18 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
-        AdaptationMixin.__init__(self, torch.zeros(*self.shape, self.decay_adaptation.shape[-1]), False)
+        AdaptationMixin.__init__(
+            self, torch.zeros(*self.shape, self.decay_adaptation.shape[-1]), False
+        )
 
-        # create linear voltage function
-        def vfn(neuron, masked_inputs):
-            v_in = neuron.resistance * masked_inputs
-            v_delta = neuron.voltage - neuron.rest_v
-            return v_in + (v_delta - v_in) * neuron.decay + neuron.rest_v
-
-        self._volt_fn = types.MethodType(vfn, self)
+    def _integrate_v(self, masked_inputs):
+        return nf.voltage_integration_linear(
+            masked_inputs,
+            self.voltage,
+            decay=self.decay,
+            rest_v=self.rest_v,
+            resistance=self.resistance,
+        )
 
     def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
@@ -595,7 +610,11 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             self.adaptation = torch.zeros_like(self.adaptation)
 
     def forward(
-        self, inputs: torch.Tensor, adapt: bool | None = None, refrac_lock: bool = True, **kwargs
+        self,
+        inputs: torch.Tensor,
+        adapt: bool | None = None,
+        refrac_lock: bool = True,
+        **kwargs,
     ) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
@@ -615,15 +634,17 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             training mode but not when it is in evaluation mode.
         """
         # use naturalistic voltage thresholding function
-        spikes, voltages, refracs = nf._voltage_thresholding_slope_intercept(
+        spikes, voltages, refracs = nf.voltage_thresholding_slope_intercept(
             inputs=inputs,
             refracs=self.refrac,
-            voltage_fn=self._volt_fn,
+            voltage_fn=self._integrate_v,
             step_time=self.step_time,
             rest_v=self.rest_v,
             v_slope=self.reset_v_mul,
             v_intercept=self.reset_v_add,
-            thresh_v=nf.apply_adaptive_thresholds(self.thresh_eq_v, self.adaptations),
+            thresh_v=nf.neuron_adaptation.apply_adaptive_thresholds(
+                self.thresh_eq_v, self.adaptations
+            ),
             refrac_t=self.refrac_t,
             voltages=(self.voltage if refrac_lock else None),
         )
@@ -632,7 +653,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
 
         # use adaptive thresholds update function
         if adapt or (adapt is None and self.training):
-            adaptations = nf._adaptive_thresholds_linear_spike(
+            adaptations = nf.adaptive_thresholds_linear_spike(
                 adaptations=self.adaptation,
                 postsyn_spikes=spikes,
                 decay=self.decay_adaptation,

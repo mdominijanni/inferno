@@ -165,6 +165,10 @@
 <li class="toctree-l3"><a class="reference internal" href="inferno.Configuration.html">Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.Hook.html">Hook</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.exp.html">inferno.exp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.zeros.html">inferno.zeros</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.ones.html">inferno.ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.empty.html">inferno.empty</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.full.html">inferno.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.interp_previous.html">inferno.interp_previous</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.interp_nearest.html">inferno.interp_nearest</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.interp_linear.html">inferno.interp_linear</a></li>
@@ -173,7 +177,6 @@
 <li class="toctree-l3"><a class="reference internal" href="inferno.trace_cumulative.html">inferno.trace_cumulative</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.trace_nearest_scaled.html">inferno.trace_nearest_scaled</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.trace_cumulative_scaled.html">inferno.trace_cumulative_scaled</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.cumulative_average.html">inferno.cumulative_average</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.simple_exponential_smoothing.html">inferno.simple_exponential_smoothing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.holt_linear_smoothing.html">inferno.holt_linear_smoothing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.Interpolation.html">Interpolation</a></li>
@@ -195,17 +198,14 @@
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../neural-functional.html">inferno.neural.functional</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of inferno.neural.functional</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.voltage_integration_linear.html">inferno.neural.functional.voltage_integration_linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.voltage_thresholding.html">inferno.neural.functional.voltage_thresholding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.voltage_thresholding_slope_intercept.html">inferno.neural.functional.voltage_thresholding_slope_intercept</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.apply_adaptive_currents.html">inferno.neural.functional.apply_adaptive_currents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.apply_adaptive_thresholds.html">inferno.neural.functional.apply_adaptive_thresholds</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.adaptive_currents_linear.html">inferno.neural.functional.adaptive_currents_linear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.adaptive_thresholds_linear_voltage.html">inferno.neural.functional.adaptive_thresholds_linear_voltage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.adaptive_thresholds_linear_spike.html">inferno.neural.functional.adaptive_thresholds_linear_spike</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.leaky_integrate_and_fire.html">inferno.neural.functional.leaky_integrate_and_fire</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.leaky_integrate_and_fire_euler.html">inferno.neural.functional.leaky_integrate_and_fire_euler</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.adaptive_leaky_integrate_and_fire.html">inferno.neural.functional.adaptive_leaky_integrate_and_fire</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.generalized_leaky_integrate_and_fire_1.html">inferno.neural.functional.generalized_leaky_integrate_and_fire_1</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.generalized_leaky_integrate_and_fire_2.html">inferno.neural.functional.generalized_leaky_integrate_and_fire_2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.dense_linear.html">inferno.neural.functional.dense_linear</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.direct_linear.html">inferno.neural.functional.direct_linear</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.lateral_linear.html">inferno.neural.functional.lateral_linear</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../observe.html">inferno.observe</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of inferno.observe</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -536,9 +536,11 @@ Some functions which meet the <a class="reference internal" href="inferno.Interp
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In cases where the times selected are a match for an observed index within the tolerance,
-the interpolation function is still called and its results still used. The <code class="docutils literal notranslate"><span class="pre">select_at</span></code>
-values will be altered to either <code class="docutils literal notranslate"><span class="pre">0</span></code> or <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.dt</span></code>.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is an scalar and is within tolerance of an integer index, then
+a slice will be returned without ever attempting interpolation.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is a tensor, interpolation will be called regardless, and <code class="docutils literal notranslate"><span class="pre">select_at</span></code>
+will be altered to either <code class="docutils literal notranslate"><span class="pre">0</span></code> or <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.dt</span></code>. Interpolation results are
+then overwritten with exact values before returning.</p>
 </div>
 </dd></dl>
 
@@ -549,6 +551,21 @@ values will be altered to either <code class="docutils literal notranslate"><spa
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – attribute for which time should be incremented.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.HistoryModule.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/common/infrastructure.html#HistoryModule.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.HistoryModule.update" title="Link to this definition">#</a></dt>
+<dd><p>Updates time slice of a tensor at a specific index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the attribute to target.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – data to insert into history.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – number of steps before present to update. Defaults to 0.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -625,6 +642,7 @@ values will be altered to either <code class="docutils literal notranslate"><spa
 <li><a class="reference internal" href="#inferno.HistoryModule.reset"><code class="docutils literal notranslate"><span class="pre">HistoryModule.reset()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.HistoryModule.select"><code class="docutils literal notranslate"><span class="pre">HistoryModule.select()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.HistoryModule.tick"><code class="docutils literal notranslate"><span class="pre">HistoryModule.tick()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.HistoryModule.update"><code class="docutils literal notranslate"><span class="pre">HistoryModule.update()</span></code></a></li>
 </ul>
 </li>
 </ul>

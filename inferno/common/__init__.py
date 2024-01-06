@@ -11,7 +11,6 @@ from .series import (  # noqa: F401
     trace_cumulative,
     trace_nearest_scaled,
     trace_cumulative_scaled,
-    cumulative_average,
     simple_exponential_smoothing,
     holt_linear_smoothing,
 )
@@ -25,4 +24,4 @@ from .math import (  # noqa: F401
     interp_exp_decay,
 )
 
-from .tensor import zeros, empty, full  # noqa: F401
+from .tensor import zeros, ones, empty, full  # noqa: F401

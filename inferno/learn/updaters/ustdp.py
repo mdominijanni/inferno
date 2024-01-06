@@ -27,6 +27,14 @@ class STDP(PairwiseUpdater):
         # call superclass constructor
         PairwiseUpdater.__init__(self, *layers)
 
+        # test hyperparameter validity
+        if step_time <= 0:
+            raise RuntimeError(f"step time must be positive, received {step_time}")
+        if tc_post <= 0:
+            raise RuntimeError(f"postsynaptic time constant must be positive, received {tc_post}")
+        if tc_pre <= 0:
+            raise RuntimeError(f"presynaptic time constant must be positive, received {tc_pre}")
+
         # register hyperparameters
         self.register_extra("step_time", float(step_time))
         self.register_extra("lr_post", float(lr_post))
@@ -148,7 +156,7 @@ class STDP(PairwiseUpdater):
 
     @property
     def lrpost(self) -> float:
-        return self.lr_post.item()
+        return self.lr_post
 
     @lrpost.setter
     def lrpost(self, value: float) -> None:
@@ -156,7 +164,7 @@ class STDP(PairwiseUpdater):
 
     @property
     def lrpre(self) -> float:
-        return self.lr_pre.item()
+        return self.lr_pre
 
     @lrpre.setter
     def lrpre(self, value: float) -> None:

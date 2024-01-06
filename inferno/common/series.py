@@ -1,5 +1,4 @@
 import torch
-from .math import exp
 from inferno.typing import OneToOne
 
 
@@ -7,8 +6,7 @@ def trace_nearest(
     observation: torch.Tensor,
     trace: torch.Tensor | None,
     *,
-    step_time: float | torch.Tensor,
-    time_constant: float | torch.Tensor,
+    decay: float | torch.Tensor,
     amplitude: int | float | complex | torch.Tensor,
     target: int | float | bool | complex | torch.Tensor,
     tolerance: int | float | torch.Tensor | None = None,
@@ -24,9 +22,9 @@ def trace_nearest(
 
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`f`.
-        trace (torch.Tensor | None): current value of the trace, :math:`x`, will initialize if set to None.
-        step_time (float | torch.Tensor): length of the discrete step time, :math:`\Delta t`.
-        time_constant (float | torch.Tensor): time constant of exponential decay, :math:`\tau`.
+        trace (torch.Tensor | None): current value of the trace, :math:`x`, if it exists.
+        decay (float | torch.Tensor): exponential decay for adaptations,
+            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
         amplitude (int | float | complex | torch.Tensor): value to set trace to for matching elements, :math:`a`.
         target (int | float | bool | complex | torch.Tensor): target value to set trace to, :math:`f^*`.
         tolerance (int | float | torch.Tensor | None, optional): allowable absolute difference to
@@ -35,28 +33,24 @@ def trace_nearest(
     Returns:
         torch.Tensor: updated trace, incorporating the new observation.
     """
-    # initialize trace if it doesn't exist
-    if trace is None:
-        trace = torch.zeros_like(observation)
-
-    # compute decay for either tensors or primitives
-    decay = exp(-step_time / time_constant)
-
     # construct mask
     if tolerance is None:
         mask = observation == target
     else:
         mask = torch.abs(observation - target) <= tolerance
 
-    return torch.where(mask, amplitude, decay * trace)
+    # compute new state
+    if trace is None:
+        return amplitude * mask
+    else:
+        return torch.where(mask, amplitude, decay * trace)
 
 
 def trace_nearest_scaled(
     observation: torch.Tensor,
     trace: torch.Tensor | None,
     *,
-    step_time: float | torch.Tensor,
-    time_constant: float | torch.Tensor,
+    decay: float | torch.Tensor,
     amplitude: int | float | complex | torch.Tensor,
     scale: int | float | complex | torch.Tensor,
     matchfn: OneToOne[torch.Tensor],
@@ -77,12 +71,15 @@ def trace_nearest_scaled(
 
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`f`.
-        trace (torch.Tensor | None): current value of the trace, :math:`x`, will initialize if set to None.
-        step_time (float | torch.Tensor): length of the discrete step time, :math:`\Delta t`.
-        time_constant (float | torch.Tensor): time constant of exponential decay, :math:`\tau`.
-        amplitude (int | float | complex | torch.Tensor): value to add to trace to for matching elements, :math:`a`.
-        scale (int | float | complex | torch.Tensor): value to multiply matching inputs by for the trace, :math:`S`.
-        matchfn (OneToOne[torch.Tensor]): test if the inputs are considered a match for the trace, :math:`K`.
+        trace (torch.Tensor | None): current value of the trace, :math:`x`.
+        decay (float | torch.Tensor): exponential decay for adaptations,
+            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
+        amplitude (int | float | complex | torch.Tensor): value to add to trace
+            for matching elements, :math:`a`.
+        scale (int | float | complex | torch.Tensor): value to multiply matching
+            inputs by for the trace, :math:`S`.
+        matchfn (OneToOne[torch.Tensor]): test if the inputs are considered a
+            match for the trace, :math:`K`.
 
     Returns:
         torch.Tensor: updated trace, incorporating the new observation.
@@ -90,15 +87,14 @@ def trace_nearest_scaled(
     Note:
         The output of ``matchfn`` must have the datatype of ``torch.bool`` as it is used as a mask.
     """
-    # initialize trace if it doesn't exist
+    # construct mask
+    mask = matchfn(observation)
+
+    # compute new state
     if trace is None:
-        trace = torch.zeros_like(observation)
-
-    # compute decay for either tensors or primitives
-    decay = exp(-step_time / time_constant)
-
+        return (scale * observation + amplitude) * mask
     return torch.where(
-        matchfn(observation), scale * observation + amplitude, decay * trace
+        mask, scale * observation + amplitude, decay * trace
     )
 
 
@@ -106,8 +102,7 @@ def trace_cumulative(
     observation: torch.Tensor,
     trace: torch.Tensor | None,
     *,
-    step_time: float | torch.Tensor,
-    time_constant: float | torch.Tensor,
+    decay: float | torch.Tensor,
     amplitude: int | float | complex | torch.Tensor,
     target: int | float | bool | complex | torch.Tensor,
     tolerance: int | float | torch.Tensor | None = None,
@@ -123,9 +118,9 @@ def trace_cumulative(
 
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`f`.
-        trace (torch.Tensor | None): current value of the trace, :math:`x`, will initialize if set to None.
-        step_time (float | torch.Tensor): length of the discrete step time, :math:`\Delta t`.
-        time_constant (float | torch.Tensor): time constant of exponential decay, :math:`\tau`.
+        trace (torch.Tensor | None): current value of the trace, :math:`x`.
+        decay (float | torch.Tensor): exponential decay for adaptations,
+            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
         amplitude (int | float | complex | torch.Tensor): value to add to trace to for matching elements, :math:`a`.
         target (int | float | bool | complex | torch.Tensor): target value to set trace to, :math:`f^*`.
         tolerance (int | float | torch.Tensor | None, optional): allowable absolute difference to
@@ -134,28 +129,24 @@ def trace_cumulative(
     Returns:
         torch.Tensor: updated trace, incorporating the new observation.
     """
-    # initialize trace if it doesn't exist
-    if trace is None:
-        trace = torch.zeros_like(observation)
-
-    # compute decay for either tensors or primitives
-    decay = exp(-step_time / time_constant)
-
     # construct mask
     if tolerance is None:
         mask = observation == target
     else:
         mask = torch.abs(observation - target) <= tolerance
 
-    return (decay * trace) + torch.where(mask, amplitude, 0)
+    # compute new state
+    if trace is None:
+        amplitude * mask
+    else:
+        (decay * trace) + (amplitude * mask)
 
 
 def trace_cumulative_scaled(
     observation: torch.Tensor,
     trace: torch.Tensor | None,
     *,
-    step_time: float | torch.Tensor,
-    time_constant: float | torch.Tensor,
+    decay: float | torch.Tensor,
     amplitude: int | float | complex | torch.Tensor,
     scale: int | float | complex | torch.Tensor,
     matchfn: OneToOne[torch.Tensor],
@@ -176,9 +167,9 @@ def trace_cumulative_scaled(
 
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`f`.
-        trace (torch.Tensor | None): current value of the trace, :math:`x`, will initialize if set to None.
-        step_time (float | torch.Tensor): length of the discrete step time, :math:`\Delta t`.
-        time_constant (float | torch.Tensor): time constant of exponential decay, :math:`\tau`.
+        trace (torch.Tensor | None): current value of the trace, :math:`x`.
+        decay (float | torch.Tensor): exponential decay for adaptations,
+            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
         amplitude (int | float | complex | torch.Tensor): value to add to trace to for matching elements, :math:`a`.
         scale (int | float | complex | torch.Tensor): value to multiply matching inputs by for the trace, :math:`S`.
         matchfn (OneToOne[torch.Tensor]): test if the inputs are considered a match for the trace, :math:`K`.
@@ -189,59 +180,19 @@ def trace_cumulative_scaled(
     Note:
         The output of ``matchfn`` must have the datatype of ``torch.bool`` as it is used as a mask.
     """
-    # initialize trace if it doesn't exist
+    # construct mask
+    mask = matchfn(observation)
+
+    # compute new state
     if trace is None:
-        trace = torch.zeros_like(observation)
-
-    # compute decay for either tensors or primitives
-    decay = exp(-step_time / time_constant)
-
-    return (decay * trace) + torch.where(
-        matchfn(observation), scale * observation + amplitude, 0
-    )
-
-
-def cumulative_average(
-    observation: torch.Tensor,
-    cumavg: torch.Tensor | None,
-    *,
-    num_samples: int | torch.Tensor,
-) -> tuple[torch.Tensor, int | torch.Tensor]:
-    r"""Performs the cumulative average calculation for a time step.
-
-    .. math::
-        CA_{n + 1} = \frac{x_{n + 1} + n \cdot CA_n}{n + 1}
-
-    Args:
-        observation (torch.Tensor): latest state to consider for the average, :math:`x`.
-        cumavg (torch.Tensor | None): current value of the average, will initialize if set to None.
-        num_samples (int | torch.Tensor): number of samples observed for the average, :math:`n`.
-
-    Raises:
-        ValueError: ``num_samples`` was assigned a negative value.
-
-    Returns:
-        tuple[torch.Tensor, int | torch.Tensor]: tuple containing output and updated state:
-
-            cumavg: updated cumulative average.
-
-            num_samples: updated number of samples in the average.
-    """
-    # initialize state
-    if cumavg is None:
-        cumavg = torch.zeros_like(observation)
-
-    # check that num_samples is non-negative
-    if num_samples < 0:
-        raise ValueError(f"'num_samples' must be non-negative, received {num_samples}")
-
-    # return new cumavg and number of samples
-    return (observation + num_samples * cumavg) / (num_samples + 1), num_samples + 1
+        return (scale * observation + amplitude) * mask
+    else:
+        return (decay * trace) + (scale * observation + amplitude) * mask
 
 
 def simple_exponential_smoothing(
     observation: torch.Tensor,
-    smoothed: torch.Tensor | None,
+    level: torch.Tensor | None,
     *,
     alpha: float | int | complex | torch.Tensor,
 ) -> torch.Tensor:
@@ -256,23 +207,25 @@ def simple_exponential_smoothing(
     Args:
         observation (torch.Tensor): latest state to consider for exponential smoothing,
             :math:`x`.
-        smoothed (torch.Tensor | None): current value of the smoothed data,
-            :math:`s`, will initialize if set to None.
-        alpha (float | int | complex | torch.Tensor): data smoothing factor, :math:`\alpha`.
+        level (torch.Tensor | None): current value of the smoothed level,
+            :math:`s`.
+        alpha (float | int | complex | torch.Tensor): level smoothing factor, :math:`\alpha`.
 
     Returns:
         torch.Tensor: revised exponentially smoothed value.
     """
     # initial condition
-    if smoothed is None:
+    if level is None:
         return observation
+
     # standard condition
-    return alpha * observation + (1 - alpha) * smoothed
+    else:
+        return alpha * observation + (1 - alpha) * level
 
 
 def holt_linear_smoothing(
     observation: torch.Tensor,
-    smoothed: torch.Tensor | None,
+    level: torch.Tensor | None,
     trend: torch.Tensor | None,
     *,
     alpha: float | int | complex | torch.Tensor,
@@ -291,27 +244,30 @@ def holt_linear_smoothing(
     Args:
         observation (torch.Tensor): latest state to consider for exponential smoothing,
             :math:`x_{t + 1}`.
-        smoothed (torch.Tensor | None): current value of the smoothed data,
-            :math:`s`, will initialize if set to None.
+        level (torch.Tensor | None): current value of the smoothed level,
+            :math:`s`.
         trend (torch.Tensor | None): current value of the smoothed trend,
-            :math:`s`, will initialize if set to None.
-        alpha (float | int | complex | torch.Tensor): data smoothing factor, :math:`\alpha`.
+            :math:`b`.
+        alpha (float | int | complex | torch.Tensor): level smoothing factor, :math:`\alpha`.
         beta (float | int | complex | torch.Tensor): trend smoothing factor, :math:`\beta`.
 
     Returns:
         tuple[torch.Tensor, int | torch.Tensor]: tuple containing output/updated state:
 
-            smoothed: revised exponentially smoothed value.
+            level: revised exponentially smoothed level.
 
-            trend: revised exponentially trend value.
+            trend: revised exponentially smoothed trend.
     """
     # t=0 condition
-    if smoothed is None:
+    if level is None:
         return observation, None
-    # t=1 condition (will be equal to x1-x0 at t=1)
+
+    # t=1 condition (initialize trend as x1-x0)
     if trend is None:
-        trend = observation - smoothed
-    # t>1 condition
-    s = simple_exponential_smoothing(observation, smoothed + trend, alpha)
-    b = simple_exponential_smoothing(s - smoothed, trend, beta)
+        trend = observation - level
+
+    # t>0 condition
+    s = simple_exponential_smoothing(observation, level + trend, alpha)
+    b = simple_exponential_smoothing(s - level, trend, beta)
+
     return s, b

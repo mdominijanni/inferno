@@ -55,9 +55,6 @@ class EventReducer(FoldingReducer):
         Args:
             inputs (torch.Tensor): empty tensor of state.
 
-        Raises:
-            NotImplementedError: abstract methods must be implemented by subclass.
-
         Returns:
             torch.Tensor: filled state tensor.
         """
@@ -119,9 +116,6 @@ class PassthroughReducer(FoldingReducer):
 
         Args:
             inputs (torch.Tensor): empty tensor of state.
-
-        Raises:
-            NotImplementedError: abstract methods must be implemented by subclass.
 
         Returns:
             torch.Tensor: filled state tensor.

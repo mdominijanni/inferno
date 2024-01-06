@@ -1,0 +1,6 @@
+﻿inferno.full
+============
+
+.. currentmodule:: inferno
+
+.. autofunction:: full

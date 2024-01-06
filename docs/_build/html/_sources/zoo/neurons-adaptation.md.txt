@@ -75,7 +75,6 @@ $$
 \begin{align*}
     \Theta(t) &= \Theta_\infty + \sum_k \theta_k(t) \\
     \frac{d\theta_k(t)}{dt} &= a_k \left[ V_m(t) - V_\mathrm{rest} \right] - b_k \theta_k(t)
-
 \end{align*}
 $$
 

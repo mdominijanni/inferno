@@ -279,9 +279,9 @@ class FoldReducer(Reducer):
 
         # integrate inputs
         if not self._initial:
-            self.push(self.fold_(self.latest("_data"), inputs))
+            self.push(self.fold_(inputs, self.latest("_data")))
         else:
-            self.push(self.fold_(self.latest("_data"), None))
+            self.push(self.fold_(inputs, None))
             self._initial = False
 
 

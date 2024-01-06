@@ -165,6 +165,10 @@
 <li class="toctree-l3"><a class="reference internal" href="inferno.Configuration.html">Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.Hook.html">Hook</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.exp.html">inferno.exp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.zeros.html">inferno.zeros</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.ones.html">inferno.ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.empty.html">inferno.empty</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.full.html">inferno.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.interp_previous.html">inferno.interp_previous</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.interp_nearest.html">inferno.interp_nearest</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.interp_linear.html">inferno.interp_linear</a></li>
@@ -173,7 +177,6 @@
 <li class="toctree-l3"><a class="reference internal" href="inferno.trace_cumulative.html">inferno.trace_cumulative</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.trace_nearest_scaled.html">inferno.trace_nearest_scaled</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.trace_cumulative_scaled.html">inferno.trace_cumulative_scaled</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.cumulative_average.html">inferno.cumulative_average</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.simple_exponential_smoothing.html">inferno.simple_exponential_smoothing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.holt_linear_smoothing.html">inferno.holt_linear_smoothing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.Interpolation.html">Interpolation</a></li>
@@ -195,17 +198,14 @@
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../neural-functional.html">inferno.neural.functional</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of inferno.neural.functional</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.voltage_integration_linear.html">inferno.neural.functional.voltage_integration_linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.voltage_thresholding.html">inferno.neural.functional.voltage_thresholding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.voltage_thresholding_slope_intercept.html">inferno.neural.functional.voltage_thresholding_slope_intercept</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.apply_adaptive_currents.html">inferno.neural.functional.apply_adaptive_currents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.apply_adaptive_thresholds.html">inferno.neural.functional.apply_adaptive_thresholds</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.adaptive_currents_linear.html">inferno.neural.functional.adaptive_currents_linear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.adaptive_thresholds_linear_voltage.html">inferno.neural.functional.adaptive_thresholds_linear_voltage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.adaptive_thresholds_linear_spike.html">inferno.neural.functional.adaptive_thresholds_linear_spike</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.leaky_integrate_and_fire.html">inferno.neural.functional.leaky_integrate_and_fire</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.leaky_integrate_and_fire_euler.html">inferno.neural.functional.leaky_integrate_and_fire_euler</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.adaptive_leaky_integrate_and_fire.html">inferno.neural.functional.adaptive_leaky_integrate_and_fire</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.generalized_leaky_integrate_and_fire_1.html">inferno.neural.functional.generalized_leaky_integrate_and_fire_1</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.generalized_leaky_integrate_and_fire_2.html">inferno.neural.functional.generalized_leaky_integrate_and_fire_2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.dense_linear.html">inferno.neural.functional.dense_linear</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.direct_linear.html">inferno.neural.functional.direct_linear</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inferno.neural.functional.lateral_linear.html">inferno.neural.functional.lateral_linear</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../observe.html">inferno.observe</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of inferno.observe</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -383,13 +383,13 @@ When it is set to <cite>“previous”</cite> the most recent will be used.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.PassthroughSynapse.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spikes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse.forward" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">current</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse.forward" title="Link to this definition">#</a></dt>
 <dd><p>Runs a simulation step of the synaptic kinetics.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>inputs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – main input to the synapse, treated like a current.</p></li>
-<li><p><strong>spikes</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – spiking input if distinct from input current.
+<li><p><strong>inputs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – main input to the synapse, treated like spiking input.</p></li>
+<li><p><strong>current</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – input current if not equivalent to input spikes.
 Defaults to None.</p></li>
 </ul>
 </dd>
@@ -442,9 +442,12 @@ final record if none. Defaults to False.</p></li>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Spikes are computed as inputs greater than zero. If currents rather than spikes
-are passed into this object’s <a class="reference internal" href="#inferno.neural.PassthroughSynapse.forward" title="inferno.neural.PassthroughSynapse.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code></a> method, this property will
-return incorrect values.</p>
+<p>If initialized with <code class="docutils literal notranslate"><span class="pre">spikes_from_currents</span></code>, the getter computes
+spikes as input currents greater than zero.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If initialized with <code class="docutils literal notranslate"><span class="pre">spikes_from_currents</span></code>, the setter does nothing.</p>
 </div>
 </dd></dl>
 

@@ -17,20 +17,32 @@
     Hook
 ```
 
-## Basic Math Functions
+## General
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
     :toctree: generated
 
     exp
+    zeros
+    ones
+    empty
+    full
+```
+
+## Interpolations
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
     interp_previous
     interp_nearest
     interp_linear
     interp_exp_decay
 ```
 
-## Time Series Functions
+## Recurrence Relations
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -40,7 +52,6 @@
     trace_cumulative
     trace_nearest_scaled
     trace_cumulative_scaled
-    cumulative_average
     simple_exponential_smoothing
     holt_linear_smoothing
 ```

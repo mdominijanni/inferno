@@ -1,0 +1,6 @@
+﻿inferno.ones
+============
+
+.. currentmodule:: inferno
+
+.. autofunction:: ones

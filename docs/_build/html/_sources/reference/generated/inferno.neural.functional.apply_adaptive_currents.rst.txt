@@ -1,0 +1,6 @@
+﻿inferno.neural.functional.apply\_adaptive\_currents
+===================================================
+
+.. currentmodule:: inferno.neural.functional
+
+.. autofunction:: apply_adaptive_currents

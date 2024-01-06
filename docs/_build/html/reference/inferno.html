@@ -165,6 +165,10 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.Configuration.html">Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.Hook.html">Hook</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.exp.html">inferno.exp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.zeros.html">inferno.zeros</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.ones.html">inferno.ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.empty.html">inferno.empty</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.full.html">inferno.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.interp_previous.html">inferno.interp_previous</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.interp_nearest.html">inferno.interp_nearest</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.interp_linear.html">inferno.interp_linear</a></li>
@@ -173,7 +177,6 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.trace_cumulative.html">inferno.trace_cumulative</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.trace_nearest_scaled.html">inferno.trace_nearest_scaled</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.trace_cumulative_scaled.html">inferno.trace_cumulative_scaled</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.cumulative_average.html">inferno.cumulative_average</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.simple_exponential_smoothing.html">inferno.simple_exponential_smoothing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.holt_linear_smoothing.html">inferno.holt_linear_smoothing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.Interpolation.html">Interpolation</a></li>
@@ -195,17 +198,14 @@
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="neural-functional.html">inferno.neural.functional</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of inferno.neural.functional</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.voltage_integration_linear.html">inferno.neural.functional.voltage_integration_linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.voltage_thresholding.html">inferno.neural.functional.voltage_thresholding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.voltage_thresholding_slope_intercept.html">inferno.neural.functional.voltage_thresholding_slope_intercept</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.apply_adaptive_currents.html">inferno.neural.functional.apply_adaptive_currents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.apply_adaptive_thresholds.html">inferno.neural.functional.apply_adaptive_thresholds</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.adaptive_currents_linear.html">inferno.neural.functional.adaptive_currents_linear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.adaptive_thresholds_linear_voltage.html">inferno.neural.functional.adaptive_thresholds_linear_voltage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.adaptive_thresholds_linear_spike.html">inferno.neural.functional.adaptive_thresholds_linear_spike</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.leaky_integrate_and_fire.html">inferno.neural.functional.leaky_integrate_and_fire</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.leaky_integrate_and_fire_euler.html">inferno.neural.functional.leaky_integrate_and_fire_euler</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.adaptive_leaky_integrate_and_fire.html">inferno.neural.functional.adaptive_leaky_integrate_and_fire</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.generalized_leaky_integrate_and_fire_1.html">inferno.neural.functional.generalized_leaky_integrate_and_fire_1</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.generalized_leaky_integrate_and_fire_2.html">inferno.neural.functional.generalized_leaky_integrate_and_fire_2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.dense_linear.html">inferno.neural.functional.dense_linear</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.direct_linear.html">inferno.neural.functional.direct_linear</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.lateral_linear.html">inferno.neural.functional.lateral_linear</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="observe.html">inferno.observe</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of inferno.observe</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -307,32 +307,53 @@
 </table>
 </div>
 </section>
-<section id="basic-math-functions">
-<h2>Basic Math Functions<a class="headerlink" href="#basic-math-functions" title="Link to this heading">#</a></h2>
+<section id="general">
+<h2>General<a class="headerlink" href="#general" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.exp.html#inferno.exp" title="inferno.exp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exp</span></code></a></p></td>
 <td><p>Type agnostic exponential function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interp_previous.html#inferno.interp_previous" title="inferno.interp_previous"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_previous</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.zeros.html#inferno.zeros" title="inferno.zeros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zeros</span></code></a></p></td>
+<td><p>Returns a tensor based on input filled with zeros.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.ones.html#inferno.ones" title="inferno.ones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ones</span></code></a></p></td>
+<td><p>Returns a tensor based on input filled with ones.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.empty.html#inferno.empty" title="inferno.empty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">empty</span></code></a></p></td>
+<td><p>Returns an uninitialized tensor based on input.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.full.html#inferno.full" title="inferno.full"><code class="xref py py-obj docutils literal notranslate"><span class="pre">full</span></code></a></p></td>
+<td><p>Returns a tensor based on input filled with specified value.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="interpolations">
+<h2>Interpolations<a class="headerlink" href="#interpolations" title="Link to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interp_previous.html#inferno.interp_previous" title="inferno.interp_previous"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_previous</span></code></a></p></td>
 <td><p>Interpolates by selecting the previous state.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interp_nearest.html#inferno.interp_nearest" title="inferno.interp_nearest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_nearest</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interp_nearest.html#inferno.interp_nearest" title="inferno.interp_nearest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_nearest</span></code></a></p></td>
 <td><p>Interpolates by selecting the nearest state.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interp_linear.html#inferno.interp_linear" title="inferno.interp_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_linear</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interp_linear.html#inferno.interp_linear" title="inferno.interp_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_linear</span></code></a></p></td>
 <td><p>Interpolates between previous and next states linearlly.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interp_exp_decay.html#inferno.interp_exp_decay" title="inferno.interp_exp_decay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_exp_decay</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interp_exp_decay.html#inferno.interp_exp_decay" title="inferno.interp_exp_decay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_exp_decay</span></code></a></p></td>
 <td><p>Interpolates by exponentially decaying value from previous state.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 </section>
-<section id="time-series-functions">
-<h2>Time Series Functions<a class="headerlink" href="#time-series-functions" title="Link to this heading">#</a></h2>
+<section id="recurrence-relations">
+<h2>Recurrence Relations<a class="headerlink" href="#recurrence-relations" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -348,13 +369,10 @@
 <tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.trace_cumulative_scaled.html#inferno.trace_cumulative_scaled" title="inferno.trace_cumulative_scaled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_cumulative_scaled</span></code></a></p></td>
 <td><p>Performs a trace for a time step, considering all prior matches, scaled by the inputs.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.cumulative_average.html#inferno.cumulative_average" title="inferno.cumulative_average"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cumulative_average</span></code></a></p></td>
-<td><p>Performs the cumulative average calculation for a time step.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.simple_exponential_smoothing.html#inferno.simple_exponential_smoothing" title="inferno.simple_exponential_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_exponential_smoothing</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.simple_exponential_smoothing.html#inferno.simple_exponential_smoothing" title="inferno.simple_exponential_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_exponential_smoothing</span></code></a></p></td>
 <td><p>Performs simple exponential smoothing for a time step.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.holt_linear_smoothing.html#inferno.holt_linear_smoothing" title="inferno.holt_linear_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">holt_linear_smoothing</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.holt_linear_smoothing.html#inferno.holt_linear_smoothing" title="inferno.holt_linear_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">holt_linear_smoothing</span></code></a></p></td>
 <td><p>Performs Holt linear smoothing for a time step.</p></td>
 </tr>
 </tbody>
@@ -432,8 +450,9 @@
             <ul>
 <li><a class="reference internal" href="#">inferno</a><ul>
 <li><a class="reference internal" href="#infrastructure">Infrastructure</a></li>
-<li><a class="reference internal" href="#basic-math-functions">Basic Math Functions</a></li>
-<li><a class="reference internal" href="#time-series-functions">Time Series Functions</a></li>
+<li><a class="reference internal" href="#general">General</a></li>
+<li><a class="reference internal" href="#interpolations">Interpolations</a></li>
+<li><a class="reference internal" href="#recurrence-relations">Recurrence Relations</a></li>
 <li><a class="reference internal" href="#types">Types</a></li>
 </ul>
 </li>

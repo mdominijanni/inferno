@@ -11,13 +11,11 @@ from .common import (  # noqa: F401
     trace_cumulative,
     trace_nearest_scaled,
     trace_cumulative_scaled,
-    cumulative_average,
     simple_exponential_smoothing,
     holt_linear_smoothing,
 )
 
 from .common import (  # noqa: F401
-    exp,
     Interpolation,
     interp_previous,
     interp_nearest,
@@ -25,4 +23,4 @@ from .common import (  # noqa: F401
     interp_exp_decay,
 )
 
-from .common import zeros, empty  # noqa: F401
+from .common import exp, zeros, ones, empty, full  # noqa: F401

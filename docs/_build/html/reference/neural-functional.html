@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="inferno.neural.functional.adaptive_currents_linear" href="generated/inferno.neural.functional.adaptive_currents_linear.html" /><link rel="prev" title="SynapseConstructor" href="generated/inferno.neural.SynapseConstructor.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="inferno.neural.functional.voltage_integration_linear" href="generated/inferno.neural.functional.voltage_integration_linear.html" /><link rel="prev" title="SynapseConstructor" href="generated/inferno.neural.SynapseConstructor.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>inferno.neural.functional - Inferno</title>
@@ -165,6 +165,10 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.Configuration.html">Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.Hook.html">Hook</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.exp.html">inferno.exp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.zeros.html">inferno.zeros</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.ones.html">inferno.ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.empty.html">inferno.empty</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.full.html">inferno.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.interp_previous.html">inferno.interp_previous</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.interp_nearest.html">inferno.interp_nearest</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.interp_linear.html">inferno.interp_linear</a></li>
@@ -173,7 +177,6 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.trace_cumulative.html">inferno.trace_cumulative</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.trace_nearest_scaled.html">inferno.trace_nearest_scaled</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.trace_cumulative_scaled.html">inferno.trace_cumulative_scaled</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.cumulative_average.html">inferno.cumulative_average</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.simple_exponential_smoothing.html">inferno.simple_exponential_smoothing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.holt_linear_smoothing.html">inferno.holt_linear_smoothing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.Interpolation.html">Interpolation</a></li>
@@ -195,17 +198,14 @@
 </ul>
 </li>
 <li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">inferno.neural.functional</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of inferno.neural.functional</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.voltage_integration_linear.html">inferno.neural.functional.voltage_integration_linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.voltage_thresholding.html">inferno.neural.functional.voltage_thresholding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.voltage_thresholding_slope_intercept.html">inferno.neural.functional.voltage_thresholding_slope_intercept</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.apply_adaptive_currents.html">inferno.neural.functional.apply_adaptive_currents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.apply_adaptive_thresholds.html">inferno.neural.functional.apply_adaptive_thresholds</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.adaptive_currents_linear.html">inferno.neural.functional.adaptive_currents_linear</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.adaptive_thresholds_linear_voltage.html">inferno.neural.functional.adaptive_thresholds_linear_voltage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.adaptive_thresholds_linear_spike.html">inferno.neural.functional.adaptive_thresholds_linear_spike</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.leaky_integrate_and_fire.html">inferno.neural.functional.leaky_integrate_and_fire</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.leaky_integrate_and_fire_euler.html">inferno.neural.functional.leaky_integrate_and_fire_euler</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.adaptive_leaky_integrate_and_fire.html">inferno.neural.functional.adaptive_leaky_integrate_and_fire</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.generalized_leaky_integrate_and_fire_1.html">inferno.neural.functional.generalized_leaky_integrate_and_fire_1</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.generalized_leaky_integrate_and_fire_2.html">inferno.neural.functional.generalized_leaky_integrate_and_fire_2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.dense_linear.html">inferno.neural.functional.dense_linear</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.direct_linear.html">inferno.neural.functional.direct_linear</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/inferno.neural.functional.lateral_linear.html">inferno.neural.functional.lateral_linear</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="observe.html">inferno.observe</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of inferno.observe</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -283,11 +283,35 @@
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="module-inferno.neural.functional">
 <span id="inferno-neural-functional"></span><h1>inferno.neural.functional<a class="headerlink" href="#module-inferno.neural.functional" title="Link to this heading">#</a></h1>
+<section id="neuronal-dynamics">
+<h2>Neuronal Dynamics<a class="headerlink" href="#neuronal-dynamics" title="Link to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.voltage_integration_linear.html#inferno.neural.functional.voltage_integration_linear" title="inferno.neural.functional.voltage_integration_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">voltage_integration_linear</span></code></a></p></td>
+<td><p>Integrates input currents into membrane voltages assuming linear dynamics.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.functional.voltage_thresholding.html#inferno.neural.functional.voltage_thresholding" title="inferno.neural.functional.voltage_thresholding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">voltage_thresholding</span></code></a></p></td>
+<td><p>Manage refractory periods, spiking, and voltage based on voltage thresholding.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.voltage_thresholding_slope_intercept.html#inferno.neural.functional.voltage_thresholding_slope_intercept" title="inferno.neural.functional.voltage_thresholding_slope_intercept"><code class="xref py py-obj docutils literal notranslate"><span class="pre">voltage_thresholding_slope_intercept</span></code></a></p></td>
+<td><p>Manage refractory periods, spiking, and voltage based on voltage thresholding.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="neuronal-adaptation">
 <h2>Neuronal Adaptation<a class="headerlink" href="#neuronal-adaptation" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.apply_adaptive_currents.html#inferno.neural.functional.apply_adaptive_currents" title="inferno.neural.functional.apply_adaptive_currents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_adaptive_currents</span></code></a></p></td>
+<td><p>Applies simple adapation to presynaptic currents.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.functional.apply_adaptive_thresholds.html#inferno.neural.functional.apply_adaptive_thresholds" title="inferno.neural.functional.apply_adaptive_thresholds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_adaptive_thresholds</span></code></a></p></td>
+<td><p>Applies simple adapation to voltage firing thresholds.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.adaptive_currents_linear.html#inferno.neural.functional.adaptive_currents_linear" title="inferno.neural.functional.adaptive_currents_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adaptive_currents_linear</span></code></a></p></td>
 <td><p>Update adaptive currents based on membrane potential and postsynaptic spikes.</p></td>
 </tr>
@@ -301,48 +325,6 @@
 </table>
 </div>
 </section>
-<section id="neuron-models-linear">
-<h2>Neuron Models, Linear<a class="headerlink" href="#neuron-models-linear" title="Link to this heading">#</a></h2>
-<div class="table-wrapper autosummary longtable docutils container">
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.leaky_integrate_and_fire.html#inferno.neural.functional.leaky_integrate_and_fire" title="inferno.neural.functional.leaky_integrate_and_fire"><code class="xref py py-obj docutils literal notranslate"><span class="pre">leaky_integrate_and_fire</span></code></a></p></td>
-<td><p>Runs a simulation step of leaky integrate-and-fire (LIF) dynamics.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.functional.leaky_integrate_and_fire_euler.html#inferno.neural.functional.leaky_integrate_and_fire_euler" title="inferno.neural.functional.leaky_integrate_and_fire_euler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">leaky_integrate_and_fire_euler</span></code></a></p></td>
-<td><p>Runs a simulation step of leaky integrate-and-fire (LIF) dynamics.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.adaptive_leaky_integrate_and_fire.html#inferno.neural.functional.adaptive_leaky_integrate_and_fire" title="inferno.neural.functional.adaptive_leaky_integrate_and_fire"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adaptive_leaky_integrate_and_fire</span></code></a></p></td>
-<td><p>Runs a simulation step of adaptive leaky integrate-and-fire (ALIF) dynamics.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.functional.generalized_leaky_integrate_and_fire_1.html#inferno.neural.functional.generalized_leaky_integrate_and_fire_1" title="inferno.neural.functional.generalized_leaky_integrate_and_fire_1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generalized_leaky_integrate_and_fire_1</span></code></a></p></td>
-<td><p>Runs a simulation step of generalized leaky integrate-and-fire 1 (GLIF<sub>1</sub>) dynamics.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.generalized_leaky_integrate_and_fire_2.html#inferno.neural.functional.generalized_leaky_integrate_and_fire_2" title="inferno.neural.functional.generalized_leaky_integrate_and_fire_2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generalized_leaky_integrate_and_fire_2</span></code></a></p></td>
-<td><p>Runs a simulation step of generalized leaky integrate-and-fire 2 (GLIF<sub>2</sub>) dynamics.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="connections-linear">
-<h2>Connections, Linear<a class="headerlink" href="#connections-linear" title="Link to this heading">#</a></h2>
-<div class="table-wrapper autosummary longtable docutils container">
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.dense_linear.html#inferno.neural.functional.dense_linear" title="inferno.neural.functional.dense_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dense_linear</span></code></a></p></td>
-<td><p>Applies a linear all-to-all connection on inputs.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.functional.direct_linear.html#inferno.neural.functional.direct_linear" title="inferno.neural.functional.direct_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">direct_linear</span></code></a></p></td>
-<td><p>Applies a linear one-to-one connection on inputs.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.lateral_linear.html#inferno.neural.functional.lateral_linear" title="inferno.neural.functional.lateral_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lateral_linear</span></code></a></p></td>
-<td><p>Applies a linear all-to-&quot;all-but-one&quot; connection on inputs.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
 </section>
 
         </article>
@@ -350,12 +332,12 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="generated/inferno.neural.functional.adaptive_currents_linear.html">
+          <a class="next-page" href="generated/inferno.neural.functional.voltage_integration_linear.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">inferno.neural.functional.adaptive_currents_linear</div>
+                <div class="title">inferno.neural.functional.voltage_integration_linear</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -401,9 +383,8 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">inferno.neural.functional</a><ul>
+<li><a class="reference internal" href="#neuronal-dynamics">Neuronal Dynamics</a></li>
 <li><a class="reference internal" href="#neuronal-adaptation">Neuronal Adaptation</a></li>
-<li><a class="reference internal" href="#neuron-models-linear">Neuron Models, Linear</a></li>
-<li><a class="reference internal" href="#connections-linear">Connections, Linear</a></li>
 </ul>
 </li>
 </ul>
