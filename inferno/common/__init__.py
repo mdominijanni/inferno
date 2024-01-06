@@ -25,4 +25,4 @@ from .math import (  # noqa: F401
     interp_exp_decay,
 )
 
-from .tensor import zeros, empty  # noqa: F401
+from .tensor import zeros, empty, full  # noqa: F401

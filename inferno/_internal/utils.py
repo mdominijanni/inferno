@@ -3,16 +3,6 @@ import torch
 from typing import Any
 
 
-def areinstances(classinfo, *objects, mode="all"):
-    match mode.lower():
-        case "all":
-            return all((isinstance(obj, classinfo) for obj in objects))
-        case "any":
-            return any((isinstance(obj, classinfo) for obj in objects))
-        case _:
-            raise ValueError(f"invalid mode '{mode}' given, must be 'all' or 'any'.")
-
-
 def newtensor(obj):
     try:
         return obj.clone().detach()
