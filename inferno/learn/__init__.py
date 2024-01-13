@@ -1,5 +1,5 @@
 from .base import (  # noqa:F401
-    PairwiseUpdater,
+    LayerwiseUpdater,
 )
 
 from .updaters import (  # noqa:F401

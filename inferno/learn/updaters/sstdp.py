@@ -1,11 +1,11 @@
-from .. import PairwiseUpdater
+from .. import LayerwiseUpdater
 
 
-class MSTDP(PairwiseUpdater):
+class MSTDP(LayerwiseUpdater):
     def __init__(self, *pairs, **kwargs):
         pass
 
 
-class MSTDPET(PairwiseUpdater):
+class MSTDPET(LayerwiseUpdater):
     def __init__(self, *pairs, **kwargs):
         pass

@@ -6,6 +6,7 @@
 inferno
 neural
 neural-functional
+learn-functional
 observe
 typing
 ```

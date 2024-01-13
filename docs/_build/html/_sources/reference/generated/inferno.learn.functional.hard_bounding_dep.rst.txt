@@ -1,0 +1,6 @@
+﻿inferno.learn.functional.hard\_bounding\_dep
+============================================
+
+.. currentmodule:: inferno.learn.functional
+
+.. autofunction:: hard_bounding_dep

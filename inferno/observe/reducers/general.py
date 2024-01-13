@@ -24,7 +24,6 @@ class EventReducer(FoldingReducer):
         self,
         step_time: float,
         criterion: OneToOne[torch.Tensor],
-        *,
         history_len: float = 0.0,
     ):
         # call superclass constructor
@@ -92,7 +91,6 @@ class PassthroughReducer(FoldingReducer):
     def __init__(
         self,
         step_time: float,
-        *,
         history_len: float = 0.0,
     ):
         # call superclass constructor

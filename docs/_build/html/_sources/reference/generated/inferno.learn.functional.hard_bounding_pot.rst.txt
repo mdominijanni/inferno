@@ -1,0 +1,6 @@
+﻿inferno.learn.functional.hard\_bounding\_pot
+============================================
+
+.. currentmodule:: inferno.learn.functional
+
+.. autofunction:: hard_bounding_pot

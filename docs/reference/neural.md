@@ -45,6 +45,7 @@
     DenseLinear
     DirectLinear
     LateralLinear
+    Conv2D
 ```
 
 ## Types

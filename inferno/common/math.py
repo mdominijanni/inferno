@@ -176,3 +176,25 @@ def interp_exp_decay(
         torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.
     """
     return prev_data * torch.exp(-sample_at / time_constant)
+
+
+def normalize(
+    data: torch.Tensor,
+    order: int | float,
+    scale: float | complex = 1.0,
+    dims: int | tuple[int] | None = None,
+) -> torch.Tensor:
+    r"""Normalizes a tensor.
+
+    Args:
+        data (torch.Tensor): data to normalize.
+        order (int | float): order of :math:`p`-norm by which to normalize.
+        scale (float | complex, optional): desired :math:`p`-norm of elements along specified dimensions.
+            Defaults to 1.0.
+        dims (int | tuple[int] | None, optional): dimensions along which to normalize,
+            all dimensions if None. Defaults to None.
+
+    Returns:
+        torch.Tensor: normalized tensor.
+    """
+    return scale * (data / torch.linalg.vector_norm(data, ord=order, dim=dims, keepdim=True))

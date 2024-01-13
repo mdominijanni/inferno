@@ -23,4 +23,4 @@ from .common import (  # noqa: F401
     interp_exp_decay,
 )
 
-from .common import exp, zeros, ones, empty, full  # noqa: F401
+from .common import exp, normalize, zeros, ones, empty, full  # noqa: F401

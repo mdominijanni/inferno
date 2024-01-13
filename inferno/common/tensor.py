@@ -27,6 +27,9 @@ def zeros(
 
     Returns:
         torch.Tensor: tensor like the input ``tensor`` modified by parameters, filled with scalar 0.
+
+    Note:
+        To construct a scalar, set ``shape`` to ``((),)``.
     """
     shape = tensor.shape if shape is None else shape
     dtype = tensor.dtype if dtype is None else dtype
@@ -69,6 +72,9 @@ def ones(
 
     Returns:
         torch.Tensor: tensor like the input ``tensor`` modified by parameters, filled with scalar 1.
+
+    Note:
+        To construct a scalar, set ``shape`` to ``((),)``.
     """
     shape = tensor.shape if shape is None else shape
     dtype = tensor.dtype if dtype is None else dtype
@@ -111,6 +117,9 @@ def empty(
 
     Returns:
         torch.Tensor: uninitialized tensor like the input ``tensor`` modified by parameters.
+
+    Note:
+        To construct a scalar, set ``shape`` to ``((),)``.
     """
     shape = tensor.shape if shape is None else shape
     dtype = tensor.dtype if dtype is None else dtype
@@ -155,6 +164,9 @@ def full(
 
     Returns:
         torch.Tensor: tensor like the input ``tensor`` modified by parameters, filled with scalar ``value``.
+
+    Note:
+        To construct a scalar, set ``shape`` to ``((),)``.
     """
     shape = tensor.shape if shape is None else shape
     dtype = tensor.dtype if dtype is None else dtype

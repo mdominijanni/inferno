@@ -25,6 +25,7 @@ from .connections import (  # noqa:F401
     DenseLinear,
     DirectLinear,
     LateralLinear,
+    Conv2D,
 )
 
 from .modeling import (  # noqa:F401

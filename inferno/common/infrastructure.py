@@ -220,7 +220,7 @@ class Hook:
 
     Raises:
         RuntimeError: at least one of ``prehook`` and ``posthook`` must not be None.
-        RuntimeError: at least one of ``train_update`` and ``eval_update`` must not be True.
+        RuntimeError: at least one of ``train_update`` and ``eval_update`` must be True.
         TypeError: if parameter ``module`` is not ``None``, then it must be an instance of :py:class:`torch.nn.Module`.
     """
 
@@ -228,6 +228,7 @@ class Hook:
         self,
         prehook: Callable | None = None,
         posthook: Callable | None = None,
+        *,
         prehook_kwargs: dict[str, Any] | None = None,
         posthook_kwargs: dict[str, Any] | None = None,
         train_update: bool = True,
@@ -243,7 +244,7 @@ class Hook:
         # check if at least one update is true
         if not train_update and not eval_update:
             raise RuntimeError(
-                "at least one of `train_update` and `eval_update` must not be True"
+                "at least one of `train_update` and `eval_update` must be True"
             )
 
         # set returned handle
@@ -254,8 +255,10 @@ class Hook:
         self._prehook_kwargs = prehook_kwargs if prehook_kwargs else {}
         self._posthook_kwargs = posthook_kwargs if posthook_kwargs else {}
 
-        # set hooks
+        # set prehook
+        # triggers conditionally
         if not train_update and eval_update:
+            # signature includes kwargs
             if self._prehook_kwargs.get("with_kwargs"):
                 if train_update:
                     self._prehook_fn = (
@@ -269,6 +272,7 @@ class Hook:
                         if module.training
                         else prehook(module, args, kwargs)
                     )
+            # signature excludes kwargs
             else:
                 if train_update:
                     self._prehook_fn = (
@@ -282,42 +286,52 @@ class Hook:
                         if module.training
                         else prehook(module, args)
                     )
+        # triggers always/never
         else:
             self._prehook_fn = prehook
 
+        # set posthook
+        # triggers conditionally
         if not train_update and eval_update:
+            # signature includes kwargs
             if self._posthook_kwargs.get("with_kwargs"):
                 if train_update:
                     self._posthook_fn = (
-                        lambda module, args, kwargs: None
+                        lambda module, args, kwargs, output: None
                         if not module.training
-                        else posthook(module, args, kwargs)
+                        else posthook(module, args, output, kwargs)
                     )
                 if eval_update:
                     self._posthook_fn = (
-                        lambda module, args, kwargs: None
+                        lambda module, args, kwargs, output: None
                         if module.training
-                        else posthook(module, args, kwargs)
+                        else posthook(module, args, output, kwargs)
                     )
+            # signature excludes kwargs
             else:
                 if train_update:
                     self._posthook_fn = (
-                        lambda module, args: None
+                        lambda module, args, output: None
                         if not module.training
-                        else posthook(module, args)
+                        else posthook(module, args, output)
                     )
                 if eval_update:
                     self._posthook_fn = (
-                        lambda module, args: None
+                        lambda module, args, output: None
                         if module.training
-                        else posthook(module, args)
+                        else posthook(module, args, output)
                     )
+        # triggers always/never
         else:
             self._posthook_fn = posthook
 
         # register with module if provided
         if module is not None:
             self.register(module)
+
+    def __del__(self) -> None:
+        """Automatically deregister on deconstruction."""
+        return self.deregister()
 
     def register(self, module: nn.Module) -> None:
         """Registers the hook as a forward hook/prehook with specified :py:class:`torch.nn.Module`.
@@ -332,7 +346,7 @@ class Hook:
             RuntimeWarning: each :py:class:`Hook` can only be registered to one :py:class:`~torch.nn.Module`
             and will ignore :py:meth:`register` if already registered.
         """
-        if not self._prehook_handle or not self._posthook_handle:
+        if not self._prehook_handle and not self._posthook_handle:
             if not isinstance(module, nn.Module):
                 raise TypeError(
                     f"'module' parameter of type {type(self).__name__} must be an instance of {nn.Module}"

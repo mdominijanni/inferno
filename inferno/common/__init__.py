@@ -17,6 +17,7 @@ from .series import (  # noqa: F401
 
 from .math import (  # noqa: F401
     exp,
+    normalize,
     Interpolation,
     interp_previous,
     interp_nearest,

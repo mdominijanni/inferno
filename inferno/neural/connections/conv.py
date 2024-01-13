@@ -2,11 +2,46 @@ import einops as ein
 from inferno.typing import OneToOne
 import math
 import torch
+import torch.nn.functional as F
 from .. import Connection, SynapseConstructor
 from ._mixins import WeightBiasDelayMixin
 
 
 class Conv2D(WeightBiasDelayMixin, Connection):
+    r"""Convolutional connection along two spatial dimensions.
+
+    Args:
+        height (int): height of the input tensor.
+        width (int): width of the input tensor.
+        channels (int): number of channels in the input tensor.
+        filters (int): number of convolutional filters, channels of the output tensor.
+        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
+        kernel (int | tuple[int, int]): size of the convolution kernel.
+        stride (int | tuple[int, int], optional): stride of the convolution. Defaults to 1.
+        padding (int | tuple[int, int], optional): amount of zero padding added to height and width. Defaults to 0.
+        dilation (int | tuple[int, int], optional): dilation of the convolution. Defaults to 1.
+        synapse (SynapseConstructor): partial constructor for inner :py:class:`~inferno.neural.Synapse`.
+        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+        bias (bool, optional): if the connection should include learnable additive bias. Defaults to False.
+        delay (float | None, optional): length of time the connection should support delays for. Defaults to None.
+        weight_init (OneToOne | None, optional): initializer for weights. Defaults to None.
+        bias_init (OneToOne | None, optional): initializer for biases. Defaults to None.
+        delay_init (OneToOne | None, optional): initializer for delays. Defaults to None.
+
+    Raises:
+        ValueError: ``height`` must be positive.
+        ValueError: ``width`` must be positive.
+        ValueError: ``channels`` must be positive.
+        ValueError: ``filters`` must be positive.
+        ValueError: ``kernel`` must be a scalar or 2-tuple with positive values.
+        ValueError: ``stride`` must be a scalar or 2-tuple with positive values.
+        ValueError: ``padding`` must be a scalar or 2-tuple with non-negative values.
+        ValueError: ``dilation`` must be a scalar or 2-tuple with positive values.
+        ValueError: ``step_time`` must be positive.
+        ValueError: ``batch_size`` must be positive.
+        ValueError: ``delay`` must be non-negative if not None.
+    """
+
     def __init__(
         self,
         height: int,
@@ -14,10 +49,11 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         channels: int,
         filters: int,
         step_time: float,
-        kernel_size: int | tuple[int, int],
+        kernel: int | tuple[int, int],
         *,
         stride: int | tuple[int, int] = 1,
-        dilation: int | tuple[int, int] = 0,
+        padding: int | tuple[int, int] = 0,
+        dilation: int | tuple[int, int] = 1,
         synapse: SynapseConstructor,
         batch_size: int = 1,
         bias: bool = False,
@@ -26,10 +62,8 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         bias_init: OneToOne | None = None,
         delay_init: OneToOne | None = None,
     ):
-        # todo
-        # fix this, needs to have im2col/col2im shaped synapses, etc.
         # check variables and cast accordingly
-        # shapve variables
+        # shape variables
         height = int(height)
         if height < 1:
             raise ValueError(f"height must be positive, received {height}.")
@@ -50,21 +84,17 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
         # kernel variables
         try:
-            kernel_size = (int(kernel_size), int(kernel_size))
-            if kernel_size[0] < 1:
-                raise ValueError(
-                    f"kernel size must be positive, received {kernel_size[0]}."
-                )
+            kernel = (int(kernel), int(kernel))
+            if kernel[0] < 1:
+                raise ValueError(f"kernel size must be positive, received {kernel[0]}.")
         except TypeError:
-            if len(kernel_size) != 2:
+            if len(kernel) != 2:
                 raise ValueError(
-                    f"non-scalar kernel size must be a 2-tuple, received a {len(kernel_size)}-tuple."
+                    f"non-scalar kernel size must be a 2-tuple, received a {len(kernel)}-tuple."
                 )
-            kernel_size = tuple(int(v) for v in kernel_size)
-            if kernel_size[0] < 1 or kernel_size[1] < 1:
-                raise ValueError(
-                    f"kernel size must be positive, received {kernel_size}."
-                )
+            kernel = tuple(int(v) for v in kernel)
+            if kernel[0] < 1 or kernel[1] < 1:
+                raise ValueError(f"kernel size must be positive, received {kernel}.")
 
         try:
             stride = (int(stride), int(stride))
@@ -80,19 +110,30 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 raise ValueError(f"stride must be positive, received {stride}.")
 
         try:
-            dilation = (int(dilation), int(dilation))
-            if dilation[0] < 0:
+            padding = (int(padding), int(padding))
+            if padding[0] < 0:
+                raise ValueError(f"stride must be non-negative, received {padding[0]}.")
+        except TypeError:
+            if len(padding) != 2:
                 raise ValueError(
-                    f"dilation must be non-negative, received {dilation[0]}."
+                    f"non-scalar padding must be a 2-tuple, received a {len(padding)}-tuple."
                 )
+            padding = tuple(int(v) for v in padding)
+            if padding[0] < 0 or padding[1] < 0:
+                raise ValueError(f"padding must be non-negative, received {padding}.")
+
+        try:
+            dilation = (int(dilation), int(dilation))
+            if dilation[0] < 1:
+                raise ValueError(f"dilation must be positive, received {dilation[0]}.")
         except TypeError:
             if len(dilation) != 2:
                 raise ValueError(
                     f"non-scalar dilation must be a 2-tuple, received a {len(dilation)}-tuple."
                 )
             dilation = tuple(int(v) for v in dilation)
-            if dilation[0] < 0 or dilation[1] < 0:
-                raise ValueError(f"dilation must be non-negative, received {dilation}.")
+            if dilation[0] < 1 or dilation[1] < 1:
+                raise ValueError(f"dilation must be positive, received {dilation}.")
 
         # other variables
         step_time = float(step_time)
@@ -109,7 +150,9 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
         out_height, out_width = (
             math.floor(
-                (size - dilation[hw] * (kernel_size[hw] - 1) - 1) / stride[hw] + 1
+                (size + 2 * padding[hw] - dilation[hw] * (kernel[hw] - 1) - 1)
+                / stride[hw]
+                + 1
             )
             for hw, size in enumerate((height, width))
         )
@@ -118,7 +161,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         Connection.__init__(
             self,
             synapse=synapse(
-                (channels * math.prod(kernel_size), out_height * out_width),
+                (channels * math.prod(kernel), out_height * out_width),
                 float(step_time),
                 int(batch_size),
                 None if not delay else delay,
@@ -127,17 +170,28 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
         # call mixin constructor
         WeightBiasDelayMixin.__init__(
-            weight=torch.rand(filters, channels, *kernel_size),
+            weight=torch.rand(filters, channels, *kernel),
             bias=(None if not bias else torch.rand(filters)),
-            delay=(None if not bias else torch.zeros(filters, channels, *kernel_size)),
+            delay=(None if not bias else torch.zeros(filters, channels, *kernel)),
             requires_grad=False,
         )
 
-        # register extras
-        self.register_extra("stride", stride)
-        self.register_extra("dilation", dilation)
-        self.register_extra("in_shape", (height, width))
-        self.register_extra("out_shape", (out_height, out_width))
+        # convolution properties
+        # kernel
+        self.kernel = kernel
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+
+        # input
+        self.channels = channels
+        self.in_height = height
+        self.in_width = width
+
+        # output
+        self.filters = filters
+        self.out_height = out_height
+        self.out_width = out_width
 
         # initialize parameters
         if weight_init:
@@ -148,6 +202,76 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
         if delay_init and delay:
             self.delay = delay_init(self.delay)
+
+    def _unfold_input(self, inputs: torch.Tensor) -> torch.Tensor:
+        return F.unfold(
+            inputs,
+            self.kernel,
+            dilation=self.dilation,
+            padding=self.padding,
+            stride=self.stride,
+        )
+
+    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the synapse data for pre/post learning methods.
+
+        Args:
+            data (torch.Tensor): data to reshape.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+         Shape:
+            Input: :math:`B \times N \times L \times [F]`
+
+            Output:
+            :math:`B \times 1 \times N \times L` or :math:`B \times F \times N \times L`
+
+            Where :math:`N = C \cdot kH \ cdot kW` and
+            :math:`L = H_\mathrm{out} \cdot W_\mathrm{out}`.
+            Here, math:`F` is the number of filters (output channels),
+            :math:`kH` is the height of the kernel, :math:`kW` is the width of the kernel,
+            :math:`H_\mathrm{out}` is the height of the output,
+            and :math:`W_\mathrm{out}` is the width of the output.
+
+        Note:
+            The inputs to this method are shaped like
+            the `unfolded <https://pytorch.org/docs/stable/generated/torch.nn.Unfold.html>`_
+            inputs to the connection.
+        """
+        match data.ndim:
+            case 4:
+                return ein.rearrange(data, "b n l f -> b f n l")
+            case 3:
+                return ein.rearrange(data, "b n l -> b 1 n l")
+            case _:
+                raise RuntimeError(
+                    f"data with invalid number of dimensions {data.ndim} received."
+                )
+
+    def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the output for pre/post learning methods.
+
+        Args:
+            data (torch.Tensor): data to reshape.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+         Shape:
+            Input:
+            :math:`B \times F \times H_\mathrm{out} \times W_\mathrm{out}`
+
+            Output:
+            :math:`B \times F \times 1 \times L`
+
+            Where :math:`L = H_\mathrm{out} \cdot W_\mathrm{out}`.
+            Here, :math:`F` is the number of filters (output channels), :math:`H_\mathrm{out}`
+            is the height of the output, and :math:`W_\mathrm{out}` is the width of the output.
+        """
+        return ein.rearrange(
+            data, "b f oh ow -> b f 1 (oh ow)", oh=self.out_height, ow=self.out_width
+        )
 
     def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
@@ -166,7 +290,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             :py:meth:`~inferno.neural.Synapse.forward` call.
         """
         if self.delayed:
-            _ = self.synapse(inputs, **kwargs)
+            _ = self.synapse(self._unfold_input(inputs), **kwargs)
 
             data = ein.rearrange(self.syncurrent, "b n l f -> b f n l")
             kernel = ein.rearrange(self.weight, "f c h w -> f 1 (c h w)")
@@ -227,8 +351,8 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
     @property
     def inshape(self) -> tuple[int, int, int]:
-        return (self.weight.shape[1], *self.in_shape)
+        return (self.channels, self.in_height, self.in_width)
 
     @property
     def outshape(self) -> tuple[int, int, int]:
-        return (self.weight.shape[0], *self.out_shape)
+        return (self.filters, self.out_height, self.out_width)

@@ -624,3 +624,35 @@ class Connection(Module, ABC):
             itself maintains no clearable state.
         """
         self.synapse.clear(**kwargs)
+
+    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the synapse data for pre/post learning methods.
+
+        Args:
+            data (torch.Tensor): data shaped like ``syncurrent`` or ``synspike``.
+
+        Raises:
+            NotImplementedError: ``presyn_receptive`` must be implemented by the subclass.
+
+        Returns:
+            torch.Tensor: reshaped data.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the method `presyn_receptive`"
+        )
+
+    def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the output for pre/post learning methods.
+
+        Args:
+            data (torch.Tensor): data shaped like connection output.
+
+        Raises:
+            NotImplementedError: ``postsyn_receptive`` must be implemented by the subclass.
+
+        Returns:
+            torch.Tensor: reshaped data.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the method `postsyn_receptive`"
+        )

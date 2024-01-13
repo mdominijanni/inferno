@@ -90,7 +90,7 @@ This flips the sign of the update magnitudes of [STDP](#spike-timing-dependent-p
 
 ## Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)
 
-## Soft Weight Bounding (Multiplicative Weight Dependence)
+## Soft Weight Bounding (Weight Dependence)
 ### Formulation
 $$
 \begin{align*}
@@ -111,7 +111,7 @@ Where:
 - $\mu_-$, order for lower weight bound
 
 ### Description
-This method penalizes weights that are out of specified bounds by applying a penalty proportional to the amount by which the current weight is over/under the bound. The order parameters $\mu_+$ and $\mu_-$ control the rate of this penalty, and when not set to zero is often referred to as "power law weight dependence".
+This method penalizes weights that are out of specified bounds by applying a penalty proportional to the amount by which the current weight is over/under the bound. The order parameters $\mu_+$ and $\mu_-$ control the rate of this penalty. When $\mu_+$ and $\mu_-$ are set to $1$, this is referred to as "multiplicative weight dependence", and when not set to one is often referred to as "power law weight dependence".
 
 ## Hard Weight Bounding
 ### Formulation

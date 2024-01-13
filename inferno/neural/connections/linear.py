@@ -100,6 +100,56 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         if delay_init and delay:
             self.delay = delay_init(self.delay)
 
+    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the synapse data for pre/post learning methods.
+
+        Args:
+            data (torch.Tensor): data to reshape.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+         Shape:
+            Input:
+            :math:`B \times N_\mathrm{in} \times [N_\mathrm{out}]`
+
+            Output:
+            :math:`B \times 1 \times N_\mathrm{in} \times 1` or
+            :math:`B \times N_\mathrm{out} \times N_\mathrm{in} \times 1`
+
+            Where :math:`N_\mathrm{in}` is the number of connection inputs and :math:`N_\mathrm{out}` is the number
+            of connection outputs.
+        """
+        match data.ndim:
+            case 3:
+                return ein.rearrange(data, "b i -> b 1 i 1")
+            case 2:
+                return ein.rearrange(data, "b i o -> b o i 1")
+            case _:
+                raise RuntimeError(
+                    f"data with invalid number of dimensions {data.ndim} received."
+                )
+
+    def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the output for pre/post learning methods.
+
+        Args:
+            data (torch.Tensor): data to reshape.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+         Shape:
+            Input:
+            :math:`B \times N_\mathrm{out}`
+
+            Output:
+            :math:`B \times 1 \times N_\mathrm{out} \times 1`
+
+            Where :math:`N_\mathrm{out}` is the number of connection outputs.
+        """
+        return ein.rearrange(data, "b o -> b o 1 1")
+
     def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
@@ -266,6 +316,46 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
         if delay_init and delay:
             self.delay = delay_init(self.delay)
 
+    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the synapse data for pre/post learning methods.
+
+        Args:
+            data (torch.Tensor): data to reshape.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+         Shape:
+            Input:
+            :math:`B \times N`
+
+            Output:
+            :math:`B \times N \times 1` or
+
+            Where :math:`N` is the number of connection inputs/outputs.
+        """
+        return ein.rearrange(data, "b n -> b n 1")
+
+    def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the output for pre/post learning methods.
+
+        Args:
+            data (torch.Tensor): data to reshape.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+         Shape:
+            Input:
+            :math:`B \times N`
+
+            Output:
+            :math:`B \times N \times 1` or
+
+            Where :math:`N` is the number of connection inputs/outputs.
+        """
+        return ein.rearrange(data, "b n -> b n 1")
+
     def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
@@ -430,6 +520,55 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
 
         if delay_init and delay:
             self.delay = delay_init(self.delay)
+
+    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the synapse data for pre/post learning methods.
+
+        Args:
+            data (torch.Tensor): data to reshape.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+         Shape:
+            Input:
+            :math:`B \times N \times [N]`
+
+            Output:
+            :math:`B \times 1 \times N \times 1` or
+            :math:`B \times N \times N \times 1`
+
+            Where :math:`N` is the number of connection inputs/outputs.
+        """
+        match data.ndim:
+            case 3:
+                return ein.rearrange(data, "b i -> b 1 i 1")
+            case 2:
+                return ein.rearrange(data, "b i o -> b o i 1")
+            case _:
+                raise RuntimeError(
+                    f"data with invalid number of dimensions {data.ndim} received."
+                )
+
+    def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the output for pre/post learning methods.
+
+        Args:
+            data (torch.Tensor): data to reshape.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+         Shape:
+            Input:
+            :math:`B \times N`
+
+            Output:
+            :math:`B \times 1 \times N \times 1`
+
+            Where :math:`N` is the number of connection inputs/outputs.
+        """
+        return ein.rearrange(data, "b o -> b o 1 1")
 
     def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
