@@ -23,16 +23,7 @@ class LayerwiseUpdater(Module, ABC):
 
         # go through pairs
         for layer in layers:
-            # use hexadecimal of object id as the key
-            key = hex(id(layer))
-
-            # add to trainables list for accessing
-            if key not in self._trainables:
-                self._trainables[key] = layer
-
-            # add to mapping from layers to monitors
-            if key not in self._monitors:
-                self._monitors[key] = nn.ModuleDict()
+            self.add_trainable(layer)
 
         # add hook for removal of trainables from state_dict export
         def state_dict_submodule_removal(
@@ -62,6 +53,30 @@ class LayerwiseUpdater(Module, ABC):
             for key, monitors in self._monitors.items()
         )
 
+    def add_trainable(self, trainable: Layer, **kwarge):
+        # use hexadecimal of object id as the key
+        key = hex(id(trainable))
+
+        # add to trainables list for accessing
+        if key not in self._trainables:
+            self._trainables[key] = trainable
+
+        # add to mapping from layers to monitors
+        if key not in self._monitors:
+            self._monitors[key] = nn.ModuleDict()
+
+    def del_trainable(self, trainable: Layer, **kwarge):
+        # use hexadecimal of object id as the key
+        key = hex(id(trainable))
+
+        # add to trainables list for accessing
+        if key in self._trainables:
+            del self._trainables[key]
+
+        # add to mapping from layers to monitors
+        if key in self._monitors:
+            del self._monitors[key]
+
     def add_monitor(self, trainable: Layer, name: str, monitor: Monitor) -> None:
         # check if trainable is valid
         if trainable not in self._trainables.values():
@@ -85,7 +100,10 @@ class LayerwiseUpdater(Module, ABC):
                     f"a trainable {layer}."
                 )
 
+        monitor.deregister()
         self._monitors[key][name] = monitor
+        if self.training:
+            monitor.register(trainable)
 
     def del_monitor(self, trainable: Layer, name: str) -> None:
         # check if trainable is valid
@@ -121,6 +139,18 @@ class LayerwiseUpdater(Module, ABC):
 
         return self._monitors[key][name]
 
+    def get_monitors(self, trainable: Layer) -> Generator[tuple[str, Monitor]]:
+        # check if trainable is valid
+        if trainable not in self._trainables.values():
+            raise RuntimeError(
+                f"specified {type(trainable).__name__} instance not in updater."
+            )
+
+        return (
+            (name, monitor)
+            for name, monitor in self._monitors[hex(id(trainable))].items()
+        )
+
     def connect(self, clear: bool = True, **kwargs) -> None:
         """Registers all of the monitors for the updater.
 
@@ -131,7 +161,7 @@ class LayerwiseUpdater(Module, ABC):
         Note:
             Keyword arguments are passed to :py:meth:`~Monitor.clear` call.
         """
-
+        self.train()
         for monitor, layer in self.monitors:
             if clear:
                 monitor.clear(**kwargs)
@@ -147,7 +177,7 @@ class LayerwiseUpdater(Module, ABC):
         Note:
             Keyword arguments are passed to :py:meth:`~Monitor.clear` call.
         """
-
+        self.eval()
         for monitor, _ in self.monitors:
             if clear:
                 monitor.clear(**kwargs)

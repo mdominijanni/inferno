@@ -241,9 +241,21 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         """
         match data.ndim:
             case 4:
-                return ein.rearrange(data, "b n l f -> b f n l")
+                return ein.rearrange(
+                    data,
+                    "b n l f -> b f c kh kw l",
+                    c=self.channels,
+                    kh=self.kernel[0],
+                    kw=self.kernel[1],
+                )
             case 3:
-                return ein.rearrange(data, "b n l -> b 1 n l")
+                return ein.rearrange(
+                    data,
+                    "b n l -> b 1 c kh kw l",
+                    c=self.channels,
+                    kh=self.kernel[0],
+                    kw=self.kernel[1],
+                )
             case _:
                 raise RuntimeError(
                     f"data with invalid number of dimensions {data.ndim} received."
@@ -269,9 +281,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             Here, :math:`F` is the number of filters (output channels), :math:`H_\mathrm{out}`
             is the height of the output, and :math:`W_\mathrm{out}` is the width of the output.
         """
-        return ein.rearrange(
-            data, "b f oh ow -> b f 1 (oh ow)", oh=self.out_height, ow=self.out_width
-        )
+        return ein.rearrange(data, "b f oh ow -> b f 1 1 1 (oh ow)")
 
     def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
@@ -325,11 +335,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
              torch.Tensor: delay-offset synaptic currents.
         """
         if self.delayed:
-            return self.synapse.current_at(
-                ein.rearrange(self.delay, "f c h w -> 1 (c h w) 1 f").expand(
-                    self.bsize, -1, self.synapse.shape[-1], -1
-                )
-            )
+            return self.synapse.current_at(self.selector)
         else:
             return self.synapse.current
 
@@ -341,13 +347,20 @@ class Conv2D(WeightBiasDelayMixin, Connection):
              torch.Tensor: delay-offset synaptic spikes.
         """
         if self.delayed:
-            return self.synapse.spike_at(
-                ein.rearrange(self.delay, "f c h w -> 1 (c h w) 1 f").expand(
-                    self.bsize, -1, self.synapse.shape[-1], -1
-                )
-            )
+            return self.synapse.spike_at(self.selector)
         else:
             return self.synapse.spike
+
+    @property
+    def selector(self) -> torch.Tensor | None:
+        r"""Learned delays as a selector for history.
+
+        Returns:
+             torch.Tensor | None: delay selector if one exists.
+        """
+        return ein.rearrange(self.delay, "f c h w -> 1 (c h w) 1 f").expand(
+            self.bsize, -1, self.synapse.shape[-1], -1
+        )
 
     @property
     def inshape(self) -> tuple[int, int, int]:

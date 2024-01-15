@@ -82,7 +82,7 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         WeightBiasDelayMixin.__init__(
             weight=torch.rand(output_size, input_size),
             bias=(None if not bias else torch.rand(output_size, 1)),
-            delay=(None if not bias else torch.zeros(output_size, input_size)),
+            delay=(None if not delay else torch.zeros(output_size, input_size)),
             requires_grad=False,
         )
 
@@ -190,9 +190,7 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
              torch.Tensor: delay-offset synaptic currents.
         """
         if self.delayed:
-            return self.synapse.current_at(
-                ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
-            )
+            return self.synapse.spike_at(self.selector)
         else:
             return self.synapse.current
 
@@ -204,11 +202,18 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
              torch.Tensor: delay-offset synaptic spikes.
         """
         if self.delayed:
-            return self.synapse.spike_at(
-                ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
-            )
+            return self.synapse.spike_at(self.selector)
         else:
             return self.synapse.spike
+
+    @property
+    def selector(self) -> torch.Tensor | None:
+        r"""Learned delays as a selector for history.
+
+        Returns:
+             torch.Tensor | None: delay selector if one exists.
+        """
+        return ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
 
     @property
     def inshape(self) -> tuple[int]:
@@ -394,9 +399,7 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
              torch.Tensor: delay-offset synaptic currents.
         """
         if self.delayed:
-            return self.synapse.current_at(
-                ein.rearrange(self.delay, "n -> 1 n 1").expand(self.bsize, -1, -1)
-            )
+            return self.synapse.current_at(self.selector)
         else:
             return self.synapse.current
 
@@ -408,11 +411,18 @@ class DirectLinear(WeightBiasDelayMixin, Connection):
              torch.Tensor: delay-offset synaptic spikes.
         """
         if self.delayed:
-            return self.synapse.spike_at(
-                ein.rearrange(self.delay, "n -> 1 n 1").expand(self.bsize, -1, -1)
-            )
+            return self.synapse.spike_at(self.selector)
         else:
             return self.synapse.spike
+
+    @property
+    def selector(self) -> torch.Tensor | None:
+        r"""Learned delays as a selector for history.
+
+        Returns:
+             torch.Tensor | None: delay selector if one exists.
+        """
+        return ein.rearrange(self.delay, "n -> 1 n 1").expand(self.bsize, -1, -1)
 
     @property
     def inshape(self) -> tuple[int]:
@@ -610,9 +620,7 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
              torch.Tensor: delay-offset synaptic currents.
         """
         if self.delayed:
-            return self.synapse.current_at(
-                ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
-            )
+            return self.synapse.current_at(self.selector)
         else:
             return self.synapse.current
 
@@ -624,11 +632,18 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
              torch.Tensor: delay-offset synaptic spikes.
         """
         if self.delayed:
-            return self.synapse.spike_at(
-                ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
-            )
+            return self.synapse.spike_at(self.selector)
         else:
             return self.synapse.spike
+
+    @property
+    def selector(self) -> torch.Tensor | None:
+        r"""Learned delays as a selector for history.
+
+        Returns:
+             torch.Tensor | None: delay selector if one exists.
+        """
+        return ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
 
     @property
     def inshape(self) -> tuple[int]:

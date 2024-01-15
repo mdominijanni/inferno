@@ -616,6 +616,21 @@ class Connection(Module, ABC):
             f"Connection `{type(self).__name__}` must implement the getter for property `inshape`"
         )
 
+    @property
+    @abstractmethod
+    def selector(self) -> torch.Tensor | None:
+        r"""Learned delays as a selector for history.
+
+        Returns:
+             torch.Tensor | None: delay selector if one exists.
+
+        Raises:
+            NotImplementedError: ``selector`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the getter for property `selector`"
+        )
+
     def clear(self, **kwargs):
         r"""Resets the state of the connection.
 
