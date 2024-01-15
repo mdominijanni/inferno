@@ -1,11 +1,7 @@
-.. role:: hidden
-    :class: hidden-section
+{{ objname | escape | underline }}
+
 .. currentmodule:: {{ module }}
 
-
-{{ name | underline}}
-
-.. autoclass:: {{ name }}
+.. autoclass:: {{ objname }}
     :members:
-    :undoc-members:
     :show-inheritance:

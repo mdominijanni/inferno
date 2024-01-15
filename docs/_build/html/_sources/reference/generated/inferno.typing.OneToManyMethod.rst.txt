@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.typing
-
-
-OneToManyMethod
+﻿OneToManyMethod
 ===============
+
+.. currentmodule:: inferno.typing
 
 .. autoclass:: OneToManyMethod
     :members:
-    :undoc-members:
     :show-inheritance:

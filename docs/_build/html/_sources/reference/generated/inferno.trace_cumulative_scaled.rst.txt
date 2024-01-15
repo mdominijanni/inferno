@@ -1,5 +1,5 @@
-﻿inferno.trace\_cumulative\_scaled
-=================================
+﻿trace\_cumulative\_scaled
+=========================
 
 .. currentmodule:: inferno
 

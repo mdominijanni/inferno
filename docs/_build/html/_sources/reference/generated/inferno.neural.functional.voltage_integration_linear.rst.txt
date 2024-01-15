@@ -1,5 +1,5 @@
-﻿inferno.neural.functional.voltage\_integration\_linear
-======================================================
+﻿voltage\_integration\_linear
+============================
 
 .. currentmodule:: inferno.neural.functional
 

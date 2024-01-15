@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.observe
-
-
-EventReducer
+﻿EventReducer
 ============
+
+.. currentmodule:: inferno.observe
 
 .. autoclass:: EventReducer
     :members:
-    :undoc-members:
     :show-inheritance:

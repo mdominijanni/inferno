@@ -85,6 +85,25 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
 
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
+
+        Args:
+            value (float): new simulation time step length.
+
+        Returns:
+            float: length of the simulation time step
+        """
+        return self.step_time
+
+    @dt.setter
+    def dt(self, value: float):
+        if float(value) <= 0:
+            raise ValueError(f"step time must be positive, received {float(value)}")
+        self.step_time = float(value)
+        self.decay.fill_(math.exp(-self.step_time / self.time_constant))
+
     def _integrate_v(self, masked_inputs):
         return nf.voltage_integration_linear(
             masked_inputs,
@@ -129,25 +148,6 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
 
         # return spiking output
         return spikes
-
-    @property
-    def dt(self) -> float:
-        r"""Length of the simulation time step, in milliseconds.
-
-        Args:
-            value (float): new simulation time step length.
-
-        Returns:
-            float: length of the simulation time step
-        """
-        return self.step_time
-
-    @dt.setter
-    def dt(self, value: float):
-        if float(value) <= 0:
-            raise ValueError(f"step time must be positive, received {float(value)}")
-        self.step_time = float(value)
-        self.decay.fill_(math.exp(-self.step_time / self.time_constant))
 
 
 class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):

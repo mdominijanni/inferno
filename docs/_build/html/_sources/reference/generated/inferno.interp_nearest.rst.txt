@@ -1,5 +1,5 @@
-﻿inferno.interp\_nearest
-=======================
+﻿interp\_nearest
+===============
 
 .. currentmodule:: inferno
 

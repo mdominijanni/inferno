@@ -1,5 +1,5 @@
-﻿inferno.trace\_cumulative
-=========================
+﻿trace\_cumulative
+=================
 
 .. currentmodule:: inferno
 

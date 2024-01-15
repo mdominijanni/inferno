@@ -1,5 +1,5 @@
-﻿inferno.neural.functional.voltage\_thresholding
-===============================================
+﻿voltage\_thresholding
+=====================
 
 .. currentmodule:: inferno.neural.functional
 

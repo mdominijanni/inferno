@@ -1,5 +1,5 @@
-﻿inferno.neural.functional.adaptive\_thresholds\_linear\_voltage
-===============================================================
+﻿adaptive\_thresholds\_linear\_voltage
+=====================================
 
 .. currentmodule:: inferno.neural.functional
 

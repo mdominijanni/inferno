@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno
-
-
-Hook
+﻿Hook
 ====
+
+.. currentmodule:: inferno
 
 .. autoclass:: Hook
     :members:
-    :undoc-members:
     :show-inheritance:

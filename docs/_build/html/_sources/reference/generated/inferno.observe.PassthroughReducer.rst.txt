@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.observe
-
-
-PassthroughReducer
+﻿PassthroughReducer
 ==================
+
+.. currentmodule:: inferno.observe
 
 .. autoclass:: PassthroughReducer
     :members:
-    :undoc-members:
     :show-inheritance:

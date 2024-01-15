@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.neural
-
-
-Neuron
+﻿Neuron
 ======
+
+.. currentmodule:: inferno.neural
 
 .. autoclass:: Neuron
     :members:
-    :undoc-members:
     :show-inheritance:

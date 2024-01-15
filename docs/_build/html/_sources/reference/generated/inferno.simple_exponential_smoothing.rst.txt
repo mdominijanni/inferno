@@ -1,5 +1,5 @@
-﻿inferno.simple\_exponential\_smoothing
-======================================
+﻿simple\_exponential\_smoothing
+==============================
 
 .. currentmodule:: inferno
 

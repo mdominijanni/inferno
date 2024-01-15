@@ -1,5 +1,5 @@
-﻿inferno.interp\_exp\_decay
-==========================
+﻿interp\_exp\_decay
+==================
 
 .. currentmodule:: inferno
 

@@ -1,5 +1,5 @@
-﻿inferno.full
-============
+﻿full
+====
 
 .. currentmodule:: inferno
 

@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.neural
-
-
-LateralLinear
+﻿LateralLinear
 =============
+
+.. currentmodule:: inferno.neural
 
 .. autoclass:: LateralLinear
     :members:
-    :undoc-members:
     :show-inheritance:

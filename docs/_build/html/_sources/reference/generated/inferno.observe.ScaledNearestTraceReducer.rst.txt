@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.observe
-
-
-ScaledNearestTraceReducer
+﻿ScaledNearestTraceReducer
 =========================
+
+.. currentmodule:: inferno.observe
 
 .. autoclass:: ScaledNearestTraceReducer
     :members:
-    :undoc-members:
     :show-inheritance:

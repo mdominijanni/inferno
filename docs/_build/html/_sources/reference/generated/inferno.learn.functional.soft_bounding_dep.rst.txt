@@ -1,5 +1,5 @@
-﻿inferno.learn.functional.soft\_bounding\_dep
-============================================
+﻿soft\_bounding\_dep
+===================
 
 .. currentmodule:: inferno.learn.functional
 

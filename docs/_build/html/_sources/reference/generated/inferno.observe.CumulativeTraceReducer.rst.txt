@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.observe
-
-
-CumulativeTraceReducer
+﻿CumulativeTraceReducer
 ======================
+
+.. currentmodule:: inferno.observe
 
 .. autoclass:: CumulativeTraceReducer
     :members:
-    :undoc-members:
     :show-inheritance:

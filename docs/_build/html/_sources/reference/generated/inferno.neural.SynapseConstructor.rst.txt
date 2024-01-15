@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.neural
-
-
-SynapseConstructor
+﻿SynapseConstructor
 ==================
+
+.. currentmodule:: inferno.neural
 
 .. autoclass:: SynapseConstructor
     :members:
-    :undoc-members:
     :show-inheritance:

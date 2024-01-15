@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.observe
-
-
-EMAReducer
+﻿EMAReducer
 ==========
+
+.. currentmodule:: inferno.observe
 
 .. autoclass:: EMAReducer
     :members:
-    :undoc-members:
     :show-inheritance:

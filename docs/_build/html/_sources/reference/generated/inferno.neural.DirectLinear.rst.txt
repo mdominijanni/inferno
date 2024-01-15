@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.neural
-
-
-DirectLinear
+﻿DirectLinear
 ============
+
+.. currentmodule:: inferno.neural
 
 .. autoclass:: DirectLinear
     :members:
-    :undoc-members:
     :show-inheritance:

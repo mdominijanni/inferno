@@ -1,5 +1,5 @@
-﻿inferno.interp\_previous
-========================
+﻿interp\_previous
+================
 
 .. currentmodule:: inferno
 

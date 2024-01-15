@@ -1,5 +1,5 @@
-﻿inferno.neural.functional.adaptive\_currents\_linear
-====================================================
+﻿adaptive\_currents\_linear
+==========================
 
 .. currentmodule:: inferno.neural.functional
 

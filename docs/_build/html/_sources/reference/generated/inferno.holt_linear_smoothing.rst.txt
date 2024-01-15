@@ -1,5 +1,5 @@
-﻿inferno.holt\_linear\_smoothing
-===============================
+﻿holt\_linear\_smoothing
+=======================
 
 .. currentmodule:: inferno
 

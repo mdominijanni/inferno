@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.neural
-
-
-Connection
+﻿Connection
 ==========
+
+.. currentmodule:: inferno.neural
 
 .. autoclass:: Connection
     :members:
-    :undoc-members:
     :show-inheritance:

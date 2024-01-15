@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.neural
-
-
-Synapse
+﻿Synapse
 =======
+
+.. currentmodule:: inferno.neural
 
 .. autoclass:: Synapse
     :members:
-    :undoc-members:
     :show-inheritance:

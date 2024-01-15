@@ -1,5 +1,5 @@
-﻿inferno.interp\_linear
-======================
+﻿interp\_linear
+==============
 
 .. currentmodule:: inferno
 

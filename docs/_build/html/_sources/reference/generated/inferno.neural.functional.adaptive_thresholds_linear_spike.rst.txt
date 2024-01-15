@@ -1,5 +1,5 @@
-﻿inferno.neural.functional.adaptive\_thresholds\_linear\_spike
-=============================================================
+﻿adaptive\_thresholds\_linear\_spike
+===================================
 
 .. currentmodule:: inferno.neural.functional
 

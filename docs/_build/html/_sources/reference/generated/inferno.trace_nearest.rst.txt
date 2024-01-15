@@ -1,5 +1,5 @@
-﻿inferno.trace\_nearest
-======================
+﻿trace\_nearest
+==============
 
 .. currentmodule:: inferno
 

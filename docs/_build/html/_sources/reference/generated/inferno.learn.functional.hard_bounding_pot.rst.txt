@@ -1,5 +1,5 @@
-﻿inferno.learn.functional.hard\_bounding\_pot
-============================================
+﻿hard\_bounding\_pot
+===================
 
 .. currentmodule:: inferno.learn.functional
 

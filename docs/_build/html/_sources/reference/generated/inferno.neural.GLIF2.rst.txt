@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.neural
-
-
-GLIF2
+﻿GLIF2
 =====
+
+.. currentmodule:: inferno.neural
 
 .. autoclass:: GLIF2
     :members:
-    :undoc-members:
     :show-inheritance:

@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.typing
-
-
-ManyToOne
+﻿ManyToOne
 =========
+
+.. currentmodule:: inferno.typing
 
 .. autoclass:: ManyToOne
     :members:
-    :undoc-members:
     :show-inheritance:

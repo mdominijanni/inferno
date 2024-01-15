@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno
-
-
-Interpolation
+﻿Interpolation
 =============
+
+.. currentmodule:: inferno
 
 .. autoclass:: Interpolation
     :members:
-    :undoc-members:
     :show-inheritance:

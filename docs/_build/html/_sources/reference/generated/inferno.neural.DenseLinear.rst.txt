@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno.neural
-
-
-DenseLinear
+﻿DenseLinear
 ===========
+
+.. currentmodule:: inferno.neural
 
 .. autoclass:: DenseLinear
     :members:
-    :undoc-members:
     :show-inheritance:

@@ -1,12 +1,8 @@
-﻿.. role:: hidden
-    :class: hidden-section
-.. currentmodule:: inferno
-
-
-Configuration
+﻿Configuration
 =============
+
+.. currentmodule:: inferno
 
 .. autoclass:: Configuration
     :members:
-    :undoc-members:
     :show-inheritance:
