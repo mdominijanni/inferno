@@ -1,4 +1,4 @@
-from .functional import (  # noqa:F401
+from .functional import (
     OneToOne,
     ManyToOne,
     OneToMany,
@@ -8,3 +8,14 @@ from .functional import (  # noqa:F401
     OneToManyMethod,
     ManyToManyMethod,
 )
+
+__all__ = [
+    "OneToOne",
+    "ManyToOne",
+    "OneToMany",
+    "ManyToMany",
+    "OneToOneMethod",
+    "ManyToOneMethod",
+    "OneToManyMethod",
+    "ManyToManyMethod",
+]

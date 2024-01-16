@@ -12,30 +12,9 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
     r"""Base class for representing a group of neurons with a common mode of dynamics.
 
     Args:
-        shape (tuple[int, ...] | int): shape of the group being represented, excluding batch size.
+        shape (tuple[int, ...] | int): shape of the group of neurons,
+            excluding the batch axis.
         batch_size (int): initial batch size.
-        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None, optional): batch size
-            sensitive module parameters. Defaults to None.
-        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None, optional): batch size sensitive module
-            buffers. Defaults to None.
-        on_batch_resize (Callable[[], None] | None, optional): function to call when after the batch size is altered.
-            Defaults to None.
-
-    Raises:
-        ValueError: ``batch_size`` must be a positive integer.
-        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have
-            ``batch_size`` sized :math:`0^\text{th}` dimension.
-        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized
-            :math:`0^\text{th}` dimension.
-
-    Note:
-        If a pre-defined :py:class:`~torch.Tensor` or :py:class:`~torch.nn.parameter.Parameter` is specified, the
-        size of its :math:`0^\text{th}` dimension must equal ``batch_size``. If unspecified, an empty tensor of shape
-        (batch_size, \*shape) will be constructed for each, and for parameter construction ``requires_grad``
-        will be set to False.
-
-    Note:
-        If no ``on_batch_resize`` is specified, then :py:meth:`clear` will be called without arguments.
     """
 
     def __init__(
@@ -55,7 +34,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             value (int): new batch size.
 
         Returns:
-            int: current batch size.
+            int: present batch size.
         """
         return ShapeMixin.bsize.fget(self)
 
@@ -73,94 +52,101 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             value (float): new simulation time step length.
 
         Returns:
-            float: length of the simulation time step.
+            float: present simulation time step length.
 
         Raises:
             NotImplementedError: ``dt`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the getter for property `dt`"
+            f"Neuron `{type(self).__name__}` must implement "
+            "the getter for property `dt`."
         )
 
     @dt.setter
     @abstractmethod
     def dt(self, value: float):
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the setter for property `dt`"
+            f"Neuron `{type(self).__name__}` must implement "
+            "the setter for property `dt`."
         )
 
     @property
     @abstractmethod
     def voltage(self) -> torch.Tensor:
-        r"""Membrane voltages of the neurons, in millivolts.
+        r"""Membrane voltages in millivolts.
 
         Args:
             value (torch.Tensor): new membrane voltages.
 
         Returns:
-            torch.Tensor: current membrane voltages.
-
+            torch.Tensor: present membrane voltages.
         Raises:
             NotImplementedError: ``voltage`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the getter for property `voltage`"
+            f"Neuron `{type(self).__name__}` must implement "
+            "the getter for property `voltage`."
         )
 
     @voltage.setter
     def voltage(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the setter for property `voltage`"
-        )
-
-    @property
-    @abstractmethod
-    def spike(self) -> torch.Tensor:
-        r"""Which neurons generated an action potential on the last simulation step.
-
-        Returns:
-            torch.Tensor: if the correspond neuron generated an action potential last step.
-
-        Raises:
-            NotImplementedError: ``spike`` must be implemented by the subclass.
-        """
-        raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the getter for property `spike`"
+            f"Neuron `{type(self).__name__}` must implement "
+            "the setter for property `voltage`."
         )
 
     @property
     @abstractmethod
     def refrac(self) -> torch.Tensor:
-        r"""Remaining refractory periods of the neurons, in milliseconds.
+        r"""Remaining refractory periods, in milliseconds.
 
         Args:
             value (torch.Tensor): new remaining refractory periods.
 
         Returns:
-            torch.Tensor: current remaining refractory periods.
+            torch.Tensor: present remaining refractory periods.
 
         Raises:
             NotImplementedError: ``refrac`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the getter for property `refrac`"
+            f"Neuron `{type(self).__name__}` must implement "
+            "the getter for property `refrac`."
         )
 
     @refrac.setter
     def refrac(self, value: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the setter for property `refrac`"
+            f"Neuron `{type(self).__name__}` must implement "
+            "the setter for property `refrac`."
+        )
+
+    @property
+    @abstractmethod
+    def spike(self) -> torch.Tensor:
+        r"""Action potentials last generated.
+
+        Returns:
+            torch.Tensor: if the corresponding neuron generated an action potential
+                during the prior step.
+
+        Raises:
+            NotImplementedError: ``spike`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Neuron `{type(self).__name__}` must implement "
+            "the getter for property `spike`."
         )
 
     @abstractmethod
     def clear(self, **kwargs):
-        r"""Resets the state of the neurons.
+        r"""Resets neurons to their resting state.
 
         Raises:
             NotImplementedError: ``clear`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the method `clear`"
+            f"Neuron `{type(self).__name__}` must implement the method `clear`."
         )
 
 
@@ -168,10 +154,11 @@ class SynapseConstructor(Protocol):
     """Common constructor for synapses, used by :py:class:`Connection` objects.
 
     Args:
-        shape (tuple[int, ...] | int): expected shape of the inputs, excluding batch dimension.
-        step_time (float): step time of the simulation, in :math:`ms`.
+        shape (tuple[int, ...] | int): shape of the group of synapses,
+            excluding the batch axis.
+        step_time (float): length of a simulation time step, in :math:`ms`.
         batch_size (int): size of the batch dimension.
-        delay (int | None): maximum delay, as an integer multiple of step time, or None for an undelayed variant.
+        delay (float | None): maximum supported delay, in :math:`ms`.
 
     Returns:
         Synapse: newly constructed synapse.
@@ -182,7 +169,7 @@ class SynapseConstructor(Protocol):
         shape: tuple[int, ...] | int,
         step_time: float,
         batch_size: int,
-        delay: int | None,
+        delay: float | None,
     ) -> Synapse:
         r"""Callback protocol function."""
         ...
@@ -192,27 +179,11 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
     r"""Base class for representing the input synapses for a connection.
 
     Args:
-        shape (tuple[int, ...] | int): shape of the group being represented, excluding batch size.
-        batch_size (int): initial batch size.
-        batched_parameters (tuple[tuple[str, ~torch.nn.parameter.Parameter] | str, ...] | None, optional): batch size
-            sensitive module parameters. Defaults to None.
-        batched_buffers (tuple[tuple[str, ~torch.Tensor] | str, ...] | None, optional): batch size sensitive module
-            buffers. Defaults to None.
-        on_batch_resize (Callable[[], None] | None, optional): function to call when after the batch size is altered.
-            Defaults to None.
-
-    Raises:
-        ValueError: ``batch_size`` must be a positive integer.
-        RuntimeError: all :py:class:`~torch.nn.parameter.Parameter` objects of ``batched_parameters`` must have
-            ``batch_size`` sized :math:`0^\text{th}` dimension.
-        RuntimeError: all :py:class:`~torch.Tensor` objects of ``batched_buffers`` must have ``batch_size`` sized
-            :math:`0^\text{th}` dimension.
-
-    Note:
-        If a pre-defined :py:class:`~torch.Tensor` or :py:class:`~torch.nn.parameter.Parameter` is specified, the
-        size of its :math:`0^\text{th}` dimension must equal ``batch_size``. If unspecified, an empty tensor of shape
-        (batch_size, \*shape) will be constructed for each, and for parameter construction ``requires_grad``
-        will be set to False.
+        shape (tuple[int, ...] | int): shape of the group of synapses,
+            excluding the batch axis.
+        step_time (float): length of a simulation time step, in :math:`ms`.
+        batch_size (int): size of the batch dimension.
+        delay (float | None): maximum supported delay, in :math:`ms`.
     """
 
     def __init__(
@@ -235,10 +206,10 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
             NotImplementedError: ``partialconstructor`` must be implemented by the subclass.
 
         Returns:
-           SynapseConstructor: partial constructor for synapse.
+           SynapseConstructor: partial constructor for synapses of a given class.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the method `partialconstructor`"
+            f"Synapse `{type(self).__name__}` must implement the method `partialconstructor`."
         )
 
     @property
@@ -249,7 +220,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
             value (float): new simulation time step length.
 
         Returns:
-            float: length of the simulation time step.
+            float: present simulation time step length.
         """
         return HistoryModule.dt.fget(self)
 
@@ -263,10 +234,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         r"""Maximum supported delay, in milliseconds.
 
         Returns:
-            float | None: maximum delay, in milliseconds.
-
-        Raises:
-            NotImplementedError: ``delay`` must be implemented by the subclass.
+            float | None: maximum supported delay.
         """
         if self.hsize == 0:
             return None

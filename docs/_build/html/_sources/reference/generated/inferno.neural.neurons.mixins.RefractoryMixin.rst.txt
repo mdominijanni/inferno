@@ -1,0 +1,8 @@
+﻿RefractoryMixin
+===============
+
+.. currentmodule:: inferno.neural.neurons.mixins
+
+.. autoclass:: RefractoryMixin
+    :members:
+    :show-inheritance:

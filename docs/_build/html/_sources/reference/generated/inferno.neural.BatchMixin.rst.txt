@@ -1,0 +1,8 @@
+﻿BatchMixin
+==========
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: BatchMixin
+    :members:
+    :show-inheritance:

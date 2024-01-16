@@ -1,8 +1,9 @@
 from .. import Neuron
 from .. import functional as nf
+from .mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
+from inferno._internal import numeric_limit
 import math
 import torch
-from ._mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
 
 
 class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
@@ -35,9 +36,6 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
             :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
-    Raises:
-        ValueError: ``step_time`` must be a positive real.
-
     Note:
         For more details and references, visit
         :ref:`zoo/neurons-linear:Leaky Integrate-and-Fire (LIF)` in the zoo.
@@ -59,31 +57,31 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         # call superclass constructor
         Neuron.__init__(self, shape, batch_size)
 
-        # check that the step time is valid
-        if float(step_time) <= 0:
-            raise ValueError(f"step time must be positive, received {float(step_time)}")
-
-        # check that absolute refractory period is valid
-        if float(refrac_t) <= 0:
-            raise ValueError(f"refrac_t be positive, received {float(refrac_t)}")
-
-        # register extras
-        self.register_extra("step_time", float(step_time))
-        self.register_extra("time_constant", float(time_constant))
-
-        # register buffers
-        self.register_buffer(
-            "decay", torch.tensor(math.exp(-self.step_time / self.time_constant))
+        # dynamics attributes
+        self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
+        self.time_constant = numeric_limit(
+            "`time_constant`", time_constant, 0, "gt", float
         )
-        self.register_buffer("rest_v", torch.tensor(float(rest_v)))
-        self.register_buffer("reset_v", torch.tensor(float(reset_v)))
-        self.register_buffer("thresh_v", torch.tensor(float(thresh_v)))
-        self.register_buffer("refrac_t", torch.tensor(float(refrac_t)))
-        self.register_buffer("resistance", torch.tensor(float(resistance)))
+        self.decay = math.exp(-self.step_time / self.time_constant)
+        self.rest_v = float(rest_v)
+        self.reset_v = float(reset_v)
+        self.thresh_v = float(thresh_v)
+        self.refrac_t = numeric_limit("`refrac_t`", refrac_t, 0, "gte", float)
+        self.resistance = numeric_limit("`resistance`", resistance, 0, "neq", float)
 
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
+
+    def _integrate_v(self, masked_inputs):
+        """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
+        return nf.voltage_integration_linear(
+            masked_inputs,
+            self.voltage,
+            decay=self.decay,
+            rest_v=self.rest_v,
+            resistance=self.resistance,
+        )
 
     @property
     def dt(self) -> float:
@@ -93,25 +91,14 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
             value (float): new simulation time step length.
 
         Returns:
-            float: length of the simulation time step
+            float: present simulation time step length.
         """
         return self.step_time
 
     @dt.setter
     def dt(self, value: float):
-        if float(value) <= 0:
-            raise ValueError(f"step time must be positive, received {float(value)}")
-        self.step_time = float(value)
-        self.decay.fill_(math.exp(-self.step_time / self.time_constant))
-
-    def _integrate_v(self, masked_inputs):
-        return nf.voltage_integration_linear(
-            masked_inputs,
-            self.voltage,
-            decay=self.decay,
-            rest_v=self.rest_v,
-            resistance=self.resistance,
-        )
+        self.step_time = numeric_limit("`dt`", value, 0, "gt", float)
+        self.decay = math.exp(-self.step_time / self.time_constant)
 
     def clear(self, **kwargs):
         r"""Resets neurons to their resting state."""
@@ -124,11 +111,11 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         Args:
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I(t)`, in :math:`\mathrm{nA}`.
-            refrac_lock (bool, optional): if membrane voltages should be fixed while in the
-                refractory period. Defaults to True.
+            refrac_lock (bool, optional): if membrane voltages should be fixed while
+                in the refractory period. Defaults to True.
 
         Returns:
-            torch.Tensor: which neurons generated an action potential.
+            torch.Tensor: if the corresponding neuron generated an action potential.
         """
         # use voltage thresholding function
         spikes, voltages, refracs = nf.voltage_thresholding(
@@ -153,9 +140,9 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
 class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
     r"""Simulation of adaptive leaky integrate-and-fire (ALIF) neuron dynamics.
 
-    ALIF is implemented as a step of leaky integrate-and-fire applying existing adaptations,
-    using linear spike-dependent adaptive thresholds, then updating those adaptations for the
-    next timestep.
+    ALIF is implemented as a step of leaky integrate-and-fire applying existing
+    adaptations, using linear spike-dependent adaptive thresholds, then updating
+    those adaptations for the next timestep.
 
     .. math::
         \begin{align*}
@@ -187,18 +174,13 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             in :math:`\mathrm{ms}`.
         tc_membrane (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
-        tc_adaptation (float | tuple[float]): time constant of exponential decay for threshold adaptations,
-            :math:`\tau_k`, in :math:`\mathrm{ms}`.
-        spike_adapt_increment (float | tuple[float]): amount by which the adaptive threshold is increased
-            after a spike, :math:`a_k`, in :math:`\mathrm{mV}`.
+        tc_adaptation (float | tuple[float]): time constant of exponential decay for
+            threshold adaptations, :math:`\tau_k`, in :math:`\mathrm{ms}`.
+        spike_adapt_incr (float | tuple[float]): amount by which the adaptive
+            threshold is increased after a spike, :math:`a_k`, in :math:`\mathrm{mV}`.
         resistance (float, optional): resistance across the cell membrane,
             :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
-
-    Raises:
-        ValueError: ``step_time`` must be a positive real.
-        RuntimeError: if ``tc_adaptation`` and ``spike_adapt_increment`` are tuples, they must
-            be of equal length.
 
     Note:
         For more details and references, visit
@@ -216,75 +198,97 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         refrac_t: float,
         tc_membrane: float,
         tc_adaptation: float | tuple[float, ...],
-        spike_adapt_increment: float | tuple[float, ...],
+        spike_adapt_incr: float | tuple[float, ...],
         resistance: float = 1.0,
         batch_size: int = 1,
     ):
         # call superclass constructor
         Neuron.__init__(self, shape, batch_size)
 
-        # check that the step time is valid
-        if float(step_time) <= 0:
-            raise ValueError(f"step time must be positive, received {float(step_time)}")
-
-        # check that absolute refractory period is valid
-        if float(refrac_t) <= 0:
-            raise ValueError(f"refrac_t be positive, received {float(refrac_t)}")
-
-        # check that tc_adapt and incr_adapt are of equal length
-        if isinstance(tc_adaptation, list | tuple):
-            if isinstance(spike_adapt_increment, list | tuple):
-                if len(tc_adaptation) != len(spike_adapt_increment):
+        # possible tuple/float combinations for tc_adaptation and spike_adapt_incr
+        match (
+            hasattr(tc_adaptation, "__iter__"),
+            hasattr(spike_adapt_incr, "__iter__"),
+        ):
+            case (True, True):
+                # test that tc_adaptation and spike_adapt_incr are of equal length
+                if len(tc_adaptation) != len(spike_adapt_incr):
                     raise RuntimeError(
-                        "`tc_adaptation` and `spike_adapt_increment` "
-                        "must be equal in length"
+                        "`tc_adaptation` and `spike_adapt_incr` must be of the same "
+                        f"length, received with lengths of {len(tc_adaptation)} and "
+                        f"{len(spike_adapt_incr)} respectively."
                     )
-            else:
-                tc_adaptation = tuple(float(tc) for tc in tc_adaptation)
-                spike_adapt_increment = tuple(
-                    float(spike_adapt_increment) for _ in tc_adaptation
-                )
-        else:
-            if isinstance(spike_adapt_increment, list | tuple):
+
+                # cast and test tc_adaptation values
                 tc_adaptation = tuple(
-                    float(tc_adaptation) for _ in spike_adapt_increment
+                    numeric_limit(f"`tc_adaptation[{idx}]`", val, 0, "gt", float)
+                    for idx, val in enumerate(tc_adaptation)
                 )
-                spike_adapt_increment = tuple(
-                    float(sai) for sai in spike_adapt_increment
+
+                # cast spike_adapt_incr values
+                spike_adapt_incr = tuple(float(val) for val in spike_adapt_incr)
+
+            case (True, False):
+                # cast and test tc_adaptation values
+                tc_adaptation = tuple(
+                    numeric_limit(f"`tc_adaptation[{idx}]`", val, 0, "gt", float)
+                    for idx, val in enumerate(tc_adaptation)
                 )
-            else:
-                tc_adaptation = (float(tc_adaptation),)
-                spike_adapt_increment = (float(spike_adapt_increment),)
 
-        # register extras
-        self.register_extra("step_time", float(step_time))
-        self.register_extra("tc_membrane", float(tc_membrane))
-        self.register_extra("tc_adaptation", tc_adaptation)
+                # cast spike_adapt_incr and make it a tuple of matching length
+                spike_adapt_incr = float(spike_adapt_incr)
+                spike_adapt_incr = tuple(spike_adapt_incr for _ in tc_adaptation)
 
-        # register buffers
+            case (False, True):
+                # cast spike_adapt_incr values
+                spike_adapt_incr = tuple(float(val) for val in spike_adapt_incr)
+
+                # cast and test tc_adaptation and make it a tuple of matching length
+                tc_adaptation = numeric_limit(
+                    "`tc_adaptation`", tc_adaptation, 0, "gt", float
+                )
+                tc_adaptation = tuple(tc_adaptation for _ in spike_adapt_incr)
+
+            case (False, False):
+                # cast and test tc_adaptation and make it a 1-tuple
+                tc_adaptation = (
+                    numeric_limit("`tc_adaptation`", tc_adaptation, 0, "gt", float),
+                )
+
+                # cast spike_adapt_incr and make it a 1-tuple
+                spike_adapt_incr = (float(spike_adapt_incr),)
+
+        # dynamics attributes
+        self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
+        self.tc_membrane = numeric_limit("`tc_membrane`", tc_membrane, 0, "gt", float)
+        self.decay = math.exp(-self.step_time / self.tc_membrane)
+        self.rest_v = float(rest_v)
+        self.reset_v = float(reset_v)
+        self.thresh_eq_v = float(thresh_eq_v)
+        self.refrac_t = numeric_limit("`refrac_t`", refrac_t, 0, "gte", float)
+        self.resistance = numeric_limit("`resistance`", resistance, 0, "neq", float)
+        self.tc_adaptation = tc_adaptation
+        self.spike_adapt_incr = spike_adapt_incr
+
+        # register adaptation attributes as buffers (for tensor ops and compatibility)
         self.register_buffer(
-            "decay_adaptation",
-            torch.tensor([math.exp(-self.step_time / tc) for tc in self.tc_adaptation]),
+            "adapt_decay",
+            torch.exp(-self.step_time / torch.tensor(self.tc_adaptation)),
+            persistent=False,
         )
-        self.register_buffer("incr_adaptation", torch.tensor(spike_adapt_increment))
         self.register_buffer(
-            "decay_membrane",
-            torch.tensor(math.exp(-self.step_time / self.tc_membrane)),
+            "adapt_increment", torch.tensor(self.spike_adapt_incr), persistent=False
         )
-        self.register_buffer("rest_v", torch.tensor(float(rest_v)))
-        self.register_buffer("reset_v", torch.tensor(float(reset_v)))
-        self.register_buffer("thresh_eq_v", torch.tensor(float(thresh_eq_v)))
-        self.register_buffer("refrac_t", torch.tensor(float(refrac_t)))
-        self.register_buffer("resistance", torch.tensor(float(resistance)))
 
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
         AdaptationMixin.__init__(
-            self, torch.zeros(*self.shape, self.decay_adaptation.shape[-1]), False
+            self, torch.zeros(*self.shape, len(self.tc_adaptation)), False
         )
 
     def _integrate_v(self, masked_inputs):
+        """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
@@ -293,11 +297,38 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             resistance=self.resistance,
         )
 
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
+
+        Args:
+            value (float): new simulation time step length.
+
+        Returns:
+            float: present simulation time step length.
+        """
+        return self.step_time
+
+    @dt.setter
+    def dt(self, value: float):
+        self.step_time = numeric_limit("`dt`", value, 0, "gt", float)
+        self.decay = math.exp(-self.step_time / self.time_constant)
+        self.adapt_decay = torch.exp(
+            -self.step_time
+            / torch.tensor(
+                self.tc_adaptation,
+                dtype=self.adapt_decay.dtype,
+                device=self.adapt_decay.device,
+                requires_grad=self.adapt_decay.requires_grad,
+            )
+        )
+
     def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
 
         Args:
-            keep_adaptations (bool, optional): if learned adaptations should be preserved. Defaults to True.
+            keep_adaptations (bool, optional): if learned adaptations should be
+                preserved. Defaults to True.
         """
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
@@ -316,17 +347,17 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         Args:
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I(t)`, in :math:`\mathrm{nA}`.
-            adapt (bool | None, optional): if adaptations should be updated based on this step.
-                Defaults to None.
-            refrac_lock (bool, optional): if membrane voltages should be fixed while in the
-                refractory period. Defaults to True.
+            adapt (bool | None, optional): if adaptations should be updated
+                based on this step. Defaults to None.
+            refrac_lock (bool, optional): if membrane voltages should be fixed
+                while in the refractory period. Defaults to True.
 
         Returns:
-            torch.Tensor: which neurons generated an action potential.
+            torch.Tensor: if the corresponding neuron generated an action potential.
 
         Note:
-            When ``adapt`` is set to None, adaptations will be updated when the neuron is in
-            training mode but not when it is in evaluation mode.
+            When ``adapt`` is set to None, adaptations will be updated when the neuron
+            is in training mode but not when it is in evaluation mode.
         """
         # use voltage thresholding function
         spikes, voltages, refracs = nf.voltage_thresholding(
@@ -341,44 +372,26 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             refrac_t=self.refrac_t,
             voltages=(self.voltage if refrac_lock else None),
         )
+
+        # update parameters
         self.voltage = voltages
         self.refrac = refracs
 
-        # use adaptive thresholds update function
+        # conditionally update adaptive thresholds
         if adapt or (adapt is None and self.training):
+            # use adaptive thresholds update function
             adaptations = nf.adaptive_thresholds_linear_spike(
                 adaptations=self.adaptation,
                 postsyn_spikes=spikes,
-                decay=self.decay_adaptation,
-                spike_increment=self.incr_adaptation,
+                decay=self.adapt_decay,
+                spike_increment=self.adapt_increment,
                 refracs=(self.refracs if refrac_lock else None),
             )
+            # update parameter
             self.adaptation = torch.mean(adaptations, dim=0)
 
         # return spiking output
         return spikes
-
-    @property
-    def dt(self) -> float:
-        r"""Length of the simulation time step, in milliseconds.
-
-        Args:
-            value (float): new simulation time step length.
-
-        Returns:
-            float: length of the simulation time step
-        """
-        return self.step_time
-
-    @dt.setter
-    def dt(self, value: float):
-        if float(value) <= 0:
-            raise ValueError(f"step time must be positive, received {float(value)}")
-        self.step_time = float(value)
-        self.decay_membrane.fill_(math.exp(-self.step_time / self.time_constant))
-        self.decay_adaptation[:] = torch.tensor(
-            [math.exp(-self.step_time / tc) for tc in self.tc_adaptation]
-        )
 
 
 class GLIF1(VoltageMixin, SpikeRefractoryMixin, Neuron):
@@ -419,7 +432,24 @@ class GLIF1(VoltageMixin, SpikeRefractoryMixin, Neuron):
         )
 
     def _integrate_v(self, masked_inputs):
+        """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
         return LIF._integrate_v(self, masked_inputs)
+
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
+
+        Args:
+            value (float): new simulation time step length.
+
+        Returns:
+            float: present simulation time step length.
+        """
+        return LIF.dt.fget(self)
+
+    @dt.setter
+    def dt(self, value: float):
+        LIF.dt.fset(self, value)
 
     def clear(self, **kwargs):
         r"""Resets neurons to their resting state."""
@@ -431,29 +461,13 @@ class GLIF1(VoltageMixin, SpikeRefractoryMixin, Neuron):
         Args:
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I(t)`, in :math:`\mathrm{nA}`.
-            refrac_lock (bool, optional): if membrane voltages should be fixed while in the
-                refractory period. Defaults to True.
+            refrac_lock (bool, optional): if membrane voltages should be fixed while
+                in the refractory period. Defaults to True.
 
         Returns:
-            torch.Tensor: which neurons generated an action potential.
+            torch.Tensor: if the corresponding neuron generated an action potential.
         """
         return LIF.forward(inputs, refrac_lock=refrac_lock)
-
-    @property
-    def dt(self) -> float:
-        r"""Length of the simulation time step, in milliseconds.
-
-        Args:
-            value (float): new simulation time step length.
-
-        Returns:
-            float: length of the simulation time step
-        """
-        return LIF.dt.fget(self)
-
-    @dt.setter
-    def dt(self, value: float):
-        LIF.dt.fset(self, value)
 
 
 class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
@@ -491,18 +505,13 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             in :math:`\mathrm{ms}`.
         tc_membrane (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
-        tc_adaptation (float | tuple[float]): time constant of exponential decay for threshold adaptations,
-            :math:`\tau_k`, in :math:`\mathrm{ms}`.
-        spike_adapt_increment (float | tuple[float]): amount by which the adaptive threshold is increased
-            after a spike, :math:`a_k`, in :math:`\mathrm{mV}`.
+        tc_adaptation (float | tuple[float]): time constant of exponential decay for
+            threshold adaptations, :math:`\tau_k`, in :math:`\mathrm{ms}`.
+        spike_adapt_incr (float | tuple[float]): amount by which the adaptive
+            threshold is increased after a spike, :math:`a_k`, in :math:`\mathrm{mV}`.
         resistance (float, optional): resistance across the cell membrane,
             :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
-
-    Raises:
-        ValueError: ``step_time`` must be a positive real.
-        RuntimeError: if ``tc_adaptation`` and ``spike_adapt_increment`` are tuples, they must
-            be of equal length.
 
     Note:
         For more details and references, visit
@@ -521,75 +530,98 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         refrac_t: float,
         tc_membrane: float,
         tc_adaptation: float | tuple[float],
-        spike_adapt_increment: float | tuple[float],
+        spike_adapt_incr: float | tuple[float],
         resistance: float = 1.0,
         batch_size: int = 1,
     ):
         # call superclass constructor
         Neuron.__init__(self, shape, batch_size)
 
-        # check that the step time is valid
-        if float(step_time) <= 0:
-            raise ValueError(f"step time must be positive, received {float(step_time)}")
-
-        # check that absolute refractory period is valid
-        if float(refrac_t) <= 0:
-            raise ValueError(f"refrac_t be positive, received {float(refrac_t)}")
-
-        # check that tc_adapt and incr_adapt are of equal length
-        if isinstance(tc_adaptation, list | tuple):
-            if isinstance(spike_adapt_increment, list | tuple):
-                if len(tc_adaptation) != len(spike_adapt_increment):
+        # possible tuple/float combinations for tc_adaptation and spike_adapt_incr
+        match (
+            hasattr(tc_adaptation, "__iter__"),
+            hasattr(spike_adapt_incr, "__iter__"),
+        ):
+            case (True, True):
+                # test that tc_adaptation and spike_adapt_incr are of equal length
+                if len(tc_adaptation) != len(spike_adapt_incr):
                     raise RuntimeError(
-                        "`tc_adaptation` and `spike_adapt_increment` "
-                        "must be equal in length"
+                        "`tc_adaptation` and `spike_adapt_incr` must be of the same "
+                        f"length, received with lengths of {len(tc_adaptation)} and "
+                        f"{len(spike_adapt_incr)} respectively."
                     )
-            else:
-                tc_adaptation = tuple(float(tc) for tc in tc_adaptation)
-                spike_adapt_increment = tuple(
-                    float(spike_adapt_increment) for _ in tc_adaptation
-                )
-        else:
-            if isinstance(spike_adapt_increment, list | tuple):
+
+                # cast and test tc_adaptation values
                 tc_adaptation = tuple(
-                    float(tc_adaptation) for _ in spike_adapt_increment
+                    numeric_limit(f"`tc_adaptation[{idx}]`", val, 0, "gt", float)
+                    for idx, val in enumerate(tc_adaptation)
                 )
-                spike_adapt_increment = tuple(
-                    float(sai) for sai in spike_adapt_increment
+
+                # cast spike_adapt_incr values
+                spike_adapt_incr = tuple(float(val) for val in spike_adapt_incr)
+
+            case (True, False):
+                # cast and test tc_adaptation values
+                tc_adaptation = tuple(
+                    numeric_limit(f"`tc_adaptation[{idx}]`", val, 0, "gt", float)
+                    for idx, val in enumerate(tc_adaptation)
                 )
-            else:
-                tc_adaptation = (float(tc_adaptation),)
-                spike_adapt_increment = (float(spike_adapt_increment),)
 
-        # register extras
-        self.register_extra("step_time", float(step_time))
-        self.register_extra("tc_membrane", float(tc_membrane))
-        self.register_extra("tc_adaptation", tc_adaptation)
+                # cast spike_adapt_incr and make it a tuple of matching length
+                spike_adapt_incr = float(spike_adapt_incr)
+                spike_adapt_incr = tuple(spike_adapt_incr for _ in tc_adaptation)
 
-        # register buffers
+            case (False, True):
+                # cast spike_adapt_incr values
+                spike_adapt_incr = tuple(float(val) for val in spike_adapt_incr)
+
+                # cast and test tc_adaptation and make it a tuple of matching length
+                tc_adaptation = numeric_limit(
+                    "`tc_adaptation`", tc_adaptation, 0, "gt", float
+                )
+                tc_adaptation = tuple(tc_adaptation for _ in spike_adapt_incr)
+
+            case (False, False):
+                # cast and test tc_adaptation and make it a 1-tuple
+                tc_adaptation = (
+                    numeric_limit("`tc_adaptation`", tc_adaptation, 0, "gt", float),
+                )
+
+                # cast spike_adapt_incr and make it a 1-tuple
+                spike_adapt_incr = (float(spike_adapt_incr),)
+
+        # dynamics attributes
+        self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
+        self.tc_membrane = numeric_limit("`tc_membrane`", tc_membrane, 0, "gt", float)
+        self.decay = math.exp(-self.step_time / self.tc_membrane)
+        self.rest_v = float(rest_v)
+        self.reset_v_add = float(reset_v_add)
+        self.reset_v_mul = float(reset_v_mul)
+        self.thresh_eq_v = float(thresh_eq_v)
+        self.refrac_t = numeric_limit("`refrac_t`", refrac_t, 0, "gte", float)
+        self.resistance = numeric_limit("`resistance`", resistance, 0, "neq", float)
+        self.tc_adaptation = tc_adaptation
+        self.spike_adapt_incr = spike_adapt_incr
+
+        # register adaptation attributes as buffers (for tensor ops and compatibility)
         self.register_buffer(
-            "decay_adaptation",
-            torch.tensor([math.exp(-self.step_time / tc) for tc in self.tc_adaptation]),
+            "adapt_decay",
+            torch.exp(-self.step_time / torch.tensor(self.tc_adaptation)),
+            persistent=False,
         )
-        self.register_buffer("incr_adaptation", torch.tensor(spike_adapt_increment))
         self.register_buffer(
-            "decay_membrane", torch.tensor(math.exp(-self.step_time / self.tc_membrane))
+            "adapt_increment", torch.tensor(self.spike_adapt_incr), persistent=False
         )
-        self.register_buffer("rest_v", torch.tensor(float(rest_v)))
-        self.register_buffer("reset_v_add", torch.tensor(float(reset_v_add)))
-        self.register_buffer("reset_v_mul", torch.tensor(float(reset_v_mul)))
-        self.register_buffer("thresh_eq_v", torch.tensor(float(thresh_eq_v)))
-        self.register_buffer("refrac_t", torch.tensor(float(refrac_t)))
-        self.register_buffer("resistance", torch.tensor(float(resistance)))
 
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
         AdaptationMixin.__init__(
-            self, torch.zeros(*self.shape, self.decay_adaptation.shape[-1]), False
+            self, torch.zeros(*self.shape, len(self.tc_adaptation)), False
         )
 
     def _integrate_v(self, masked_inputs):
+        """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
@@ -598,11 +630,38 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             resistance=self.resistance,
         )
 
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
+
+        Args:
+            value (float): new simulation time step length.
+
+        Returns:
+            float: present simulation time step length.
+        """
+        return self.step_time
+
+    @dt.setter
+    def dt(self, value: float):
+        self.step_time = numeric_limit("`dt`", value, 0, "gt", float)
+        self.decay = math.exp(-self.step_time / self.time_constant)
+        self.adapt_decay = torch.exp(
+            -self.step_time
+            / torch.tensor(
+                self.tc_adaptation,
+                dtype=self.adapt_decay.dtype,
+                device=self.adapt_decay.device,
+                requires_grad=self.adapt_decay.requires_grad,
+            )
+        )
+
     def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
 
         Args:
-            keep_adaptations (bool, optional): if learned adaptations should be preserved. Defaults to True.
+            keep_adaptations (bool, optional): if learned adaptations should be
+                preserved. Defaults to True.
         """
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
@@ -621,17 +680,17 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         Args:
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I(t)`, in :math:`\mathrm{nA}`.
-            adapt (bool | None, optional): if adaptations should be updated based on this step.
-                Defaults to None.
-            refrac_lock (bool, optional): if membrane voltages should be fixed while in the
-                refractory period. Defaults to True.
+            adapt (bool | None, optional): if adaptations should be updated
+                based on this step. Defaults to None.
+            refrac_lock (bool, optional): if membrane voltages should be fixed
+                while in the refractory period. Defaults to True.
 
         Returns:
-            torch.Tensor: which neurons generated an action potential.
+            torch.Tensor: if the corresponding neuron generated an action potential.
 
         Note:
-            When ``adapt`` is set to None, adaptations will be updated when the neuron is in
-            training mode but not when it is in evaluation mode.
+            When ``adapt`` is set to None, adaptations will be updated when the neuron
+            is in training mode but not when it is in evaluation mode.
         """
         # use naturalistic voltage thresholding function
         spikes, voltages, refracs = nf.voltage_thresholding_slope_intercept(
@@ -648,41 +707,23 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             refrac_t=self.refrac_t,
             voltages=(self.voltage if refrac_lock else None),
         )
+
+        # update parameters
         self.voltage = voltages
         self.refrac = refracs
 
-        # use adaptive thresholds update function
+        # conditionally update adaptive thresholds
         if adapt or (adapt is None and self.training):
+            # use adaptive thresholds update function
             adaptations = nf.adaptive_thresholds_linear_spike(
                 adaptations=self.adaptation,
                 postsyn_spikes=spikes,
-                decay=self.decay_adaptation,
-                spike_increment=self.incr_adaptation,
+                decay=self.adapt_decay,
+                spike_increment=self.adapt_increment,
                 refracs=(self.refracs if refrac_lock else None),
             )
+            # update parameter
             self.adaptation = torch.mean(adaptations, dim=0)
 
         # return spiking output
         return spikes
-
-    @property
-    def dt(self) -> float:
-        r"""Length of the simulation time step, in milliseconds.
-
-        Args:
-            value (float): new simulation time step length.
-
-        Returns:
-            float: length of the simulation time step
-        """
-        return self.step_time
-
-    @dt.setter
-    def dt(self, value: float):
-        if float(value) <= 0:
-            raise ValueError(f"step time must be positive, received {float(value)}")
-        self.step_time = float(value)
-        self.decay_membrane.fill_(math.exp(-self.step_time / self.time_constant))
-        self.decay_adaptation[:] = torch.tensor(
-            [math.exp(-self.step_time / tc) for tc in self.tc_adaptation]
-        )

@@ -1,0 +1,8 @@
+﻿ShapeMixin
+==========
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: ShapeMixin
+    :members:
+    :show-inheritance:

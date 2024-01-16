@@ -1,0 +1,8 @@
+﻿StateMonitor
+============
+
+.. currentmodule:: inferno.observe
+
+.. autoclass:: StateMonitor
+    :members:
+    :show-inheritance:

@@ -4,20 +4,42 @@
 .. currentmodule:: inferno.observe
 ```
 
+## Components
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    Monitor
+    Reducer
+```
+
+## Monitors
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    InputMonitor
+    OutputMonitor
+    StateMonitor
+    PreMonitor
+    PostMonitor
+```
+
 ## Reducers
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
     :toctree: generated
 
-    Reducer
     FoldReducer
     FoldingReducer
+    PassthroughReducer
+    EventReducer
     NearestTraceReducer
     CumulativeTraceReducer
     ScaledNearestTraceReducer
     ScaledCumulativeTraceReducer
     EMAReducer
-    EventReducer
-    PassthroughReducer
 ```

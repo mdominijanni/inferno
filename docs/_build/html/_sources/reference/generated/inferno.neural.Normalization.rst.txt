@@ -1,0 +1,8 @@
+﻿Normalization
+=============
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: Normalization
+    :members:
+    :show-inheritance:

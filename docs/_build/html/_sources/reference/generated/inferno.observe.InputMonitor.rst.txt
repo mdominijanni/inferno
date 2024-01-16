@@ -1,0 +1,8 @@
+﻿InputMonitor
+============
+
+.. currentmodule:: inferno.observe
+
+.. autoclass:: InputMonitor
+    :members:
+    :show-inheritance:

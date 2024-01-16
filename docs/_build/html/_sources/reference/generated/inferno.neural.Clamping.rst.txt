@@ -1,0 +1,8 @@
+﻿Clamping
+========
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: Clamping
+    :members:
+    :show-inheritance:

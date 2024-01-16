@@ -1,10 +1,10 @@
 # inferno.neural
 
 ```{eval-rst}
-.. currentmodule:: inferno.neural
+.. automodule:: inferno.neural
 ```
 
-## Infrastructure
+## Components
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -13,6 +13,7 @@
     Neuron
     Synapse
     Connection
+    Layer
 ```
 
 ## Neurons
@@ -48,6 +49,16 @@
     Conv2D
 ```
 
+## Hooks
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    Normalization
+    Clamping
+```
+
 ## Types
 ```{eval-rst}
 .. autosummary::
@@ -55,4 +66,19 @@
     :toctree: generated
 
     SynapseConstructor
+```
+
+## Mixins
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    BatchMixin
+    ShapeMixin
+    neurons.mixins.AdaptationMixin
+    neurons.mixins.CurrentMixin
+    neurons.mixins.RefractoryMixin
+    neurons.mixins.SpikeRefractoryMixin
+    neurons.mixins.VoltageMixin
 ```

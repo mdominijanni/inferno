@@ -1,0 +1,8 @@
+﻿Layer
+=====
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: Layer
+    :members:
+    :show-inheritance:

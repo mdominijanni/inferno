@@ -1,5 +1,6 @@
-from __future__ import annotations
 from functools import cached_property
+from inferno import DimensionalModule
+from inferno._internal import instance_of, numeric_limit
 import math
 
 
@@ -9,33 +10,27 @@ class BatchMixin:
     Args:
         batch_size (int): initial batch size.
 
-    Raises:
-        RuntimeError: batch size must be positive.
-        RuntimeError: object cannot already have a constraint on the zeroth dimension.
+    Note:
+        This must be added to a class which inherits from
+        :py:class:`DimensionalModule`, and the constructor for this
+        mixin must be called after the module constructor.
 
     Note:
-        This must be added to a class which inherits from :py:class:`DimensionalModule`.
-
-    Note:
-        The mixin constructor must be called after the constructor for the class
-        which calls the :py:class:`~inferno.DimensionalModule` constructor is.
+        Module which inherit from this mixin cannot be constrained on ``dim=0``.
+        Do not manually change this constraint, it is managed through :py:attr:`bsize`.
     """
 
     def __init__(
         self,
         batch_size: int,
     ):
-        # cast batch_size as float
-        batch_size = float(batch_size)
-
-        # check that batch size is valid
-        if batch_size < 1:
-            raise RuntimeError(f"batch size must be positive, received {batch_size}")
+        instance_of("`self`", self, DimensionalModule)
+        batch_size = numeric_limit("`batch_size`", batch_size, 0, "gt", int)
 
         # check that a conflicting constraint doesn't exist
         if 0 in self.constraints:
             raise RuntimeError(
-                f"{type(self).__name__} object already contains"
+                f"{type(self).__name__} `self` already contains"
                 f"constraint size={self.constraints[0]} at dim={0}."
             )
 
@@ -50,40 +45,36 @@ class BatchMixin:
             value (int): new batch size.
 
         Returns:
-            int: current batch size.
+            int: present batch size.
         """
         return self.constraints.get(0)
 
     @bsize.setter
     def bsize(self, value: int) -> None:
-        # cast value as float
-        value = int(value)
-
-        # ensure valid batch size
-        if value < 1:
-            raise RuntimeError(f"batch size must be positive, received {value}")
-
-        # reconstrain if required
+        value = numeric_limit("`bsize`", value, 0, "gt", int)
         if value != self.bsize:
             self.reconstrain(0, value)
 
 
 class ShapeMixin(BatchMixin):
-    """Mixin for modules a concept of shape and with batch-size dependent parameters or buffers.
+    """Mixin for modules with a concept of shape and with batch-size dependencies.
 
     Args:
-        shape (tuple[int, ...] | int): shape of the group being represented, excluding batch size.
+        shape (tuple[int, ...] | int): shape of the group being represented,
+            excluding batch size.
         batch_size (int): initial batch size.
 
-    Raises:
-        RuntimeError: batch size must be positive.
+    Note:
+        This must be added to a class which inherits from
+        :py:class:`DimensionalModule`, and the constructor for this
+        mixin must be called after the module constructor.
 
     Note:
-        This must be added to a class which inherits from :py:class:`DimensionalModule`.
+        Module which inherit from this mixin cannot be constrained on ``dim=0``.
+        Do not manually change this constraint, it is managed through :py:attr:`bsize`.
 
     Note:
-        The mixin constructor must be called after the constructor for the class
-        which calls the :py:class:`~inferno.DimensionalModule` constructor is.
+        This sets an attribute ``_shape`` and is managed internally.
     """
 
     def __init__(self, shape: tuple[int, ...] | int, batch_size: int):
@@ -104,7 +95,7 @@ class ShapeMixin(BatchMixin):
             value (int): new batch size.
 
         Returns:
-            int: current batch size.
+            int: present batch size.
         """
         return BatchMixin.bsize.fget(self)
 
@@ -129,11 +120,11 @@ class ShapeMixin(BatchMixin):
         Returns:
             tuple[int, ...]: Shape of the module, including the batch dimension.
         """
-        return (self.bsize,) + self._shape
+        return (self.bsize,) + self.shape
 
     @cached_property
     def count(self) -> int:
-        r"""Number of elements in the module, excluding batch.
+        r"""Number of elements in the module, excluding replication along the batch axis.
 
         Returns:
             int: number of elements in the module.

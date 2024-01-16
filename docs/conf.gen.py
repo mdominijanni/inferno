@@ -30,6 +30,8 @@ extensions = [
     "myst_parser",
     "sphinx_design",
     "sphinx.ext.graphviz",
+    "sphinx_remove_toctrees",
+    "sphinx_toolbox.more_autosummary.column_widths",
 ]
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
@@ -41,7 +43,7 @@ intersphinx_mapping = {
     "attrs": ("https://www.attrs.org/en/stable/", None),
 }
 
-myst_enable_extensions = ["amsmath", "dollarmath", "smartquotes"]
+myst_enable_extensions = ["amsmath", "dollarmath", "smartquotes", "colon_fence"]
 
 add_module_names = False
 
@@ -53,11 +55,11 @@ graphviz_output_format = "svg"
 
 templates_path = ["_templates"]
 
+remove_from_toctrees = ["reference/generated/*"]
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "furo"
-# html_theme = 'pydata_sphinx_theme'
+html_theme = "furo"  # "pydata_sphinx_theme"
 html_static_path = ["_static"]
-
 html_title = "Inferno"
