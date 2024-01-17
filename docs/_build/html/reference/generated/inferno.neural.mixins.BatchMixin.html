@@ -3,15 +3,16 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="AdaptationMixin" href="inferno.neural.neurons.mixins.AdaptationMixin.html" /><link rel="prev" title="BatchMixin" href="inferno.neural.BatchMixin.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="ShapeMixin" href="inferno.neural.mixins.ShapeMixin.html" /><link rel="prev" title="SynapseConstructor" href="inferno.neural.SynapseConstructor.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
-        <title>ShapeMixin - Inferno</title>
+        <title>BatchMixin - Inferno</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/shape.css?v=23eccd26" />
     
     
 
@@ -213,20 +214,16 @@
           </label>
         </div>
         <article role="main">
-          <section id="shapemixin">
-<h1>ShapeMixin<a class="headerlink" href="#shapemixin" title="Link to this heading">#</a></h1>
+          <section id="batchmixin">
+<h1>BatchMixin<a class="headerlink" href="#batchmixin" title="Link to this heading">#</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="inferno.neural.ShapeMixin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ShapeMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/infrastructure.html#ShapeMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.ShapeMixin" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="inferno.neural.BatchMixin.html#inferno.neural.BatchMixin" title="inferno.neural.infrastructure.BatchMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">BatchMixin</span></code></a></p>
-<p>Mixin for modules with a concept of shape and with batch-size dependencies.</p>
+<dt class="sig sig-object py" id="inferno.neural.mixins.BatchMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BatchMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/mixins.html#BatchMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.mixins.BatchMixin" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Mixin for modules with batch-size dependent parameters or buffers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>...</em><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – shape of the group being represented,
-excluding batch size.</p></li>
-<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – initial batch size.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – initial batch size.</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -238,29 +235,11 @@ mixin must be called after the module constructor.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Module which inherit from this mixin cannot be constrained on <code class="docutils literal notranslate"><span class="pre">dim=0</span></code>.
-Do not manually change this constraint, it is managed through <a class="reference internal" href="#inferno.neural.ShapeMixin.bsize" title="inferno.neural.ShapeMixin.bsize"><code class="xref py py-attr docutils literal notranslate"><span class="pre">bsize</span></code></a>.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This sets an attribute <code class="docutils literal notranslate"><span class="pre">_shape</span></code> and is managed internally.</p>
+Do not manually change this constraint, it is managed through <a class="reference internal" href="#inferno.neural.mixins.BatchMixin.bsize" title="inferno.neural.mixins.BatchMixin.bsize"><code class="xref py py-attr docutils literal notranslate"><span class="pre">bsize</span></code></a>.</p>
 </div>
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.ShapeMixin.bshape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.ShapeMixin.bshape" title="Link to this definition">#</a></dt>
-<dd><p>Batch shape of the module</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Shape of the module, including the batch dimension.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>, …]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.ShapeMixin.bsize">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bsize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.ShapeMixin.bsize" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.neural.mixins.BatchMixin.bsize">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bsize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.mixins.BatchMixin.bsize" title="Link to this definition">#</a></dt>
 <dd><p>Batch size of the module.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -275,34 +254,6 @@ Do not manually change this constraint, it is managed through <a class="referenc
 </dl>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.ShapeMixin.count">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.ShapeMixin.count" title="Link to this definition">#</a></dt>
-<dd><p>Number of elements in the module, excluding replication along the batch axis.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>number of elements in the module.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.ShapeMixin.shape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.ShapeMixin.shape" title="Link to this definition">#</a></dt>
-<dd><p>Shape of the module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Shape of the module.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>, …]</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -312,23 +263,23 @@ Do not manually change this constraint, it is managed through <a class="referenc
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.neural.neurons.mixins.AdaptationMixin.html">
+          <a class="next-page" href="inferno.neural.mixins.ShapeMixin.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">AdaptationMixin</div>
+                <div class="title">ShapeMixin</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.neural.BatchMixin.html">
+          <a class="prev-page" href="inferno.neural.SynapseConstructor.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">BatchMixin</div>
+                <div class="title">SynapseConstructor</div>
                 
               </div>
             </a>
@@ -362,12 +313,9 @@ Do not manually change this constraint, it is managed through <a class="referenc
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">ShapeMixin</a><ul>
-<li><a class="reference internal" href="#inferno.neural.ShapeMixin"><code class="docutils literal notranslate"><span class="pre">ShapeMixin</span></code></a><ul>
-<li><a class="reference internal" href="#inferno.neural.ShapeMixin.bshape"><code class="docutils literal notranslate"><span class="pre">ShapeMixin.bshape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.ShapeMixin.bsize"><code class="docutils literal notranslate"><span class="pre">ShapeMixin.bsize</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.ShapeMixin.count"><code class="docutils literal notranslate"><span class="pre">ShapeMixin.count</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.ShapeMixin.shape"><code class="docutils literal notranslate"><span class="pre">ShapeMixin.shape</span></code></a></li>
+<li><a class="reference internal" href="#">BatchMixin</a><ul>
+<li><a class="reference internal" href="#inferno.neural.mixins.BatchMixin"><code class="docutils literal notranslate"><span class="pre">BatchMixin</span></code></a><ul>
+<li><a class="reference internal" href="#inferno.neural.mixins.BatchMixin.bsize"><code class="docutils literal notranslate"><span class="pre">BatchMixin.bsize</span></code></a></li>
 </ul>
 </li>
 </ul>

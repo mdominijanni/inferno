@@ -12,7 +12,7 @@ class AdaptationMixin:
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
-    Note:
+    Caution:
         This must be added to a class which inherits from
         :py:class:`DimensionalModule`, and the constructor for this
         mixin must be called after the module constructor.
@@ -51,7 +51,7 @@ class CurrentMixin:
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
-    Note:
+    Caution:
         This must be added to a class which inherits from
         :py:class:`DimensionalModule`, and the constructor for this
         mixin must be called after the module constructor.
@@ -90,7 +90,7 @@ class VoltageMixin:
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
-    Note:
+    Caution:
         This must be added to a class which inherits from
         :py:class:`DimensionalModule`, and the constructor for this
         mixin must be called after the module constructor.
@@ -129,7 +129,7 @@ class RefractoryMixin:
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
-    Note:
+    Caution:
         This must be added to a class which inherits from
         :py:class:`DimensionalModule`, and the constructor for this
         mixin must be called after the module constructor.
@@ -168,7 +168,7 @@ class SpikeRefractoryMixin(RefractoryMixin):
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
-    Note:
+    Caution:
         This must be added to a class which inherits from
         :py:class:`DimensionalModule`, and the constructor for this
         mixin must be called after the module constructor.
@@ -176,7 +176,7 @@ class SpikeRefractoryMixin(RefractoryMixin):
     Note:
         This registers a parameter ``refrac_`` and sets it as constrained.
 
-    Note:
+    Important:
         This must be added to a class which has an attribute named ``refrac_t``, which
         represents the length of the absolute refractory period in :math:`\mathrm{ms}`.
     """

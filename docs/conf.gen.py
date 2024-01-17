@@ -63,3 +63,7 @@ remove_from_toctrees = ["reference/generated/*"]
 html_theme = "furo"  # "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_title = "Inferno"
+
+html_css_files = [
+    "css/shape.css",
+]

@@ -5,7 +5,7 @@ import math
 from functools import cached_property
 import torch
 from typing import Protocol
-from .infrastructure import ShapeMixin
+from .mixins import ShapeMixin
 
 
 class Neuron(ShapeMixin, DimensionalModule, ABC):
@@ -149,6 +149,20 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             f"Neuron `{type(self).__name__}` must implement the method `clear`."
         )
 
+    @abstractmethod
+    def forward(self, *args, **kwargs) -> torch.Tensor:
+        r"""Runs a simulation step of the neuronal dynamics.
+
+        Returns:
+            torch.Tensor: if the corresponding neuron generated an action potential.
+
+        Raises:
+            NotImplementedError: ``forward`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Neuron `{type(self).__name__}` must implement the method `forward`."
+        )
+
 
 class SynapseConstructor(Protocol):
     """Common constructor for synapses, used by :py:class:`Connection` objects.
@@ -183,7 +197,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
             excluding the batch axis.
         step_time (float): length of a simulation time step, in :math:`ms`.
         batch_size (int): size of the batch dimension.
-        delay (float | None): maximum supported delay, in :math:`ms`.
+        delay (float): maximum supported delay, in :math:`ms`.
     """
 
     def __init__(
@@ -191,10 +205,10 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         shape: tuple[int, ...] | int,
         step_time: float,
         batch_size: int,
-        delay: float | None,
+        delay: float,
     ):
         # superclass constructors
-        HistoryModule.__init__(self, step_time, delay if delay is not None else 0.0)
+        HistoryModule.__init__(self, step_time, delay)
         ShapeMixin.__init__(self, shape, batch_size)
 
     @classmethod
@@ -230,16 +244,13 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         self.clear()
 
     @property
-    def delay(self) -> float | None:
+    def delay(self) -> float:
         r"""Maximum supported delay, in milliseconds.
 
         Returns:
-            float | None: maximum supported delay.
+            float: maximum supported delay.
         """
-        if self.hsize == 0:
-            return None
-        else:
-            return self.hlen
+        return self.hlen
 
     @delay.setter
     def delay(self, value: float) -> None:
@@ -251,93 +262,114 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
     @property
     @abstractmethod
     def current(self) -> torch.Tensor:
-        r"""Currents of the synapses at the present time.
+        r"""Currents of the synapses at present, in nanoamperes.
 
         Args:
             value (torch.Tensor): new synapse currents.
 
         Returns:
-            torch.Tensor: currents of the synapses.
+            torch.Tensor: present synaptic currents.
 
         Raises:
             NotImplementedError: ``current`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the getter for property `current`"
+            f"Synapse `{type(self).__name__}` must implement "
+            "the getter for property `current`."
         )
 
     @current.setter
     @abstractmethod
     def current(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the setter for property `current`"
+            f"Synapse `{type(self).__name__}` must implement "
+            "the setter for property `current`."
         )
 
     @property
     @abstractmethod
     def spike(self) -> torch.Tensor:
-        r"""Spikes to the synapses at the present time.
+        r"""Spike input to the synapses at present.
+
+        Args:
+            value (torch.Tensor): new spike input.
 
         Returns:
-            torch.Tensor: spikes to the synapses.
+            torch.Tensor: present spike input.
 
         Raises:
             NotImplementedError: ``spike`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the getter for property `spike`"
+            f"Synapse `{type(self).__name__}` must implement "
+            "the getter for property `spike`."
         )
 
     @spike.setter
     @abstractmethod
     def spike(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the setter for property `spike`"
+            f"Synapse `{type(self).__name__}` must implement "
+            "the setter for property `spike`."
         )
 
     @abstractmethod
     def current_at(self, selector: torch.Tensor) -> torch.Tensor:
-        r"""Returns currents at times specified by delays.
+        r"""Currents, in nanoamperes, at times specified by delays, in milliseconds.
 
         Args:
             selector (torch.Tensor): delays for selection of currents.
 
         Returns:
-            torch.Tensor: currents selected at the given times.
+            torch.Tensor: synaptic currents at the specified times.
 
         Raises:
             NotImplementedError: ``current_at`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the method `dcurrent`"
+            f"Synapse `{type(self).__name__}` must implement the method `current_at`."
         )
 
     @abstractmethod
     def spike_at(self, selector: torch.Tensor) -> torch.Tensor:
-        r"""Returns spikes at times specified by delays.
+        r"""Spikes, as booleans, at times specified by delays, in milliseconds.
 
         Args:
             selector (torch.Tensor): delays for selection of spikes.
 
         Returns:
-            torch.Tensor: spikes selected at the given times.
+            torch.Tensor: spike input at the given times.
 
         Raises:
             NotImplementedError: ``spike_at`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the method `dspike`"
+            f"Synapse `{type(self).__name__}` must implement the method `spike_at`."
         )
 
     @abstractmethod
     def clear(self, **kwargs):
-        r"""Resets the state of the synapses.
+        r"""Resets synapses to their resting state.
 
         Raises:
             NotImplementedError: ``clear`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the method `clear`"
+            f"Synapse `{type(self).__name__}` must implement the method `clear`."
+        )
+
+    @abstractmethod
+    def forward(self, *args, **kwargs) -> torch.Tensor:
+        r"""Runs a simulation step of the synaptic dynamics.
+
+        Returns:
+            torch.Tensor: synaptic currents after simulation step.
+
+        Raises:
+            NotImplementedError: ``forward`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Synapse `{type(self).__name__}` must implement the method `forward`."
         )
 
 
@@ -468,11 +500,11 @@ class Connection(Module, ABC):
         return self.bias is None
 
     @property
-    def delayed(self) -> float | None:
+    def delayed(self) -> float:
         r"""Maxmimum length of the learned delays, in milliseconds.
 
         Returns:
-            float | None: maxmimum length of the learned delays, none if no delays.
+            float: maxmimum length of the learned delays.
 
         Note:
             This calls the property :py:attr:`Synapse.delay`.

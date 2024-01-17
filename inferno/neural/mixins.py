@@ -74,7 +74,7 @@ class ShapeMixin(BatchMixin):
         Do not manually change this constraint, it is managed through :py:attr:`bsize`.
 
     Note:
-        This sets an attribute ``_shape`` and is managed internally.
+        This sets an attribute ``_shape`` which is managed internally.
     """
 
     def __init__(self, shape: tuple[int, ...] | int, batch_size: int):

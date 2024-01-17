@@ -36,7 +36,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
             :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
-    Note:
+    See Also:
         For more details and references, visit
         :ref:`zoo/neurons-linear:Leaky Integrate-and-Fire (LIF)` in the zoo.
     """
@@ -182,7 +182,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
-    Note:
+    See Also:
         For more details and references, visit
         :ref:`zoo/neurons-linear:Adaptive Leaky Integrate-and-Fire (ALIF)` in the zoo.
     """
@@ -399,7 +399,7 @@ class GLIF1(VoltageMixin, SpikeRefractoryMixin, Neuron):
 
     Alias for :py:class:`~inferno.neural.LIF`.
 
-    Note:
+    See Also:
         For more details and references, visit
         :ref:`zoo/neurons-linear:generalized leaky integrate-and-fire 1 (glif{sub}\`1\`)` in the zoo.
     """
@@ -513,7 +513,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
-    Note:
+    See Also:
         For more details and references, visit
         :ref:`zoo/neurons-linear:generalized leaky integrate-and-fire 2 (glif{sub}\`2\`)` in the zoo.
     """

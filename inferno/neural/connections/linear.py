@@ -109,7 +109,7 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         Returns:
             torch.Tensor: reshaped data.
 
-         Shape:
+        Shape:
             Input:
             :math:`B \times N_\mathrm{in} \times [N_\mathrm{out}]`
 
@@ -139,14 +139,22 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         Returns:
             torch.Tensor: reshaped data.
 
-         Shape:
-            Input:
+        .. admonition:: Shape
+            :class: tensorshape
+
+            **Args**:
+
+            ``data``:
+
             :math:`B \times N_\mathrm{out}`
 
-            Output:
+            **Return**:
+
             :math:`B \times 1 \times N_\mathrm{out} \times 1`
 
-            Where :math:`N_\mathrm{out}` is the number of connection outputs.
+            Where:
+                * :math:`N_\mathrm{out}` is the number of connection outputs.
+                * :math:`N_\mathrm{out}` is the number of connection outputs.
         """
         return ein.rearrange(data, "b o -> b o 1 1")
 

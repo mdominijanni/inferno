@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/shape.css?v=23eccd26" />
     
     
 
@@ -219,7 +220,7 @@
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Protocol</span>
-<span class="kn">from</span> <span class="nn">.infrastructure</span> <span class="kn">import</span> <span class="n">ShapeMixin</span>
+<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">ShapeMixin</span>
 
 
 <div class="viewcode-block" id="Neuron">
@@ -366,6 +367,23 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `clear`.&quot;</span>
         <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Neuron.forward">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.forward">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the neuronal dynamics.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Neuron `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `forward`.&quot;</span>
+        <span class="p">)</span></div>
 </div>
 
 
@@ -408,7 +426,7 @@
 <span class="sd">            excluding the batch axis.</span>
 <span class="sd">        step_time (float): length of a simulation time step, in :math:`ms`.</span>
 <span class="sd">        batch_size (int): size of the batch dimension.</span>
-<span class="sd">        delay (float | None): maximum supported delay, in :math:`ms`.</span>
+<span class="sd">        delay (float): maximum supported delay, in :math:`ms`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -416,10 +434,10 @@
         <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># superclass constructors</span>
-        <span class="n">HistoryModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span> <span class="k">if</span> <span class="n">delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">HistoryModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
         <span class="n">ShapeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Synapse.partialconstructor">
@@ -458,16 +476,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maximum supported delay, in milliseconds.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            float | None: maximum supported delay.</span>
+<span class="sd">            float: maximum supported delay.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hsize</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hlen</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hlen</span>
 
     <span class="nd">@delay</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -479,67 +494,74 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses at the present time.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses at present, in nanoamperes.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new synapse currents.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: currents of the synapses.</span>
+<span class="sd">            torch.Tensor: present synaptic currents.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``current`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `current`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the getter for property `current`.&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `current`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the setter for property `current`.&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes to the synapses at the present time.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike input to the synapses at present.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new spike input.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: spikes to the synapses.</span>
+<span class="sd">            torch.Tensor: present spike input.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``spike`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `spike`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the getter for property `spike`.&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@spike</span><span class="o">.</span><span class="n">setter</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `spike`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the setter for property `spike`.&quot;</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="Synapse.current_at">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.current_at">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">current_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns currents at times specified by delays.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents, in nanoamperes, at times specified by delays, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            selector (torch.Tensor): delays for selection of currents.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: currents selected at the given times.</span>
+<span class="sd">            torch.Tensor: synaptic currents at the specified times.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``current_at`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `dcurrent`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `current_at`.&quot;</span>
         <span class="p">)</span></div>
 
 
@@ -547,19 +569,19 @@
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.spike_at">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">spike_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns spikes at times specified by delays.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes, as booleans, at times specified by delays, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            selector (torch.Tensor): delays for selection of spikes.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: spikes selected at the given times.</span>
+<span class="sd">            torch.Tensor: spike input at the given times.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``spike_at`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `dspike`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `spike_at`.&quot;</span>
         <span class="p">)</span></div>
 
 
@@ -567,13 +589,30 @@
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.clear">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets the state of the synapses.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets synapses to their resting state.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``clear`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `clear`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `clear`.&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Synapse.forward">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.forward">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the synaptic dynamics.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: synaptic currents after simulation step.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `forward`.&quot;</span>
         <span class="p">)</span></div>
 </div>
 
@@ -708,11 +747,11 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">delayed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">delayed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maxmimum length of the learned delays, in milliseconds.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            float | None: maxmimum length of the learned delays, none if no delays.</span>
+<span class="sd">            float: maxmimum length of the learned delays.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            This calls the property :py:attr:`Synapse.delay`.</span>

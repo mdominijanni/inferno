@@ -1,8 +1,3 @@
-from .infrastructure import (
-    BatchMixin,
-    ShapeMixin,
-)
-
 from .base import (
     Neuron,
     Synapse,
@@ -41,8 +36,6 @@ from .hooks import (
 )
 
 __all__ = [
-    "BatchMixin",
-    "ShapeMixin",
     "Neuron",
     "Synapse",
     "Connection",

@@ -74,11 +74,14 @@
     :nosignatures:
     :toctree: generated
 
-    BatchMixin
-    ShapeMixin
+    mixins.BatchMixin
+    mixins.ShapeMixin
     neurons.mixins.AdaptationMixin
     neurons.mixins.CurrentMixin
     neurons.mixins.RefractoryMixin
     neurons.mixins.SpikeRefractoryMixin
     neurons.mixins.VoltageMixin
+    synapses.mixins.CurrentMixin
+    synapses.mixins.SpikeCurrentMixin
+    synapses.mixins.DelayedSpikeCurrentMixin
 ```

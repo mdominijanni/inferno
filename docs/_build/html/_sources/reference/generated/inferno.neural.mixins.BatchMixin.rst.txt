@@ -1,7 +1,7 @@
 ﻿BatchMixin
 ==========
 
-.. currentmodule:: inferno.neural
+.. currentmodule:: inferno.neural.mixins
 
 .. autoclass:: BatchMixin
     :members:

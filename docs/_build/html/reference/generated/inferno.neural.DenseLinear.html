@@ -12,6 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/shape.css?v=23eccd26" />
     
     
 
@@ -267,7 +268,7 @@ to the specified output shape.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Keyword arguments are passed to <a class="reference internal" href="inferno.neural.Synapse.html#inferno.neural.Synapse" title="inferno.neural.Synapse"><code class="xref py py-class docutils literal notranslate"><span class="pre">Synapse</span></code></a>
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code> call.</p>
+<a class="reference internal" href="inferno.neural.Synapse.html#inferno.neural.Synapse.forward" title="inferno.neural.Synapse.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code></a> call.</p>
 </div>
 </dd></dl>
 
@@ -311,18 +312,24 @@ to the specified output shape.</p>
 <dd class="field-even"><p>reshaped data.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><p>torch.Tensor</p>
-<dl>
-<dt>Shape:</dt><dd><p>Input:
-<span class="math notranslate nohighlight">\(B \times N_\mathrm{out}\)</span></p>
-<p>Output:
-<span class="math notranslate nohighlight">\(B \times 1 \times N_\mathrm{out} \times 1\)</span></p>
-<p>Where <span class="math notranslate nohighlight">\(N_\mathrm{out}\)</span> is the number of connection outputs.</p>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
-</p>
+<div class="tensorshape admonition">
+<p class="admonition-title">Shape</p>
+<p><strong>Args</strong>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">data</span></code>:</p>
+<p><span class="math notranslate nohighlight">\(B \times N_\mathrm{out}\)</span></p>
+<p><strong>Return</strong>:</p>
+<p><span class="math notranslate nohighlight">\(B \times 1 \times N_\mathrm{out} \times 1\)</span></p>
+<dl class="simple">
+<dt>Where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(N_\mathrm{out}\)</span> is the number of connection outputs.</p></li>
+<li><p><span class="math notranslate nohighlight">\(N_\mathrm{out}\)</span> is the number of connection outputs.</p></li>
+</ul>
 </dd>
 </dl>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -337,7 +344,9 @@ to the specified output shape.</p>
 <dd class="field-even"><p>reshaped data.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><p>torch.Tensor</p>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
+</dd>
+</dl>
 <dl>
 <dt>Shape:</dt><dd><p>Input:
 <span class="math notranslate nohighlight">\(B \times N_\mathrm{in} \times [N_\mathrm{out}]\)</span></p>
@@ -346,9 +355,6 @@ to the specified output shape.</p>
 <span class="math notranslate nohighlight">\(B \times N_\mathrm{out} \times N_\mathrm{in} \times 1\)</span></p>
 <p>Where <span class="math notranslate nohighlight">\(N_\mathrm{in}\)</span> is the number of connection inputs and <span class="math notranslate nohighlight">\(N_\mathrm{out}\)</span> is the number
 of connection outputs.</p>
-</dd>
-</dl>
-</p>
 </dd>
 </dl>
 </dd></dl>

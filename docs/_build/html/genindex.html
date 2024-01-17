@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="_static/css/shape.css?v=23eccd26" />
     
     
 
@@ -261,18 +262,18 @@
   <h2>B</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.neural.BatchMixin.html#inferno.neural.BatchMixin">BatchMixin (class in inferno.neural)</a>
+        <li><a href="reference/generated/inferno.neural.mixins.BatchMixin.html#inferno.neural.mixins.BatchMixin">BatchMixin (class in inferno.neural.mixins)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.bias">bias (Connection property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.biased">biased (Connection property)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.ShapeMixin.html#inferno.neural.ShapeMixin.bshape">bshape (ShapeMixin property)</a>
+        <li><a href="reference/generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin.bshape">bshape (ShapeMixin property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.ALIF.html#inferno.neural.ALIF.bsize">bsize (ALIF property)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.neural.BatchMixin.html#inferno.neural.BatchMixin.bsize">(BatchMixin property)</a>
+          <li><a href="reference/generated/inferno.neural.mixins.BatchMixin.html#inferno.neural.mixins.BatchMixin.bsize">(BatchMixin property)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.bsize">(Connection property)</a>
 </li>
@@ -286,7 +287,9 @@
 </li>
           <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.bsize">(Neuron property)</a>
 </li>
-          <li><a href="reference/generated/inferno.neural.ShapeMixin.html#inferno.neural.ShapeMixin.bsize">(ShapeMixin property)</a>
+          <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.bsize">(PassthroughSynapse property)</a>
+</li>
+          <li><a href="reference/generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin.bsize">(ShapeMixin property)</a>
 </li>
         </ul></li>
     </ul></td>
@@ -325,10 +328,10 @@
         </ul></li>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.compatible">compatible() (DimensionalModule method)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.compatible_like">compatible_like() (DimensionalModule method)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.Configuration.html#inferno.Configuration">Configuration (class in inferno)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection">Connection (class in inferno.neural)</a>
@@ -339,11 +342,11 @@
 </li>
         <li><a href="reference/generated/inferno.neural.Conv2D.html#inferno.neural.Conv2D">Conv2D (class in inferno.neural)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.ShapeMixin.html#inferno.neural.ShapeMixin.count">count (ShapeMixin property)</a>
+        <li><a href="reference/generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin.count">count (ShapeMixin property)</a>
 </li>
         <li><a href="reference/generated/inferno.observe.CumulativeTraceReducer.html#inferno.observe.CumulativeTraceReducer">CumulativeTraceReducer (class in inferno.observe)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.neurons.mixins.CurrentMixin.html#inferno.neural.neurons.mixins.CurrentMixin.current">current (CurrentMixin property)</a>
+        <li><a href="reference/generated/inferno.neural.neurons.mixins.CurrentMixin.html#inferno.neural.neurons.mixins.CurrentMixin.current">current (CurrentMixin property)</a>, <a href="reference/generated/inferno.neural.synapses.mixins.CurrentMixin.html#inferno.neural.synapses.mixins.CurrentMixin.current">[1]</a>
 
         <ul>
           <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.current">(PassthroughSynapse property)</a>
@@ -351,14 +354,20 @@
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.current">(Synapse property)</a>
 </li>
         </ul></li>
-        <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.current_at">current_at() (PassthroughSynapse method)</a>
+        <li><a href="reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.current_at">current_at() (DelayedSpikeCurrentMixin method)</a>
 
         <ul>
+          <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.current_at">(PassthroughSynapse method)</a>
+</li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.current_at">(Synapse method)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.neural.neurons.mixins.CurrentMixin.html#inferno.neural.neurons.mixins.CurrentMixin">CurrentMixin (class in inferno.neural.neurons.mixins)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.synapses.mixins.CurrentMixin.html#inferno.neural.synapses.mixins.CurrentMixin">(class in inferno.neural.synapses.mixins)</a>
 </li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -374,10 +383,14 @@
         <ul>
           <li><a href="reference/generated/inferno.neural.LateralLinear.html#inferno.neural.LateralLinear.delay">(LateralLinear property)</a>
 </li>
+          <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.delay">(PassthroughSynapse property)</a>
+</li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.delay">(Synapse property)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.delayed">delayed (Connection property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin">DelayedSpikeCurrentMixin (class in inferno.neural.synapses.mixins)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.DenseLinear.html#inferno.neural.DenseLinear">DenseLinear (class in inferno.neural)</a>
 </li>
@@ -413,6 +426,8 @@
           <li><a href="reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer.dt">(NearestTraceReducer property)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.dt">(Neuron property)</a>
+</li>
+          <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.dt">(PassthroughSynapse property)</a>
 </li>
           <li><a href="reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer.dt">(ScaledCumulativeTraceReducer property)</a>
 </li>
@@ -498,9 +513,13 @@
 </li>
           <li><a href="reference/generated/inferno.neural.LIF.html#inferno.neural.LIF.forward">(LIF method)</a>
 </li>
+          <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.forward">(Neuron method)</a>
+</li>
           <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.forward">(PassthroughSynapse method)</a>
 </li>
           <li><a href="reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.forward">(Reducer method)</a>
+</li>
+          <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.forward">(Synapse method)</a>
 </li>
         </ul></li>
     </ul></td>
@@ -885,9 +904,9 @@
         </ul></li>
         <li><a href="reference/generated/inferno.Module.html#inferno.Module.set_extra_state">set_extra_state() (Module method)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.ShapeMixin.html#inferno.neural.ShapeMixin.shape">shape (ShapeMixin property)</a>
+        <li><a href="reference/generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin.shape">shape (ShapeMixin property)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.ShapeMixin.html#inferno.neural.ShapeMixin">ShapeMixin (class in inferno.neural)</a>
+        <li><a href="reference/generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin">ShapeMixin (class in inferno.neural.mixins)</a>
 </li>
         <li><a href="reference/generated/inferno.simple_exponential_smoothing.html#inferno.simple_exponential_smoothing">simple_exponential_smoothing() (in module inferno)</a>
 </li>
@@ -908,6 +927,8 @@
 </li>
           <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.spike">(PassthroughSynapse property)</a>
 </li>
+          <li><a href="reference/generated/inferno.neural.synapses.mixins.SpikeCurrentMixin.html#inferno.neural.synapses.mixins.SpikeCurrentMixin.spike">(SpikeCurrentMixin property)</a>
+</li>
           <li><a href="reference/generated/inferno.neural.neurons.mixins.SpikeRefractoryMixin.html#inferno.neural.neurons.mixins.SpikeRefractoryMixin.spike">(SpikeRefractoryMixin property)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.spike">(Synapse property)</a>
@@ -915,14 +936,24 @@
         </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.spike_at">spike_at() (PassthroughSynapse method)</a>
+        <li><a href="reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.spike_at">spike_at() (DelayedSpikeCurrentMixin method)</a>
 
         <ul>
+          <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.spike_at">(PassthroughSynapse method)</a>
+</li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.spike_at">(Synapse method)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.neural.synapses.mixins.SpikeCurrentMixin.html#inferno.neural.synapses.mixins.SpikeCurrentMixin">SpikeCurrentMixin (class in inferno.neural.synapses.mixins)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.neurons.mixins.SpikeRefractoryMixin.html#inferno.neural.neurons.mixins.SpikeRefractoryMixin">SpikeRefractoryMixin (class in inferno.neural.neurons.mixins)</a>
 </li>
+        <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.spikesderived">spikesderived (PassthroughSynapse property)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.synapses.mixins.SpikeCurrentMixin.html#inferno.neural.synapses.mixins.SpikeCurrentMixin.spikesderived">(SpikeCurrentMixin property)</a>
+</li>
+        </ul></li>
         <li><a href="reference/generated/inferno.observe.StateMonitor.html#inferno.observe.StateMonitor">StateMonitor (class in inferno.observe)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse">Synapse (class in inferno.neural)</a>

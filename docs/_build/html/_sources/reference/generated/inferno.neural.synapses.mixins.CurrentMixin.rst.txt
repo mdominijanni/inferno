@@ -1,0 +1,8 @@
+﻿CurrentMixin
+============
+
+.. currentmodule:: inferno.neural.synapses.mixins
+
+.. autoclass:: CurrentMixin
+    :members:
+    :show-inheritance:

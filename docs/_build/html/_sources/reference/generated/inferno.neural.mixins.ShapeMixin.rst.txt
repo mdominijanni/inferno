@@ -1,7 +1,7 @@
 ﻿ShapeMixin
 ==========
 
-.. currentmodule:: inferno.neural
+.. currentmodule:: inferno.neural.mixins
 
 .. autoclass:: ShapeMixin
     :members:
