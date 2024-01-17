@@ -246,9 +246,9 @@ uses values at observation limits if None. Defaults to False.</p></li>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>When <code class="docutils literal notranslate"><span class="pre">derive_spikes</span></code> is set the following behaviors are changed.</p>
-<p>Inputs to <a class="reference internal" href="#inferno.neural.PassthroughSynapse.forward" title="inferno.neural.PassthroughSynapse.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code></a> will be assumed to be “current-like” input
-(tensors of spikes will be treated as currents of 0 or 1 <span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>).
-The keyword argument <code class="docutils literal notranslate"><span class="pre">currents</span></code> will therefore be ignored.</p>
+<p>The first input to <a class="reference internal" href="#inferno.neural.PassthroughSynapse.forward" title="inferno.neural.PassthroughSynapse.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code></a> will be assumed to be “current-like”
+input (tensors of spikes will be treated as currents of 0 or 1
+<span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>). The second input will be ignored.</p>
 <p>The getter <code class="xref py py-attr docutils literal notranslate"><span class="pre">spikes</span></code> will compute spikes as any nonzero currents,
 therefore if using a model with subthreshold currents, this will be invalid.
 The setter for <code class="xref py py-attr docutils literal notranslate"><span class="pre">spikes</span></code> will do nothing, but will not raise a warning
@@ -272,12 +272,12 @@ the the closest prior observation is selected.</p>
 for selectors between observations. Defaults to “nearest”.</p></li>
 <li><p><strong>interp_tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – maximum difference in time from an observation
 to treat as co-occurring, in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>. Defaults to 0.0.</p></li>
-<li><p><strong>derive_spikes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if inputs will represent currents and spikes,
-with spikes derived therefrom. Defaults to True.</p></li>
+<li><p><strong>derive_spikes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if inputs will represent currents and
+spikes, with spikes derived therefrom. Defaults to True.</p></li>
 <li><p><strong>current_overbound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – value to replace currents out of
 bounds, uses values at observation limits if None. Defaults to 0.0.</p></li>
-<li><p><strong>spike_overbound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – value to replace spikes out of bounds,
-uses values at observation limits if None. Defaults to False.</p></li>
+<li><p><strong>spike_overbound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – value to replace spikes out of
+bounds, uses values at observation limits if None. Defaults to False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -330,15 +330,11 @@ should be retrieved, in <span class="math notranslate nohighlight">\(\mathrm{ms}
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.PassthroughSynapse.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">currents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse.forward" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/linear.html#PassthroughSynapse.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.PassthroughSynapse.forward" title="Link to this definition">#</a></dt>
 <dd><p>Runs a simulation step of the synaptic dynamics.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>inputs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – main input to the synapse, treated like spiking input.</p></li>
-<li><p><strong>currents</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – input current if not equivalent to
-input spikes, in <span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>. Defaults to None.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>*inputs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – inputs to the synapse.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>synaptic currents after simulation step.</p>
@@ -347,6 +343,16 @@ input spikes, in <span class="math notranslate nohighlight">\(\mathrm{nA}\)</spa
 <dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p><code class="docutils literal notranslate"><span class="pre">*inputs</span></code> can either be a single tensor representing the input current,
+or it can be two tensors where the first is the spikes and the second is
+an override for the currents. If <a class="reference internal" href="#inferno.neural.PassthroughSynapse.spikesderived" title="inferno.neural.PassthroughSynapse.spikesderived"><code class="xref py py-attr docutils literal notranslate"><span class="pre">spikesderived</span></code></a>, then only the
+first input is used. Otherwise both may be used, the first will be assigned
+as the spikes, and the second, if specified, will be assigned to the
+currents (if the second is not specified the first will be used for both).
+Currents are in nanoamperes.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">

@@ -13,7 +13,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of neurons,
-            excluding the batch axis.
+            excluding the batch dim.
         batch_size (int): initial batch size.
     """
 
@@ -150,11 +150,8 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
         )
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> torch.Tensor:
+    def forward(self, *args, **kwargs):
         r"""Runs a simulation step of the neuronal dynamics.
-
-        Returns:
-            torch.Tensor: if the corresponding neuron generated an action potential.
 
         Raises:
             NotImplementedError: ``forward`` must be implemented by the subclass.
@@ -169,10 +166,10 @@ class SynapseConstructor(Protocol):
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of synapses,
-            excluding the batch axis.
+            excluding the batch dim.
         step_time (float): length of a simulation time step, in :math:`ms`.
+        delay (float): maximum supported delay, in :math:`ms`.
         batch_size (int): size of the batch dimension.
-        delay (float | None): maximum supported delay, in :math:`ms`.
 
     Returns:
         Synapse: newly constructed synapse.
@@ -182,8 +179,8 @@ class SynapseConstructor(Protocol):
         self,
         shape: tuple[int, ...] | int,
         step_time: float,
+        delay: float,
         batch_size: int,
-        delay: float | None,
     ) -> Synapse:
         r"""Callback protocol function."""
         ...
@@ -194,18 +191,18 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of synapses,
-            excluding the batch axis.
+            excluding the batch dim.
         step_time (float): length of a simulation time step, in :math:`ms`.
-        batch_size (int): size of the batch dimension.
         delay (float): maximum supported delay, in :math:`ms`.
+        batch_size (int): size of the batch dimension.
     """
 
     def __init__(
         self,
         shape: tuple[int, ...] | int,
         step_time: float,
-        batch_size: int,
         delay: float,
+        batch_size: int,
     ):
         # superclass constructors
         HistoryModule.__init__(self, step_time, delay)
@@ -217,13 +214,15 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         r"""Returns a function with a common signature for synapse construction.
 
         Raises:
-            NotImplementedError: ``partialconstructor`` must be implemented by the subclass.
+            NotImplementedError: ``partialconstructor`` must be implemented
+                by the subclass.
 
         Returns:
            SynapseConstructor: partial constructor for synapses of a given class.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the method `partialconstructor`."
+            f"Synapse `{type(self).__name__}` must implement "
+            "the method `partialconstructor`."
         )
 
     @property
@@ -359,11 +358,8 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         )
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> torch.Tensor:
+    def forward(self, *args, **kwargs):
         r"""Runs a simulation step of the synaptic dynamics.
-
-        Returns:
-            torch.Tensor: synaptic currents after simulation step.
 
         Raises:
             NotImplementedError: ``forward`` must be implemented by the subclass.
@@ -374,7 +370,11 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
 
 
 class Connection(Module, ABC):
-    r"""Base class for representing a weighted connection between two groups of neurons."""
+    r"""Base class for representing a weighted connection between two groups of neurons.
+
+    Args:
+        synapse (Synapse): synapse used to generate currents from inputs.
+    """
 
     def __init__(
         self,
@@ -391,7 +391,7 @@ class Connection(Module, ABC):
         r"""Synapse registered with this connection.
 
         Args:
-            value (Synapse): replacement synapse for this connection.
+            value (Synapse): new synapse for this connection.
 
         Returns:
            Synapse: registered synapse.
@@ -413,62 +413,14 @@ class Connection(Module, ABC):
             int: current batch size.
 
         Note:
-            This calls the property :py:attr:`Synapse.bsize`, assuming the connection
-            itself does not use any batch size dependant tensors.
+            This calls the property :py:attr:`Synapse.bsize` on :py:attr:`synapse`,
+            assuming the connection has no batch size dependent state.
         """
         return self.synapse.bsize
 
     @bsize.setter
     def bsize(self, value: int):
         self.synapse.bsize = value
-
-    @property
-    @abstractmethod
-    def inshape(self) -> tuple[int]:
-        r"""Shape of inputs to the connection, excluding the batch dimension.
-
-        Returns:
-            tuple[int]: shape of inputs to the connection.
-
-        Raises:
-            NotImplementedError: ``inshape`` must be implemented by the subclass.
-        """
-        raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the getter for property `inshape`"
-        )
-
-    @property
-    @abstractmethod
-    def outshape(self) -> tuple[int]:
-        r"""Shape of outputs from the connection, excluding the batch dimension.
-
-        Returns:
-            tuple[int]: shape of outputs from the connection.
-
-        Raises:
-            NotImplementedError: ``outshape`` must be implemented by the subclass.
-        """
-        raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the getter for property `outshape`"
-        )
-
-    @cached_property
-    def insize(self) -> int:
-        r"""Number of inputs to the connection, excluding the batch dimension.
-
-        Returns:
-            int: number of inputs to the connection.
-        """
-        return math.prod(self.inshape)
-
-    @cached_property
-    def outsize(self) -> tuple[int]:
-        r"""Number of outputs from the connection, excluding the batch dimension.
-
-        Returns:
-            int: number of outputs from the connection.
-        """
-        return math.prod(self.outshape)
 
     @property
     def dt(self) -> float:
@@ -481,8 +433,8 @@ class Connection(Module, ABC):
             float: current length of the simulation time step.
 
         Note:
-            This calls the property :py:attr:`Synapse.dt`, assuming the
-            connection itself is not dependent on step time.
+            This calls the property :py:attr:`~ynapse.dt` on :py:attr:`synapse`,
+            assuming the connection has no step time dependent state.
         """
         return self.synapse.dt
 
@@ -491,74 +443,135 @@ class Connection(Module, ABC):
         self.synapse.dt = value
 
     @property
-    def biased(self) -> bool:
-        r"""If the connection has learnable biases.
+    @abstractmethod
+    def inshape(self) -> tuple[int, ...]:
+        r"""Shape of inputs to the connection, excluding the batch dimension.
 
         Returns:
-            bool: if the connection has learnable biases.
+            tuple[int]: shape of inputs to the connection.
+
+        Raises:
+            NotImplementedError: ``inshape`` must be implemented by the subclass.
         """
-        return self.bias is None
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement "
+            "the getter for property `inshape`."
+        )
 
     @property
-    def delayed(self) -> float:
-        r"""Maxmimum length of the learned delays, in milliseconds.
+    @abstractmethod
+    def outshape(self) -> tuple[int, ...]:
+        r"""Shape of outputs from the connection, excluding the batch dimension.
 
         Returns:
-            float: maxmimum length of the learned delays.
+            tuple[int]: shape of outputs from the connection.
 
-        Note:
-            This calls the property :py:attr:`Synapse.delay`.
+        Raises:
+            NotImplementedError: ``outshape`` must be implemented by the subclass.
         """
-        return self.synapse.delay
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement "
+            "the getter for property `outshape`"
+        )
+
+    @property
+    def binshape(self) -> tuple[int, ...]:
+        r"""Shape of inputs to the connection, including the batch dimension.
+
+        Returns:
+            tuple[int]: shape of inputs to the connection.
+        """
+        return (self.bsize,) + self.binshape
+
+    @property
+    def boutshape(self) -> tuple[int, ...]:
+        r"""Shape of outputs from the connection, including the batch dimension.
+
+        Returns:
+            tuple[int]: shape of outputs from the connection.
+        """
+        return (self.bsize,) + self.outshape
+
+    @cached_property
+    def insize(self) -> int:
+        r"""Number of inputs to the connection, excluding the batch dimension.
+
+        Returns:
+            int: number of inputs to the connection.
+
+        Caution:
+            This is a cached property based on :py:attr:`inshape`. When subclassing,
+            if the computed value for ``inshape`` is changed, ``insize`` must be
+            deleted to refresh the cache.
+        """
+        return math.prod(self.inshape)
+
+    @cached_property
+    def outsize(self) -> int:
+        r"""Number of outputs from the connection, excluding the batch dimension.
+
+        Returns:
+            int: number of outputs from the connection.
+
+        Caution:
+            This is a cached property based on :py:attr:`outshape`. When subclassing,
+            if the computed value for ``outshape`` is changed, ``outsize`` must be
+            deleted to refresh the cache.
+        """
+        return math.prod(self.outshape)
 
     @property
     @abstractmethod
     def weight(self) -> torch.Tensor:
-        r"""Learnable weights of the connection.
+        r"""Learnable connection weights.
 
         Args:
             value (torch.Tensor): new weights.
 
         Returns:
-            torch.Tensor: current weights.
+            torch.Tensor: present weights.
 
         Raises:
             NotImplementedError: ``weight`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the getter for property `weight`"
+            f"Connection `{type(self).__name__}` must implement "
+            "the getter for property `weight`."
         )
 
     @weight.setter
     @abstractmethod
     def weight(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the setter for property `weight`"
+            f"Connection `{type(self).__name__}` must implement "
+            "the setter for property `weight`."
         )
 
     @property
     @abstractmethod
     def bias(self) -> torch.Tensor | None:
-        r"""Learnable biases of the connection.
+        r"""Learnable connection biases.
 
         Args:
             value (torch.Tensor): new biases.
 
         Returns:
-            torch.Tensor | None: current biases, if the connection has any.
+            torch.Tensor | None: present biases, if any.
 
         Raises:
             NotImplementedError: ``bias`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the getter for property `bias`"
+            f"Connection `{type(self).__name__}` must implement "
+            "the getter for property `bias`."
         )
 
     @bias.setter
     @abstractmethod
     def bias(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the setter for property `bias`"
+            f"Connection `{type(self).__name__}` must implement "
+            "the setter for property `bias`."
         )
 
     @property
@@ -576,98 +589,230 @@ class Connection(Module, ABC):
             NotImplementedError: ``delay`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the getter for property `delay`"
+            f"Connection `{type(self).__name__}` must implement "
+            "the getter for property `delay`."
         )
 
     @delay.setter
     @abstractmethod
     def delay(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the setter for property `delay`"
-        )
-
-    @property
-    @abstractmethod
-    def syncurrent(self) -> torch.Tensor:
-        r"""Currents from the synapse at the time last used by the connection.
-
-        Returns:
-             torch.Tensor: delay-offset synaptic currents.
-
-        Raises:
-            NotImplementedError: ``syncurrent`` must be implemented by the subclass.
-        """
-        raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the getter for property `inshape`"
-        )
-
-    @property
-    @abstractmethod
-    def synspike(self) -> torch.Tensor:
-        r"""Spikes to the synapse at the time last used by the connection.
-
-        Returns:
-             torch.Tensor: delay-offset synaptic spikes.
-
-        Raises:
-            NotImplementedError: ``synspike`` must be implemented by the subclass.
-        """
-        raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the getter for property `inshape`"
+            f"Connection `{type(self).__name__}` must implement "
+            "the setter for property `delay`."
         )
 
     @property
     @abstractmethod
     def selector(self) -> torch.Tensor | None:
-        r"""Learned delays as a selector for history.
+        r"""Learned delays as a selector for synaptic currents and delays.
 
         Returns:
-             torch.Tensor | None: delay selector if one exists.
+            torch.Tensor | None: delay selector if the connection has learnable delays.
 
         Raises:
             NotImplementedError: ``selector`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the getter for property `selector`"
+            f"Connection `{type(self).__name__}` must implement "
+            "the getter for property `selector`."
         )
+
+    @property
+    def biased(self) -> bool:
+        r"""If the connection has learnable biases.
+
+        Returns:
+            bool: if the connection has learnable biases.
+        """
+        return self.bias is None
+
+    @property
+    def delayed(self) -> float | None:
+        r"""Maxmimum valid learned delay, in milliseconds.
+
+        Returns:
+            float: maxmimum valid learned delays.
+
+        Note:
+            This calls the property :py:attr:`Synapse.delay` on :py:attr:`synapse`
+            if the connections has delays, otherwise returns None.
+        """
+        if self.delay is not None:
+            return self.synapse.delay
+
+    @abstractmethod
+    def syncurrent(self) -> torch.Tensor:
+        r"""Currents from the synapse at the time last used by the connection.
+
+        Returns:
+            torch.Tensor: last used  synaptic currents.
+
+        Note:
+            If :py:attr:`delayed` is None, this should return the most recent synaptic
+            currents, otherwise it should return those indexed by :py:attr:`delay`.
+        """
+        if self.delayed:
+            return self.synapse.current_at(self.selector)
+        else:
+            return self.synapse.current
+
+    @property
+    def synspike(self) -> torch.Tensor:
+        r"""Spikes to the synapse at the time last used by the connection.
+
+        Returns:
+            torch.Tensor: delay-offset synaptic spikes.
+
+        Raises:
+            NotImplementedError: ``synspike`` must be implemented by the subclass.
+        """
+        if self.delayed:
+            return self.synapse.spike_at(self.selector)
+        else:
+            return self.synapse.spike
 
     def clear(self, **kwargs):
         r"""Resets the state of the connection.
 
         Note:
-            This calls the method :py:meth:`Synapse.clear`, assuming the connection
-            itself maintains no clearable state.
+            This calls the method :py:meth:`Synapse.clear` on :py:attr:`synapse`,
+            assuming the connection itself has no clearable state. Keyword arguments
+            are passed through.
         """
         self.synapse.clear(**kwargs)
 
-    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the synapse data for pre/post learning methods.
+    def like_input(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like synapse input to connection input.
 
         Args:
-            data (torch.Tensor): data shaped like ``syncurrent`` or ``synspike``.
+            data (torch.Tensor): data shaped like synapse input.
 
         Raises:
-            NotImplementedError: ``presyn_receptive`` must be implemented by the subclass.
+            NotImplementedError: ``like_input`` must be implemented by the subclass.
 
         Returns:
             torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            like :py:attr:`syncurrent` or :py:attr:`synspike`
+
+            ``return``:
+
+            :py:attr:`binshape`
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the method `presyn_receptive`"
+            f"Connection `{type(self).__name__}` must implement "
+            "the method `like_input`."
+        )
+
+    def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like connection input to synapse input.
+
+        Args:
+            data (torch.Tensor): data shaped like connection input.
+
+        Raises:
+            NotImplementedError: ``like_synaptic`` must be implemented by the subclass.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :py:attr:`binshape`
+
+            ``return``:
+
+            like :py:attr:`syncurrent` or :py:attr:`synspike`
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement "
+            "the method `like_synaptic`."
         )
 
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the output for pre/post learning methods.
+        r"""Reshapes data like the output for pre-post learning methods.
 
         Args:
             data (torch.Tensor): data shaped like connection output.
 
         Raises:
-            NotImplementedError: ``postsyn_receptive`` must be implemented by the subclass.
+            NotImplementedError: ``postsyn_receptive`` must be
+            implemented by the subclass.
 
         Returns:
             torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :py:attr:`boutshape`
+
+            ``return``:
+
+            :math:`B \times` `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_
+            with :py:attr:`weight` :math:`\times L`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`L` is a connection-dependent value.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the method `postsyn_receptive`"
+            f"Connection `{type(self).__name__}` must implement "
+            "the method `postsyn_receptive`."
+        )
+
+    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the synapse state for pre-post learning methods.
+
+        Args:
+            data (torch.Tensor): data shaped like :py:attr:`syncurrent`
+                or :py:attr:`synspike`.
+
+        Raises:
+            NotImplementedError: ``presyn_receptive`` must be
+            implemented by the subclass.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            like :py:attr:`syncurrent` or :py:attr:`synspike`
+
+            ``return``:
+
+            :math:`B \times` `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_
+            with :py:attr:`weight` :math:`\times L`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`L` is a connection-dependent value.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement "
+            "the method `presyn_receptive`."
+        )
+
+    @abstractmethod
+    def forward(self, *args, **kwargs):
+        r"""Runs a simulation step of the connection.
+
+        Raises:
+            NotImplementedError: ``forward`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Connection `{type(self).__name__}` must implement the method `forward`."
         )

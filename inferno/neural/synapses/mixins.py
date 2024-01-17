@@ -183,6 +183,7 @@ class DelayedSpikeCurrentMixin(SpikeCurrentMixin):
         interpolation: Interpolation,
         overbound: float | None,
     ) -> torch.Tensor:
+        """Internal, generalized selector function for spikes and currents."""
         # undelayed case
         if self.hsize == 1:
             # most recent current

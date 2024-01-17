@@ -84,4 +84,7 @@
     synapses.mixins.CurrentMixin
     synapses.mixins.SpikeCurrentMixin
     synapses.mixins.DelayedSpikeCurrentMixin
+    connections.mixins.WeightMixin
+    connections.mixins.WeightBiasMixin
+    connections.mixins.WeightBiasDelayMixin
 ```

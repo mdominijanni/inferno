@@ -30,9 +30,9 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
     Important:
         When ``derive_spikes`` is set the following behaviors are changed.
 
-        Inputs to :py:meth:`forward` will be assumed to be "current-like" input
-        (tensors of spikes will be treated as currents of 0 or 1 :math:`\mathrm{nA}`).
-        The keyword argument ``currents`` will therefore be ignored.
+        The first input to :py:meth:`forward` will be assumed to be "current-like"
+        input (tensors of spikes will be treated as currents of 0 or 1
+        :math:`\mathrm{nA}`). The second input will be ignored.
 
         The getter :py:attr:`spikes` will compute spikes as any nonzero currents,
         therefore if using a model with subthreshold currents, this will be invalid.
@@ -109,12 +109,12 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
                 for selectors between observations. Defaults to "nearest".
             interp_tol (float, optional): maximum difference in time from an observation
                 to treat as co-occurring, in :math:`\mathrm{ms}`. Defaults to 0.0.
-            derive_spikes (bool, optional): if inputs will represent currents and spikes,
-                with spikes derived therefrom. Defaults to True.
+            derive_spikes (bool, optional): if inputs will represent currents and
+                spikes, with spikes derived therefrom. Defaults to True.
             current_overbound (float | None, optional): value to replace currents out of
                 bounds, uses values at observation limits if None. Defaults to 0.0.
-            spike_overbound (bool | None, optional): value to replace spikes out of bounds,
-                uses values at observation limits if None. Defaults to False.
+            spike_overbound (bool | None, optional): value to replace spikes out of
+                bounds, uses values at observation limits if None. Defaults to False.
 
         Returns:
            SynapseConstructor: partial constructor for synapse.
@@ -123,8 +123,8 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
         def constructor(
             shape: tuple[int, ...] | int,
             step_time: float,
-            batch_size: int,
             delay: float,
+            batch_size: int,
         ):
             return cls(
                 shape=shape,
@@ -146,23 +146,28 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
         if not self.spikesderived:
             self.reset("spike_", False)
 
-    def forward(
-        self, inputs: torch.Tensor, currents: torch.Tensor | None = None, **kwargs
-    ) -> torch.Tensor:
+    def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Runs a simulation step of the synaptic dynamics.
 
         Args:
-            inputs (torch.Tensor): main input to the synapse, treated like spiking input.
-            currents (torch.Tensor | None, optional): input current if not equivalent to
-                input spikes, in :math:`\mathrm{nA}`. Defaults to None.
+            *inputs (torch.Tensor): inputs to the synapse.
 
         Returns:
             torch.Tensor: synaptic currents after simulation step.
+
+        Important:
+            ``*inputs`` can either be a single tensor representing the input current,
+            or it can be two tensors where the first is the spikes and the second is
+            an override for the currents. If :py:attr:`spikesderived`, then only the
+            first input is used. Otherwise both may be used, the first will be assigned
+            as the spikes, and the second, if specified, will be assigned to the
+            currents (if the second is not specified the first will be used for both).
+            Currents are in nanoamperes.
         """
         if self.spikesderived:
-            self.current = inputs
+            self.current = inputs[0]
         else:
-            self.current = currents if currents is not None else inputs
-            self.spike = inputs
+            self.current = inputs[0] if len(inputs) == 1 else inputs[1]
+            self.spike = inputs[0]
 
         return self.current

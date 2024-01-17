@@ -227,12 +227,12 @@
 <span class="sd">    Args:</span>
 <span class="sd">        batch_size (int): initial batch size.</span>
 
-<span class="sd">    Note:</span>
+<span class="sd">    Caution:</span>
 <span class="sd">        This must be added to a class which inherits from</span>
 <span class="sd">        :py:class:`DimensionalModule`, and the constructor for this</span>
 <span class="sd">        mixin must be called after the module constructor.</span>
 
-<span class="sd">    Note:</span>
+<span class="sd">    Caution:</span>
 <span class="sd">        Module which inherit from this mixin cannot be constrained on ``dim=0``.</span>
 <span class="sd">        Do not manually change this constraint, it is managed through :py:attr:`bsize`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -284,12 +284,12 @@
 <span class="sd">            excluding batch size.</span>
 <span class="sd">        batch_size (int): initial batch size.</span>
 
-<span class="sd">    Note:</span>
+<span class="sd">    Caution:</span>
 <span class="sd">        This must be added to a class which inherits from</span>
 <span class="sd">        :py:class:`DimensionalModule`, and the constructor for this</span>
 <span class="sd">        mixin must be called after the module constructor.</span>
 
-<span class="sd">    Note:</span>
+<span class="sd">    Caution:</span>
 <span class="sd">        Module which inherit from this mixin cannot be constrained on ``dim=0``.</span>
 <span class="sd">        Do not manually change this constraint, it is managed through :py:attr:`bsize`.</span>
 
@@ -344,7 +344,7 @@
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of elements in the module, excluding replication along the batch axis.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of elements in the module, excluding replication along the batch dim.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: number of elements in the module.</span>

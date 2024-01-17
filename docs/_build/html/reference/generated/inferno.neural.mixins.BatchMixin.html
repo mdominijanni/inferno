@@ -226,14 +226,14 @@
 <dd class="field-odd"><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – initial batch size.</p>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
 <p>This must be added to a class which inherits from
 <code class="xref py py-class docutils literal notranslate"><span class="pre">DimensionalModule</span></code>, and the constructor for this
 mixin must be called after the module constructor.</p>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
 <p>Module which inherit from this mixin cannot be constrained on <code class="docutils literal notranslate"><span class="pre">dim=0</span></code>.
 Do not manually change this constraint, it is managed through <a class="reference internal" href="#inferno.neural.mixins.BatchMixin.bsize" title="inferno.neural.mixins.BatchMixin.bsize"><code class="xref py py-attr docutils literal notranslate"><span class="pre">bsize</span></code></a>.</p>
 </div>

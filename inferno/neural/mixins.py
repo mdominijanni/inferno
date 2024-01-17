@@ -10,12 +10,12 @@ class BatchMixin:
     Args:
         batch_size (int): initial batch size.
 
-    Note:
+    Caution:
         This must be added to a class which inherits from
         :py:class:`DimensionalModule`, and the constructor for this
         mixin must be called after the module constructor.
 
-    Note:
+    Caution:
         Module which inherit from this mixin cannot be constrained on ``dim=0``.
         Do not manually change this constraint, it is managed through :py:attr:`bsize`.
     """
@@ -64,12 +64,12 @@ class ShapeMixin(BatchMixin):
             excluding batch size.
         batch_size (int): initial batch size.
 
-    Note:
+    Caution:
         This must be added to a class which inherits from
         :py:class:`DimensionalModule`, and the constructor for this
         mixin must be called after the module constructor.
 
-    Note:
+    Caution:
         Module which inherit from this mixin cannot be constrained on ``dim=0``.
         Do not manually change this constraint, it is managed through :py:attr:`bsize`.
 
@@ -124,7 +124,7 @@ class ShapeMixin(BatchMixin):
 
     @cached_property
     def count(self) -> int:
-        r"""Number of elements in the module, excluding replication along the batch axis.
+        r"""Number of elements in the module, excluding replication along the batch dim.
 
         Returns:
             int: number of elements in the module.

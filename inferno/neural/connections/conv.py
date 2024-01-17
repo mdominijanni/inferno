@@ -1,45 +1,70 @@
 import einops as ein
+from ..base import Connection, SynapseConstructor
+from ..base import Synapse  # noqa:F401
+from inferno._internal import numeric_limit
 from inferno.typing import OneToOne
 import math
 import torch
 import torch.nn.functional as F
-from .. import Connection, SynapseConstructor
-from ._mixins import WeightBiasDelayMixin
+from .mixins import WeightBiasDelayMixin
 
 
 class Conv2D(WeightBiasDelayMixin, Connection):
-    r"""Convolutional connection along two spatial dimensions.
+    r"""Convolutional connection along two spatial dimensions with separate input planes.
 
     Args:
-        height (int): height of the input tensor.
-        width (int): width of the input tensor.
+        height (int): height of the expected inputs.
+        width (int): width of the expected inputs.
         channels (int): number of channels in the input tensor.
-        filters (int): number of convolutional filters, channels of the output tensor.
+        filters (int): number of convolutional filters (channels of the output tensor).
         step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
         kernel (int | tuple[int, int]): size of the convolution kernel.
-        stride (int | tuple[int, int], optional): stride of the convolution. Defaults to 1.
-        padding (int | tuple[int, int], optional): amount of zero padding added to height and width. Defaults to 0.
-        dilation (int | tuple[int, int], optional): dilation of the convolution. Defaults to 1.
-        synapse (SynapseConstructor): partial constructor for inner :py:class:`~inferno.neural.Synapse`.
+        stride (int | tuple[int, int], optional): stride of the convolution.
+            Defaults to 1.
+        padding (int | tuple[int, int], optional): amount of zero padding added to
+            height and width. Defaults to 0.
+        dilation (int | tuple[int, int], optional): dilation of the convolution.
+            Defaults to 1.
+        synapse (SynapseConstructor): partial constructor for inner :py:class:`Synapse`.
+        bias (bool, optional): if the connection should support
+            learnable additive bias. Defaults to False.
+        delay (float | None, optional): maximum supported delay length, in
+            :math:`\mathrm{ms}`, excludes delays when None. Defaults to None.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
-        bias (bool, optional): if the connection should include learnable additive bias. Defaults to False.
-        delay (float | None, optional): length of time the connection should support delays for. Defaults to None.
-        weight_init (OneToOne | None, optional): initializer for weights. Defaults to None.
-        bias_init (OneToOne | None, optional): initializer for biases. Defaults to None.
-        delay_init (OneToOne | None, optional): initializer for delays. Defaults to None.
+        weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.
+            Defaults to None.
+        bias_init (OneToOne[torch.Tensor] | None, optional): initializer for biases.
+            Defaults to None.
+        delay_init (OneToOne[torch.Tensor] | None, optional): initializer for delays.
+            Defaults to None.
 
-    Raises:
-        ValueError: ``height`` must be positive.
-        ValueError: ``width`` must be positive.
-        ValueError: ``channels`` must be positive.
-        ValueError: ``filters`` must be positive.
-        ValueError: ``kernel`` must be a scalar or 2-tuple with positive values.
-        ValueError: ``stride`` must be a scalar or 2-tuple with positive values.
-        ValueError: ``padding`` must be a scalar or 2-tuple with non-negative values.
-        ValueError: ``dilation`` must be a scalar or 2-tuple with positive values.
-        ValueError: ``step_time`` must be positive.
-        ValueError: ``batch_size`` must be positive.
-        ValueError: ``delay`` must be non-negative if not None.
+    .. admonition:: Shape
+        :class: tensorshape
+
+        ``Conv2D.weight``, ``Conv2D.delay``:
+
+        :math:`F \times C \times H \times W`
+
+        ``Conv2D.bias``:
+
+        :math:`F`
+
+        Where:
+            * :math:`F` is the number of filters (output channels).
+            * :math:`C` is the number of input channels.
+            * :math:`kH` is the kernel height.
+            * :math:`kW` is the kernel width.
+
+    Note:
+        When ``delay`` is None, no ``delay_`` parameter is created and altering the
+        maximum delay of :py:attr:`synapse` will have no effect. Setting to 0 will
+        create and register a ``delay_`` parameter but not use delays unless it is
+        later changed.
+
+    Tip:
+        The added padding is applied after the synapse. Inputs must still be of uniform
+        size. Only zero padding is supported, if another type of padding is required,
+        it should be performed before being inputted to the connection.
     """
 
     def __init__(
@@ -55,116 +80,99 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         padding: int | tuple[int, int] = 0,
         dilation: int | tuple[int, int] = 1,
         synapse: SynapseConstructor,
-        batch_size: int = 1,
         bias: bool = False,
         delay: float | None = None,
-        weight_init: OneToOne | None = None,
-        bias_init: OneToOne | None = None,
-        delay_init: OneToOne | None = None,
+        batch_size: int = 1,
+        weight_init: OneToOne[torch.Tensor] | None = None,
+        bias_init: OneToOne[torch.Tensor] | None = None,
+        delay_init: OneToOne[torch.Tensor] | None = None,
     ):
-        # check variables and cast accordingly
-        # shape variables
-        height = int(height)
-        if height < 1:
-            raise ValueError(f"height must be positive, received {height}.")
+        # connection attributes
+        self.height = numeric_limit("`height`", height, 0, "gt", int)
+        self.width = numeric_limit("`width`", width, 0, "gt", int)
+        self.channels = numeric_limit("`channels`", channels, 0, "gt", int)
+        self.filters = numeric_limit("`filters`", filters, 0, "gt", int)
 
-        width = int(width)
-        if width < 1:
-            raise ValueError(f"width must be positive, received {width}.")
-
-        channels = int(channels)
-        if channels < 1:
+        try:
+            self.kernel = (
+                numeric_limit("`kernel[0]`", kernel[0], 0, "gt", int),
+                numeric_limit("`kernel[1]`", kernel[1], 0, "gt", int),
+            )
+        except TypeError:
+            self.kernel = (
+                numeric_limit("`kernel`", kernel, 0, "gt", int),
+                numeric_limit(int(kernel)),
+            )
+        except IndexError:
             raise ValueError(
-                f"number of channels must be positive, received {channels}."
+                "nonscalar `kernel` must be of length 2, is of "
+                f"length {len(kernel)}."
             )
 
-        filters = int(filters)
-        if filters < 1:
-            raise ValueError(f"number of filters must be positive, received {filters}.")
-
-        # kernel variables
         try:
-            kernel = (int(kernel), int(kernel))
-            if kernel[0] < 1:
-                raise ValueError(f"kernel size must be positive, received {kernel[0]}.")
+            self.stride = (
+                numeric_limit("`stride[0]`", stride[0], 0, "gt", int),
+                numeric_limit("`stride[1]`", stride[1], 0, "gt", int),
+            )
         except TypeError:
-            if len(kernel) != 2:
-                raise ValueError(
-                    f"non-scalar kernel size must be a 2-tuple, received a {len(kernel)}-tuple."
-                )
-            kernel = tuple(int(v) for v in kernel)
-            if kernel[0] < 1 or kernel[1] < 1:
-                raise ValueError(f"kernel size must be positive, received {kernel}.")
+            self.stride = (
+                numeric_limit("`stride`", stride, 0, "gt", int),
+                numeric_limit(int(stride)),
+            )
+        except IndexError:
+            raise ValueError(
+                "nonscalar `stride` must be of length 2, is of "
+                f"length {len(stride)}."
+            )
 
         try:
-            stride = (int(stride), int(stride))
-            if stride[0] < 1:
-                raise ValueError(f"stride must be positive, received {stride[0]}.")
+            self.padding = (
+                numeric_limit("`padding[0]`", padding[0], 0, "gte", int),
+                numeric_limit("`padding[1]`", padding[1], 0, "gte", int),
+            )
         except TypeError:
-            if len(stride) != 2:
-                raise ValueError(
-                    f"non-scalar stride must be a 2-tuple, received a {len(stride)}-tuple."
-                )
-            stride = tuple(int(v) for v in stride)
-            if stride[0] < 1 or stride[1] < 1:
-                raise ValueError(f"stride must be positive, received {stride}.")
+            self.padding = (
+                numeric_limit("`padding`", padding, 0, "gte", int),
+                numeric_limit(int(padding)),
+            )
+        except IndexError:
+            raise ValueError(
+                "nonscalar `padding` must be of length 2, is of "
+                f"length {len(padding)}."
+            )
 
         try:
-            padding = (int(padding), int(padding))
-            if padding[0] < 0:
-                raise ValueError(f"stride must be non-negative, received {padding[0]}.")
+            self.dilation = (
+                numeric_limit("`dilation[0]`", dilation[0], 0, "gt", int),
+                numeric_limit("`dilation[1]`", dilation[1], 0, "gt", int),
+            )
         except TypeError:
-            if len(padding) != 2:
-                raise ValueError(
-                    f"non-scalar padding must be a 2-tuple, received a {len(padding)}-tuple."
-                )
-            padding = tuple(int(v) for v in padding)
-            if padding[0] < 0 or padding[1] < 0:
-                raise ValueError(f"padding must be non-negative, received {padding}.")
+            self.dilation = (
+                numeric_limit("`dilation`", dilation, 0, "gt", int),
+                numeric_limit(int(dilation)),
+            )
+        except IndexError:
+            raise ValueError(
+                "nonscalar `dilation` must be of length 2, is of "
+                f"length {len(dilation)}."
+            )
 
-        try:
-            dilation = (int(dilation), int(dilation))
-            if dilation[0] < 1:
-                raise ValueError(f"dilation must be positive, received {dilation[0]}.")
-        except TypeError:
-            if len(dilation) != 2:
-                raise ValueError(
-                    f"non-scalar dilation must be a 2-tuple, received a {len(dilation)}-tuple."
-                )
-            dilation = tuple(int(v) for v in dilation)
-            if dilation[0] < 1 or dilation[1] < 1:
-                raise ValueError(f"dilation must be positive, received {dilation}.")
-
-        # other variables
-        step_time = float(step_time)
-        if step_time <= 0:
-            raise ValueError(f"step time must be positive, received {step_time}.")
-
-        batch_size = int(batch_size)
-        if batch_size < 1:
-            raise ValueError(f"batch size must be positive, received {batch_size}.")
-
-        delay = None if delay is None else float(delay)
-        if delay is not None and delay <= 0:
-            raise ValueError(f"delay, if not none, must be positive, received {delay}.")
-
-        out_height, out_width = (
+        self.outheight, self.outwidth = (
             math.floor(
-                (size + 2 * padding[hw] - dilation[hw] * (kernel[hw] - 1) - 1)
-                / stride[hw]
+                (size + 2 * padding[d] - dilation[d] * (kernel[d] - 1) - 1) / stride[d]
                 + 1
             )
-            for hw, size in enumerate((height, width))
+            for d, size in enumerate((self.height, self.width))
         )
 
         # call superclass constructor
         Connection.__init__(
             self,
             synapse=synapse(
-                (channels * math.prod(kernel), out_height * out_width),
-                float(step_time),
-                int(batch_size),
-                None if not delay else delay,
+                (channels * math.prod(kernel), self.outheight * self.outwidth),
+                step_time,
+                0.0 if delay is None else delay,
+                batch_size,
             ),
         )
 
@@ -172,26 +180,9 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         WeightBiasDelayMixin.__init__(
             weight=torch.rand(filters, channels, *kernel),
             bias=(None if not bias else torch.rand(filters)),
-            delay=(None if not bias else torch.zeros(filters, channels, *kernel)),
+            delay=(None if delay is None else torch.zeros(filters, channels, *kernel)),
             requires_grad=False,
         )
-
-        # convolution properties
-        # kernel
-        self.kernel = kernel
-        self.stride = stride
-        self.padding = padding
-        self.dilation = dilation
-
-        # input
-        self.channels = channels
-        self.in_height = height
-        self.in_width = width
-
-        # output
-        self.filters = filters
-        self.out_height = out_height
-        self.out_width = out_width
 
         # initialize parameters
         if weight_init:
@@ -203,9 +194,128 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         if delay_init and delay:
             self.delay = delay_init(self.delay)
 
-    def _unfold_input(self, inputs: torch.Tensor) -> torch.Tensor:
+    @property
+    def inshape(self) -> tuple[int, int, int]:
+        r"""Shape of inputs to the connection, excluding the batch dimension.
+
+        Returns:
+            tuple[int]: shape of inputs to the connection.
+
+        Raises:
+            NotImplementedError: ``inshape`` must be implemented by the subclass.
+        """
+        return (self.channels, self.height, self.width)
+
+    @property
+    def outshape(self) -> tuple[int, int, int]:
+        return (self.filters, self.outheight, self.outwidth)
+
+    @property
+    def selector(self) -> torch.Tensor | None:
+        r"""Learned delays as a selector for synaptic currents and delays.
+
+        Returns:
+            torch.Tensor | None: delay selector if the connection has learnable delays.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}
+            \cdot W_\mathrm{out}) \times F`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`C` is the number of input channels.
+                * :math:`kH` is the kernel height.
+                * :math:`kW` is the kernel width.
+                * :math:`H_\mathrm{out}` is the output height.
+                * :math:`W_\mathrm{out}` is the output width.
+                * :math:`F` is the number of filters (output channels).
+        """
+        return ein.rearrange(self.delay, "f c h w -> 1 (c h w) 1 f").expand(
+            self.bsize, -1, self.synapse.shape[-1], -1
+        )
+
+    def like_input(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like synapse input to connection input.
+
+        Args:
+            data (torch.Tensor): data shaped like synapse input.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}
+            \cdot W_\mathrm{out})`
+
+            ``return``:
+
+            :math:`B \times C \times H \times W`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`C` is the number of input channels.
+                * :math:`kH` is the kernel height.
+                * :math:`kW` is the kernel width.
+                * :math:`H_\mathrm{out}` is the output height.
+                * :math:`W_\mathrm{out}` is the output width.
+                * :math:`H` is the input height.
+                * :math:`W` is the input width.
+        """
+        return F.fold(
+            data,
+            (self.outheight, self.outwidth),
+            self.kernel,
+            dilation=self.dilation,
+            padding=self.padding,
+            stride=self.stride,
+        ) / F.fold(
+            torch.ones_like(data),
+            (self.outheight, self.outwidth),
+            self.kernel,
+            dilation=self.dilation,
+            padding=self.padding,
+            stride=self.stride,
+        )
+
+    def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like connection input to synapse input.
+
+        Args:
+            data (torch.Tensor): data shaped like connection input.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times C \times H \times W`
+
+            ``return``:
+
+            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}
+            \cdot W_\mathrm{out})`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`C` is the number of input channels.
+                * :math:`H` is the input height.
+                * :math:`W` is the input width.
+                * :math:`kH` is the kernel height.
+                * :math:`kW` is the kernel width.
+                * :math:`H_\mathrm{out}` is the output height.
+                * :math:`W_\mathrm{out}` is the output width.
+        """
         return F.unfold(
-            inputs,
+            data,
             self.kernel,
             dilation=self.dilation,
             padding=self.padding,
@@ -213,31 +323,45 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         )
 
     def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the synapse data for pre/post learning methods.
+        r"""Reshapes data like the synapse state for pre-post learning methods.
 
         Args:
-            data (torch.Tensor): data to reshape.
+            data (torch.Tensor): data shaped like :py:attr:`syncurrent`
+                or :py:attr:`synspike`.
+
+        Raises:
+            NotImplementedError: ``presyn_receptive`` must be
+            implemented by the subclass.
 
         Returns:
             torch.Tensor: reshaped data.
 
-         Shape:
-            Input: :math:`B \times N \times L \times [F]`
+        .. admonition:: Shape
+            :class: tensorshape
 
-            Output:
-            :math:`B \times 1 \times N \times L` or :math:`B \times F \times N \times L`
+            ``data``:
 
-            Where :math:`N = C \cdot kH \ cdot kW` and
-            :math:`L = H_\mathrm{out} \cdot W_\mathrm{out}`.
-            Here, math:`F` is the number of filters (output channels),
-            :math:`kH` is the height of the kernel, :math:`kW` is the width of the kernel,
-            :math:`H_\mathrm{out}` is the height of the output,
-            and :math:`W_\mathrm{out}` is the width of the output.
+            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}
+            \cdot W_\mathrm{out}) \times [F]`
 
-        Note:
-            The inputs to this method are shaped like
-            the `unfolded <https://pytorch.org/docs/stable/generated/torch.nn.Unfold.html>`_
-            inputs to the connection.
+            ``return``:
+
+            :math:`B \times F \times C \times kH \times kW \times
+            (H_\mathrm{out} \cdot W_\mathrm{out})`
+
+            or
+
+            :math:`B \times 1 \times C \times kH \times kW \times
+            (H_\mathrm{out} \cdot W_\mathrm{out})`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`C` is the number of input channels.
+                * :math:`kH` is the kernel height.
+                * :math:`kW` is the kernel width.
+                * :math:`H_\mathrm{out}` is the output height.
+                * :math:`W_\mathrm{out}` is the output width.
+                * :math:`F` is the number of filters (output channels).
         """
         match data.ndim:
             case 4:
@@ -258,52 +382,71 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 )
             case _:
                 raise RuntimeError(
-                    f"data with invalid number of dimensions {data.ndim} received."
+                    f"`data` must have 3 or 4 dimensions, has {data.ndim} dimensions."
                 )
 
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the output for pre/post learning methods.
+        r"""Reshapes data like the output for pre-post learning methods.
 
         Args:
-            data (torch.Tensor): data to reshape.
+            data (torch.Tensor): data shaped like connection output.
+
+        Raises:
+            NotImplementedError: ``postsyn_receptive`` must be
+            implemented by the subclass.
 
         Returns:
             torch.Tensor: reshaped data.
 
-         Shape:
-            Input:
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
             :math:`B \times F \times H_\mathrm{out} \times W_\mathrm{out}`
 
-            Output:
-            :math:`B \times F \times 1 \times L`
+            ``return``:
 
-            Where :math:`L = H_\mathrm{out} \cdot W_\mathrm{out}`.
-            Here, :math:`F` is the number of filters (output channels), :math:`H_\mathrm{out}`
-            is the height of the output, and :math:`W_\mathrm{out}` is the width of the output.
+            :math:`B \times F \times 1 \times 1 \times 1 \times
+            (H_\mathrm{out} \cdot W_\mathrm{out})`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`F` is the number of filters (output channels).
+                * :math:`H_\mathrm{out}` is the output height.
+                * :math:`W_\mathrm{out}` is the output width.
         """
         return ein.rearrange(data, "b f oh ow -> b f 1 1 1 (oh ow)")
 
-    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
+    def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
-        Outputs are determined as the learned two-dimensional convolution applied to synaptic
-        currents, after new input is applied to the synapse.
+        Outputs are determined as the learned two-dimensional convolution applied to
+        synaptic currents, after new input is applied to the synapse.
 
         Args:
-            inputs (torch.Tensor): inputs to the connection.
+            *inputs (torch.Tensor): inputs to the connection.
 
         Returns:
             torch.Tensor: outputs from the connection.
 
         Note:
-            Keyword arguments are passed to :py:class:`~inferno.neural.Synapse`
-            :py:meth:`~inferno.neural.Synapse.forward` call.
-        """
-        if self.delayed:
-            _ = self.synapse(self._unfold_input(inputs), **kwargs)
+            ``*inputs`` can either be a single tensor representing the input current,
+            or it can be two tensors where the first is the spikes and the second is
+            an override for the currents. See documentation for the corresponding
+            :py:meth:`Synapse.forward` method for details.
 
+        Note:
+            Keyword arguments are passed to :py:meth:`Synapse.forward`.
+        """
+        # reshape inputs and perform synapse simulation
+        data = self.synapse(
+            *(self.like_synaptic(inp) for inp in inputs), **kwargs
+        )  # B N L
+
+        if self.delayed:
             data = ein.rearrange(self.syncurrent, "b n l f -> b f n l")
-            kernel = ein.rearrange(self.weight, "f c h w -> f 1 (c h w)")
+            kernel = ein.rearrange(self.weight, "f c h w -> f 1 (c h w)")  # F 1 L
 
             res = ein.rearrange(
                 torch.matmul(kernel, data),
@@ -312,8 +455,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 ow=self.outshape[1],
             )
         else:
-            data = self.synapse(inputs, **kwargs)  # B N L
-            kernel = ein.rearrange(self.weight, "f c h w -> f (c h w)")
+            kernel = ein.rearrange(self.weight, "f c h w -> f (c h w)")  # F L
 
             res = ein.rearrange(
                 torch.matmul(kernel, data),
@@ -326,46 +468,3 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             return res + ein.rearrange(self.bias, "f -> 1 f 1 1")
         else:
             return res
-
-    @property
-    def syncurrent(self) -> torch.Tensor:
-        r"""Currents from the synapse at the time last used by the connection.
-
-        Returns:
-             torch.Tensor: delay-offset synaptic currents.
-        """
-        if self.delayed:
-            return self.synapse.current_at(self.selector)
-        else:
-            return self.synapse.current
-
-    @property
-    def synspike(self) -> torch.Tensor:
-        r"""Spikes to the synapse at the time last used by the connection.
-
-        Returns:
-             torch.Tensor: delay-offset synaptic spikes.
-        """
-        if self.delayed:
-            return self.synapse.spike_at(self.selector)
-        else:
-            return self.synapse.spike
-
-    @property
-    def selector(self) -> torch.Tensor | None:
-        r"""Learned delays as a selector for history.
-
-        Returns:
-             torch.Tensor | None: delay selector if one exists.
-        """
-        return ein.rearrange(self.delay, "f c h w -> 1 (c h w) 1 f").expand(
-            self.bsize, -1, self.synapse.shape[-1], -1
-        )
-
-    @property
-    def inshape(self) -> tuple[int, int, int]:
-        return (self.channels, self.in_height, self.in_width)
-
-    @property
-    def outshape(self) -> tuple[int, int, int]:
-        return (self.filters, self.out_height, self.out_width)

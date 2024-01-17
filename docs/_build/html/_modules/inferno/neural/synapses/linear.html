@@ -247,9 +247,9 @@
 <span class="sd">    Important:</span>
 <span class="sd">        When ``derive_spikes`` is set the following behaviors are changed.</span>
 
-<span class="sd">        Inputs to :py:meth:`forward` will be assumed to be &quot;current-like&quot; input</span>
-<span class="sd">        (tensors of spikes will be treated as currents of 0 or 1 :math:`\mathrm{nA}`).</span>
-<span class="sd">        The keyword argument ``currents`` will therefore be ignored.</span>
+<span class="sd">        The first input to :py:meth:`forward` will be assumed to be &quot;current-like&quot;</span>
+<span class="sd">        input (tensors of spikes will be treated as currents of 0 or 1</span>
+<span class="sd">        :math:`\mathrm{nA}`). The second input will be ignored.</span>
 
 <span class="sd">        The getter :py:attr:`spikes` will compute spikes as any nonzero currents,</span>
 <span class="sd">        therefore if using a model with subthreshold currents, this will be invalid.</span>
@@ -328,12 +328,12 @@
 <span class="sd">                for selectors between observations. Defaults to &quot;nearest&quot;.</span>
 <span class="sd">            interp_tol (float, optional): maximum difference in time from an observation</span>
 <span class="sd">                to treat as co-occurring, in :math:`\mathrm{ms}`. Defaults to 0.0.</span>
-<span class="sd">            derive_spikes (bool, optional): if inputs will represent currents and spikes,</span>
-<span class="sd">                with spikes derived therefrom. Defaults to True.</span>
+<span class="sd">            derive_spikes (bool, optional): if inputs will represent currents and</span>
+<span class="sd">                spikes, with spikes derived therefrom. Defaults to True.</span>
 <span class="sd">            current_overbound (float | None, optional): value to replace currents out of</span>
 <span class="sd">                bounds, uses values at observation limits if None. Defaults to 0.0.</span>
-<span class="sd">            spike_overbound (bool | None, optional): value to replace spikes out of bounds,</span>
-<span class="sd">                uses values at observation limits if None. Defaults to False.</span>
+<span class="sd">            spike_overbound (bool | None, optional): value to replace spikes out of</span>
+<span class="sd">                bounds, uses values at observation limits if None. Defaults to False.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">           SynapseConstructor: partial constructor for synapse.</span>
@@ -342,8 +342,8 @@
         <span class="k">def</span> <span class="nf">constructor</span><span class="p">(</span>
             <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-            <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="p">):</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
                 <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
@@ -371,24 +371,29 @@
 
 <div class="viewcode-block" id="PassthroughSynapse.forward">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">currents</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the synaptic dynamics.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            inputs (torch.Tensor): main input to the synapse, treated like spiking input.</span>
-<span class="sd">            currents (torch.Tensor | None, optional): input current if not equivalent to</span>
-<span class="sd">                input spikes, in :math:`\mathrm{nA}`. Defaults to None.</span>
+<span class="sd">            *inputs (torch.Tensor): inputs to the synapse.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: synaptic currents after simulation step.</span>
+
+<span class="sd">        Important:</span>
+<span class="sd">            ``*inputs`` can either be a single tensor representing the input current,</span>
+<span class="sd">            or it can be two tensors where the first is the spikes and the second is</span>
+<span class="sd">            an override for the currents. If :py:attr:`spikesderived`, then only the</span>
+<span class="sd">            first input is used. Otherwise both may be used, the first will be assigned</span>
+<span class="sd">            as the spikes, and the second, if specified, will be assigned to the</span>
+<span class="sd">            currents (if the second is not specified the first will be used for both).</span>
+<span class="sd">            Currents are in nanoamperes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spikesderived</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="n">inputs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="n">currents</span> <span class="k">if</span> <span class="n">currents</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">inputs</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">spike</span> <span class="o">=</span> <span class="n">inputs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spike</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current</span></div>
 </div>

@@ -230,7 +230,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of neurons,</span>
-<span class="sd">            excluding the batch axis.</span>
+<span class="sd">            excluding the batch dim.</span>
 <span class="sd">        batch_size (int): initial batch size.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -372,11 +372,8 @@
 <div class="viewcode-block" id="Neuron.forward">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.forward">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the neuronal dynamics.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
@@ -395,10 +392,10 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of synapses,</span>
-<span class="sd">            excluding the batch axis.</span>
+<span class="sd">            excluding the batch dim.</span>
 <span class="sd">        step_time (float): length of a simulation time step, in :math:`ms`.</span>
+<span class="sd">        delay (float): maximum supported delay, in :math:`ms`.</span>
 <span class="sd">        batch_size (int): size of the batch dimension.</span>
-<span class="sd">        delay (float | None): maximum supported delay, in :math:`ms`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Synapse: newly constructed synapse.</span>
@@ -408,8 +405,8 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Synapse</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Callback protocol function.&quot;&quot;&quot;</span>
         <span class="o">...</span></div>
@@ -423,18 +420,18 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of synapses,</span>
-<span class="sd">            excluding the batch axis.</span>
+<span class="sd">            excluding the batch dim.</span>
 <span class="sd">        step_time (float): length of a simulation time step, in :math:`ms`.</span>
-<span class="sd">        batch_size (int): size of the batch dimension.</span>
 <span class="sd">        delay (float): maximum supported delay, in :math:`ms`.</span>
+<span class="sd">        batch_size (int): size of the batch dimension.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># superclass constructors</span>
         <span class="n">HistoryModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
@@ -448,13 +445,15 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for synapse construction.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``partialconstructor`` must be implemented by the subclass.</span>
+<span class="sd">            NotImplementedError: ``partialconstructor`` must be implemented</span>
+<span class="sd">                by the subclass.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">           SynapseConstructor: partial constructor for synapses of a given class.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `partialconstructor`.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Synapse `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the method `partialconstructor`.&quot;</span>
         <span class="p">)</span></div>
 
 
@@ -602,11 +601,8 @@
 <div class="viewcode-block" id="Synapse.forward">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.forward">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the synaptic dynamics.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: synaptic currents after simulation step.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
@@ -621,7 +617,11 @@
 <div class="viewcode-block" id="Connection">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection">[docs]</a>
 <span class="k">class</span> <span class="nc">Connection</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing a weighted connection between two groups of neurons.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing a weighted connection between two groups of neurons.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        synapse (Synapse): synapse used to generate currents from inputs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -638,7 +638,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Synapse registered with this connection.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (Synapse): replacement synapse for this connection.</span>
+<span class="sd">            value (Synapse): new synapse for this connection.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">           Synapse: registered synapse.</span>
@@ -660,62 +660,14 @@
 <span class="sd">            int: current batch size.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This calls the property :py:attr:`Synapse.bsize`, assuming the connection</span>
-<span class="sd">            itself does not use any batch size dependant tensors.</span>
+<span class="sd">            This calls the property :py:attr:`Synapse.bsize` on :py:attr:`synapse`,</span>
+<span class="sd">            assuming the connection has no batch size dependent state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">bsize</span>
 
     <span class="nd">@bsize</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">bsize</span> <span class="o">=</span> <span class="n">value</span>
-
-    <span class="nd">@property</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            tuple[int]: shape of inputs to the connection.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``inshape`` must be implemented by the subclass.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `inshape`&quot;</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            tuple[int]: shape of outputs from the connection.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``outshape`` must be implemented by the subclass.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `outshape`&quot;</span>
-        <span class="p">)</span>
-
-    <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">insize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of inputs to the connection, excluding the batch dimension.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            int: number of inputs to the connection.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inshape</span><span class="p">)</span>
-
-    <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">outsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of outputs from the connection, excluding the batch dimension.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            int: number of outputs from the connection.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -728,8 +680,8 @@
 <span class="sd">            float: current length of the simulation time step.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This calls the property :py:attr:`Synapse.dt`, assuming the</span>
-<span class="sd">            connection itself is not dependent on step time.</span>
+<span class="sd">            This calls the property :py:attr:`~ynapse.dt` on :py:attr:`synapse`,</span>
+<span class="sd">            assuming the connection has no step time dependent state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">dt</span>
 
@@ -738,74 +690,135 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">biased</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;If the connection has learnable biases.</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            bool: if the connection has learnable biases.</span>
+<span class="sd">            tuple[int]: shape of inputs to the connection.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``inshape`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the getter for property `inshape`.&quot;</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">delayed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maxmimum length of the learned delays, in milliseconds.</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            float: maxmimum length of the learned delays.</span>
+<span class="sd">            tuple[int]: shape of outputs from the connection.</span>
 
-<span class="sd">        Note:</span>
-<span class="sd">            This calls the property :py:attr:`Synapse.delay`.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``outshape`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">delay</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the getter for property `outshape`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">binshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, including the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int]: shape of inputs to the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">binshape</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">boutshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, including the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int]: shape of outputs from the connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">outshape</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">insize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of inputs to the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: number of inputs to the connection.</span>
+
+<span class="sd">        Caution:</span>
+<span class="sd">            This is a cached property based on :py:attr:`inshape`. When subclassing,</span>
+<span class="sd">            if the computed value for ``inshape`` is changed, ``insize`` must be</span>
+<span class="sd">            deleted to refresh the cache.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inshape</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">outsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of outputs from the connection, excluding the batch dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: number of outputs from the connection.</span>
+
+<span class="sd">        Caution:</span>
+<span class="sd">            This is a cached property based on :py:attr:`outshape`. When subclassing,</span>
+<span class="sd">            if the computed value for ``outshape`` is changed, ``outsize`` must be</span>
+<span class="sd">            deleted to refresh the cache.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable weights of the connection.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable connection weights.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new weights.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: current weights.</span>
+<span class="sd">            torch.Tensor: present weights.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``weight`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `weight`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the getter for property `weight`.&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@weight</span><span class="o">.</span><span class="n">setter</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `weight`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the setter for property `weight`.&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable biases of the connection.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable connection biases.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new biases.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor | None: current biases, if the connection has any.</span>
+<span class="sd">            torch.Tensor | None: present biases, if any.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``bias`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `bias`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the getter for property `bias`.&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@bias</span><span class="o">.</span><span class="n">setter</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `bias`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the setter for property `bias`.&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -823,60 +836,90 @@
 <span class="sd">            NotImplementedError: ``delay`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `delay`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the getter for property `delay`.&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@delay</span><span class="o">.</span><span class="n">setter</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the setter for property `delay`&quot;</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">syncurrent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents from the synapse at the time last used by the connection.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">             torch.Tensor: delay-offset synaptic currents.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``syncurrent`` must be implemented by the subclass.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `inshape`&quot;</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">synspike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes to the synapse at the time last used by the connection.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">             torch.Tensor: delay-offset synaptic spikes.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``synspike`` must be implemented by the subclass.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `inshape`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the setter for property `delay`.&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">selector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learned delays as a selector for history.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learned delays as a selector for synaptic currents and delays.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">             torch.Tensor | None: delay selector if one exists.</span>
+<span class="sd">            torch.Tensor | None: delay selector if the connection has learnable delays.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``selector`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the getter for property `selector`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the getter for property `selector`.&quot;</span>
         <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">biased</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;If the connection has learnable biases.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the connection has learnable biases.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">delayed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maxmimum valid learned delay, in milliseconds.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: maxmimum valid learned delays.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This calls the property :py:attr:`Synapse.delay` on :py:attr:`synapse`</span>
+<span class="sd">            if the connections has delays, otherwise returns None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">delay</span>
+
+<div class="viewcode-block" id="Connection.syncurrent">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.syncurrent">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">syncurrent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents from the synapse at the time last used by the connection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: last used  synaptic currents.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            If :py:attr:`delayed` is None, this should return the most recent synaptic</span>
+<span class="sd">            currents, otherwise it should return those indexed by :py:attr:`delay`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">current_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selector</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">current</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">synspike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes to the synapse at the time last used by the connection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: delay-offset synaptic spikes.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``synspike`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">spike_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selector</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">spike</span>
 
 <div class="viewcode-block" id="Connection.clear">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.clear">[docs]</a>
@@ -884,47 +927,161 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets the state of the connection.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This calls the method :py:meth:`Synapse.clear`, assuming the connection</span>
-<span class="sd">            itself maintains no clearable state.</span>
+<span class="sd">            This calls the method :py:meth:`Synapse.clear` on :py:attr:`synapse`,</span>
+<span class="sd">            assuming the connection itself has no clearable state. Keyword arguments</span>
+<span class="sd">            are passed through.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Connection.presyn_receptive">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.presyn_receptive">[docs]</a>
-    <span class="k">def</span> <span class="nf">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse data for pre/post learning methods.</span>
+<div class="viewcode-block" id="Connection.like_input">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.like_input">[docs]</a>
+    <span class="k">def</span> <span class="nf">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like synapse input to connection input.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data (torch.Tensor): data shaped like ``syncurrent`` or ``synspike``.</span>
+<span class="sd">            data (torch.Tensor): data shaped like synapse input.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``presyn_receptive`` must be implemented by the subclass.</span>
+<span class="sd">            NotImplementedError: ``like_input`` must be implemented by the subclass.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: reshaped data.</span>
+
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
+
+<span class="sd">            ``data``:</span>
+
+<span class="sd">            like :py:attr:`syncurrent` or :py:attr:`synspike`</span>
+
+<span class="sd">            ``return``:</span>
+
+<span class="sd">            :py:attr:`binshape`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `presyn_receptive`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the method `like_input`.&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Connection.like_synaptic">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.like_synaptic">[docs]</a>
+    <span class="k">def</span> <span class="nf">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection input to synapse input.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (torch.Tensor): data shaped like connection input.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``like_synaptic`` must be implemented by the subclass.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: reshaped data.</span>
+
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
+
+<span class="sd">            ``data``:</span>
+
+<span class="sd">            :py:attr:`binshape`</span>
+
+<span class="sd">            ``return``:</span>
+
+<span class="sd">            like :py:attr:`syncurrent` or :py:attr:`synspike`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the method `like_synaptic`.&quot;</span>
         <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Connection.postsyn_receptive">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.postsyn_receptive">[docs]</a>
     <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the output for pre/post learning methods.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the output for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like connection output.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``postsyn_receptive`` must be implemented by the subclass.</span>
+<span class="sd">            NotImplementedError: ``postsyn_receptive`` must be</span>
+<span class="sd">            implemented by the subclass.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: reshaped data.</span>
+
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
+
+<span class="sd">            ``data``:</span>
+
+<span class="sd">            :py:attr:`boutshape`</span>
+
+<span class="sd">            ``return``:</span>
+
+<span class="sd">            :math:`B \times` `broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_</span>
+<span class="sd">            with :py:attr:`weight` :math:`\times L`</span>
+
+<span class="sd">            Where:</span>
+<span class="sd">                * :math:`B` is the batch size.</span>
+<span class="sd">                * :math:`L` is a connection-dependent value.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `postsyn_receptive`&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the method `postsyn_receptive`.&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Connection.presyn_receptive">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.presyn_receptive">[docs]</a>
+    <span class="k">def</span> <span class="nf">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (torch.Tensor): data shaped like :py:attr:`syncurrent`</span>
+<span class="sd">                or :py:attr:`synspike`.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``presyn_receptive`` must be</span>
+<span class="sd">            implemented by the subclass.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: reshaped data.</span>
+
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
+
+<span class="sd">            ``data``:</span>
+
+<span class="sd">            like :py:attr:`syncurrent` or :py:attr:`synspike`</span>
+
+<span class="sd">            ``return``:</span>
+
+<span class="sd">            :math:`B \times` `broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_</span>
+<span class="sd">            with :py:attr:`weight` :math:`\times L`</span>
+
+<span class="sd">            Where:</span>
+<span class="sd">                * :math:`B` is the batch size.</span>
+<span class="sd">                * :math:`L` is a connection-dependent value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="s2">&quot;the method `presyn_receptive`.&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Connection.forward">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.forward">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the connection.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `forward`.&quot;</span>
         <span class="p">)</span></div>
 </div>
 

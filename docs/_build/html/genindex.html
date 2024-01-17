@@ -265,8 +265,16 @@
         <li><a href="reference/generated/inferno.neural.mixins.BatchMixin.html#inferno.neural.mixins.BatchMixin">BatchMixin (class in inferno.neural.mixins)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.bias">bias (Connection property)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.connections.mixins.WeightBiasMixin.html#inferno.neural.connections.mixins.WeightBiasMixin.bias">(WeightBiasMixin property)</a>
 </li>
+        </ul></li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.biased">biased (Connection property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.binshape">binshape (Connection property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.boutshape">boutshape (Connection property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin.bshape">bshape (ShapeMixin property)</a>
 </li>
@@ -387,6 +395,8 @@
 </li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.delay">(Synapse property)</a>
 </li>
+          <li><a href="reference/generated/inferno.neural.connections.mixins.WeightBiasDelayMixin.html#inferno.neural.connections.mixins.WeightBiasDelayMixin.delay">(WeightBiasDelayMixin property)</a>
+</li>
         </ul></li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.delayed">delayed (Connection property)</a>
 </li>
@@ -495,6 +505,8 @@
         <li><a href="reference/generated/inferno.neural.ALIF.html#inferno.neural.ALIF.forward">forward() (ALIF method)</a>
 
         <ul>
+          <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.forward">(Connection method)</a>
+</li>
           <li><a href="reference/generated/inferno.neural.Conv2D.html#inferno.neural.Conv2D.forward">(Conv2D method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.DenseLinear.html#inferno.neural.DenseLinear.forward">(DenseLinear method)</a>
@@ -679,12 +691,24 @@
 </li>
         <li><a href="reference/generated/inferno.HistoryModule.html#inferno.HistoryModule.latest">latest() (HistoryModule method)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer">Layer (class in inferno.neural)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.LIF.html#inferno.neural.LIF">LIF (class in inferno.neural)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.like_input">like_input() (Connection method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Conv2D.html#inferno.neural.Conv2D.like_input">(Conv2D method)</a>
+</li>
+        </ul></li>
+        <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.like_synaptic">like_synaptic() (Connection method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Conv2D.html#inferno.neural.Conv2D.like_synaptic">(Conv2D method)</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -962,23 +986,19 @@
 </li>
         <li><a href="reference/generated/inferno.neural.SynapseConstructor.html#inferno.neural.SynapseConstructor">SynapseConstructor (class in inferno.neural)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.syncurrent">syncurrent (Connection property)</a>
+        <li><a href="reference/generated/inferno.neural.DenseLinear.html#inferno.neural.DenseLinear.syncurrent">syncurrent (DenseLinear property)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.neural.Conv2D.html#inferno.neural.Conv2D.syncurrent">(Conv2D property)</a>
-</li>
-          <li><a href="reference/generated/inferno.neural.DenseLinear.html#inferno.neural.DenseLinear.syncurrent">(DenseLinear property)</a>
-</li>
           <li><a href="reference/generated/inferno.neural.DirectLinear.html#inferno.neural.DirectLinear.syncurrent">(DirectLinear property)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.LateralLinear.html#inferno.neural.LateralLinear.syncurrent">(LateralLinear property)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.syncurrent">syncurrent() (Connection method)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.synspike">synspike (Connection property)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.neural.Conv2D.html#inferno.neural.Conv2D.synspike">(Conv2D property)</a>
-</li>
           <li><a href="reference/generated/inferno.neural.DenseLinear.html#inferno.neural.DenseLinear.synspike">(DenseLinear property)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.DirectLinear.html#inferno.neural.DirectLinear.synspike">(DirectLinear property)</a>
@@ -1067,7 +1087,17 @@
         <ul>
           <li><a href="reference/generated/inferno.neural.LateralLinear.html#inferno.neural.LateralLinear.weight">(LateralLinear property)</a>
 </li>
+          <li><a href="reference/generated/inferno.neural.connections.mixins.WeightMixin.html#inferno.neural.connections.mixins.WeightMixin.weight">(WeightMixin property)</a>
+</li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.connections.mixins.WeightBiasDelayMixin.html#inferno.neural.connections.mixins.WeightBiasDelayMixin">WeightBiasDelayMixin (class in inferno.neural.connections.mixins)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.connections.mixins.WeightBiasMixin.html#inferno.neural.connections.mixins.WeightBiasMixin">WeightBiasMixin (class in inferno.neural.connections.mixins)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.connections.mixins.WeightMixin.html#inferno.neural.connections.mixins.WeightMixin">WeightMixin (class in inferno.neural.connections.mixins)</a>
+</li>
     </ul></td>
   </tr></table>
 </section>
