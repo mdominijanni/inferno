@@ -214,7 +214,7 @@
         <article role="main">
           <h1>Source code for inferno.neural.hooks</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">Hook</span><span class="p">,</span> <span class="n">normalize</span>
-<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">rgetattr</span><span class="p">,</span> <span class="n">rsetattr</span>
+<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span><span class="p">,</span> <span class="n">rgetattr</span><span class="p">,</span> <span class="n">rsetattr</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
@@ -227,19 +227,22 @@
 <span class="sd">    Args:</span>
 <span class="sd">        name (str): fully-qualified string name of attribute to normalize.</span>
 <span class="sd">        order (int | float): order of :math:`p`-norm by which to normalize.</span>
-<span class="sd">        scale (float | complex): desired :math:`p`-norm of elements along specified dimensions.</span>
-<span class="sd">        dims (int | tuple[int] | None): dimensions along which to normalize, all dimensions if None.</span>
-<span class="sd">        train_update (bool, optional): if normalization should be performed when module is</span>
-<span class="sd">            in train mode. Defaults to True.</span>
-<span class="sd">        eval_update (bool, optional): if normalization should be performed when module is</span>
-<span class="sd">            in eval mode. Defaults to True.</span>
+<span class="sd">        scale (float | complex): desired :math:`p`-norm of elements along</span>
+<span class="sd">            specified dimensions.</span>
+<span class="sd">        dims (int | tuple[int] | None): dimensions along which to normalize,</span>
+<span class="sd">            all dimensions if None.</span>
+<span class="sd">        train_update (bool, optional): if normalization should be performed when</span>
+<span class="sd">            hooked module is in train mode. Defaults to True.</span>
+<span class="sd">        eval_update (bool, optional): if normalization should be performed when</span>
+<span class="sd">            hooked module is in eval mode. Defaults to True.</span>
 <span class="sd">        as_prehook (bool, optional): if normalization should occur before</span>
 <span class="sd">            :py:meth:`~torch.nn.Module.forward` is. Defaults to False.</span>
-<span class="sd">        prepend (bool, optional): if normalization should occur before other hooks registered</span>
-<span class="sd">            to the module. Defaults to False.</span>
-<span class="sd">        always_call (bool, optional): if the hook should be run even if an exception occurs,</span>
-<span class="sd">            only applies when ``as_prehook`` is False. Defaults to False.</span>
-<span class="sd">        module (nn.Module | None, optional): module to which the hook should be registered. Defaults to None.</span>
+<span class="sd">        prepend (bool, optional): if normalization should occur before other hooks</span>
+<span class="sd">            previously registered to the hooked module. Defaults to False.</span>
+<span class="sd">        always_call (bool, optional): if the hook should be run even if an exception</span>
+<span class="sd">            occurs, only applies when ``as_prehook`` is False. Defaults to False.</span>
+<span class="sd">        module (nn.Module | None, optional): module to which the hook should be</span>
+<span class="sd">            registered. Defaults to None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -257,10 +260,8 @@
         <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># sanity check arguments</span>
-        <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;order must be non-zero, received </span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;scale must be non-zero, received </span><span class="si">{</span><span class="n">scale</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`order`&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`scale`&quot;</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
         <span class="c1"># configure as forward prehook</span>
         <span class="k">if</span> <span class="n">as_prehook</span><span class="p">:</span>
@@ -307,23 +308,22 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        name (str): fully-qualified string name of attribute to normalize.</span>
-<span class="sd">        min (int | float | None, optional): inclusive lower-bound of the clamped range. Defaults to None.</span>
-<span class="sd">        max (int | float | None, optional): inclusive upper-bound of the clamped range. Defaults to None.</span>
-<span class="sd">        train_update (bool, optional): if normalization should be performed when module is</span>
-<span class="sd">            in train mode. Defaults to True.</span>
-<span class="sd">        eval_update (bool, optional): if normalization should be performed when module is</span>
-<span class="sd">            in eval mode. Defaults to True.</span>
+<span class="sd">        min (int | float | None, optional): inclusive lower-bound of the clamped range.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        max (int | float | None, optional): inclusive upper-bound of the clamped range.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        train_update (bool, optional): if normalization should be performed when</span>
+<span class="sd">            hooked module is in train mode. Defaults to True.</span>
+<span class="sd">        eval_update (bool, optional): if normalization should be performed when</span>
+<span class="sd">            hooked module is in eval mode. Defaults to True.</span>
 <span class="sd">        as_prehook (bool, optional): if normalization should occur before</span>
 <span class="sd">            :py:meth:`~torch.nn.Module.forward` is. Defaults to False.</span>
-<span class="sd">        prepend (bool, optional): if normalization should occur before other hooks registered</span>
-<span class="sd">            to the module. Defaults to False.</span>
-<span class="sd">        always_call (bool, optional): if the hook should be run even if an exception occurs,</span>
-<span class="sd">            only applies when ``as_prehook`` is False. Defaults to False.</span>
-<span class="sd">        module (nn.Module | None, optional): module to which the hook should be registered. Defaults to None.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        TypeError: at least one of ``min`` and ``max`` must not be None.</span>
-<span class="sd">        ValueError: ``min`` must be strictly less than ``max``.</span>
+<span class="sd">        prepend (bool, optional): if normalization should occur before other hooks</span>
+<span class="sd">            previously registered to the hooked module. Defaults to False.</span>
+<span class="sd">        always_call (bool, optional): if the hook should be run even if an exception</span>
+<span class="sd">            occurs, only applies when ``as_prehook`` is False. Defaults to False.</span>
+<span class="sd">        module (nn.Module | None, optional): module to which the hook should be</span>
+<span class="sd">            registered. Defaults to None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -341,10 +341,10 @@
     <span class="p">):</span>
         <span class="c1"># sanity check arguments</span>
         <span class="k">if</span> <span class="nb">min</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;min and max cannot both be None.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;`min` and `max` cannot both be None.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">min</span> <span class="o">&gt;=</span> <span class="nb">max</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;received max of </span><span class="si">{</span><span class="nb">max</span><span class="si">}</span><span class="s2"> does not exceed received min of </span><span class="si">{</span><span class="nb">min</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;received `max` of </span><span class="si">{</span><span class="nb">max</span><span class="si">}</span><span class="s2"> which not greater than `min` of </span><span class="si">{</span><span class="nb">min</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># configure as forward prehook</span>

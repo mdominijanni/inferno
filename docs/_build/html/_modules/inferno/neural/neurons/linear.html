@@ -245,8 +245,7 @@
 <span class="sd">            :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        thresh_v (float): membrane voltage at which action potentials are generated,</span>
 <span class="sd">            in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refrac_t (float): length of time the absolute refractory period lasts,</span>
-<span class="sd">            in :math:`\mathrm{ms}`.</span>
+<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        time_constant (float): time constant of exponential decay for membrane voltage,</span>
 <span class="sd">            :math:`\tau_m`, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
@@ -343,7 +342,7 @@
         <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding</span><span class="p">(</span>
             <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
             <span class="n">refracs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
-            <span class="n">voltage_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
+            <span class="n">dynamics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
             <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
             <span class="n">reset_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span>
             <span class="n">thresh_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span><span class="p">,</span>
@@ -396,8 +395,7 @@
 <span class="sd">            :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        thresh_eq_v (float): equilibrium of the firing threshold,</span>
 <span class="sd">            :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refrac_t (float): length of time the absolute refractory period lasts,</span>
-<span class="sd">            in :math:`\mathrm{ms}`.</span>
+<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        tc_membrane (float): time constant of exponential decay for membrane voltage,</span>
 <span class="sd">            :math:`\tau_m`, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        tc_adaptation (float | tuple[float]): time constant of exponential decay for</span>
@@ -594,7 +592,7 @@
         <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding</span><span class="p">(</span>
             <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
             <span class="n">refracs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
-            <span class="n">voltage_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
+            <span class="n">dynamics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
             <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
             <span class="n">reset_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span>
             <span class="n">thresh_v</span><span class="o">=</span><span class="n">nf</span><span class="o">.</span><span class="n">neuron_adaptation</span><span class="o">.</span><span class="n">apply_adaptive_thresholds</span><span class="p">(</span>
@@ -745,8 +743,7 @@
 <span class="sd">            :math:`m_v`, unitless.</span>
 <span class="sd">        thresh_eq_v (float): equilibrium of the firing threshold,</span>
 <span class="sd">            :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refrac_t (float): length of time the absolute refractory period lasts,</span>
-<span class="sd">            in :math:`\mathrm{ms}`.</span>
+<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        tc_membrane (float): time constant of exponential decay for membrane voltage,</span>
 <span class="sd">            :math:`\tau_m`, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        tc_adaptation (float | tuple[float]): time constant of exponential decay for</span>
@@ -945,7 +942,7 @@
         <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding_slope_intercept</span><span class="p">(</span>
             <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
             <span class="n">refracs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
-            <span class="n">voltage_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
+            <span class="n">dynamics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
             <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
             <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
             <span class="n">v_slope</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v_mul</span><span class="p">,</span>

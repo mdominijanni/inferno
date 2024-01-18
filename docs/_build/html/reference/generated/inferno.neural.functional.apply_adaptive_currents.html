@@ -218,13 +218,15 @@
 <h1>apply_adaptive_currents<a class="headerlink" href="#apply-adaptive-currents" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="inferno.neural.functional.apply_adaptive_currents">
-<span class="sig-name descname"><span class="pre">apply_adaptive_currents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">presyn_currents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">adaptations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/functional/neuron_adaptation.html#apply_adaptive_currents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.functional.apply_adaptive_currents" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">apply_adaptive_currents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">adaptations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/functional/neuron_adaptation.html#apply_adaptive_currents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.functional.apply_adaptive_currents" title="Link to this definition">#</a></dt>
 <dd><p>Applies simple adapation to presynaptic currents.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>presyn_currents</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – presynaptic currents <span class="math notranslate nohighlight">\(I_+\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>.</p></li>
-<li><p><strong>adaptations</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – <span class="math notranslate nohighlight">\(k\)</span> current adaptations <span class="math notranslate nohighlight">\(w_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>.</p></li>
+<li><p><strong>current</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – presynaptic currents, <span class="math notranslate nohighlight">\(I_+\)</span>,
+in <span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>.</p></li>
+<li><p><strong>adaptations</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – <span class="math notranslate nohighlight">\(k\)</span> current adaptations, <span class="math notranslate nohighlight">\(w_k\)</span>,
+in <span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -234,27 +236,13 @@
 <dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
-<dl>
-<dt>Shape:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">presyn_currents</span></code>:</p>
-<blockquote>
-<div><p><span class="math notranslate nohighlight">\(N_0 \times \cdots \times\)</span>,
-equal in shape to the group of neurons being simulated.</p>
-</div></blockquote>
-<p><code class="docutils literal notranslate"><span class="pre">adaptations</span></code>:</p>
-<blockquote>
-<div><p><span class="math notranslate nohighlight">\(\cdots \times k\)</span>,
-where <span class="math notranslate nohighlight">\(\cdots\)</span> is any shape
-<a class="reference external" href="https://pytorch.org/docs/stable/notes/broadcasting.html">broadcastable</a> with <code class="docutils literal notranslate"><span class="pre">presyn_currents</span></code>.</p>
-</div></blockquote>
-<p><strong>output</strong>:</p>
-<blockquote>
-<div><p><span class="math notranslate nohighlight">\(N_0 \times \cdots \times\)</span>,
-same as <code class="docutils literal notranslate"><span class="pre">presyn_currents</span></code>.</p>
-</div></blockquote>
-</dd>
-</dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
+<p>The first <span class="math notranslate nohighlight">\(N - 1\)</span> dimensions of <code class="docutils literal notranslate"><span class="pre">adaptations</span></code> must be broadcastable
+with <code class="docutils literal notranslate"><span class="pre">current</span></code>.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
 <p>For an example, visit <a class="reference internal" href="../../zoo/neurons-adaptation.html#adaptive-current-linear"><span class="std std-ref">Adaptive Current, Linear</span></a> in the zoo.</p>
 </div>
 </dd></dl>

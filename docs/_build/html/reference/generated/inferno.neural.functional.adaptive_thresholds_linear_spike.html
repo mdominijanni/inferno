@@ -218,12 +218,16 @@
 <h1>adaptive_thresholds_linear_spike<a class="headerlink" href="#adaptive-thresholds-linear-spike" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="inferno.neural.functional.adaptive_thresholds_linear_spike">
-<span class="sig-name descname"><span class="pre">adaptive_thresholds_linear_spike</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adaptations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">postsyn_spikes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spike_increment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">refracs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/functional/neuron_adaptation.html#adaptive_thresholds_linear_spike"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.functional.adaptive_thresholds_linear_spike" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">adaptive_thresholds_linear_spike</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adaptations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spikes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spike_increment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">refracs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/functional/neuron_adaptation.html#adaptive_thresholds_linear_spike"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.functional.adaptive_thresholds_linear_spike" title="Link to this definition">#</a></dt>
 <dd><p>Update adaptive thresholds based on postsynaptic spikes.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\theta_k(t + \Delta t) = \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)\]</div>
+\[\theta_k(t + \Delta t) = \theta_k(t) \alpha_k\right)\]</div>
 </div>
+<p>Where <span class="math notranslate nohighlight">\(\alpha_k\)</span> is the multiple for exponential decay, typically expressed
+as <span class="math notranslate nohighlight">\(\alpha_k = \exp(-\Delta t / \tau_k)\)</span>, where <span class="math notranslate nohighlight">\(\Delta t\)</span> is the
+step time and <span class="math notranslate nohighlight">\(\tau_k\)</span> is the time constant for the <span class="math notranslate nohighlight">\(k^\mathrm{th}\)</span>
+adaptation, in like units of time.</p>
 <p>If a spike was generated at time <span class="math notranslate nohighlight">\(t\)</span>, then.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -232,54 +236,55 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>adaptations</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – last adaptations applied to membrane voltage threshold,
-<span class="math notranslate nohighlight">\(\theta_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
-<li><p><strong>postsyn_spikes</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – postsynaptic spikes, unitless.</p></li>
-<li><p><strong>decay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – exponential decay for adaptations,
-<span class="math notranslate nohighlight">\(\exp\left(-\frac{\Delta t}{\tau_k}\right)\)</span>, unitless.</p></li>
-<li><p><strong>spike_increment</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – amount by which the adaptive threshold is increased after a spike,
-<span class="math notranslate nohighlight">\(a_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
-<li><p><strong>refracs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – amount of remaining time needed to exit refractory periods,
-used for masking changes to adaptation when provided, in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>. Defaults to None.</p></li>
+<li><p><strong>adaptations</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – last adaptations applied to membrane voltage
+threshold, <span class="math notranslate nohighlight">\(\theta_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
+<li><p><strong>spikes</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – if the corresponding neuron generated an
+action potential.</p></li>
+<li><p><strong>decay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – exponential decay factor for adaptations,
+<span class="math notranslate nohighlight">\(\alpha_k\)</span>, unitless.</p></li>
+<li><p><strong>spike_increment</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – amount by which the adaptive threshold is
+increased after a spike, <span class="math notranslate nohighlight">\(a_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
+<li><p><strong>refracs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – remaining absolute refractory periods,
+in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>, when not None, adaptations of neurons in their
+absolute refractory periods are maintained. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>updated adaptations for membrane voltage thresholds.</p>
+<dd class="field-even"><p>updated adaptations for membrane voltage threshold,
+in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
-<dl>
-<dt>Shape:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">adaptations</span></code>:</p>
-<blockquote>
-<div><p><span class="math notranslate nohighlight">\(N_0 \times \cdots \times k\)</span>,
-each slice along the last dimension should be shaped like the neuron group to which the adaptation
-is being applied, where <span class="math notranslate nohighlight">\(k\)</span> is the number of parameter tuples.</p>
-</div></blockquote>
-<p><code class="docutils literal notranslate"><span class="pre">postsyn_spikes</span></code> and <code class="docutils literal notranslate"><span class="pre">refracs</span></code>:</p>
-<blockquote>
-<div><p><span class="math notranslate nohighlight">\([B] \times N_0 \times \cdots\)</span>,
-where the batch dimension <span class="math notranslate nohighlight">\(B\)</span> is optional.</p>
-</div></blockquote>
-<p><code class="docutils literal notranslate"><span class="pre">decay</span></code>, and <code class="docutils literal notranslate"><span class="pre">spike_increment</span></code>:</p>
-<blockquote>
-<div><p><a class="reference external" href="https://pytorch.org/docs/stable/notes/broadcasting.html">Broadcastable</a> with <code class="docutils literal notranslate"><span class="pre">adaptations</span></code>.</p>
-</div></blockquote>
-<p><strong>output</strong>:</p>
-<blockquote>
-<div><p><span class="math notranslate nohighlight">\([B] \times N_0 \times \cdots \times k\)</span>,
-where the batch dimension <span class="math notranslate nohighlight">\(B\)</span> is dependent on inputs.</p>
-</div></blockquote>
+<div class="tensorshape admonition">
+<p class="admonition-title">Shape</p>
+<p><code class="docutils literal notranslate"><span class="pre">adaptations</span></code>:</p>
+<p><span class="math notranslate nohighlight">\(N_0 \times \cdots \times K\)</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">spikes</span></code>, <code class="docutils literal notranslate"><span class="pre">refracs</span></code>:</p>
+<p><span class="math notranslate nohighlight">\([B] \times N_0 \times \cdots\)</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">decay</span></code>, <code class="docutils literal notranslate"><span class="pre">spike_increment</span></code>:</p>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/notes/broadcasting.html">Broadcastable</a> with
+<code class="docutils literal notranslate"><span class="pre">adaptations</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
+<p><span class="math notranslate nohighlight">\([B] \times N_0 \times \cdots \times K\)</span></p>
+<dl class="simple">
+<dt>Where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(B\)</span> is the batch size.</p></li>
+<li><p><span class="math notranslate nohighlight">\(N_0, \cdots\)</span> are dimensions of the group of neurons simulated.</p></li>
+<li><p><span class="math notranslate nohighlight">\(K\)</span> is the number of sets of adaptation parameters.</p></li>
+</ul>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This function doesn’t automatically reduce along the batch dimension, this should generally be done
-by summing along the <span class="math notranslate nohighlight">\(0^\mathrm{th}\)</span> (batch) dimension.</p>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>This function doesn’t automatically reduce along the batch dimension,
+this should generally be done by averaging along the <span class="math notranslate nohighlight">\(0^\mathrm{th}\)</span>
+dimension.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
 <p>For more details and references, visit
 <a class="reference internal" href="../../zoo/neurons-adaptation.html#adaptive-threshold-linear-spike-dependent"><span class="std std-ref">Adaptive Threshold, Linear Spike-Dependent</span></a> in the zoo.</p>
 </div>

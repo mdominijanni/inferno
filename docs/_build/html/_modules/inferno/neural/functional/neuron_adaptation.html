@@ -221,7 +221,7 @@
 <span class="k">def</span> <span class="nf">adaptive_currents_linear</span><span class="p">(</span>
     <span class="n">adaptations</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">voltages</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">postsyn_spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -235,8 +235,8 @@
 <span class="sd">    Implemented as an approximation using Euler&#39;s method.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        w_k(t + \Delta t) = \frac{\Delta t}{\tau_k}\left[ a_k \left[ V_m(t) - V_\text{rest} \right]</span>
-<span class="sd">            - w_k(t) \right] + w_k(t)</span>
+<span class="sd">        w_k(t + \Delta t) = \frac{\Delta t}{\tau_k}</span>
+<span class="sd">        \left[ a_k \left[ V_m(t) - V_\text{rest} \right] - w_k(t) \right] + w_k(t)</span>
 
 <span class="sd">    If a spike was generated at time :math:`t`, then.</span>
 
@@ -246,54 +246,63 @@
 <span class="sd">    Args:</span>
 <span class="sd">        adaptations (torch.Tensor): last adaptations applied to input current,</span>
 <span class="sd">            :math:`w_k`, in :math:`\mathrm{nA}`.</span>
-<span class="sd">        voltages (torch.Tensor): membrane potential difference,</span>
-<span class="sd">            :math:`V_m(t)`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        postsyn_spikes (torch.Tensor): postsynaptic spikes, unitless.</span>
+<span class="sd">        voltages (torch.Tensor): membrane voltages :math:`V_m(t)`,</span>
+<span class="sd">            in :math:`\mathrm{mV}`.</span>
+<span class="sd">        spikes (torch.Tensor): if the corresponding neuron generated an</span>
+<span class="sd">            action potential.</span>
 <span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
-<span class="sd">            :math:`\Delta t`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            in :math:`\mathrm{ms}`.</span>
 <span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
 <span class="sd">            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay,</span>
 <span class="sd">            :math:`\tau_k`, in :math:`\mathrm{ms}`.</span>
-<span class="sd">        voltage_coupling (float | torch.Tensor): strength of coupling to membrane voltage,</span>
-<span class="sd">            :math:`a_k`, in :math:`\mathrm{\mu S}`.</span>
-<span class="sd">        spike_increment (float | torch.Tensor): amount by which the adaptive current is increased after a spike,</span>
-<span class="sd">            :math:`b_k`, in :math:`\mathrm{nA}`.</span>
-<span class="sd">        refracs (torch.Tensor | None): amount of remaining time needed to exit refractory periods,</span>
-<span class="sd">            used for masking changes to adaptation when provided, in :math:`\mathrm{ms}`. Defaults to None.</span>
+<span class="sd">        voltage_coupling (float | torch.Tensor): strength of coupling to membrane</span>
+<span class="sd">            voltage, :math:`a_k`, in :math:`\mathrm{\mu S}`.</span>
+<span class="sd">        spike_increment (float | torch.Tensor): amount by which the adaptive current is</span>
+<span class="sd">            increased after a spike, :math:`b_k`, in :math:`\mathrm{nA}`.</span>
+<span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
+<span class="sd">            in :math:`\mathrm{ms}`, when not None, adaptations of neurons in their</span>
+<span class="sd">            absolute refractory periods are maintained. Defaults to None.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: updated adaptations for input currents.</span>
+<span class="sd">        torch.Tensor: updated adaptations for input currents, in :math:`\mathrm{nA}`.</span>
 
-<span class="sd">    Shape:</span>
+<span class="sd">    .. admonition:: Shape</span>
+<span class="sd">        :class: tensorshape</span>
+
 <span class="sd">        ``adaptations``:</span>
 
-<span class="sd">            :math:`N_0 \times \cdots \times k`,</span>
-<span class="sd">            each slice along the last dimension should be shaped like the neuron group to which the adaptation</span>
-<span class="sd">            is being applied, where :math:`k` is the number of parameter tuples.</span>
+<span class="sd">        :math:`N_0 \times \cdots \times K`</span>
 
-<span class="sd">        ``voltages``, ``postsyn_spikes``, and ``refracs``:</span>
+<span class="sd">        ``voltages``, ``spikes``, ``refracs``:</span>
 
-<span class="sd">            :math:`[B] \times N_0 \times \cdots`, where the batch dimension :math:`B` is optional.</span>
+<span class="sd">        :math:`[B] \times N_0 \times \cdots`</span>
 
 <span class="sd">        ``rest_v``:</span>
 
-<span class="sd">            `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
-<span class="sd">            ``postsyn_spikes`` and ``voltages``.</span>
+<span class="sd">        `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
+<span class="sd">        ``voltages``, ``spikes``, and ``refracs``.</span>
 
-<span class="sd">        ``step_time``, ``voltage_coupling``, ``spike_increment``, and ``time_constant``:</span>
+<span class="sd">        ``step_time``, ``voltage_coupling``, ``spike_increment``, ``time_constant``:</span>
 
-<span class="sd">            `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with ``adaptations``.</span>
+<span class="sd">        `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
+<span class="sd">        ``adaptations``.</span>
 
-<span class="sd">        **output**:</span>
+<span class="sd">        ``return``:</span>
 
-<span class="sd">            :math:`[B] \times N_0 \times \cdots \times k`, where the batch dimension :math:`B` is dependent on inputs.</span>
+<span class="sd">        :math:`[B] \times N_0 \times \cdots \times K`</span>
 
-<span class="sd">    Note:</span>
-<span class="sd">        This function doesn&#39;t automatically reduce along the batch dimension, this should generally be done</span>
-<span class="sd">        by averaging along the :math:`0^\mathrm{th}` dimension.</span>
+<span class="sd">        Where:</span>
+<span class="sd">            * :math:`B` is the batch size.</span>
+<span class="sd">            * :math:`N_0, \cdots` are dimensions of the group of neurons simulated.</span>
+<span class="sd">            * :math:`K` is the number of sets of adaptation parameters.</span>
 
-<span class="sd">    Note:</span>
+<span class="sd">    Tip:</span>
+<span class="sd">        This function doesn&#39;t automatically reduce along the batch dimension,</span>
+<span class="sd">        this should generally be done by averaging along the :math:`0^\mathrm{th}`</span>
+<span class="sd">        dimension.</span>
+
+<span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit :ref:`zoo/neurons-adaptation:Adaptive Current, Linear` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># calculate euler step for adaptation update</span>
@@ -310,7 +319,7 @@
         <span class="p">)</span>
 
     <span class="c1"># post-spike adaptation step</span>
-    <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">+</span> <span class="p">(</span><span class="n">spike_increment</span> <span class="o">*</span> <span class="n">postsyn_spikes</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">+</span> <span class="p">(</span><span class="n">spike_increment</span> <span class="o">*</span> <span class="n">spikes</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
     <span class="c1"># return updated adaptation state</span>
     <span class="k">return</span> <span class="n">adaptations</span></div>
@@ -325,10 +334,10 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">adaptation_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">adapt_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">rebound_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">adaptation_reset_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">postsyn_spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">adapt_reset_lb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">refracs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update adaptive thresholds based on membrane potential.</span>
@@ -336,76 +345,87 @@
 <span class="sd">    Implemented as an approximation using Euler&#39;s method.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \theta_k(t + \Delta t) = \Delta t \left[a_k \left[ V_m(t) - V_\mathrm{rest} \right]</span>
-<span class="sd">            - b_k \theta_k(t)\right] + \theta_k(t)</span>
+<span class="sd">        \theta_k(t + \Delta t) = \Delta t</span>
+<span class="sd">        \left[a_k \left[ V_m(t) - V_\mathrm{rest} \right]</span>
+<span class="sd">        - b_k \theta_k(t)\right] + \theta_k(t)</span>
 
 <span class="sd">    If a spike was generated at time :math:`t`, then.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \theta_k(t) \leftarrow \max(\theta_k(t), \theta_\mathrm{reset})</span>
+<span class="sd">        \theta_k(t) \leftarrow \max(\theta_k(t), {\theta_\mathrm{reset}}_k)</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        adaptations (torch.Tensor): last adaptations applied to membrane voltage threshold,</span>
-<span class="sd">            :math:`\theta_k`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">        adaptations (torch.Tensor): last adaptations applied to membrane voltage</span>
+<span class="sd">            threshold, :math:`\theta_k`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        voltages (torch.Tensor): membrane potential difference,</span>
 <span class="sd">            :math:`V_m(t)`, in :math:`\mathrm{mV}`.</span>
 <span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
 <span class="sd">            :math:`\Delta t`, in :math:`\mathrm{ms}`.</span>
 <span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
 <span class="sd">            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        adaptation_rate (float | torch.Tensor): rate constant of exponential decay for membrane voltage term,</span>
-<span class="sd">            :math:`a_k`, in :math:`\mathrm{ms^{-1}}`.</span>
-<span class="sd">        rebound_rate (float | torch.Tensor): rate constant of exponential decay for threshold voltage term,</span>
-<span class="sd">            :math:`b_k`, in :math:`\mathrm{ms^{-1}}`.</span>
-<span class="sd">        adaptation_reset_min (float | torch.Tensor | None, optional): minimum threshold adaptation permitted after</span>
-<span class="sd">            a postsynaptic potential. Defaults to None.</span>
-<span class="sd">        postsyn_spikes (torch.Tensor | None, optional): postsynaptic spikes, unitless. Defaults to None.</span>
-<span class="sd">        refracs (torch.Tensor | None): amount of remaining time needed to exit refractory periods,</span>
-<span class="sd">            used for masking changes to adaptation when provided, in :math:`\mathrm{ms}`. Defaults to None.</span>
+<span class="sd">        adapt_rate (float | torch.Tensor): rate constant of exponential decay for</span>
+<span class="sd">            membrane voltage term, :math:`a_k`, in :math:`\mathrm{ms^{-1}}`.</span>
+<span class="sd">        rebound_rate (float | torch.Tensor): rate constant of exponential decay for</span>
+<span class="sd">            threshold voltage term, :math:`b_k`, in :math:`\mathrm{ms^{-1}}`.</span>
+<span class="sd">        adapt_reset_lb (float | torch.Tensor | None, optional): lower bound for</span>
+<span class="sd">            the threshold adaptation permitted after a postsynaptic potential,</span>
+<span class="sd">            :math:`{\theta_\mathrm{reset}}_k`, in :math:`\mathrm{mV}`. Defaults to None.</span>
+<span class="sd">        spikes (torch.Tensor | None, optional): if the corresponding neuron generated an</span>
+<span class="sd">            action potential. Defaults to None.</span>
+<span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
+<span class="sd">            in :math:`\mathrm{ms}`, when not None, adaptations of neurons in their</span>
+<span class="sd">            absolute refractory periods are maintained. Defaults to None.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: updated adaptations for membrane voltage thresholds.</span>
+<span class="sd">        torch.Tensor: updated adaptations for membrane voltage threshold,</span>
+<span class="sd">        in :math:`\mathrm{mV}`.</span>
 
-<span class="sd">    Shape:</span>
+<span class="sd">    .. admonition:: Shape</span>
+<span class="sd">        :class: tensorshape</span>
+
 <span class="sd">        ``adaptations``:</span>
 
-<span class="sd">            :math:`N_0 \times \cdots \times k`,</span>
-<span class="sd">            each slice along the last dimension should be shaped like the neuron group to which the adaptation</span>
-<span class="sd">            is being applied, where :math:`k` is the number of parameter tuples.</span>
+<span class="sd">        :math:`N_0 \times \cdots \times K`</span>
 
-<span class="sd">        ``voltages``, ``postsyn_spikes``, and ``refracs``:</span>
+<span class="sd">        ``voltages``, ``spikes``, ``refracs``:</span>
 
-<span class="sd">            :math:`[B] \times N_0 \times \cdots`, where the batch dimension :math:`B` is optional.</span>
+<span class="sd">        :math:`[B] \times N_0 \times \cdots`</span>
 
 <span class="sd">        ``rest_v``:</span>
 
-<span class="sd">            Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
-<span class="sd">            ``voltages`` and ``postsyn_spikes``.</span>
+<span class="sd">        `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
+<span class="sd">        ``voltages``, ``spikes``, and ``refracs``.</span>
 
-<span class="sd">        ``step_time``, ``adaptation_rate``, ``rebound_rate``, and ``adaptation_reset_min``:</span>
+<span class="sd">        ``step_time``, ``adapt_rate``, ``rebound_rate``, ``adapt_reset_lb``:</span>
 
-<span class="sd">            `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with ``adaptations``.</span>
+<span class="sd">        `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
+<span class="sd">        ``adaptations``.</span>
 
-<span class="sd">        **output**:</span>
+<span class="sd">        ``return``:</span>
 
-<span class="sd">            :math:`[B] \times N_0 \times \cdots \times k`,</span>
-<span class="sd">            where the batch dimension :math:`B` is dependent on inputs.</span>
+<span class="sd">        :math:`[B] \times N_0 \times \cdots \times K`</span>
 
-<span class="sd">    Note:</span>
-<span class="sd">        If either ``adaptation_reset_min`` or ``postsyn_spikes`` is None, then the adaptation limiting</span>
-<span class="sd">        after spiking is not performed.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        This function doesn&#39;t automatically reduce along the batch dimension, this should generally be done</span>
-<span class="sd">        by summing along the :math:`0^\mathrm{th}` (batch) dimension.</span>
+<span class="sd">        Where:</span>
+<span class="sd">            * :math:`B` is the batch size.</span>
+<span class="sd">            * :math:`N_0, \cdots` are dimensions of the group of neurons simulated.</span>
+<span class="sd">            * :math:`K` is the number of sets of adaptation parameters.</span>
 
 <span class="sd">    Note:</span>
+<span class="sd">        If either ``adapt_reset_lb`` or ``spikes`` is None, then no lower bound</span>
+<span class="sd">        will be applied to threshold adaptations.</span>
+
+<span class="sd">    Tip:</span>
+<span class="sd">        This function doesn&#39;t automatically reduce along the batch dimension,</span>
+<span class="sd">        this should generally be done by averaging along the :math:`0^\mathrm{th}`</span>
+<span class="sd">        dimension.</span>
+
+<span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
 <span class="sd">        :ref:`zoo/neurons-adaptation:Adaptive Threshold, Linear Voltage-Dependent` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># calculate euler step for adaptation update</span>
     <span class="n">euler_step</span> <span class="o">=</span> <span class="n">step_time</span> <span class="o">*</span> <span class="p">(</span>
-        <span class="n">adaptation_rate</span> <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">rebound_rate</span> <span class="o">*</span> <span class="n">adaptations</span>
+        <span class="n">adapt_rate</span> <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">rebound_rate</span> <span class="o">*</span> <span class="n">adaptations</span>
     <span class="p">)</span>
 
     <span class="c1"># apply euler step</span>
@@ -417,10 +437,10 @@
         <span class="p">)</span>
 
     <span class="c1"># post-spike adaptation step</span>
-    <span class="k">if</span> <span class="n">adaptation_reset_min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">postsyn_spikes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">adapt_reset_lb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">spikes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-            <span class="n">postsyn_spikes</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">adaptations</span><span class="o">.</span><span class="n">clamp_min</span><span class="p">(</span><span class="n">adaptation_reset_min</span><span class="p">),</span>
+            <span class="n">spikes</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">adaptations</span><span class="o">.</span><span class="n">clamp_min</span><span class="p">(</span><span class="n">adapt_reset_lb</span><span class="p">),</span>
         <span class="p">)</span>
 
     <span class="c1"># return updated adaptation state</span>
@@ -432,7 +452,7 @@
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.adaptive_thresholds_linear_spike.html#inferno.neural.functional.adaptive_thresholds_linear_spike">[docs]</a>
 <span class="k">def</span> <span class="nf">adaptive_thresholds_linear_spike</span><span class="p">(</span>
     <span class="n">adaptations</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">postsyn_spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">spike_increment</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -441,7 +461,12 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update adaptive thresholds based on postsynaptic spikes.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \theta_k(t + \Delta t) = \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)</span>
+<span class="sd">        \theta_k(t + \Delta t) = \theta_k(t) \alpha_k\right)</span>
+
+<span class="sd">    Where :math:`\alpha_k` is the multiple for exponential decay, typically expressed</span>
+<span class="sd">    as :math:`\alpha_k = \exp(-\Delta t / \tau_k)`, where :math:`\Delta t` is the</span>
+<span class="sd">    step time and :math:`\tau_k` is the time constant for the :math:`k^\mathrm{th}`</span>
+<span class="sd">    adaptation, in like units of time.</span>
 
 <span class="sd">    If a spike was generated at time :math:`t`, then.</span>
 
@@ -449,45 +474,53 @@
 <span class="sd">        \theta_k(t) \leftarrow \theta_k(t) + a_k</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        adaptations (torch.Tensor): last adaptations applied to membrane voltage threshold,</span>
-<span class="sd">            :math:`\theta_k`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        postsyn_spikes (torch.Tensor): postsynaptic spikes, unitless.</span>
-<span class="sd">        decay (float | torch.Tensor): exponential decay for adaptations,</span>
-<span class="sd">            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.</span>
-<span class="sd">        spike_increment (torch.Tensor): amount by which the adaptive threshold is increased after a spike,</span>
-<span class="sd">            :math:`a_k`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refracs (torch.Tensor | None): amount of remaining time needed to exit refractory periods,</span>
-<span class="sd">            used for masking changes to adaptation when provided, in :math:`\mathrm{ms}`. Defaults to None.</span>
+<span class="sd">        adaptations (torch.Tensor): last adaptations applied to membrane voltage</span>
+<span class="sd">            threshold, :math:`\theta_k`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">        spikes (torch.Tensor): if the corresponding neuron generated an</span>
+<span class="sd">            action potential.</span>
+<span class="sd">        decay (float | torch.Tensor): exponential decay factor for adaptations,</span>
+<span class="sd">            :math:`\alpha_k`, unitless.</span>
+<span class="sd">        spike_increment (torch.Tensor): amount by which the adaptive threshold is</span>
+<span class="sd">            increased after a spike, :math:`a_k`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
+<span class="sd">            in :math:`\mathrm{ms}`, when not None, adaptations of neurons in their</span>
+<span class="sd">            absolute refractory periods are maintained. Defaults to None.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: updated adaptations for membrane voltage thresholds.</span>
+<span class="sd">        torch.Tensor: updated adaptations for membrane voltage threshold,</span>
+<span class="sd">        in :math:`\mathrm{mV}`.</span>
 
-<span class="sd">    Shape:</span>
+<span class="sd">    .. admonition:: Shape</span>
+<span class="sd">        :class: tensorshape</span>
+
 <span class="sd">        ``adaptations``:</span>
 
-<span class="sd">            :math:`N_0 \times \cdots \times k`,</span>
-<span class="sd">            each slice along the last dimension should be shaped like the neuron group to which the adaptation</span>
-<span class="sd">            is being applied, where :math:`k` is the number of parameter tuples.</span>
+<span class="sd">        :math:`N_0 \times \cdots \times K`</span>
 
-<span class="sd">        ``postsyn_spikes`` and ``refracs``:</span>
+<span class="sd">        ``spikes``, ``refracs``:</span>
 
-<span class="sd">            :math:`[B] \times N_0 \times \cdots`,</span>
-<span class="sd">            where the batch dimension :math:`B` is optional.</span>
+<span class="sd">        :math:`[B] \times N_0 \times \cdots`</span>
 
-<span class="sd">        ``decay``, and ``spike_increment``:</span>
+<span class="sd">        ``decay``, ``spike_increment``:</span>
 
-<span class="sd">            `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with ``adaptations``.</span>
+<span class="sd">        `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
+<span class="sd">        ``adaptations``.</span>
 
-<span class="sd">        **output**:</span>
+<span class="sd">        ``return``:</span>
 
-<span class="sd">            :math:`[B] \times N_0 \times \cdots \times k`,</span>
-<span class="sd">            where the batch dimension :math:`B` is dependent on inputs.</span>
+<span class="sd">        :math:`[B] \times N_0 \times \cdots \times K`</span>
 
-<span class="sd">    Note:</span>
-<span class="sd">        This function doesn&#39;t automatically reduce along the batch dimension, this should generally be done</span>
-<span class="sd">        by summing along the :math:`0^\mathrm{th}` (batch) dimension.</span>
+<span class="sd">        Where:</span>
+<span class="sd">            * :math:`B` is the batch size.</span>
+<span class="sd">            * :math:`N_0, \cdots` are dimensions of the group of neurons simulated.</span>
+<span class="sd">            * :math:`K` is the number of sets of adaptation parameters.</span>
 
-<span class="sd">    Note:</span>
+<span class="sd">    Tip:</span>
+<span class="sd">        This function doesn&#39;t automatically reduce along the batch dimension,</span>
+<span class="sd">        this should generally be done by averaging along the :math:`0^\mathrm{th}`</span>
+<span class="sd">        dimension.</span>
+
+<span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
 <span class="sd">        :ref:`zoo/neurons-adaptation:Adaptive Threshold, Linear Spike-Dependent` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -498,7 +531,7 @@
         <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">refracs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">adaptations</span> <span class="o">*</span> <span class="n">decay</span><span class="p">)</span>
 
     <span class="c1"># increment adaptations after spiking</span>
-    <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">+</span> <span class="p">(</span><span class="n">spike_increment</span> <span class="o">*</span> <span class="n">postsyn_spikes</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">+</span> <span class="p">(</span><span class="n">spike_increment</span> <span class="o">*</span> <span class="n">spikes</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
     <span class="c1"># return updated adaptation state</span>
     <span class="k">return</span> <span class="n">adaptations</span></div>
@@ -508,40 +541,29 @@
 <div class="viewcode-block" id="apply_adaptive_currents">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.apply_adaptive_currents.html#inferno.neural.functional.apply_adaptive_currents">[docs]</a>
 <span class="k">def</span> <span class="nf">apply_adaptive_currents</span><span class="p">(</span>
-    <span class="n">presyn_currents</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">current</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">adaptations</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies simple adapation to presynaptic currents.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        presyn_currents (torch.Tensor): presynaptic currents :math:`I_+`, in :math:`\mathrm{nA}`.</span>
-<span class="sd">        adaptations (torch.Tensor): :math:`k` current adaptations :math:`w_k`, in :math:`\mathrm{nA}`.</span>
+<span class="sd">        current (torch.Tensor): presynaptic currents, :math:`I_+`,</span>
+<span class="sd">            in :math:`\mathrm{nA}`.</span>
+<span class="sd">        adaptations (torch.Tensor): :math:`k` current adaptations, :math:`w_k`,</span>
+<span class="sd">            in :math:`\mathrm{nA}`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: adapted presynaptic currents.</span>
 
-<span class="sd">    Shape:</span>
-<span class="sd">        ``presyn_currents``:</span>
-
-<span class="sd">            :math:`N_0 \times \cdots \times`,</span>
-<span class="sd">            equal in shape to the group of neurons being simulated.</span>
-
-<span class="sd">        ``adaptations``:</span>
-
-<span class="sd">            :math:`\cdots \times k`,</span>
-<span class="sd">            where :math:`\cdots` is any shape</span>
-<span class="sd">            `broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with ``presyn_currents``.</span>
-
-<span class="sd">        **output**:</span>
-
-<span class="sd">            :math:`N_0 \times \cdots \times`,</span>
-<span class="sd">            same as ``presyn_currents``.</span>
-
 <span class="sd">    Note:</span>
+<span class="sd">        The first :math:`N - 1` dimensions of ``adaptations`` must be broadcastable</span>
+<span class="sd">        with ``current``.</span>
+
+<span class="sd">    See Also:</span>
 <span class="sd">        For an example, visit :ref:`zoo/neurons-adaptation:Adaptive Current, Linear` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># return adjusted currents</span>
-    <span class="k">return</span> <span class="n">presyn_currents</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">adaptations</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">current</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">adaptations</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
 
 
@@ -554,13 +576,19 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies simple adapation to voltage firing thresholds.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        threshold (float | torch.Tensor): baseline firing threshold :math:`\Theta_\infty`, in :math`\mathrm{mV}`.</span>
-<span class="sd">        adaptations (torch.Tensor): :math:`k` threshold adaptations :math:`\theta_k`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">        threshold (float | torch.Tensor): equilibrium of the firing threshold,</span>
+<span class="sd">            :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">        adaptations (torch.Tensor): :math:`k` threshold adaptations, :math:`\theta_k`,</span>
+<span class="sd">            in :math:`\mathrm{mV}`.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">            torch.Tensor: adapted firing thresholds.</span>
+<span class="sd">        torch.Tensor: adapted firing thresholds.</span>
 
 <span class="sd">    Note:</span>
+<span class="sd">        The first :math:`N - 1` dimensions of ``adaptations`` must be broadcastable</span>
+<span class="sd">        with ``threshold``.</span>
+
+<span class="sd">    See Also:</span>
 <span class="sd">        For an example, visit :ref:`zoo/neurons-adaptation:Adaptive Threshold, Linear Spike-Dependent` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># return adjusted thresholds</span>

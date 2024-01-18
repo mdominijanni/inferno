@@ -651,7 +651,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
     r"""Linear all-to-"all but one" connection.
 
     .. math::
-        y = x \left(W^\intercal \odot (1 - I\right)) + b
+        y = x \left(W^\intercal \odot (1 - I_N\right)) + b
 
     Args:
         shape (tuple[int, ...] | int): expected shape of input and output tensors,
@@ -691,8 +691,8 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
     Note:
         Weights and delays are stored internally like in :py:class:`LinearDense`, but on
-        assignment by :py:attr:`weight` and creation are masked by a tensor Weights are
-        masked by a tensor :math:`1 - I_N`, where :math:`N = (N_0 \cdot \cdots)`.
+        assignment by :py:attr:`weight` and creation are masked by a tensor
+        :math:`1 - I_N`, where :math:`N = (N_0 \cdot \cdots)`.
     """
 
     def __init__(

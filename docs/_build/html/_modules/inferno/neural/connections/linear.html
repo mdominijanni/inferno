@@ -904,7 +904,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linear all-to-&quot;all but one&quot; connection.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        y = x \left(W^\intercal \odot (1 - I\right)) + b</span>
+<span class="sd">        y = x \left(W^\intercal \odot (1 - I_N\right)) + b</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): expected shape of input and output tensors,</span>
@@ -944,8 +944,8 @@
 
 <span class="sd">    Note:</span>
 <span class="sd">        Weights and delays are stored internally like in :py:class:`LinearDense`, but on</span>
-<span class="sd">        assignment by :py:attr:`weight` and creation are masked by a tensor Weights are</span>
-<span class="sd">        masked by a tensor :math:`1 - I_N`, where :math:`N = (N_0 \cdot \cdots)`.</span>
+<span class="sd">        assignment by :py:attr:`weight` and creation are masked by a tensor</span>
+<span class="sd">        :math:`1 - I_N`, where :math:`N = (N_0 \cdot \cdots)`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>

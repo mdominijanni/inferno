@@ -28,8 +28,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
             :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.
         thresh_v (float): membrane voltage at which action potentials are generated,
             in :math:`\mathrm{mV}`.
-        refrac_t (float): length of time the absolute refractory period lasts,
-            in :math:`\mathrm{ms}`.
+        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.
         time_constant (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
         resistance (float, optional): resistance across the cell membrane,
@@ -121,7 +120,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         spikes, voltages, refracs = nf.voltage_thresholding(
             inputs=inputs,
             refracs=self.refrac,
-            voltage_fn=self._integrate_v,
+            dynamics=self._integrate_v,
             step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=self.thresh_v,
@@ -170,8 +169,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.
         thresh_eq_v (float): equilibrium of the firing threshold,
             :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.
-        refrac_t (float): length of time the absolute refractory period lasts,
-            in :math:`\mathrm{ms}`.
+        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.
         tc_membrane (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
         tc_adaptation (float | tuple[float]): time constant of exponential decay for
@@ -363,7 +361,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         spikes, voltages, refracs = nf.voltage_thresholding(
             inputs=inputs,
             refracs=self.refrac,
-            voltage_fn=self._integrate_v,
+            dynamics=self._integrate_v,
             step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=nf.neuron_adaptation.apply_adaptive_thresholds(
@@ -501,8 +499,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             :math:`m_v`, unitless.
         thresh_eq_v (float): equilibrium of the firing threshold,
             :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.
-        refrac_t (float): length of time the absolute refractory period lasts,
-            in :math:`\mathrm{ms}`.
+        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.
         tc_membrane (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\mathrm{ms}`.
         tc_adaptation (float | tuple[float]): time constant of exponential decay for
@@ -696,7 +693,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         spikes, voltages, refracs = nf.voltage_thresholding_slope_intercept(
             inputs=inputs,
             refracs=self.refrac,
-            voltage_fn=self._integrate_v,
+            dynamics=self._integrate_v,
             step_time=self.step_time,
             rest_v=self.rest_v,
             v_slope=self.reset_v_mul,

@@ -226,19 +226,22 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – fully-qualified string name of attribute to normalize.</p></li>
 <li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – order of <span class="math notranslate nohighlight">\(p\)</span>-norm by which to normalize.</p></li>
-<li><p><strong>scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a>) – desired <span class="math notranslate nohighlight">\(p\)</span>-norm of elements along specified dimensions.</p></li>
-<li><p><strong>dims</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>] </em><em>| </em><em>None</em>) – dimensions along which to normalize, all dimensions if None.</p></li>
-<li><p><strong>train_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if normalization should be performed when module is
-in train mode. Defaults to True.</p></li>
-<li><p><strong>eval_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if normalization should be performed when module is
-in eval mode. Defaults to True.</p></li>
+<li><p><strong>scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a>) – desired <span class="math notranslate nohighlight">\(p\)</span>-norm of elements along
+specified dimensions.</p></li>
+<li><p><strong>dims</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>] </em><em>| </em><em>None</em>) – dimensions along which to normalize,
+all dimensions if None.</p></li>
+<li><p><strong>train_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if normalization should be performed when
+hooked module is in train mode. Defaults to True.</p></li>
+<li><p><strong>eval_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if normalization should be performed when
+hooked module is in eval mode. Defaults to True.</p></li>
 <li><p><strong>as_prehook</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if normalization should occur before
 <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.forward" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code></a> is. Defaults to False.</p></li>
-<li><p><strong>prepend</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if normalization should occur before other hooks registered
-to the module. Defaults to False.</p></li>
-<li><p><strong>always_call</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the hook should be run even if an exception occurs,
-only applies when <code class="docutils literal notranslate"><span class="pre">as_prehook</span></code> is False. Defaults to False.</p></li>
-<li><p><strong>module</strong> (<em>nn.Module</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – module to which the hook should be registered. Defaults to None.</p></li>
+<li><p><strong>prepend</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if normalization should occur before other hooks
+previously registered to the hooked module. Defaults to False.</p></li>
+<li><p><strong>always_call</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the hook should be run even if an exception
+occurs, only applies when <code class="docutils literal notranslate"><span class="pre">as_prehook</span></code> is False. Defaults to False.</p></li>
+<li><p><strong>module</strong> (<em>nn.Module</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – module to which the hook should be
+registered. Defaults to None.</p></li>
 </ul>
 </dd>
 </dl>
