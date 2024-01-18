@@ -99,7 +99,7 @@ This model uses the underlying dynamics of the leaky integrate-and-fire neuron, 
 ### References
 1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
 2. [DOI:10.1038/s41467-020-17236-y](https://www.nature.com/articles/s41467-020-17236-y)
-3. [Allen Institute GLIF Whitepaper](https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf)
+3. [Allen Institute GLIF Whitepaper](http://web.archive.org/web/20230428012128/https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf)
 
 
 ## Generalized Leaky Integrate-and-Fire 1 (GLIF{sub}`1`)
@@ -154,7 +154,7 @@ Also called "leaky integrate-and-fire with biologically defined reset rules (LIF
 
 ### References
 1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
-2. [Allen Institute GLIF Whitepaper](https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf)
+2. [Allen Institute GLIF Whitepaper](http://web.archive.org/web/20230428012128/https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf)
 
 ## Generalized Leaky Integrate-and-Fire 3 (GLIF{sub}`3`)
 ***(To Be Implemented)***
