@@ -44,10 +44,10 @@ class AdaptationMixin:
 
 
 class CurrentMixin:
-    r"""Mixin for neurons with subthreshold currents.
+    r"""Mixin for neurons with separate postsynaptic currents.
 
     Args:
-        data (torch.Tensor): initial subthreshold currents, in :math:`\mathrm{nA}`.
+        data (torch.Tensor): initial currents, in :math:`\mathrm{nA}`.
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
@@ -67,13 +67,13 @@ class CurrentMixin:
 
     @property
     def current(self) -> torch.Tensor:
-        r"""Subthreshold currents in nanoamperes.
+        r"""Postsynaptic current in nanoamperes.
 
         Args:
-            value (torch.Tensor): new subthreshold currents.
+            value (torch.Tensor): new postsynaptic currents.
 
         Returns:
-            torch.Tensor: present subthreshold currents.
+            torch.Tensor: present postsynaptic currents.
         """
         return self.current_.data
 
@@ -161,7 +161,7 @@ class RefractoryMixin:
 
 
 class SpikeRefractoryMixin(RefractoryMixin):
-    r"""Mixin for neurons with refractory periods and spikes based off of them.
+    r"""Mixin for neurons with refractory periods with spikes based off of them.
 
     Args:
         refrac (torch.Tensor): initial refractory periods, in :math:`\mathrm{ms}`.
@@ -189,8 +189,75 @@ class SpikeRefractoryMixin(RefractoryMixin):
     def spike(self) -> torch.Tensor:
         r"""Action potentials last generated.
 
+        .. math::
+            f(t) =
+            \begin{cases}
+                1, &t_\mathrm{refrac}(t) = \mathrm{ARP}
+                0, &\mathrm{otherwise}
+            \end{cases}
+
+        Where:
+            * :math:`f_(t)` are the postsynaptic spikes.
+            * :math:`t_\mathrm{refrac}`(t) are the remaining refractory periods, in :math:`\mathrm{ms}`.
+            * :math:`\mathrm{ARP}` is the absolute refractory period, in :math:`\mathrm{ms}`.
+
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential
                 during the prior step.
         """
         return self.refracs == self.refrac_t
+
+
+class CurrentSpikeRefractoryMixin(RefractoryMixin):
+    r"""Mixin for neurons with refractory periods with spikes and currents based off of them.
+
+    Args:
+        refrac (torch.Tensor): initial refractory periods, in :math:`\mathrm{ms}`.
+        requires_grad (bool, optional): if the parameters created require gradients.
+            Defaults to False.
+
+    Caution:
+        This must be added to a class which inherits from
+        :py:class:`DimensionalModule`, and the constructor for this
+        mixin must be called after the module constructor.
+
+    Note:
+        This registers a parameter ``refrac_`` and sets it as constrained.
+
+    Important:
+        This must be added to a class which has an attribute named ``refrac_t``, which
+        represents the length of the absolute refractory period in :math:`\mathrm{ms}`,
+        and an attribute named ``resistance`` which represents the membrane resistance
+        in in :math:`\mathrm{M\Omega}`.
+    """
+
+    def __init__(self, refrac, requires_grad=False):
+        attr_members("`self`", self, "`resistance`")
+        SpikeRefractoryMixin.__init__(self, refrac, requires_grad)
+
+    @property
+    def current(self) -> torch.Tensor:
+        r"""Postsynaptic current in nanoamperes.
+
+        .. math::
+            I_\mathrm{post}(t) = f(t) R_m
+
+        Where:
+            * :math:`f_(t)` are the postsynaptic spikes.
+            * :math:`R_m` is the membrane resistance, in :math:`\mathrm{M\Omega}`.
+
+        Args:
+            value (torch.Tensor): new postsynaptic currents.
+
+        Returns:
+            torch.Tensor: present postsynaptic currents.
+
+        Note:
+            Currents are derived from spiking activity and membrane resistance, and
+            consequentially the setter for this property has no function.
+        """
+        return self.spike * self.resistance
+
+    @current.setter
+    def current(self, value: torch.Tensor):
+        pass

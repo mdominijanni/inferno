@@ -138,6 +138,32 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             "the getter for property `spike`."
         )
 
+    @property
+    @abstractmethod
+    def current(self) -> torch.Tensor:
+        r"""Postsynaptic current in nanoamperes.
+
+        Args:
+            value (torch.Tensor): new postsynaptic currents.
+
+        Returns:
+            torch.Tensor: present postsynaptic currents.
+
+        Raises:
+            NotImplementedError: ``current`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"Neuron `{type(self).__name__}` must implement "
+            "the getter for property `current`."
+        )
+
+    @current.setter
+    def current(self, value: torch.Tensor):
+        raise NotImplementedError(
+            f"Neuron `{type(self).__name__}` must implement "
+            "the setter for property `current`."
+        )
+
     @abstractmethod
     def clear(self, **kwargs):
         r"""Resets neurons to their resting state.
@@ -152,14 +178,14 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
     @abstractmethod
     def forward(
         self, inputs: torch.Tensor, **kwargs
-    ) -> torch.Tensor | tuple[torch.Tensor, ...]:
+    ) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
         Args:
             inputs (torch.Tensor): input currents to the neurons.
 
         Returns:
-            torch.Tensor | tuple[torch.Tensor, ...]: results from integration of inputs.
+            torch.Tensor: postsynaptic spikes from integration of inputs.
 
         Raises:
             NotImplementedError: ``forward`` must be implemented by the subclass.

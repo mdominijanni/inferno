@@ -1,12 +1,12 @@
 from .. import Neuron
 from .. import functional as nf
-from .mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
+from .mixins import AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin
 from inferno._internal import numeric_limit
 import math
 import torch
 
 
-class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
+class LIF(VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
     r"""Simulation of leaky integrate-and-fire (LIF) neuron dynamics.
 
     .. math::
@@ -70,7 +70,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
 
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
-        SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
+        CurrentSpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
 
     def _integrate_v(self, masked_inputs):
         """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
@@ -136,7 +136,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         return spikes
 
 
-class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
+class ALIF(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
     r"""Simulation of adaptive leaky integrate-and-fire (ALIF) neuron dynamics.
 
     ALIF is implemented as a step of leaky integrate-and-fire applying existing
@@ -280,7 +280,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
 
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
-        SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
+        CurrentSpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
         AdaptationMixin.__init__(
             self, torch.zeros(*self.shape, len(self.tc_adaptation)), False
         )
@@ -392,7 +392,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         return spikes
 
 
-class GLIF1(VoltageMixin, SpikeRefractoryMixin, Neuron):
+class GLIF1(VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
     r"""Simulation of generalized leaky integrate-and-fire 1 (GLIF\ :sub:`1`) neuron dynamics.
 
     Alias for :py:class:`~inferno.neural.LIF`.
@@ -468,7 +468,7 @@ class GLIF1(VoltageMixin, SpikeRefractoryMixin, Neuron):
         return LIF.forward(inputs, refrac_lock=refrac_lock)
 
 
-class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
+class GLIF2(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
     r"""Simulation of generalized leaky integrate-and-fire 2 (GLIF\ :sub:`2`) neuron dynamics.
 
     .. math::
@@ -612,7 +612,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
 
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
-        SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
+        CurrentSpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
         AdaptationMixin.__init__(
             self, torch.zeros(*self.shape, len(self.tc_adaptation)), False
         )
