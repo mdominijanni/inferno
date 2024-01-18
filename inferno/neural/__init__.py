@@ -17,9 +17,9 @@ from .synapses.linear import (
 )
 
 from .connections.linear import (
-    DenseLinear,
-    DirectLinear,
-    LateralLinear,
+    LinearDense,
+    LinearDirect,
+    LinearLateral,
 )
 
 from .connections.conv import (
@@ -45,9 +45,9 @@ __all__ = [
     "GLIF1",
     "GLIF2",
     "PassthroughSynapse",
-    "DenseLinear",
-    "DirectLinear",
-    "LateralLinear",
+    "LinearDense",
+    "LinearDirect",
+    "LinearLateral",
     "Conv2D",
     "Layer",
     "Normalization",

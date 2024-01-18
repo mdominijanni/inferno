@@ -1,8 +1,0 @@
-﻿LateralLinear
-=============
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: LateralLinear
-    :members:
-    :show-inheritance:

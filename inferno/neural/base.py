@@ -150,8 +150,16 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
         )
 
     @abstractmethod
-    def forward(self, *args, **kwargs):
+    def forward(
+        self, inputs: torch.Tensor, **kwargs
+    ) -> torch.Tensor | tuple[torch.Tensor, ...]:
         r"""Runs a simulation step of the neuronal dynamics.
+
+        Args:
+            inputs (torch.Tensor): input currents to the neurons.
+
+        Returns:
+            torch.Tensor | tuple[torch.Tensor, ...]: results from integration of inputs.
 
         Raises:
             NotImplementedError: ``forward`` must be implemented by the subclass.
@@ -358,8 +366,14 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         )
 
     @abstractmethod
-    def forward(self, *args, **kwargs):
+    def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Runs a simulation step of the synaptic dynamics.
+
+        Args:
+            *inputs (torch.Tensor): tensors shaped like the synapse.
+
+        Returns:
+            torch.Tensor: synaptic currents after integration of the inputs.
 
         Raises:
             NotImplementedError: ``forward`` must be implemented by the subclass.
@@ -627,7 +641,7 @@ class Connection(Module, ABC):
         return self.bias is None
 
     @property
-    def delayed(self) -> float | None:
+    def delayedby(self) -> float | None:
         r"""Maxmimum valid learned delay, in milliseconds.
 
         Returns:
@@ -640,7 +654,7 @@ class Connection(Module, ABC):
         if self.delay is not None:
             return self.synapse.delay
 
-    @abstractmethod
+    @property
     def syncurrent(self) -> torch.Tensor:
         r"""Currents from the synapse at the time last used by the connection.
 
@@ -651,7 +665,7 @@ class Connection(Module, ABC):
             If :py:attr:`delayed` is None, this should return the most recent synaptic
             currents, otherwise it should return those indexed by :py:attr:`delay`.
         """
-        if self.delayed:
+        if self.delayedby:
             return self.synapse.current_at(self.selector)
         else:
             return self.synapse.current
@@ -662,11 +676,8 @@ class Connection(Module, ABC):
 
         Returns:
             torch.Tensor: delay-offset synaptic spikes.
-
-        Raises:
-            NotImplementedError: ``synspike`` must be implemented by the subclass.
         """
-        if self.delayed:
+        if self.delayedby:
             return self.synapse.spike_at(self.selector)
         else:
             return self.synapse.spike
@@ -738,10 +749,10 @@ class Connection(Module, ABC):
         )
 
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the output for pre-post learning methods.
+        r"""Reshapes data like connection output for pre-post learning methods.
 
         Args:
-            data (torch.Tensor): data shaped like connection output.
+            data (torch.Tensor): data shaped like output of :py:meth:`forward`.
 
         Raises:
             NotImplementedError: ``postsyn_receptive`` must be
@@ -775,8 +786,7 @@ class Connection(Module, ABC):
         r"""Reshapes data like the synapse state for pre-post learning methods.
 
         Args:
-            data (torch.Tensor): data shaped like :py:attr:`syncurrent`
-                or :py:attr:`synspike`.
+            data (torch.Tensor): data shaped like output of :py:meth:`like_synaptic`.
 
         Raises:
             NotImplementedError: ``presyn_receptive`` must be
@@ -807,11 +817,22 @@ class Connection(Module, ABC):
         )
 
     @abstractmethod
-    def forward(self, *args, **kwargs):
+    def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Runs a simulation step of the connection.
+
+        Args:
+            *inputs (torch.Tensor): inputs which will be reshaped like the composed
+                synapse and passed to its :py:meth`Synapse.forward` call.
+
+        Returns:
+            torch.Tensor: resulting postsynaptic currents.
 
         Raises:
             NotImplementedError: ``forward`` must be implemented by the subclass.
+
+        Note:
+            When subclassing, keyword arguments should also be passed to the composed
+            :py:class:`Synapse`.
         """
         raise NotImplementedError(
             f"Connection `{type(self).__name__}` must implement the method `forward`."

@@ -1,8 +1,0 @@
-﻿DenseLinear
-===========
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: DenseLinear
-    :members:
-    :show-inheritance:

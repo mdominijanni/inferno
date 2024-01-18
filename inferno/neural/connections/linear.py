@@ -1,33 +1,67 @@
+from ..base import Connection, SynapseConstructor
+from ..base import Synapse  # noqa:F401, for docstrings
+from .mixins import WeightBiasDelayMixin
 import einops as ein
+from inferno._internal import numeric_limit
 from inferno.typing import OneToOne
 import math
 import torch
 import torch.nn.functional as F
-from .. import Connection, SynapseConstructor
-from .mixins import WeightBiasDelayMixin
 
 
-class DenseLinear(WeightBiasDelayMixin, Connection):
+class LinearDense(WeightBiasDelayMixin, Connection):
     r"""Linear all-to-all connection.
 
     .. math::
         y = x W^\intercal + b
 
     Args:
-        in_shape (tuple[int, ...] | int): expected shape of input tensor, excluding batch.
-        out_shape (tuple[int, ...] | int): expected shape of output tensor, excluding batch.
+        in_shape (tuple[int, ...] | int): expected shape of input tensor,
+            excluding batch dimension.
+        out_shape (tuple[int, ...] | int): expected shape of output tensor,
+            excluding batch dimension.
         step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
-        synapse (SynapseConstructor): partial constructor for inner :py:class:`~inferno.neural.Synapse`.
+        synapse (SynapseConstructor): partial constructor for inner :py:class:`Synapse`.
+        bias (bool, optional): if the connection should support
+            learnable additive bias. Defaults to False.
+        delay (float | None, optional): maximum supported delay length, in
+            :math:`\mathrm{ms}`, excludes delays when None. Defaults to None.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
-        bias (bool, optional): if the connection should include learnable additive bias. Defaults to False.
-        delay (float | None, optional): length of time the connection should support delays for. Defaults to None.
-        weight_init (OneToOne | None, optional): initializer for weights. Defaults to None.
-        bias_init (OneToOne | None, optional): initializer for biases. Defaults to None.
-        delay_init (OneToOne | None, optional): initializer for delays. Defaults to None.
+        weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.
+            Defaults to None.
+        bias_init (OneToOne[torch.Tensor] | None, optional): initializer for biases.
+            Defaults to None.
+        delay_init (OneToOne[torch.Tensor] | None, optional): initializer for delays.
+            Defaults to None.
 
-    Raises:
-        ValueError: step time must be a positive real.
-        ValueError: delay, if not none, must be a positive real.
+    .. admonition:: Shape
+        :class: tensorshape
+
+        ``LinearDense.weight``, ``LinearDense.delay``:
+
+        :math:`\prod(N_0, \cdots) \times \prod(M_0, \cdots)`
+
+        ``LinearDense.bias``:
+
+        :math:`(N_0 \cdot \cdots)`
+
+        Where:
+            * :math:`N_0, \cdots` are the unbatched output dimensions.
+            * :math:`M_0, \cdots` are the unbatched input dimensions.
+
+    Note:
+        When ``delay`` is None, no ``delay_`` parameter is created and altering the
+        maximum delay of :py:attr:`synapse` will have no effect. Setting to 0 will
+        create and register a ``delay_`` parameter but not use delays unless it is
+        later changed.
+
+    Note:
+        If ``weight_init`` or ``bias_init`` are None, ``weight`` and ``bias`` are,
+        respectively, initialized as uniform random values over the interval
+        :math:`[0, 1)` using :py:func:`torch.rand`.
+
+        If ``delay_init`` is None, ``delay`` is initialized as zeros using
+        :py:func:`torch.rand`.
     """
 
     def __init__(
@@ -37,58 +71,63 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         step_time: float,
         *,
         synapse: SynapseConstructor,
-        batch_size: int = 1,
         bias: bool = False,
         delay: float | None = None,
-        weight_init: OneToOne | None = None,
-        bias_init: OneToOne | None = None,
-        delay_init: OneToOne | None = None,
+        batch_size: int = 1,
+        weight_init: OneToOne[torch.Tensor] | None = None,
+        bias_init: OneToOne[torch.Tensor] | None = None,
+        delay_init: OneToOne[torch.Tensor] | None = None,
     ):
-        # convert shapes
+        # connection attributes
         try:
-            in_shape = (int(in_shape),)
-        except TypeError:
-            in_shape = tuple(int(s) for s in in_shape)
-        try:
-            out_shape = (int(out_shape),)
-        except TypeError:
-            out_shape = tuple(int(s) for s in out_shape)
-
-        input_size = math.prod(in_shape)
-        output_size = math.prod(out_shape)
-
-        # check that the step time is valid
-        if float(step_time) <= 0:
-            raise ValueError(f"step time must be positive, received {float(step_time)}")
-
-        # check that the delay is valid
-        if delay is not None and float(delay) <= 0:
-            raise ValueError(
-                f"delay, if not none, must be positive, received {float(delay)}"
+            self.in_shape = tuple(
+                numeric_limit(f"`in_shape[{d}]`", n, 0, "gt", int)
+                for d, n in enumerate(in_shape)
             )
+        except TypeError:
+            self.in_shape = (numeric_limit("`in_shape`", in_shape, 0, "gt", int),)
+        finally:
+            if not self.in_shape:
+                raise ValueError(
+                    f"`in_shape` of `{in_shape}` must represent at least "
+                    "a 1-dimensional input."
+                )
+
+        try:
+            self.out_shape = tuple(
+                numeric_limit(f"`out_shape[{d}]`", n, 0, "gt", int)
+                for d, n in enumerate(out_shape)
+            )
+        except TypeError:
+            self.out_shape = (numeric_limit("`out_shape`", out_shape, 0, "gt", int),)
+        finally:
+            if not self.out_shape:
+                raise ValueError(
+                    f"`in_shape` of `{out_shape}` must represent at least "
+                    "a 1-dimensional input."
+                )
+
+        # intermediate values
+        in_size, out_size = math.prod(self.in_shape), math.prod(self.out_shape)
 
         # call superclass constructor
         Connection.__init__(
             self,
             synapse=synapse(
-                input_size,
-                float(step_time),
-                int(batch_size),
-                None if not delay else float(delay),
+                in_size,
+                step_time,
+                0.0 if delay is None else delay,
+                batch_size,
             ),
         )
 
         # call mixin constructor
         WeightBiasDelayMixin.__init__(
-            weight=torch.rand(output_size, input_size),
-            bias=(None if not bias else torch.rand(output_size, 1)),
-            delay=(None if not delay else torch.zeros(output_size, input_size)),
+            weight=torch.rand(out_size, in_size),
+            bias=(None if not bias else torch.rand(out_size)),
+            delay=(None if delay is None else torch.zeros(out_size, in_size)),
             requires_grad=False,
         )
-
-        # register extras
-        self.register_extra("in_shape", in_shape)
-        self.register_extra("out_shape", out_shape)
 
         # initialize parameters
         if weight_init:
@@ -100,131 +139,8 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         if delay_init and delay:
             self.delay = delay_init(self.delay)
 
-    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the synapse data for pre/post learning methods.
-
-        Args:
-            data (torch.Tensor): data to reshape.
-
-        Returns:
-            torch.Tensor: reshaped data.
-
-        Shape:
-            Input:
-            :math:`B \times N_\mathrm{in} \times [N_\mathrm{out}]`
-
-            Output:
-            :math:`B \times 1 \times N_\mathrm{in} \times 1` or
-            :math:`B \times N_\mathrm{out} \times N_\mathrm{in} \times 1`
-
-            Where :math:`N_\mathrm{in}` is the number of connection inputs and :math:`N_\mathrm{out}` is the number
-            of connection outputs.
-        """
-        match data.ndim:
-            case 3:
-                return ein.rearrange(data, "b i -> b 1 i 1")
-            case 2:
-                return ein.rearrange(data, "b i o -> b o i 1")
-            case _:
-                raise RuntimeError(
-                    f"data with invalid number of dimensions {data.ndim} received."
-                )
-
-    def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the output for pre/post learning methods.
-
-        Args:
-            data (torch.Tensor): data to reshape.
-
-        Returns:
-            torch.Tensor: reshaped data.
-
-        .. admonition:: Shape
-            :class: tensorshape
-
-            **Args**:
-
-            ``data``:
-
-            :math:`B \times N_\mathrm{out}`
-
-            **Return**:
-
-            :math:`B \times 1 \times N_\mathrm{out} \times 1`
-
-            Where:
-                * :math:`N_\mathrm{out}` is the number of connection outputs.
-                * :math:`N_\mathrm{out}` is the number of connection outputs.
-        """
-        return ein.rearrange(data, "b o -> b o 1 1")
-
-    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
-        r"""Generates connection output from inputs, after passing through the synapse.
-
-        Outputs are determined as the learned linear transformation applied to synaptic
-        currents, after new input is applied to the synapse. These are reshaped according
-        to the specified output shape.
-
-        Args:
-            inputs (torch.Tensor): inputs to the connection.
-
-        Returns:
-            torch.Tensor: outputs from the connection.
-
-        Note:
-            Keyword arguments are passed to :py:class:`~inferno.neural.Synapse`
-            :py:meth:`~inferno.neural.Synapse.forward` call.
-        """
-        if self.delayed:
-            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
-            res = self.syncurrent
-
-            if self.bias is not None:
-                res = torch.sum(res * self.weight.t() + self.bias, dim=1)
-            else:
-                res = torch.sum(res * self.weight.t(), dim=1)
-
-        else:
-            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
-            res = F.linear(res, self.weight, self.bias)
-
-        return res.view(-1, *self.outshape)
-
     @property
-    def syncurrent(self) -> torch.Tensor:
-        r"""Currents from the synapse at the time last used by the connection.
-
-        Returns:
-             torch.Tensor: delay-offset synaptic currents.
-        """
-        if self.delayed:
-            return self.synapse.spike_at(self.selector)
-        else:
-            return self.synapse.current
-
-    @property
-    def synspike(self) -> torch.Tensor:
-        r"""Spikes to the synapse at the time last used by the connection.
-
-        Returns:
-             torch.Tensor: delay-offset synaptic spikes.
-        """
-        if self.delayed:
-            return self.synapse.spike_at(self.selector)
-        else:
-            return self.synapse.spike
-
-    @property
-    def selector(self) -> torch.Tensor | None:
-        r"""Learned delays as a selector for history.
-
-        Returns:
-             torch.Tensor | None: delay selector if one exists.
-        """
-        return ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
-
-    @property
-    def inshape(self) -> tuple[int]:
+    def inshape(self) -> tuple[int, ...]:
         r"""Shape of inputs to the connection, excluding the batch dimension.
 
         Returns:
@@ -233,7 +149,7 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         return self.in_shape
 
     @property
-    def outshape(self) -> tuple[int]:
+    def outshape(self) -> tuple[int, ...]:
         r"""Shape of outputs from the connection, excluding the batch dimension.
 
         Returns:
@@ -241,322 +157,107 @@ class DenseLinear(WeightBiasDelayMixin, Connection):
         """
         return self.out_shape
 
-
-class DirectLinear(WeightBiasDelayMixin, Connection):
-    r"""Linear one-to-one connection.
-
-    .. math::
-        y = x \left(W^\intercal \odot I\right) + b
-
-    Args:
-        shape (tuple[int, ...] | int): expected shape of input/output tensor, excluding batch.
-        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
-        synapse (SynapseConstructor): partial constructor for inner :py:class:`~inferno.neural.Synapse`.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
-        bias (bool, optional): if the connection should include learnable additive bias. Defaults to False.
-        delay (float | None, optional): length of time the connection should support delays for. Defaults to None.
-        weight_init (OneToOne | None, optional): initializer for weights. Defaults to None.
-        bias_init (OneToOne | None, optional): initializer for biases. Defaults to None.
-        delay_init (OneToOne | None, optional): initializer for delays. Defaults to None.
-
-    Raises:
-        ValueError: step time must be a positive real.
-        ValueError: delay, if not none, must be a positive real.
-    """
-
-    def __init__(
-        self,
-        shape: tuple[int, ...] | int,
-        step_time: float,
-        *,
-        synapse: SynapseConstructor,
-        batch_size: int = 1,
-        bias: bool = False,
-        delay: float | None = None,
-        weight_init: OneToOne | None = None,
-        bias_init: OneToOne | None = None,
-        delay_init: OneToOne | None = None,
-    ):
-        # convert shapes
-        try:
-            shape = (int(shape),)
-        except TypeError:
-            shape = tuple(int(s) for s in shape)
-
-        size = math.prod(shape)
-
-        # check that the step time is valid
-        if float(step_time) <= 0:
-            raise ValueError(
-                f"step time must be greater than zero, received {float(step_time)}"
-            )
-
-        # check that the delay is valid
-        if delay is not None and float(delay) <= 0:
-            raise ValueError(
-                f"delay, if not none, must be positive, received {float(delay)}"
-            )
-
-        # call superclass constructor
-        Connection.__init__(
-            self,
-            synapse=synapse(
-                size,
-                float(step_time),
-                int(batch_size),
-                None if not delay else float(delay),
-            ),
-        )
-
-        # call mixin constructor
-        WeightBiasDelayMixin.__init__(
-            weight=torch.rand(size),
-            bias=(None if not bias else torch.rand(size)),
-            delay=(None if not bias else torch.zeros(size)),
-            requires_grad=False,
-        )
-
-        # register extras
-        self.register_extra("shape", shape)
-
-        # initialize parameters
-        if weight_init:
-            self.weight = weight_init(self.weight)
-
-        if bias_init and bias:
-            self.bias = bias_init(self.bias)
-
-        if delay_init and delay:
-            self.delay = delay_init(self.delay)
-
-    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the synapse data for pre/post learning methods.
-
-        Args:
-            data (torch.Tensor): data to reshape.
-
-        Returns:
-            torch.Tensor: reshaped data.
-
-         Shape:
-            Input:
-            :math:`B \times N`
-
-            Output:
-            :math:`B \times N \times 1` or
-
-            Where :math:`N` is the number of connection inputs/outputs.
-        """
-        return ein.rearrange(data, "b n -> b n 1")
-
-    def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the output for pre/post learning methods.
-
-        Args:
-            data (torch.Tensor): data to reshape.
-
-        Returns:
-            torch.Tensor: reshaped data.
-
-         Shape:
-            Input:
-            :math:`B \times N`
-
-            Output:
-            :math:`B \times N \times 1` or
-
-            Where :math:`N` is the number of connection inputs/outputs.
-        """
-        return ein.rearrange(data, "b n -> b n 1")
-
-    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
-        r"""Generates connection output from inputs, after passing through the synapse.
-
-        Outputs are determined as the learned linear transformation applied to synaptic
-        currents, after new input is applied to the synapse. These are reshaped according
-        to the specified output shape.
-
-        Args:
-            inputs (torch.Tensor): inputs to the connection.
-
-        Returns:
-            torch.Tensor: outputs from the connection.
-
-        Note:
-            Keyword arguments are passed to :py:class:`~inferno.neural.Synapse`
-            :py:meth:`~inferno.neural.Synapse.forward` call.
-        """
-        if self.delayed:
-            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
-            res = ein.rearrange(self.current, "b n 1 -> b n")
-        else:
-            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
-
-        if self.bias is not None:
-            res = res * self.weight + self.bias
-        else:
-            res = res * self.weight
-
-        return res.view(-1, *self.outshape)
-
-    @property
-    def syncurrent(self) -> torch.Tensor:
-        r"""Currents from the synapse at the time last used by the connection.
-
-        Returns:
-             torch.Tensor: delay-offset synaptic currents.
-        """
-        if self.delayed:
-            return self.synapse.current_at(self.selector)
-        else:
-            return self.synapse.current
-
-    @property
-    def synspike(self) -> torch.Tensor:
-        r"""Spikes to the synapse at the time last used by the connection.
-
-        Returns:
-             torch.Tensor: delay-offset synaptic spikes.
-        """
-        if self.delayed:
-            return self.synapse.spike_at(self.selector)
-        else:
-            return self.synapse.spike
-
     @property
     def selector(self) -> torch.Tensor | None:
-        r"""Learned delays as a selector for history.
+        r"""Learned delays as a selector for synaptic currents and delays.
 
         Returns:
-             torch.Tensor | None: delay selector if one exists.
+            torch.Tensor | None: delay selector if the connection has learnable delays.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            :math:`B \times M \times N`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`M` is the number of elements across input dimensions.
+                * :math:`N` is the number of elements across output dimensions.
         """
-        return ein.rearrange(self.delay, "n -> 1 n 1").expand(self.bsize, -1, -1)
+        return ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
 
-    @property
-    def inshape(self) -> tuple[int]:
-        r"""Shape of inputs to the connection, excluding the batch dimension.
-
-        Returns:
-            tuple[int]: shape of inputs to the connection.
-        """
-        return self.shape
-
-    @property
-    def outshape(self) -> tuple[int]:
-        r"""Shape of outputs from the connection, excluding the batch dimension.
-
-        Returns:
-            tuple[int]: shape of outputs from the connection.
-        """
-        return self.shape
-
-
-class LateralLinear(WeightBiasDelayMixin, Connection):
-    r"""Linear all-to-"all but one" connection.
-
-    .. math::
-        y = x \left(W^\intercal \odot (1 - I\right)) + b
-
-    Args:
-        shape (tuple[int, ...] | int): expected shape of input/output tensor, excluding batch.
-        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
-        synapse (SynapseConstructor): partial constructor for inner :py:class:`~inferno.neural.Synapse`.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
-        bias (bool, optional): if the connection should include learnable additive bias. Defaults to False.
-        delay (float | None, optional): length of time the connection should support delays for. Defaults to None.
-        weight_init (OneToOne | None, optional): initializer for weights. Defaults to None.
-        bias_init (OneToOne | None, optional): initializer for biases. Defaults to None.
-        delay_init (OneToOne | None, optional): initializer for delays. Defaults to None.
-
-    Raises:
-        ValueError: step time must be a positive real.
-        ValueError: delay, if not none, must be a positive real.
-    """
-
-    def __init__(
-        self,
-        shape: tuple[int, ...] | int,
-        step_time: float,
-        *,
-        synapse: SynapseConstructor,
-        batch_size: int = 1,
-        bias: bool = False,
-        delay: float | None = None,
-        weight_init: OneToOne | None = None,
-        bias_init: OneToOne | None = None,
-        delay_init: OneToOne | None = None,
-    ):
-        # convert shapes
-        try:
-            shape = (int(shape),)
-        except TypeError:
-            shape = tuple(int(s) for s in shape)
-
-        size = math.prod(shape)
-
-        # check that the step time is valid
-        if float(step_time) <= 0:
-            raise ValueError(f"step time must be positive, received {float(step_time)}")
-
-        # check that the delay is valid
-        if delay is not None and float(delay) <= 0:
-            raise ValueError(
-                f"delay, if not none, must be positive, received {float(delay)}"
-            )
-
-        # call superclass constructor
-        Connection.__init__(
-            self,
-            synapse=synapse(
-                size,
-                float(step_time),
-                int(batch_size),
-                None if not delay else float(delay),
-            ),
-        )
-
-        # call mixin constructor
-        WeightBiasDelayMixin.__init__(
-            weight=torch.rand(size, size) * (1 - torch.eye(size)),
-            bias=(None if not bias else torch.rand(size, 1)),
-            delay=(None if not bias else torch.zeros(size, size)),
-            requires_grad=False,
-        )
-
-        # register buffer
-        self.register_buffer("mask", 1 - torch.eye(size))
-
-        # register extras
-        self.register_extra("shape", shape)
-
-        # initialize parameters
-        if weight_init:
-            self.weight = weight_init(self.weight)
-
-        if bias_init and bias:
-            self.bias = bias_init(self.bias)
-
-        if delay_init and delay:
-            self.delay = delay_init(self.delay)
-
-    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the synapse data for pre/post learning methods.
+    def like_input(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like synapse input to connection input.
 
         Args:
-            data (torch.Tensor): data to reshape.
+            data (torch.Tensor): data shaped like synapse input.
 
         Returns:
             torch.Tensor: reshaped data.
 
-         Shape:
-            Input:
-            :math:`B \times N \times [N]`
+        .. admonition:: Shape
+            :class: tensorshape
 
-            Output:
-            :math:`B \times 1 \times N \times 1` or
-            :math:`B \times N \times N \times 1`
+            ``data``:
 
-            Where :math:`N` is the number of connection inputs/outputs.
+            :math:`B \times M`
+
+            ``return``:
+
+            :math:`B \times M_0 \times \cdots`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`M` is the number of elements across input dimensions.
+                * :math:`M_0, \cdots` are the unbatched input dimensions.
+        """
+        return data.view(-1, *self.inshape)
+
+    def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like connection input to synapse input.
+
+        Args:
+            data (torch.Tensor): data shaped like connection input.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times M_0 \times \cdots`
+
+            ``return``:
+
+            :math:`B \times M`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`M_0, \cdots` are the unbatched input dimensions.
+                * :math:`M` is the number of elements across input dimensions.
+        """
+        return ein.reduce(data, "b ... -> b (...)")
+
+    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the synapse state for pre-post learning methods.
+
+        Args:
+            data (torch.Tensor): data shaped like output of :py:meth:`like_synaptic`.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times M \times [N]`
+
+            ``return``:
+
+            :math:`B \times N \times M \times 1`
+
+            or
+
+            :math:`B \times 1 \times M \times 1`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`M` is the number of elements across input dimensions.
+                * :math:`N` is the number of elements across output dimensions.
         """
         match data.ndim:
             case 3:
@@ -569,92 +270,194 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
                 )
 
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the output for pre/post learning methods.
+        r"""Reshapes data like connection output for pre-post learning methods.
 
         Args:
-            data (torch.Tensor): data to reshape.
+            data (torch.Tensor): data shaped like output of :py:meth:`forward`.
 
         Returns:
             torch.Tensor: reshaped data.
 
-         Shape:
-            Input:
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
             :math:`B \times N`
 
-            Output:
-            :math:`B \times 1 \times N \times 1`
+            ``return``:
 
-            Where :math:`N` is the number of connection inputs/outputs.
+            :math:`B \times N \times 1 \times 1`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N` is the number of elements across output dimensions.
         """
         return ein.rearrange(data, "b o -> b o 1 1")
 
-    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
+    def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
         Outputs are determined as the learned linear transformation applied to synaptic
-        currents, after new input is applied to the synapse. These are reshaped according
-        to the specified output shape.
+        currents, after new input is applied to the synapse, then reshaped to match
+        :py:attr:`boutshape`.
 
         Args:
-            inputs (torch.Tensor): inputs to the connection.
+            *inputs (torch.Tensor): inputs to the connection.
 
         Returns:
             torch.Tensor: outputs from the connection.
 
-        Note:
-            Keyword arguments are passed to :py:class:`~inferno.neural.Synapse`
-            :py:meth:`~inferno.neural.Synapse.forward` call.
-        """
-        if self.delayed:
-            _ = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
-            res = self.syncurrent
+        .. admonition:: Shape
+            :class: tensorshape
 
-            if self.bias is not None:
+            ``*inputs``:
+
+            :math:`B \times M_0 \times \cdots`
+
+            ``return``:
+
+            :math:`B \times N_0 \times \cdots`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`M_0, \cdots` are the unbatched input dimensions.
+                * :math:`N_0, \cdots` are the unbatched output dimensions.
+
+        Note:
+            ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
+            py:meth:`Synapse.forward` of :py:attr:`synapse`. Keyword arguments are
+            also passed through.
+        """
+        # reshape inputs and perform synapse simulation
+        res = self.synapse(
+            *(self.like_synaptic(inp) for inp in inputs), **kwargs
+        )  # B I
+
+        if self.delayed:
+            res = self.syncurrent  # B I O
+
+            if self.biased:
                 res = torch.sum(res * self.weight.t() + self.bias, dim=1)
             else:
                 res = torch.sum(res * self.weight.t(), dim=1)
 
         else:
-            res = self.synapse(ein.rearrange(inputs, "b ... -> b (...)"), **kwargs)
             res = F.linear(res, self.weight, self.bias)
 
         return res.view(-1, *self.outshape)
 
+
+class LinearDirect(WeightBiasDelayMixin, Connection):
+    r"""Linear one-to-one connection.
+
+    .. math::
+        y = x \odot W + b
+
+    Args:
+        shape (tuple[int, ...] | int): expected shape of input and output tensors,
+            excluding batch dimension.
+        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
+        synapse (SynapseConstructor): partial constructor for inner :py:class:`Synapse`.
+        bias (bool, optional): if the connection should support
+            learnable additive bias. Defaults to False.
+        delay (float | None, optional): maximum supported delay length, in
+            :math:`\mathrm{ms}`, excludes delays when None. Defaults to None.
+        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+        weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.
+            Defaults to None.
+        bias_init (OneToOne[torch.Tensor] | None, optional): initializer for biases.
+            Defaults to None.
+        delay_init (OneToOne[torch.Tensor] | None, optional): initializer for delays.
+            Defaults to None.
+
+    .. admonition:: Shape
+        :class: tensorshape
+
+        ``LinearDirect.weight``, ``LinearDirect.delay``, and ``LinearDirect.bias``:
+
+        :math:`\prod(N_0, \cdots)`
+
+        Where:
+            * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+
+    Note:
+        When ``delay`` is None, no ``delay_`` parameter is created and altering the
+        maximum delay of :py:attr:`synapse` will have no effect. Setting to 0 will
+        create and register a ``delay_`` parameter but not use delays unless it is
+        later changed.
+
+    Note:
+        If ``weight_init`` or ``bias_init`` are None, ``weight`` and ``bias`` are,
+        respectively, initialized as uniform random values over the interval
+        :math:`[0, 1)` using :py:func:`torch.rand`.
+
+        If ``delay_init`` is None, ``delay`` is initialized as zeros using
+        :py:func:`torch.rand`.
+    """
+
+    def __init__(
+        self,
+        shape: tuple[int, ...] | int,
+        step_time: float,
+        *,
+        synapse: SynapseConstructor,
+        bias: bool = False,
+        delay: float | None = None,
+        batch_size: int = 1,
+        weight_init: OneToOne[torch.Tensor] | None = None,
+        bias_init: OneToOne[torch.Tensor] | None = None,
+        delay_init: OneToOne[torch.Tensor] | None = None,
+    ):
+        # connection attribute
+        try:
+            self.shape = tuple(
+                numeric_limit(f"`shape[{d}]`", n, 0, "gt", int)
+                for d, n in enumerate(shape)
+            )
+        except TypeError:
+            self.shape = (numeric_limit("`shape`", shape, 0, "gt", int),)
+        finally:
+            if not self.shape:
+                raise ValueError(
+                    f"`in_shape` of `{shape}` must represent at least "
+                    "a 1-dimensional input and output."
+                )
+
+        # intermediate value
+        size = math.prod(self.shape)
+
+        # call superclass constructor
+        Connection.__init__(
+            self,
+            synapse=synapse(
+                size,
+                step_time,
+                0.0 if delay is None else delay,
+                batch_size,
+            ),
+        )
+
+        # call mixin constructor
+        WeightBiasDelayMixin.__init__(
+            weight=torch.rand(size),
+            bias=(None if not bias else torch.rand(size)),
+            delay=(None if delay is None else torch.zeros(size)),
+            requires_grad=False,
+        )
+
+        # initialize parameters
+        if weight_init:
+            self.weight = weight_init(self.weight)
+
+        if bias_init and bias:
+            self.bias = bias_init(self.bias)
+
+        if delay_init and delay:
+            self.delay = delay_init(self.delay)
+
     @property
-    def syncurrent(self) -> torch.Tensor:
-        r"""Currents from the synapse at the time last used by the connection.
-
-        Returns:
-             torch.Tensor: delay-offset synaptic currents.
-        """
-        if self.delayed:
-            return self.synapse.current_at(self.selector)
-        else:
-            return self.synapse.current
-
-    @property
-    def synspike(self) -> torch.Tensor:
-        r"""Spikes to the synapse at the time last used by the connection.
-
-        Returns:
-             torch.Tensor: delay-offset synaptic spikes.
-        """
-        if self.delayed:
-            return self.synapse.spike_at(self.selector)
-        else:
-            return self.synapse.spike
-
-    @property
-    def selector(self) -> torch.Tensor | None:
-        r"""Learned delays as a selector for history.
-
-        Returns:
-             torch.Tensor | None: delay selector if one exists.
-        """
-        return ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
-
-    @property
-    def inshape(self) -> tuple[int]:
+    def inshape(self) -> tuple[int, ...]:
         r"""Shape of inputs to the connection, excluding the batch dimension.
 
         Returns:
@@ -663,7 +466,7 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
         return self.shape
 
     @property
-    def outshape(self) -> tuple[int]:
+    def outshape(self) -> tuple[int, ...]:
         r"""Shape of outputs from the connection, excluding the batch dimension.
 
         Returns:
@@ -672,14 +475,301 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
         return self.shape
 
     @property
+    def selector(self) -> torch.Tensor | None:
+        r"""Learned delays as a selector for synaptic currents and delays.
+
+        Returns:
+            torch.Tensor | None: delay selector if the connection has learnable delays.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            :math:`B \times N`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N` is the number of elements across input/output dimensions.
+        """
+        return ein.rearrange(self.delay, "n -> 1 n 1").expand(self.bsize, -1, -1)
+
+    def like_input(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like synapse input to connection input.
+
+        Args:
+            data (torch.Tensor): data shaped like synapse input.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times N`
+
+            ``return``:
+
+            :math:`B \times N_0 \times \cdots`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N` is the number of elements across input/output dimensions.
+                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+        """
+        return data.view(-1, *self.inshape)
+
+    def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like connection input to synapse input.
+
+        Args:
+            data (torch.Tensor): data shaped like connection input.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times N_0 \times \cdots`
+
+            ``return``:
+
+            :math:`B \times N`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+                * :math:`N` is the number of elements across input/output dimensions.
+        """
+        return ein.reduce(data, "b ... -> b (...)")
+
+    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the synapse state for pre-post learning methods.
+
+        Args:
+            data (torch.Tensor): data shaped like output of :py:meth:`like_synaptic`.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times N`
+
+            ``return``:
+
+            :math:`B \times N \times 1`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N` is the number of elements across output dimensions.
+        """
+        return ein.rearrange(data, "b n -> b n 1")
+
+    def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like connection output for pre-post learning methods.
+
+        Args:
+            data (torch.Tensor): data shaped like output of :py:meth:`forward`.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times N`
+
+            ``return``:
+
+            :math:`B \times N \times 1`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N` is the number of elements across output dimensions.
+        """
+        return ein.rearrange(data, "b n -> b n 1")
+
+    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
+        r"""Generates connection output from inputs, after passing through the synapse.
+
+        Outputs are determined as the learned linear transformation applied to synaptic
+        currents, after new input is applied to the synapse, then reshaped to match
+        :py:attr:`boutshape`.
+
+        Args:
+            inputs (torch.Tensor): inputs to the connection.
+
+        Returns:
+            torch.Tensor: outputs from the connection.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``*inputs``:
+
+            :math:`B \times N_0 \times \cdots`
+
+            ``return``:
+
+            :math:`B \times N_0 \times \cdots`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+
+        Note:
+            ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
+            py:meth:`Synapse.forward` of :py:attr:`synapse`. Keyword arguments are
+            also passed through.
+        """
+        # reshape inputs and perform synapse simulation
+        res = self.synapse(
+            *(self.like_synaptic(inp) for inp in inputs), **kwargs
+        )  # B N
+
+        if self.delayed:
+            res = ein.rearrange(self.syncurrent, "b n 1 -> b n")
+
+        if self.biased:
+            res = res * self.weight + self.bias
+        else:
+            res = res * self.weight
+
+        return res.view(-1, *self.outshape)
+
+
+class LinearLateral(WeightBiasDelayMixin, Connection):
+    r"""Linear all-to-"all but one" connection.
+
+    .. math::
+        y = x \left(W^\intercal \odot (1 - I\right)) + b
+
+    Args:
+        shape (tuple[int, ...] | int): expected shape of input and output tensors,
+            excluding batch dimension.
+        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
+        synapse (SynapseConstructor): partial constructor for inner :py:class:`Synapse`.
+        bias (bool, optional): if the connection should support
+            learnable additive bias. Defaults to False.
+        delay (float | None, optional): maximum supported delay length, in
+            :math:`\mathrm{ms}`, excludes delays when None. Defaults to None.
+        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+        weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.
+            Defaults to None.
+        bias_init (OneToOne[torch.Tensor] | None, optional): initializer for biases.
+            Defaults to None.
+        delay_init (OneToOne[torch.Tensor] | None, optional): initializer for delays.
+            Defaults to None.
+
+    .. admonition:: Shape
+        :class: tensorshape
+
+        ``LinearDense.weight``, ``LinearDense.delay``:
+
+        :math:`\prod(N_0, \cdots) \times \prod(N_0, \cdots)`
+
+        ``LinearDense.bias``:
+
+        :math:`(N_0 \cdot \cdots)`
+
+    Note:
+        If ``weight_init`` or ``bias_init`` are None, ``weight`` and ``bias`` are,
+        respectively, initialized as uniform random values over the interval
+        :math:`[0, 1)` using :py:func:`torch.rand`.
+
+        If ``delay_init`` is None, ``delay`` is initialized as zeros using
+        :py:func:`torch.rand`.
+
+    Note:
+        Weights and delays are stored internally like in :py:class:`LinearDense`, but on
+        assignment by :py:attr:`weight` and creation are masked by a tensor Weights are
+        masked by a tensor :math:`1 - I_N`, where :math:`N = (N_0 \cdot \cdots)`.
+    """
+
+    def __init__(
+        self,
+        shape: tuple[int, ...] | int,
+        step_time: float,
+        *,
+        synapse: SynapseConstructor,
+        batch_size: int = 1,
+        bias: bool = False,
+        delay: float | None = None,
+        weight_init: OneToOne | None = None,
+        bias_init: OneToOne | None = None,
+        delay_init: OneToOne | None = None,
+    ):
+        # connection attribute
+        try:
+            self.shape = tuple(
+                numeric_limit(f"`shape[{d}]`", n, 0, "gt", int)
+                for d, n in enumerate(shape)
+            )
+        except TypeError:
+            self.shape = (numeric_limit("`shape`", shape, 0, "gt", int),)
+        finally:
+            if not self.shape:
+                raise ValueError(
+                    f"`in_shape` of `{shape}` must represent at least "
+                    "a 1-dimensional input and output."
+                )
+
+        # intermediate value
+        size = math.prod(self.shape)
+
+        # call superclass constructor
+        Connection.__init__(
+            self,
+            synapse=synapse(
+                size,
+                step_time,
+                0.0 if delay is None else delay,
+                batch_size,
+            ),
+        )
+
+        # register buffer
+        self.register_buffer("mask", 1 - torch.eye(size))
+
+        # call mixin constructor
+        WeightBiasDelayMixin.__init__(
+            weight=(torch.rand(size, size) * self.mask),
+            bias=(None if not bias else torch.rand(size)),
+            delay=(None if delay is None else torch.zeros(size, size) * self.mask),
+            requires_grad=False,
+        )
+
+        # initialize parameters
+        if weight_init:
+            self.weight = weight_init(self.weight)
+
+        if bias_init and bias:
+            self.bias = bias_init(self.bias)
+
+        if delay_init and delay:
+            self.delay = delay_init(self.delay)
+
+    @property
     def weight(self) -> torch.Tensor:
-        r"""Learnable weights of the connection.
+        r"""Learnable connection weights.
 
         Args:
             value (torch.Tensor): new weights.
 
         Returns:
-            torch.Tensor: current weights.
+            torch.Tensor: present weights.
+
+        Note:
+            Setter masks weights before assignment.
         """
         return WeightBiasDelayMixin.weight.fget(self)
 
@@ -697,14 +787,193 @@ class LateralLinear(WeightBiasDelayMixin, Connection):
         Returns:
             torch.Tensor | None: current delays, if the connection has any.
 
-        Raises:
-            RuntimeError: ``delay`` cannot be set on a connection without learnable delays.
+        Note:
+            Setter masks delays before assignment.
         """
         WeightBiasDelayMixin.delay.fget(self)
 
     @delay.setter
     def delay(self, value: torch.Tensor):
-        if self.delay_ is not None:
-            WeightBiasDelayMixin.weight.fset(self, value * self.mask)
-        else:
-            WeightBiasDelayMixin.weight.fset(self, value)
+        WeightBiasDelayMixin.weight.fset(self, value * self.mask)
+
+    @property
+    def inshape(self) -> tuple[int, ...]:
+        r"""Shape of inputs to the connection, excluding the batch dimension.
+
+        Returns:
+            tuple[int]: shape of inputs to the connection.
+        """
+        return self.shape
+
+    @property
+    def outshape(self) -> tuple[int, ...]:
+        r"""Shape of outputs from the connection, excluding the batch dimension.
+
+        Returns:
+            tuple[int]: shape of outputs from the connection.
+        """
+        return self.shape
+
+    @property
+    def selector(self) -> torch.Tensor | None:
+        r"""Learned delays as a selector for synaptic currents and delays.
+
+        Returns:
+            torch.Tensor | None: delay selector if the connection has learnable delays.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            :math:`B \times N \times N`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N` is the number of elements across input/output dimensions.
+        """
+        return LinearDense.selector.fget(self)
+
+    def like_input(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like synapse input to connection input.
+
+        Args:
+            data (torch.Tensor): data shaped like synapse input.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times N`
+
+            ``return``:
+
+            :math:`B \times N_0 \times \cdots`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N` is the number of elements across input/output dimensions.
+                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+        """
+        return LinearDense.like_input(self, data)
+
+    def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like connection input to synapse input.
+
+        Args:
+            data (torch.Tensor): data shaped like connection input.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times N_0 \times \cdots`
+
+            ``return``:
+
+            :math:`B \times N`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+                * :math:`N` is the number of elements across input/output dimensions.
+        """
+        return LinearDense.like_synaptic(self, data)
+
+    def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like the synapse state for pre-post learning methods.
+
+        Args:
+            data (torch.Tensor): data shaped like output of :py:meth:`like_synaptic`.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times N \times [N]`
+
+            ``return``:
+
+            :math:`B \times N \times N \times 1`
+
+            or
+
+            :math:`B \times 1 \times N \times 1`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N` is the number of elements across input/output dimensions.
+        """
+        return LinearDense.presyn_receptive(self, data)
+
+    def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like connection output for pre-post learning methods.
+
+        Args:
+            data (torch.Tensor): data shaped like output of :py:meth:`forward`.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`B \times N`
+
+            ``return``:
+
+            :math:`B \times N \times 1 \times 1`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N` is the number of elements across input/output dimensions.
+        """
+        return LinearDense.postsyn_receptive(self, data)
+
+    def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
+        r"""Generates connection output from inputs, after passing through the synapse.
+
+        Outputs are determined as the learned linear transformation applied to synaptic
+        currents, after new input is applied to the synapse, then reshaped to match
+        :py:attr:`boutshape`.
+
+        Args:
+            *inputs (torch.Tensor): inputs to the connection.
+
+        Returns:
+            torch.Tensor: outputs from the connection.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``*inputs``:
+
+            :math:`B \times N_0 \times \cdots`
+
+            ``return``:
+
+            :math:`B \times N_0 \times \cdots`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+                * :math:`N_0, \cdots` are the unbatched output dimensions.
+
+        Note:
+            ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
+            py:meth:`Synapse.forward` of :py:attr:`synapse`. Keyword arguments are
+            also passed through.
+        """
+        return LinearDense.forward(self, *inputs, **kwargs)

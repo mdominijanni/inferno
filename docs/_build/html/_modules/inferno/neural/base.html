@@ -372,8 +372,16 @@
 <div class="viewcode-block" id="Neuron.forward">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.forward">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the neuronal dynamics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (torch.Tensor): input currents to the neurons.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor | tuple[torch.Tensor, ...]: results from integration of inputs.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
@@ -601,8 +609,14 @@
 <div class="viewcode-block" id="Synapse.forward">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.forward">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the synaptic dynamics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *inputs (torch.Tensor): tensors shaped like the synapse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: synaptic currents after integration of the inputs.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
@@ -874,7 +888,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">delayed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">delayedby</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maxmimum valid learned delay, in milliseconds.</span>
 
 <span class="sd">        Returns:</span>
@@ -887,9 +901,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">delay</span>
 
-<div class="viewcode-block" id="Connection.syncurrent">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.syncurrent">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">syncurrent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents from the synapse at the time last used by the connection.</span>
 
@@ -900,11 +912,10 @@
 <span class="sd">            If :py:attr:`delayed` is None, this should return the most recent synaptic</span>
 <span class="sd">            currents, otherwise it should return those indexed by :py:attr:`delay`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayedby</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">current_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selector</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">current</span></div>
-
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">current</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">synspike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -912,11 +923,8 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: delay-offset synaptic spikes.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``synspike`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayedby</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">spike_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selector</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">spike</span>
@@ -999,10 +1007,10 @@
 <div class="viewcode-block" id="Connection.postsyn_receptive">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.postsyn_receptive">[docs]</a>
     <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the output for pre-post learning methods.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data (torch.Tensor): data shaped like connection output.</span>
+<span class="sd">            data (torch.Tensor): data shaped like output of :py:meth:`forward`.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``postsyn_receptive`` must be</span>
@@ -1039,8 +1047,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data (torch.Tensor): data shaped like :py:attr:`syncurrent`</span>
-<span class="sd">                or :py:attr:`synspike`.</span>
+<span class="sd">            data (torch.Tensor): data shaped like output of :py:meth:`like_synaptic`.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``presyn_receptive`` must be</span>
@@ -1074,11 +1081,22 @@
 <div class="viewcode-block" id="Connection.forward">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.forward">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the connection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *inputs (torch.Tensor): inputs which will be reshaped like the composed</span>
+<span class="sd">                synapse and passed to its :py:meth`Synapse.forward` call.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: resulting postsynaptic currents.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            When subclassing, keyword arguments should also be passed to the composed</span>
+<span class="sd">            :py:class:`Synapse`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Connection `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement the method `forward`.&quot;</span>

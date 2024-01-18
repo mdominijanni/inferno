@@ -1,12 +1,12 @@
-import einops as ein
 from ..base import Connection, SynapseConstructor
-from ..base import Synapse  # noqa:F401
+from ..base import Synapse  # noqa:F401, for docstrings
+from .mixins import WeightBiasDelayMixin
+import einops as ein
 from inferno._internal import numeric_limit
 from inferno.typing import OneToOne
 import math
 import torch
 import torch.nn.functional as F
-from .mixins import WeightBiasDelayMixin
 
 
 class Conv2D(WeightBiasDelayMixin, Connection):
@@ -60,6 +60,14 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         maximum delay of :py:attr:`synapse` will have no effect. Setting to 0 will
         create and register a ``delay_`` parameter but not use delays unless it is
         later changed.
+
+    Note:
+        If ``weight_init`` or ``bias_init`` are None, ``weight`` and ``bias`` are,
+        respectively, initialized as uniform random values over the interval
+        :math:`[0, 1)` using :py:func:`torch.rand`.
+
+        If ``delay_init`` is None, ``delay`` is initialized as zeros using
+        :py:func:`torch.rand`.
 
     Tip:
         The added padding is applied after the synapse. Inputs must still be of uniform
@@ -201,13 +209,49 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         Returns:
             tuple[int]: shape of inputs to the connection.
 
-        Raises:
-            NotImplementedError: ``inshape`` must be implemented by the subclass.
+        Note:
+            Resulting tuple will be:
+
+            :math:`(C, H, W)`
+
+            Where:
+                * :math:`C` is the number of input channels.
+                * :math:`H` is the input height.
+                * :math:`W` is the input width.
         """
         return (self.channels, self.height, self.width)
 
     @property
     def outshape(self) -> tuple[int, int, int]:
+        r"""Shape of outputs from the connection, excluding the batch dimension.
+
+        Returns:
+            tuple[int]: shape of outputs from the connection.
+
+        Note:
+            Resulting tuple will be:
+
+            :math:`(F, H_\mathrm{out}, W_\mathrm{out})`
+
+            Where:
+
+            .. math::
+
+                \begin{align*}
+                    H_\mathrm{out} &= \left\lfloor \frac{H + 2 \times p_H - d_H
+                    \times (k_H - 1) - 1}{s_H} + 1 \right\rfloor \\
+                    W_\mathrm{out} &= \left\lfloor \frac{W + 2 \times p_W - d_W
+                    \times (k_W - 1) - 1}{s_W} + 1 \right\rfloor
+                \end{align*}
+
+            And:
+                * :math:`F` is the number of filters (output channels).
+                * :math:`(H, W)` are the input height and width.
+                * :math:`(pH, pW)` are the per-side padding height and width.
+                * :math:`(dH, dW)` are the dilation height and width.
+                * :math:`(kH, kW)` are the kernel height and width.
+                * :math:`(sH, sW)` are the stride height and width.
+        """
         return (self.filters, self.outheight, self.outwidth)
 
     @property
@@ -231,6 +275,11 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`H_\mathrm{out}` is the output height.
                 * :math:`W_\mathrm{out}` is the output width.
                 * :math:`F` is the number of filters (output channels).
+
+        Caution:
+            This operation relies upon :py:meth:`torch.Tensor.expand`, and
+            consequentially multiple elements may reference the same underlying
+            memory.
         """
         return ein.rearrange(self.delay, "f c h w -> 1 (c h w) 1 f").expand(
             self.bsize, -1, self.synapse.shape[-1], -1
@@ -326,12 +375,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         r"""Reshapes data like the synapse state for pre-post learning methods.
 
         Args:
-            data (torch.Tensor): data shaped like :py:attr:`syncurrent`
-                or :py:attr:`synspike`.
-
-        Raises:
-            NotImplementedError: ``presyn_receptive`` must be
-            implemented by the subclass.
+            data (torch.Tensor): data shaped like output of :py:meth:`like_synaptic`.
 
         Returns:
             torch.Tensor: reshaped data.
@@ -386,14 +430,10 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 )
 
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
-        r"""Reshapes data like the output for pre-post learning methods.
+        r"""Reshapes data like connection output for pre-post learning methods.
 
         Args:
-            data (torch.Tensor): data shaped like connection output.
-
-        Raises:
-            NotImplementedError: ``postsyn_receptive`` must be
-            implemented by the subclass.
+            data (torch.Tensor): data shaped like output of :py:meth:`forward`.
 
         Returns:
             torch.Tensor: reshaped data.
@@ -430,26 +470,46 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         Returns:
             torch.Tensor: outputs from the connection.
 
-        Note:
-            ``*inputs`` can either be a single tensor representing the input current,
-            or it can be two tensors where the first is the spikes and the second is
-            an override for the currents. See documentation for the corresponding
-            :py:meth:`Synapse.forward` method for details.
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``*inputs``:
+
+            :math:`B \times C \times H \times W`
+
+            ``return``:
+
+            :math:`B \times F \times H_\mathrm{out} \times W_\mathrm{out}`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`C` is the number of input channels.
+                * :math:`H` is the input height.
+                * :math:`W` is the input width.
+                * :math:`F` is the number of filters (output channels).
+                * :math:`H_\mathrm{out}` is the output height.
+                * :math:`W_\mathrm{out}` is the output width.
 
         Note:
-            Keyword arguments are passed to :py:meth:`Synapse.forward`.
+            ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
+            py:meth:`Synapse.forward` of :py:attr:`synapse`. Keyword arguments are
+            also passed through.
+
+        See Also:
+            The formulae for output height and width are detailed in the documentation
+            for :py:attr:`outshape`.
         """
         # reshape inputs and perform synapse simulation
-        data = self.synapse(
+        res = self.synapse(
             *(self.like_synaptic(inp) for inp in inputs), **kwargs
         )  # B N L
 
-        if self.delayed:
-            data = ein.rearrange(self.syncurrent, "b n l f -> b f n l")
+        if self.delayedby:
+            res = ein.rearrange(self.syncurrent, "b n l f -> b f n l")
             kernel = ein.rearrange(self.weight, "f c h w -> f 1 (c h w)")  # F 1 L
 
             res = ein.rearrange(
-                torch.matmul(kernel, data),
+                torch.matmul(kernel, res),
                 "b f 1 (oh ow) -> b f oh ow",
                 oh=self.outshape[0],
                 ow=self.outshape[1],
@@ -458,7 +518,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             kernel = ein.rearrange(self.weight, "f c h w -> f (c h w)")  # F L
 
             res = ein.rearrange(
-                torch.matmul(kernel, data),
+                torch.matmul(kernel, res),
                 "b f (oh ow) -> b f oh ow",
                 oh=self.outshape[0],
                 ow=self.outshape[1],

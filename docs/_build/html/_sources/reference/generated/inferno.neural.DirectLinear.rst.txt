@@ -1,8 +1,0 @@
-﻿DirectLinear
-============
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: DirectLinear
-    :members:
-    :show-inheritance:

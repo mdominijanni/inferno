@@ -43,9 +43,9 @@
     :nosignatures:
     :toctree: generated
 
-    DenseLinear
-    DirectLinear
-    LateralLinear
+    LinearDense
+    LinearDirect
+    LinearLateral
     Conv2D
 ```
 
