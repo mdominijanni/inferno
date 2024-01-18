@@ -162,8 +162,10 @@ class STDP(LayerwiseUpdater):
         # add trainable using superclass method
         LayerwiseUpdater.add_trainable(self, trainable)
 
-        # don't add anything if monitors are already associated with this trainable
-        if len(self.get_monitors(trainable)):
+        # escape early if monitors are already associated with this trainable
+        try:
+            next(self.get_monitors(trainable))
+        except StopIteration:
             return
 
         # trace reducer class
