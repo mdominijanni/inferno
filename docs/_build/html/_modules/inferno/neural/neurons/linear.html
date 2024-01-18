@@ -161,6 +161,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/inferno.html">inferno</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural-functional.html">inferno.neural.functional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn.html">inferno.learn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/typing.html">inferno.typing</a></li>
@@ -215,7 +216,7 @@
           <h1>Source code for inferno.neural.neurons.linear</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Neuron</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">nf</span>
-<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span>
+<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">CurrentSpikeRefractoryMixin</span>
 <span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -223,7 +224,7 @@
 
 <div class="viewcode-block" id="LIF">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LIF.html#inferno.neural.LIF">[docs]</a>
-<span class="k">class</span> <span class="nc">LIF</span><span class="p">(</span><span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">LIF</span><span class="p">(</span><span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">CurrentSpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of leaky integrate-and-fire (LIF) neuron dynamics.</span>
 
 <span class="sd">    .. math::</span>
@@ -287,7 +288,7 @@
 
         <span class="c1"># call mixin constructors</span>
         <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">CurrentSpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_integrate_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masked_inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding`.&quot;&quot;&quot;</span>
@@ -362,7 +363,7 @@
 
 <div class="viewcode-block" id="ALIF">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.ALIF.html#inferno.neural.ALIF">[docs]</a>
-<span class="k">class</span> <span class="nc">ALIF</span><span class="p">(</span><span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">ALIF</span><span class="p">(</span><span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">CurrentSpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of adaptive leaky integrate-and-fire (ALIF) neuron dynamics.</span>
 
 <span class="sd">    ALIF is implemented as a step of leaky integrate-and-fire applying existing</span>
@@ -506,7 +507,7 @@
 
         <span class="c1"># call mixin constructors</span>
         <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">CurrentSpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">AdaptationMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">)),</span> <span class="kc">False</span>
         <span class="p">)</span>
@@ -627,7 +628,7 @@
 
 <div class="viewcode-block" id="GLIF1">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.GLIF1.html#inferno.neural.GLIF1">[docs]</a>
-<span class="k">class</span> <span class="nc">GLIF1</span><span class="p">(</span><span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">GLIF1</span><span class="p">(</span><span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">CurrentSpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of generalized leaky integrate-and-fire 1 (GLIF\ :sub:`1`) neuron dynamics.</span>
 
 <span class="sd">    Alias for :py:class:`~inferno.neural.LIF`.</span>
@@ -712,7 +713,7 @@
 
 <div class="viewcode-block" id="GLIF2">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.GLIF2.html#inferno.neural.GLIF2">[docs]</a>
-<span class="k">class</span> <span class="nc">GLIF2</span><span class="p">(</span><span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">GLIF2</span><span class="p">(</span><span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">CurrentSpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of generalized leaky integrate-and-fire 2 (GLIF\ :sub:`2`) neuron dynamics.</span>
 
 <span class="sd">    .. math::</span>
@@ -856,7 +857,7 @@
 
         <span class="c1"># call mixin constructors</span>
         <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">CurrentSpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">AdaptationMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">)),</span> <span class="kc">False</span>
         <span class="p">)</span>

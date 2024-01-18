@@ -16,6 +16,7 @@ ALIF
 
     .. autoproperty:: ALIF.adaptation
     .. autoproperty:: ALIF.bsize
+    .. autoproperty:: ALIF.current
     .. autoproperty:: ALIF.dt
     .. autoproperty:: ALIF.refrac
     .. autoproperty:: ALIF.spike

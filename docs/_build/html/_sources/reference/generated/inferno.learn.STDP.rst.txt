@@ -1,0 +1,8 @@
+﻿STDP
+====
+
+.. currentmodule:: inferno.learn
+
+.. autoclass:: STDP
+    :members:
+    :show-inheritance:

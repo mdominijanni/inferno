@@ -1,0 +1,8 @@
+﻿LayerwiseUpdater
+================
+
+.. currentmodule:: inferno.learn
+
+.. autoclass:: LayerwiseUpdater
+    :members:
+    :show-inheritance:

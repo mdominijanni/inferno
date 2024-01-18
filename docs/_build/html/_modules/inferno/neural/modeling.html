@@ -161,6 +161,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/inferno.html">inferno</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/typing.html">inferno.typing</a></li>
@@ -213,64 +214,172 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.neural.modeling</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">Module</span>
+<span></span><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">,</span> <span class="n">Synapse</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">Module</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">Neuron</span>
 
 
 <div class="viewcode-block" id="Layer">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer">[docs]</a>
 <span class="k">class</span> <span class="nc">Layer</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Container for sequential Connection and Neuron objects.</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">neuron</span><span class="p">:</span> <span class="n">Neuron</span><span class="p">):</span>
+<span class="sd">    This is used as the base building block of spiking neural networks in Inferno,</span>
+<span class="sd">    and is used for training models.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        connection (Connection): connection between the layer inputs and the neurons.</span>
+<span class="sd">        neuron (Neuron): neurons which take their input from the connection and their</span>
+<span class="sd">            output is returned.</span>
+<span class="sd">        connection_kwargs (dict[str, str  |  str] | None, optional): keyword argument</span>
+<span class="sd">                mapping for connection methods. Defaults to None.</span>
+<span class="sd">        neuron_kwargs (dict[str, str  |  str] | None, optional): keyword argument</span>
+<span class="sd">                mapping for neuron methods. Defaults to None.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The keyword argument mappings are a dictionary, where the key is a</span>
+<span class="sd">        kwarg in a :py:class:`Layer` method, and the corresponding value is</span>
+<span class="sd">        the name for that kwarg which will be passed to the dependent method in</span>
+<span class="sd">        in the :py:class:`Connection` or :py:meth:`Neuron`.</span>
+
+<span class="sd">        When None, *all kwargs* are passed in. Included classes in Inferno are</span>
+<span class="sd">        written to avoid conflicts, but that is not always guaranteed.</span>
+
+<span class="sd">    Tip:</span>
+<span class="sd">        The composed :py:class:`Neuron` does not need to be unique to this layer, and</span>
+<span class="sd">        some architectures explicitly have multiple connections going to the same</span>
+<span class="sd">        group of neurons. The uniqueness of the composed :py:class:`Connection` is</span>
+<span class="sd">        not enforced, but unexpected behavior may occur if it is not unique.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">connection</span><span class="p">:</span> <span class="n">Connection</span><span class="p">,</span>
+        <span class="n">neuron</span><span class="p">:</span> <span class="n">Neuron</span><span class="p">,</span>
+        <span class="n">connection_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">neuron_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-
+        <span class="c1"># warn if connection and neuron are inconsistent</span>
         <span class="k">if</span> <span class="n">connection</span><span class="o">.</span><span class="n">dt</span> <span class="o">!=</span> <span class="n">neuron</span><span class="o">.</span><span class="n">dt</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;inconsistent step times, </span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2"> ms &quot;</span>
-                          <span class="sa">f</span><span class="s2">&quot;for connection and </span><span class="si">{</span><span class="n">neuron</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2"> ms for neuron.&quot;</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;inconsistent step times, </span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;for connection and </span><span class="si">{</span><span class="n">neuron</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2"> for neuron.&quot;</span>
+            <span class="p">)</span>
 
+        <span class="c1"># error if incompatible</span>
         <span class="k">if</span> <span class="n">connection</span><span class="o">.</span><span class="n">bsize</span> <span class="o">!=</span> <span class="n">neuron</span><span class="o">.</span><span class="n">bsize</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;inconsistent batch sizes, </span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">bsize</span><span class="si">}</span><span class="s2"> &quot;</span>
-                          <span class="sa">f</span><span class="s2">&quot;for connection and </span><span class="si">{</span><span class="n">neuron</span><span class="o">.</span><span class="n">bsize</span><span class="si">}</span><span class="s2"> for neuron.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;incompatible batch sizes, </span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">bsize</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;for connection and </span><span class="si">{</span><span class="n">neuron</span><span class="o">.</span><span class="n">bsize</span><span class="si">}</span><span class="s2"> for neuron.&quot;</span>
+            <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="s1">&#39;connection&#39;</span><span class="p">,</span> <span class="n">connection</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="s1">&#39;neuron&#39;</span><span class="p">,</span> <span class="n">neuron</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">connection</span><span class="o">.</span><span class="n">outshape</span> <span class="o">!=</span> <span class="n">neuron</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;incompatible shapes, </span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">output</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;for connection output and </span><span class="si">{</span><span class="n">neuron</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> for neuron.&quot;</span>
+            <span class="p">)</span>
 
+        <span class="c1"># register submodules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="s2">&quot;connection_&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="s2">&quot;neuron_&quot;</span><span class="p">,</span> <span class="n">neuron</span><span class="p">)</span>
+
+        <span class="c1"># keyword argument mapping functions</span>
+        <span class="k">def</span> <span class="nf">filterkwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">kwamap</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="n">kwamap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">arg</span><span class="p">):</span> <span class="n">val</span> <span class="k">for</span> <span class="n">arg</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">kwamap</span>
+            <span class="p">}</span>
+
+        <span class="c1"># kwarg mapping for connection</span>
+        <span class="k">if</span> <span class="n">connection_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_c</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">filterkwargs</span><span class="p">,</span> <span class="n">connection_kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_c</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+
+        <span class="c1"># kwarg mapping for neuron</span>
+        <span class="k">if</span> <span class="n">neuron_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_n</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">filterkwargs</span><span class="p">,</span> <span class="n">neuron_kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_n</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">connection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Connection</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Connection submodule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (Connection): replacement connection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Connection: existing connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection_</span>
+
+    <span class="nd">@connection</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Neuron</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection_</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neuron</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Neuron submodule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (Neuron): replacement neuron.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Neuron: existing neuron.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron_</span>
+
+    <span class="nd">@neuron</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Connection</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neuron_</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">synapse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Synapse</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Synapse submodule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (Synapse): replacement synapse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Synapse: existing synapse.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection_</span><span class="o">.</span><span class="n">synapse</span>
+
+    <span class="nd">@synapse</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">synapse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Synapse</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection_</span><span class="o">.</span><span class="n">synapse</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="Layer.clear">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.clear">[docs]</a>
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets connections and neurons to their resting state.</span>
+
+<span class="sd">        Keyword arguments are filtered and then passed to :py:meth:`Connection.clear`</span>
+<span class="sd">        and :py:meth:`Neuron.clear`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_c</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_n</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span></div>
+
 
 <div class="viewcode-block" id="Layer.forward">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the connection and then the neurons.</span>
 
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="o">.</span><span class="n">dt</span>
-
-    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">value</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the neuron group.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (int): new batch size.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            int: current batch size.</span>
+<span class="sd">        Keyword arguments are filtered and then passed to :py:meth:`Connection.forward`</span>
+<span class="sd">        and :py:meth:`Neuron.forward`. It is expected that :py:meth:`Connection.forward`</span>
+<span class="sd">        outputs a single tensor and :py:meth:`Neuron.forward` and takes a single</span>
+<span class="sd">        positional argument. The output of the former is used for the input of the</span>
+<span class="sd">        latter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="o">.</span><span class="n">bsize</span>
-
-    <span class="nd">@bsize</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="o">.</span><span class="n">bsize</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">bsize</span> <span class="o">=</span> <span class="n">value</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_c</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)),</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_n</span><span class="p">(</span><span class="n">kwargs</span><span class="p">),</span>
+        <span class="p">)</span></div>
+</div>
 
 </pre></div>
         </article>

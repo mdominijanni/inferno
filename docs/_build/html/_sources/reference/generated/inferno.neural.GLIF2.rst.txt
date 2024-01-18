@@ -16,6 +16,7 @@ GLIF2
 
     .. autoproperty:: GLIF2.adaptation
     .. autoproperty:: GLIF2.bsize
+    .. autoproperty:: GLIF2.current
     .. autoproperty:: GLIF2.dt
     .. autoproperty:: GLIF2.refrac
     .. autoproperty:: GLIF2.spike

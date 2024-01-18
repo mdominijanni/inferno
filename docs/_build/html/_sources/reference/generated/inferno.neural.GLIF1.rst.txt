@@ -14,6 +14,7 @@ GLIF1
     .. rubric:: Properties
 
     .. autoproperty:: GLIF1.bsize
+    .. autoproperty:: GLIF1.current
     .. autoproperty:: GLIF1.dt
     .. autoproperty:: GLIF1.refrac
     .. autoproperty:: GLIF1.spike

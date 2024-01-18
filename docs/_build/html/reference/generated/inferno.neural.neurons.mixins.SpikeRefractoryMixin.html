@@ -162,6 +162,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../inferno.html">inferno</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../neural-functional.html">inferno.neural.functional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learn.html">inferno.learn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../typing.html">inferno.typing</a></li>
@@ -220,7 +221,7 @@
 <dt class="sig sig-object py" id="inferno.neural.neurons.mixins.SpikeRefractoryMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SpikeRefractoryMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refrac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requires_grad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/neurons/mixins.html#SpikeRefractoryMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.neurons.mixins.SpikeRefractoryMixin" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="inferno.neural.neurons.mixins.RefractoryMixin.html#inferno.neural.neurons.mixins.RefractoryMixin" title="inferno.neural.neurons.mixins.RefractoryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">RefractoryMixin</span></code></a></p>
-<p>Mixin for neurons with refractory periods and spikes based off of them.</p>
+<p>Mixin for neurons with refractory periods with spikes based off of them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -249,6 +250,22 @@ represents the length of the absolute refractory period in <span class="math not
 <dt class="sig sig-object py" id="inferno.neural.neurons.mixins.SpikeRefractoryMixin.spike">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spike</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.neurons.mixins.SpikeRefractoryMixin.spike" title="Link to this definition">#</a></dt>
 <dd><p>Action potentials last generated.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[f(t) =
+\begin{cases}
+    1, &amp;t_\mathrm{refrac}(t) = \mathrm{ARP}
+    0, &amp;\mathrm{otherwise}
+\end{cases}\]</div>
+</div>
+<dl class="simple">
+<dt>Where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(f_(t)\)</span> are the postsynaptic spikes.</p></li>
+<li><p><span class="math notranslate nohighlight">\(t_\mathrm{refrac}`(t) are the remaining refractory periods, in :math:\)</span>mathrm{ms}`.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathrm{ARP}\)</span> is the absolute refractory period, in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><dl class="simple">

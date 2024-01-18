@@ -65,6 +65,10 @@ class LayerwiseUpdater(Module, ABC):
         if key not in self._monitors:
             self._monitors[key] = nn.ModuleDict()
 
+        # add default monitor layout to trainable
+        if not len(self._monitors[key]):
+            self.add_monitors(trainable)
+
     def del_trainable(self, trainable: Layer, **kwarge):
         # use hexadecimal of object id as the key
         key = hex(id(trainable))
@@ -104,6 +108,12 @@ class LayerwiseUpdater(Module, ABC):
         self._monitors[key][name] = monitor
         if self.training:
             monitor.register(trainable)
+
+    def add_monitors(self, trainable: Layer) -> None:
+        raise NotImplementedError(
+            f"LayerwiseUpdater `{type(self).__name__}` must implement "
+            "the method `add_monitors`."
+        )
 
     def del_monitor(self, trainable: Layer, name: str) -> None:
         # check if trainable is valid
@@ -159,7 +169,7 @@ class LayerwiseUpdater(Module, ABC):
                 with submodules. Defaults to True.
 
         Note:
-            Keyword arguments are passed to :py:meth:`~Monitor.clear` call.
+            Keyword arguments are passed to :py:meth:`Monitor.clear` call.
         """
         self.train()
         for monitor, layer in self.monitors:
@@ -175,7 +185,7 @@ class LayerwiseUpdater(Module, ABC):
                 with submodules. Defaults to False.
 
         Note:
-            Keyword arguments are passed to :py:meth:`~Monitor.clear` call.
+            Keyword arguments are passed to :py:meth:`Monitor.clear` call.
         """
         self.eval()
         for monitor, _ in self.monitors:
@@ -187,7 +197,7 @@ class LayerwiseUpdater(Module, ABC):
         """Clears all of the monitors for the updater.
 
         Note:
-            Keyword arguments are passed to :py:meth:`~Monitor.clear` call.
+            Keyword arguments are passed to :py:meth:`Monitor.clear` call.
         """
 
         for monitor, _ in self.monitors:

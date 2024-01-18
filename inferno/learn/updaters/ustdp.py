@@ -1,9 +1,9 @@
 from .. import LayerwiseUpdater
 from .. import functional as lf
+from inferno._internal import numeric_limit
 from inferno.neural import Layer
 from inferno.observe import (
     StateMonitor,
-    OutputMonitor,
     CumulativeTraceReducer,
     NearestTraceReducer,
     PassthroughReducer,
@@ -17,26 +17,20 @@ class STDP(LayerwiseUpdater):
 
     Args:
         step_time (float): _description_
-        lr_post (float): _description_
-        lr_pre (float): _description_
-        tc_post (float): _description_
-        tc_pre (float): _description_
-        delayed (bool, optional): if the updater should assume learned delays, if present, may change.
-            Defaults to False.
+        lr_post (float): learning rate for updates on postsynaptic spikes, potentiative.
+        lr_pre (float): learning rate for updates on presynaptic spikes, depressive.
+        tc_post (float): time constant for exponential decay of postsynaptic trace,
+            in :math:`ms`.
+        tc_pre (float): time constant for exponential decay of presynaptic trace,
+            in :math:`ms`.
+        delayed (bool, optional): if the updater should assume learned delays, if
+            present, may change. Defaults to False.
         trace_mode (Literal["cumulative", "nearest"], optional): _description_. Defaults to "cumulative".
         bounding_mode (Literal["soft", "hard"] | None, optional): _description_. Defaults to None.
         wmin (float | None, optional): _description_. Defaults to None.
         wmax (float | None, optional): _description_. Defaults to None.
-        wdepexp (float | None, optional): _description_. Defaults to None.
-        wpotexp (float | None, optional): _description_. Defaults to None.
-
-    Raises:
-        RuntimeError: _description_
-        RuntimeError: _description_
-        RuntimeError: _description_
-        ValueError: _description_
-        ValueError: _description_
-        ValueError: _description_
+        wddepexp (float, optional): _description_. Defaults to 1.0.
+        wdpotexp (float, optional): _description_. Defaults to 1.0.
     """
 
     def __init__(
@@ -53,166 +47,55 @@ class STDP(LayerwiseUpdater):
         interpolation_tolerance: float = 1e-7,
         wmin: float | None = None,
         wmax: float | None = None,
-        wdepexp: float | None = None,
-        wpotexp: float | None = None,
+        wddepexp: float = 1.0,
+        wdpotexp: float = 1.0,
         **kwargs,
     ):
-        # call superclass constructor
+        # call superclass constructor, registers monitors
         LayerwiseUpdater.__init__(self, *layers)
 
-        # test hyperparameter validity
-        if step_time <= 0:
-            raise RuntimeError(f"step time must be positive, received {step_time}")
-        if tc_post <= 0:
-            raise RuntimeError(
-                f"postsynaptic time constant must be positive, received {tc_post}"
-            )
-        if tc_pre <= 0:
-            raise RuntimeError(
-                f"presynaptic time constant must be positive, received {tc_pre}"
-            )
-
+        # validate string parameters
         trace_mode = trace_mode.lower()
         if trace_mode not in ("cumulative", "nearest"):
             raise ValueError(
-                f"trace mode must be 'cumulative' or 'nearest', received {trace_mode}"
+                "`trace_mode` must be one of: 'cumulative', 'nearest'; "
+                f"received {trace_mode}."
             )
 
         if bounding_mode:
             bounding_mode = bounding_mode.lower()
             if bounding_mode not in ("soft", "hard"):
                 raise ValueError(
-                    f"bounding mode, if not None, must be 'soft' or 'hard', received {bounding_mode}"
+                    "`bounding_mode`, if not None, must be one of 'soft' or 'hard'; "
+                    f"received {bounding_mode}."
                 )
 
-        # register hyperparameters
+        # updater hyperparameters
+        self.step_time = numeric_limit('`step_time`', step_time, 0, 'gt', float)
+        self.lr_post = float(lr_post)
+        self.lr_pre = float(lr_pre)
+        self.tc_post = numeric_limit('`tc_post`', tc_post, 0, 'gt', float)
+        self.tc_pre = numeric_limit('`tc_pre`', tc_pre, 0, 'gt', float)
         self.delayed = delayed
         self.trace = trace_mode
         self.bounding = bounding_mode
         self.tolerance = float(interpolation_tolerance)
-        self.register_extra("step_time", float(step_time))
-        self.register_extra("lr_post", float(lr_post))
-        self.register_extra("lr_pre", float(lr_pre))
-        self.register_extra("tc_post", float(tc_post))
-        self.register_extra("tc_pre", float(tc_pre))
 
-        # construct monitors
-        for layer in self.trainables.values():
-            # trace monitors
-            match trace_mode.lower():
-                # cumulative trace monitors
-                case "cumulative":
-                    # presynaptic
-                    self.add_monitor(
-                        layer,
-                        "Apre",
-                        StateMonitor(
-                            reducer=CumulativeTraceReducer(
-                                self.step_time,
-                                self.tc_pre,
-                                amplitude=1.0,
-                                target=True,
-                                history_len=(
-                                    self.delayed if self.delayed is not None else 0.0
-                                ),
-                            ),
-                            attr="connection.synspike",
-                            train_update=True,
-                            eval_update=False,
-                        ),
-                    )
+        # case-specific hyperparamters
+        if self.bounding:
+            if wmin is None and max is None:
+                raise TypeError("`wmin` and `wmax` cannot both be None.")
+            if wmin is not None and wmax is not None and wmin >= wmax:
+                raise ValueError(
+                    f"received `wmax` of {wmax} which not greater than "
+                    f"`wmin` of {wmin}."
+                )
+            self.wmin = None if wmin is None else float(wmin)
+            self.wmax = None if wmin is None else float(wmax)
 
-                    # postsynaptic
-                    self.add_monitor(
-                        layer,
-                        "Apost",
-                        OutputMonitor(
-                            reducer=CumulativeTraceReducer(
-                                self.step_time,
-                                self.tc_post,
-                                amplitude=1.0,
-                                target=True,
-                                history_len=(
-                                    self.delayed if self.delayed is not None else 0.0
-                                ),
-                            ),
-                            train_update=True,
-                            eval_update=False,
-                        ),
-                    )
-
-                # nearest trace monitors
-                case "nearest":
-                    self.add_monitor(
-                        layer,
-                        "Apre",
-                        StateMonitor(
-                            reducer=NearestTraceReducer(
-                                self.step_time,
-                                self.tc_pre,
-                                amplitude=1.0,
-                                target=True,
-                                history_len=(
-                                    self.delayed if self.delayed is not None else 0.0
-                                ),
-                            ),
-                            attr="connection.synspike",
-                            train_update=True,
-                            eval_update=False,
-                        ),
-                    )
-
-                    self.add_monitor(
-                        layer,
-                        "Apost",
-                        OutputMonitor(
-                            reducer=NearestTraceReducer(
-                                self.step_time,
-                                self.tc_post,
-                                amplitude=1.0,
-                                target=True,
-                                history_len=(
-                                    self.delayed if self.delayed is not None else 0.0
-                                ),
-                            ),
-                            train_update=True,
-                            eval_update=False,
-                        ),
-                    )
-
-                case _:
-                    raise ValueError(
-                        f"invalid trace mode '{trace_mode}' given, "
-                        "must be 'cumulative' or 'nearest'."
-                    )
-
-            # spike monitors
-            self.add_monitor(
-                layer,
-                "Ipre",
-                StateMonitor(
-                    reducer=PassthroughReducer(
-                        self.step_time,
-                        history_len=(self.delayed if self.delayed is not None else 0.0),
-                    ),
-                    attr="connection.synspike",
-                    train_update=True,
-                    eval_update=False,
-                ),
-            )
-
-            self.add_monitor(
-                layer,
-                "Ipost",
-                OutputMonitor(
-                    reducer=PassthroughReducer(
-                        self.step_time,
-                        history_len=(self.delayed if self.delayed is not None else 0.0),
-                    ),
-                    train_update=True,
-                    eval_update=False,
-                ),
-            )
+        if self.bounding == 'soft':
+            self.wd_lowerb_exp = float(wddepexp)
+            self.wd_upperb_exp = float(wdpotexp)
 
     def forward(self) -> None:
         # iterate over trainable layers
@@ -225,9 +108,9 @@ class STDP(LayerwiseUpdater):
             a_post = self.get_monitor(layer, "trace_post").peek()
             a_pre = (
                 self.get_monitor(layer, "trace_pre").view(
-                    layer.selector, self.tolerance
+                    layer.connection.selector, self.tolerance
                 )
-                if layer.connection.delayed and self.delayed
+                if self.delayed and layer.connection.delayedby is not None
                 else self.get_monitor(layer, "trace_pre").peek()
             )
 
@@ -244,127 +127,119 @@ class STDP(LayerwiseUpdater):
             i_pre = layer.presyn_currents(i_pre)
 
             # base update
-            update_ltp = torch.mean(torch.sum(i_post * a_pre, dim=-1), dim=0) * self.lrpost
-            update_ltd = torch.mean(torch.sum(i_pre * a_post, dim=-1), dim=0) * self.lrpre
+            update_ltp = (
+                torch.mean(torch.sum(i_post * a_pre, dim=-1), dim=0) * self.lrpost
+            )
+            update_ltd = (
+                torch.mean(torch.sum(i_pre * a_post, dim=-1), dim=0) * self.lrpre
+            )
 
             # apply bounding if specified
             match self.bounding:
                 case "soft":
                     if self.wmin is not None:
-                        update_ltd *= lf.soft_bounding_dep(layer.connection.weight, self.wmin, self.wd_lower_exp)
+                        update_ltd *= lf.soft_bounding_dep(
+                            layer.connection.weight, self.wmin, self.wd_lowerb_exp
+                        )
                     if self.wmax is not None:
-                        update_ltp *= lf.soft_bounding_pot(layer.connection.weight, self.wmax, self.wd_upper_exp)
+                        update_ltp *= lf.soft_bounding_pot(
+                            layer.connection.weight, self.wmax, self.wd_upperb_exp
+                        )
                 case "hard":
                     if self.wmin is not None:
-                        update_ltd *= lf.hard_bounding_dep(layer.connection.weight, self.wmin)
+                        update_ltd *= lf.hard_bounding_dep(
+                            layer.connection.weight, self.wmin
+                        )
                     if self.wmax is not None:
-                        update_ltp *= lf.hard_bounding_pot(layer.connection.weight, self.wmax)
+                        update_ltp *= lf.hard_bounding_pot(
+                            layer.connection.weight, self.wmax
+                        )
 
             # update weights
             layer.connection.weight = layer.connection.weight + update_ltp - update_ltd
 
-    def add_trainable(self, trainable: Layer):
+    def add_monitors(self, trainable: Layer):
         # add trainable using superclass method
         LayerwiseUpdater.add_trainable(self, trainable)
 
         # don't add anything if monitors are already associated with this trainable
-        if len(self.get_monitors(trainable)) != 0:
+        if len(self.get_monitors(trainable)):
             return
-
-        # add spike monitors
-        self.add_monitor(
-            trainable,
-            "spike_pre",
-            StateMonitor(
-                reducer=PassthroughReducer(self.dt, 0.0),
-                attr="connection.synspike",
-                as_prehook=False,
-                train_update=True,
-                eval_update=False,
-                prepend=True,
-            ),
-        )
-
-        self.add_monitor(
-            trainable,
-            "spike_post",
-            OutputMonitor(
-                reducer=PassthroughReducer(self.dt, 0.0),
-                train_update=True,
-                eval_update=False,
-                prepend=True,
-            ),
-        )
 
         # trace reducer class
         match self.trace:
             case "cumulative":
-                TraceReducer = CumulativeTraceReducer
+                reducer_cls = CumulativeTraceReducer
             case "nearest":
-                TraceReducer = NearestTraceReducer
+                reducer_cls = NearestTraceReducer
             case "_":
                 raise RuntimeError(
-                    f"an invalid trace mode of {self.trace}' has been set."
+                    f"an invalid trace mode of '{self.trace}' has been set, expected "
+                    "one of: 'cumulative', 'nearest'."
                 )
 
-        # postsynaptic trace monitor
+        # like parameters
+        mon_kwargs = {
+            "as_prehook": False,
+            "train_update": True,
+            "eval_update": False,
+            "prepend": True,
+        }
+
+        # postsynaptic trace monitor (weights LTD)
         self.add_monitor(
             trainable,
             "trace_post",
-            OutputMonitor(
-                reducer=TraceReducer(
-                    self.dt, self.tc_post, amplitude=1.0, target=True, history_len=0.0
+            StateMonitor(
+                reducer=reducer_cls(
+                    self.dt,
+                    self.tc_post,
+                    amplitude=1.0,
+                    target=True,
+                    history_len=0.0,
                 ),
-                train_update=True,
-                eval_update=False,
-                prepend=True,
+                attr="neuron.spike",
+                **mon_kwargs,
             ),
         )
 
-        # postsynaptic spike monitor
+        # postsynaptic spike monitor (triggers LTP)
         self.add_monitor(
             trainable,
             "spike_post",
-            OutputMonitor(
+            StateMonitor(
                 reducer=PassthroughReducer(self.dt, history_len=0.0),
-                train_update=True,
-                eval_update=False,
-                prepend=True,
+                attr="neuron.spike",
+                **mon_kwargs,
             ),
         )
 
-        # presynaptic trace monitor
-        delayed = trainable.connection.delayed and self.delayed
+        # presynaptic trace monitor (weights LTP)
+        delayed = self.delayed and trainable.connection.delayedby is not None
         self.add_monitor(
             trainable,
             "trace_pre",
             StateMonitor(
-                reducer=TraceReducer(
+                reducer=reducer_cls(
                     self.dt,
                     self.tc_pre,
                     amplitude=1.0,
                     target=True,
-                    history_len=(trainable.connection.delayed if delayed else 0.0),
+                    history_len=(trainable.connection.delayedby if delayed else 0.0),
                 ),
-                attr=("connection.synapse.spike" if delayed else "connection.synspike"),
-                as_prehook=False,
-                train_update=True,
-                eval_update=False,
-                prepend=True,
+                attr=("synapse.spike" if delayed else "connection.synspike"),
+                **mon_kwargs,
             ),
         )
 
-        # presynaptic spike monitor
+        # presynaptic spike monitor (triggers LTD)
         self.add_monitor(
             trainable,
             "spike_pre",
             StateMonitor(
                 reducer=PassthroughReducer(self.dt, history_len=0.0),
                 attr="connection.synspike",
-                as_prehook=False,
-                train_update=True,
-                eval_update=False,
-                prepend=True,
+                **mon_kwargs,
             ),
         )
 
@@ -374,12 +249,8 @@ class STDP(LayerwiseUpdater):
 
     @dt.setter
     def dt(self, value: float) -> None:
-        # test for valid dt
-        if value <= 0:
-            raise RuntimeError(f"step time must be positive, received {value}")
-
         # assign new step time
-        self.step_time = float(value)
+        self.step_time = numeric_limit('`step_time`', value, 0, 'gt', float)
 
         # update monitors accordingly
         for monitor, _ in self.monitors:
