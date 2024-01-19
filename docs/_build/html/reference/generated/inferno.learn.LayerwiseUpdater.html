@@ -221,19 +221,89 @@
 <dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LayerwiseUpdater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.common.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.clear">
-<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.clear" title="Link to this definition">#</a></dt>
-<dd><p>Clears all of the monitors for the updater.</p>
+<p>Updater for layers without interdependencies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*layers</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – layers to add to the updater on initialization.</p>
+</dd>
+</dl>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>The property <code class="xref py py-attr docutils literal notranslate"><span class="pre">training</span></code> should be managed using
+the updater’s <a class="reference internal" href="#inferno.learn.LayerwiseUpdater.attach" title="inferno.learn.LayerwiseUpdater.attach"><code class="xref py py-meth docutils literal notranslate"><span class="pre">attach()</span></code></a> and <a class="reference internal" href="#inferno.learn.LayerwiseUpdater.detach" title="inferno.learn.LayerwiseUpdater.detach"><code class="xref py py-meth docutils literal notranslate"><span class="pre">detach()</span></code></a> methods rather than
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">train()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">eval()</span></code>.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Keyword arguments are passed to <code class="xref py py-meth docutils literal notranslate"><span class="pre">Monitor.clear()</span></code> call.</p>
+<p>Registered <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Monitor</span></code> objects have their
+parameters excluded from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> using a hook registered with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">_register_state_dict_hook()</span></code>.</p>
 </div>
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.add_monitor">
+<span class="sig-name descname"><span class="pre">add_monitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.observe.Monitor.html#inferno.observe.Monitor" title="inferno.observe.monitors.Monitor"><span class="pre">Monitor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.add_monitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.add_monitor" title="Link to this definition">#</a></dt>
+<dd><p>Adds and associates a monitor with a registered layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainable</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – layer to which the monitor should be registered.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – identifier of the monitor to add.</p></li>
+<li><p><strong>monitor</strong> (<a class="reference internal" href="inferno.observe.Monitor.html#inferno.observe.Monitor" title="inferno.observe.Monitor"><em>Monitor</em></a>) – monitor to register.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if the monitor was successfully added.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.connect">
-<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.connect" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.add_monitors">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_monitors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.add_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.add_monitors" title="Link to this definition">#</a></dt>
+<dd><p>Associates base layout of monitors required by the updater with the layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trainable</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – layer to which monitors should be added.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if the monitors were successfully added.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">add_monitors</span></code> must be implemented by the subclass.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.add_trainable">
+<span class="sig-name descname"><span class="pre">add_trainable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_monitors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwarge</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.add_trainable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.add_trainable" title="Link to this definition">#</a></dt>
+<dd><p>Registers a layer as a trainable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainable</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – layer to register as a trainable.</p></li>
+<li><p><strong>add_monitors</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if default monitors should be added after
+registring. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if the layer was successfully registered.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.attach">
+<span class="sig-name descname"><span class="pre">attach</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.attach"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.attach" title="Link to this definition">#</a></dt>
 <dd><p>Registers all of the monitors for the updater.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -248,13 +318,82 @@ with submodules. Defaults to True.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.disconnect">
-<span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.disconnect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.disconnect" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.clear" title="Link to this definition">#</a></dt>
+<dd><p>Clears all of the monitors for the updater.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Keyword arguments are passed to <code class="xref py py-meth docutils literal notranslate"><span class="pre">Monitor.clear()</span></code> call.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If a subclassed updater has additional state, this should be overridden
+to delete that state as well.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.del_monitor">
+<span class="sig-name descname"><span class="pre">del_monitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.del_monitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.del_monitor" title="Link to this definition">#</a></dt>
+<dd><p>Deletes a monitor associated with a registered layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainable</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – layer from which the monitor should be deleted.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – dentifier of the monitor to delete.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if the monitor was successfully deleted.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.del_monitors">
+<span class="sig-name descname"><span class="pre">del_monitors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.del_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.del_monitors" title="Link to this definition">#</a></dt>
+<dd><p>Deletes all monitors associated with a registered layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trainable</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – layer from which monitors should be deleted.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if the monitors were successfully deleted.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.del_trainable">
+<span class="sig-name descname"><span class="pre">del_trainable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwarge</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.del_trainable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.del_trainable" title="Link to this definition">#</a></dt>
+<dd><p>Deletes a registered layer and its associated monitors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trainable</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – trainable to delete.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if the layer was successfully deleted.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.detach">
+<span class="sig-name descname"><span class="pre">detach</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.detach"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.detach" title="Link to this definition">#</a></dt>
 <dd><p>Deregisters all of the monitors for the updater.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>clear</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – If the monitors should be cleared before deregistering
-with submodules. Defaults to False.</p>
+<dd class="field-odd"><p><strong>clear</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – If the monitors should be cleared before
+deregistering with submodules. Defaults to False.</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -269,7 +408,63 @@ with submodules. Defaults to False.</p>
 <dd><p>Processes update for given layers based on current monitor stored data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – py:meth:<cite>forward</cite> is abstract and must be implemented by the subclass.</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">forward</span></code> must be implemented by the subclass.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.get_monitor">
+<span class="sig-name descname"><span class="pre">get_monitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.observe.Monitor.html#inferno.observe.Monitor" title="inferno.observe.monitors.Monitor"><span class="pre">Monitor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.get_monitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.get_monitor" title="Link to this definition">#</a></dt>
+<dd><p>Retrieves a monitor associated with a registered layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainable</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – layer with which the monitor is associated.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the monitor to get.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>monitor specified by <code class="docutils literal notranslate"><span class="pre">trainable</span></code> and name if it exists.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="inferno.observe.Monitor.html#inferno.observe.Monitor" title="inferno.observe.Monitor">Monitor</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.get_monitors">
+<span class="sig-name descname"><span class="pre">get_monitors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator" title="(in Python v3.12)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="inferno.observe.Monitor.html#inferno.observe.Monitor" title="inferno.observe.monitors.Monitor"><span class="pre">Monitor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseUpdater.get_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.get_monitors" title="Link to this definition">#</a></dt>
+<dd><p>Retrieves all monitors associated with a registered layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trainable</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – layer for which monitors should be retrieved.</p>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>tuple[Monitor, str]</em> – registered monitors and their names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.monitors">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">monitors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator" title="(in Python v3.12)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="inferno.observe.Monitor.html#inferno.observe.Monitor" title="inferno.observe.monitors.Monitor"><span class="pre">Monitor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.monitors" title="Link to this definition">#</a></dt>
+<dd><p>Registered monitors for capturing layer state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>tuple[Monitor, Layer]</em> – registered monitors and their associated layer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseUpdater.trainables">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trainables</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator" title="(in Python v3.12)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.learn.LayerwiseUpdater.trainables" title="Link to this definition">#</a></dt>
+<dd><p>Registered layers to be trained.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Layer</em> – registered trainables.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -335,10 +530,20 @@ with submodules. Defaults to False.</p>
             <ul>
 <li><a class="reference internal" href="#">LayerwiseUpdater</a><ul>
 <li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater</span></code></a><ul>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.add_monitor"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.add_monitor()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.add_monitors"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.add_monitors()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.add_trainable"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.add_trainable()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.attach"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.attach()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.clear"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.clear()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.connect"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.connect()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.disconnect"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.disconnect()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.del_monitor"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.del_monitor()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.del_monitors"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.del_monitors()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.del_trainable"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.del_trainable()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.detach"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.detach()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.forward"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.forward()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.get_monitor"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.get_monitor()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.get_monitors"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.get_monitors()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.monitors"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.monitors</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseUpdater.trainables"><code class="docutils literal notranslate"><span class="pre">LayerwiseUpdater.trainables</span></code></a></li>
 </ul>
 </li>
 </ul>

@@ -17,7 +17,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         width (int): width of the expected inputs.
         channels (int): number of channels in the input tensor.
         filters (int): number of convolutional filters (channels of the output tensor).
-        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
+        step_time (float): length of a simulation time step, in :math:`\text{ms}`.
         kernel (int | tuple[int, int]): size of the convolution kernel.
         stride (int | tuple[int, int], optional): stride of the convolution.
             Defaults to 1.
@@ -29,7 +29,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         bias (bool, optional): if the connection should support
             learnable additive bias. Defaults to False.
         delay (float | None, optional): maximum supported delay length, in
-            :math:`\mathrm{ms}`, excludes delays when None. Defaults to None.
+            :math:`\text{ms}`, excludes delays when None. Defaults to None.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
         weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.
             Defaults to None.
@@ -231,16 +231,16 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         Note:
             Resulting tuple will be:
 
-            :math:`(F, H_\mathrm{out}, W_\mathrm{out})`
+            :math:`(F, H_\text{out}, W_\text{out})`
 
             Where:
 
             .. math::
 
                 \begin{align*}
-                    H_\mathrm{out} &= \left\lfloor \frac{H + 2 \times p_H - d_H
+                    H_\text{out} &= \left\lfloor \frac{H + 2 \times p_H - d_H
                     \times (k_H - 1) - 1}{s_H} + 1 \right\rfloor \\
-                    W_\mathrm{out} &= \left\lfloor \frac{W + 2 \times p_W - d_W
+                    W_\text{out} &= \left\lfloor \frac{W + 2 \times p_W - d_W
                     \times (k_W - 1) - 1}{s_W} + 1 \right\rfloor
                 \end{align*}
 
@@ -264,16 +264,16 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         .. admonition:: Shape
             :class: tensorshape
 
-            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}
-            \cdot W_\mathrm{out}) \times F`
+            :math:`B \times (C \cdot kH \cdot kW) \times (H_\text{out}
+            \cdot W_\text{out}) \times F`
 
             Where:
                 * :math:`B` is the batch size.
                 * :math:`C` is the number of input channels.
                 * :math:`kH` is the kernel height.
                 * :math:`kW` is the kernel width.
-                * :math:`H_\mathrm{out}` is the output height.
-                * :math:`W_\mathrm{out}` is the output width.
+                * :math:`H_\text{out}` is the output height.
+                * :math:`W_\text{out}` is the output width.
                 * :math:`F` is the number of filters (output channels).
 
         Caution:
@@ -299,8 +299,8 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
             ``data``:
 
-            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}
-            \cdot W_\mathrm{out})`
+            :math:`B \times (C \cdot kH \cdot kW) \times (H_\text{out}
+            \cdot W_\text{out})`
 
             ``return``:
 
@@ -311,8 +311,8 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`C` is the number of input channels.
                 * :math:`kH` is the kernel height.
                 * :math:`kW` is the kernel width.
-                * :math:`H_\mathrm{out}` is the output height.
-                * :math:`W_\mathrm{out}` is the output width.
+                * :math:`H_\text{out}` is the output height.
+                * :math:`W_\text{out}` is the output width.
                 * :math:`H` is the input height.
                 * :math:`W` is the input width.
         """
@@ -350,8 +350,8 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
             ``return``:
 
-            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}
-            \cdot W_\mathrm{out})`
+            :math:`B \times (C \cdot kH \cdot kW) \times (H_\text{out}
+            \cdot W_\text{out})`
 
             Where:
                 * :math:`B` is the batch size.
@@ -360,8 +360,8 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`W` is the input width.
                 * :math:`kH` is the kernel height.
                 * :math:`kW` is the kernel width.
-                * :math:`H_\mathrm{out}` is the output height.
-                * :math:`W_\mathrm{out}` is the output width.
+                * :math:`H_\text{out}` is the output height.
+                * :math:`W_\text{out}` is the output width.
         """
         return F.unfold(
             data,
@@ -385,26 +385,26 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
             ``data``:
 
-            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}
-            \cdot W_\mathrm{out}) \times [F]`
+            :math:`B \times (C \cdot kH \cdot kW) \times (H_\text{out}
+            \cdot W_\text{out}) \times [F]`
 
             ``return``:
 
             :math:`B \times F \times C \times kH \times kW \times
-            (H_\mathrm{out} \cdot W_\mathrm{out})`
+            (H_\text{out} \cdot W_\text{out})`
 
             or
 
             :math:`B \times 1 \times C \times kH \times kW \times
-            (H_\mathrm{out} \cdot W_\mathrm{out})`
+            (H_\text{out} \cdot W_\text{out})`
 
             Where:
                 * :math:`B` is the batch size.
                 * :math:`C` is the number of input channels.
                 * :math:`kH` is the kernel height.
                 * :math:`kW` is the kernel width.
-                * :math:`H_\mathrm{out}` is the output height.
-                * :math:`W_\mathrm{out}` is the output width.
+                * :math:`H_\text{out}` is the output height.
+                * :math:`W_\text{out}` is the output width.
                 * :math:`F` is the number of filters (output channels).
         """
         match data.ndim:
@@ -443,18 +443,18 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
             ``data``:
 
-            :math:`B \times F \times H_\mathrm{out} \times W_\mathrm{out}`
+            :math:`B \times F \times H_\text{out} \times W_\text{out}`
 
             ``return``:
 
             :math:`B \times F \times 1 \times 1 \times 1 \times
-            (H_\mathrm{out} \cdot W_\mathrm{out})`
+            (H_\text{out} \cdot W_\text{out})`
 
             Where:
                 * :math:`B` is the batch size.
                 * :math:`F` is the number of filters (output channels).
-                * :math:`H_\mathrm{out}` is the output height.
-                * :math:`W_\mathrm{out}` is the output width.
+                * :math:`H_\text{out}` is the output height.
+                * :math:`W_\text{out}` is the output width.
         """
         return ein.rearrange(data, "b f oh ow -> b f 1 1 1 (oh ow)")
 
@@ -479,7 +479,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
             ``return``:
 
-            :math:`B \times F \times H_\mathrm{out} \times W_\mathrm{out}`
+            :math:`B \times F \times H_\text{out} \times W_\text{out}`
 
             Where:
                 * :math:`B` is the batch size.
@@ -487,8 +487,8 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`H` is the input height.
                 * :math:`W` is the input width.
                 * :math:`F` is the number of filters (output channels).
-                * :math:`H_\mathrm{out}` is the output height.
-                * :math:`W_\mathrm{out}` is the output width.
+                * :math:`H_\text{out}` is the output height.
+                * :math:`W_\text{out}` is the output width.
 
         Note:
             ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to

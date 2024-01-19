@@ -246,27 +246,27 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        adaptations (torch.Tensor): last adaptations applied to input current,</span>
-<span class="sd">            :math:`w_k`, in :math:`\mathrm{nA}`.</span>
+<span class="sd">            :math:`w_k`, in :math:`\text{nA}`.</span>
 <span class="sd">        voltages (torch.Tensor): membrane voltages :math:`V_m(t)`,</span>
-<span class="sd">            in :math:`\mathrm{mV}`.</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
 <span class="sd">        spikes (torch.Tensor): if the corresponding neuron generated an</span>
 <span class="sd">            action potential.</span>
 <span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
-<span class="sd">            in :math:`\mathrm{ms}`.</span>
+<span class="sd">            in :math:`\text{ms}`.</span>
 <span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
-<span class="sd">            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
 <span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay,</span>
-<span class="sd">            :math:`\tau_k`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            :math:`\tau_k`, in :math:`\text{ms}`.</span>
 <span class="sd">        voltage_coupling (float | torch.Tensor): strength of coupling to membrane</span>
-<span class="sd">            voltage, :math:`a_k`, in :math:`\mathrm{\mu S}`.</span>
+<span class="sd">            voltage, :math:`a_k`, in :math:`\text{\mu S}`.</span>
 <span class="sd">        spike_increment (float | torch.Tensor): amount by which the adaptive current is</span>
-<span class="sd">            increased after a spike, :math:`b_k`, in :math:`\mathrm{nA}`.</span>
+<span class="sd">            increased after a spike, :math:`b_k`, in :math:`\text{nA}`.</span>
 <span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
-<span class="sd">            in :math:`\mathrm{ms}`, when not None, adaptations of neurons in their</span>
+<span class="sd">            in :math:`\text{ms}`, when not None, adaptations of neurons in their</span>
 <span class="sd">            absolute refractory periods are maintained. Defaults to None.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: updated adaptations for input currents, in :math:`\mathrm{nA}`.</span>
+<span class="sd">        torch.Tensor: updated adaptations for input currents, in :math:`\text{nA}`.</span>
 
 <span class="sd">    .. admonition:: Shape</span>
 <span class="sd">        :class: tensorshape</span>
@@ -300,7 +300,7 @@
 
 <span class="sd">    Tip:</span>
 <span class="sd">        This function doesn&#39;t automatically reduce along the batch dimension,</span>
-<span class="sd">        this should generally be done by averaging along the :math:`0^\mathrm{th}`</span>
+<span class="sd">        this should generally be done by averaging along the :math:`0^\text{th}`</span>
 <span class="sd">        dimension.</span>
 
 <span class="sd">    See Also:</span>
@@ -347,39 +347,39 @@
 
 <span class="sd">    .. math::</span>
 <span class="sd">        \theta_k(t + \Delta t) = \Delta t</span>
-<span class="sd">        \left[a_k \left[ V_m(t) - V_\mathrm{rest} \right]</span>
+<span class="sd">        \left[a_k \left[ V_m(t) - V_\text{rest} \right]</span>
 <span class="sd">        - b_k \theta_k(t)\right] + \theta_k(t)</span>
 
 <span class="sd">    If a spike was generated at time :math:`t`, then.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \theta_k(t) \leftarrow \max(\theta_k(t), {\theta_\mathrm{reset}}_k)</span>
+<span class="sd">        \theta_k(t) \leftarrow \max(\theta_k(t), {\theta_\text{reset}}_k)</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        adaptations (torch.Tensor): last adaptations applied to membrane voltage</span>
-<span class="sd">            threshold, :math:`\theta_k`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            threshold, :math:`\theta_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        voltages (torch.Tensor): membrane potential difference,</span>
-<span class="sd">            :math:`V_m(t)`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`V_m(t)`, in :math:`\text{mV}`.</span>
 <span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
-<span class="sd">            :math:`\Delta t`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
 <span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
-<span class="sd">            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
 <span class="sd">        adapt_rate (float | torch.Tensor): rate constant of exponential decay for</span>
-<span class="sd">            membrane voltage term, :math:`a_k`, in :math:`\mathrm{ms^{-1}}`.</span>
+<span class="sd">            membrane voltage term, :math:`a_k`, in :math:`\text{ms}^{-1}`.</span>
 <span class="sd">        rebound_rate (float | torch.Tensor): rate constant of exponential decay for</span>
-<span class="sd">            threshold voltage term, :math:`b_k`, in :math:`\mathrm{ms^{-1}}`.</span>
+<span class="sd">            threshold voltage term, :math:`b_k`, in :math:`\text{ms}^{-1}`.</span>
 <span class="sd">        adapt_reset_lb (float | torch.Tensor | None, optional): lower bound for</span>
 <span class="sd">            the threshold adaptation permitted after a postsynaptic potential,</span>
-<span class="sd">            :math:`{\theta_\mathrm{reset}}_k`, in :math:`\mathrm{mV}`. Defaults to None.</span>
+<span class="sd">            :math:`{\theta_\text{reset}}_k`, in :math:`\text{mV}`. Defaults to None.</span>
 <span class="sd">        spikes (torch.Tensor | None, optional): if the corresponding neuron generated an</span>
 <span class="sd">            action potential. Defaults to None.</span>
 <span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
-<span class="sd">            in :math:`\mathrm{ms}`, when not None, adaptations of neurons in their</span>
+<span class="sd">            in :math:`\text{ms}`, when not None, adaptations of neurons in their</span>
 <span class="sd">            absolute refractory periods are maintained. Defaults to None.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: updated adaptations for membrane voltage threshold,</span>
-<span class="sd">        in :math:`\mathrm{mV}`.</span>
+<span class="sd">        in :math:`\text{mV}`.</span>
 
 <span class="sd">    .. admonition:: Shape</span>
 <span class="sd">        :class: tensorshape</span>
@@ -417,7 +417,7 @@
 
 <span class="sd">    Tip:</span>
 <span class="sd">        This function doesn&#39;t automatically reduce along the batch dimension,</span>
-<span class="sd">        this should generally be done by averaging along the :math:`0^\mathrm{th}`</span>
+<span class="sd">        this should generally be done by averaging along the :math:`0^\text{th}`</span>
 <span class="sd">        dimension.</span>
 
 <span class="sd">    See Also:</span>
@@ -466,7 +466,7 @@
 
 <span class="sd">    Where :math:`\alpha_k` is the multiple for exponential decay, typically expressed</span>
 <span class="sd">    as :math:`\alpha_k = \exp(-\Delta t / \tau_k)`, where :math:`\Delta t` is the</span>
-<span class="sd">    step time and :math:`\tau_k` is the time constant for the :math:`k^\mathrm{th}`</span>
+<span class="sd">    step time and :math:`\tau_k` is the time constant for the :math:`k^\text{th}`</span>
 <span class="sd">    adaptation, in like units of time.</span>
 
 <span class="sd">    If a spike was generated at time :math:`t`, then.</span>
@@ -476,20 +476,20 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        adaptations (torch.Tensor): last adaptations applied to membrane voltage</span>
-<span class="sd">            threshold, :math:`\theta_k`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            threshold, :math:`\theta_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        spikes (torch.Tensor): if the corresponding neuron generated an</span>
 <span class="sd">            action potential.</span>
 <span class="sd">        decay (float | torch.Tensor): exponential decay factor for adaptations,</span>
 <span class="sd">            :math:`\alpha_k`, unitless.</span>
 <span class="sd">        spike_increment (torch.Tensor): amount by which the adaptive threshold is</span>
-<span class="sd">            increased after a spike, :math:`a_k`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            increased after a spike, :math:`a_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
-<span class="sd">            in :math:`\mathrm{ms}`, when not None, adaptations of neurons in their</span>
+<span class="sd">            in :math:`\text{ms}`, when not None, adaptations of neurons in their</span>
 <span class="sd">            absolute refractory periods are maintained. Defaults to None.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: updated adaptations for membrane voltage threshold,</span>
-<span class="sd">        in :math:`\mathrm{mV}`.</span>
+<span class="sd">        in :math:`\text{mV}`.</span>
 
 <span class="sd">    .. admonition:: Shape</span>
 <span class="sd">        :class: tensorshape</span>
@@ -518,7 +518,7 @@
 
 <span class="sd">    Tip:</span>
 <span class="sd">        This function doesn&#39;t automatically reduce along the batch dimension,</span>
-<span class="sd">        this should generally be done by averaging along the :math:`0^\mathrm{th}`</span>
+<span class="sd">        this should generally be done by averaging along the :math:`0^\text{th}`</span>
 <span class="sd">        dimension.</span>
 
 <span class="sd">    See Also:</span>
@@ -549,9 +549,9 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        current (torch.Tensor): presynaptic currents, :math:`I_+`,</span>
-<span class="sd">            in :math:`\mathrm{nA}`.</span>
+<span class="sd">            in :math:`\text{nA}`.</span>
 <span class="sd">        adaptations (torch.Tensor): :math:`k` current adaptations, :math:`w_k`,</span>
-<span class="sd">            in :math:`\mathrm{nA}`.</span>
+<span class="sd">            in :math:`\text{nA}`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: adapted presynaptic currents.</span>
@@ -578,9 +578,9 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        threshold (float | torch.Tensor): equilibrium of the firing threshold,</span>
-<span class="sd">            :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`\Theta_\infty$`, in :math:`\text{mV}`.</span>
 <span class="sd">        adaptations (torch.Tensor): :math:`k` threshold adaptations, :math:`\theta_k`,</span>
-<span class="sd">            in :math:`\mathrm{mV}`.</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: adapted firing thresholds.</span>

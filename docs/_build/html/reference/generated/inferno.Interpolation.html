@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="inferno.neural" href="../neural.html" /><link rel="prev" title="holt_linear_smoothing" href="inferno.holt_linear_smoothing.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="interp_previous" href="inferno.interp_previous.html" /><link rel="prev" title="full" href="inferno.full.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>Interpolation - Inferno</title>
@@ -243,6 +243,14 @@
 <p><code class="docutils literal notranslate"><span class="pre">sample_at</span></code> is measured as the amount of time after the time at which
 <code class="docutils literal notranslate"><span class="pre">prev_data</span></code> was sampled.</p>
 </div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Provided interpolation functions include <a class="reference internal" href="inferno.interp_previous.html#inferno.interp_previous" title="inferno.interp_previous"><code class="xref py py-func docutils literal notranslate"><span class="pre">interp_previous()</span></code></a>,
+<a class="reference internal" href="inferno.interp_nearest.html#inferno.interp_nearest" title="inferno.interp_nearest"><code class="xref py py-func docutils literal notranslate"><span class="pre">interp_nearest()</span></code></a>, <a class="reference internal" href="inferno.interp_linear.html#inferno.interp_linear" title="inferno.interp_linear"><code class="xref py py-func docutils literal notranslate"><span class="pre">interp_linear()</span></code></a>, and
+<a class="reference internal" href="inferno.interp_exp_decay.html#inferno.interp_exp_decay" title="inferno.interp_exp_decay"><code class="xref py py-func docutils literal notranslate"><span class="pre">interp_exp_decay()</span></code></a>. Some provided functions may require keyword
+arguments. For arguments which require an object of type <code class="docutils literal notranslate"><span class="pre">Interpolation</span></code>,
+use a <a class="reference external" href="https://docs.python.org/3/library/functools.html#functools.partial" title="(in Python v3.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">partial()</span></code></a> function to fill in keyword arguments.</p>
+</div>
 </dd></dl>
 
 </section>
@@ -252,23 +260,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../neural.html">
+          <a class="next-page" href="inferno.interp_previous.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">inferno.neural</div>
+                <div class="title">interp_previous</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.holt_linear_smoothing.html">
+          <a class="prev-page" href="inferno.full.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">holt_linear_smoothing</div>
+                <div class="title">full</div>
                 
               </div>
             </a>

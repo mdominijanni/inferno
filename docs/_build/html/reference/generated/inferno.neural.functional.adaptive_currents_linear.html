@@ -236,28 +236,28 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>adaptations</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – last adaptations applied to input current,
-<span class="math notranslate nohighlight">\(w_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>.</p></li>
+<span class="math notranslate nohighlight">\(w_k\)</span>, in <span class="math notranslate nohighlight">\(\text{nA}\)</span>.</p></li>
 <li><p><strong>voltages</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – membrane voltages <span class="math notranslate nohighlight">\(V_m(t)\)</span>,
-in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
+in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
 <li><p><strong>spikes</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – if the corresponding neuron generated an
 action potential.</p></li>
 <li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – length of a simulation time step,
-in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
+in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><strong>rest_v</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – membrane potential difference at equilibrium,
-<span class="math notranslate nohighlight">\(V_\mathrm{rest}\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
+<span class="math notranslate nohighlight">\(V_\text{rest}\)</span>, in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
 <li><p><strong>time_constant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – time constant of exponential decay,
-<span class="math notranslate nohighlight">\(\tau_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
+<span class="math notranslate nohighlight">\(\tau_k\)</span>, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><strong>voltage_coupling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – strength of coupling to membrane
-voltage, <span class="math notranslate nohighlight">\(a_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{\mu S}\)</span>.</p></li>
+voltage, <span class="math notranslate nohighlight">\(a_k\)</span>, in <span class="math notranslate nohighlight">\(\text{\mu S}\)</span>.</p></li>
 <li><p><strong>spike_increment</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – amount by which the adaptive current is
-increased after a spike, <span class="math notranslate nohighlight">\(b_k\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>.</p></li>
+increased after a spike, <span class="math notranslate nohighlight">\(b_k\)</span>, in <span class="math notranslate nohighlight">\(\text{nA}\)</span>.</p></li>
 <li><p><strong>refracs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – remaining absolute refractory periods,
-in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>, when not None, adaptations of neurons in their
+in <span class="math notranslate nohighlight">\(\text{ms}\)</span>, when not None, adaptations of neurons in their
 absolute refractory periods are maintained. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>updated adaptations for input currents, in <span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>.</p>
+<dd class="field-even"><p>updated adaptations for input currents, in <span class="math notranslate nohighlight">\(\text{nA}\)</span>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
@@ -289,7 +289,7 @@ absolute refractory periods are maintained. Defaults to None.</p></li>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>This function doesn’t automatically reduce along the batch dimension,
-this should generally be done by averaging along the <span class="math notranslate nohighlight">\(0^\mathrm{th}\)</span>
+this should generally be done by averaging along the <span class="math notranslate nohighlight">\(0^\text{th}\)</span>
 dimension.</p>
 </div>
 <div class="admonition seealso">

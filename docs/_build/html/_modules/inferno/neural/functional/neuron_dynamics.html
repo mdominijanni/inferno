@@ -241,26 +241,26 @@
 <span class="sd">    Membrane voltages are reset as.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        V_m(t) \leftarrow V_\mathrm{reset}</span>
+<span class="sd">        V_m(t) \leftarrow V_\text{reset}</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        inputs (torch.Tensor): presynaptic currents, :math:`I(t)`,</span>
-<span class="sd">            in :math:`\mathrm{nA}`.</span>
+<span class="sd">            in :math:`\text{nA}`.</span>
 <span class="sd">        refracs (torch.Tensor): remaining absolute refractory periods,</span>
-<span class="sd">            in :math:`\mathrm{ms}`.</span>
+<span class="sd">            in :math:`\text{ms}`.</span>
 <span class="sd">        dynamics (OneToOne[torch.Tensor]): function which given input currents in</span>
-<span class="sd">            :math:`\mathrm{nA}` returns the updated membrane voltages, :math:`V_m(t)`,</span>
-<span class="sd">            in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`\text{nA}` returns the updated membrane voltages, :math:`V_m(t)`,</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
 <span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
-<span class="sd">            in :math:`\mathrm{ms}`.</span>
+<span class="sd">            in :math:`\text{ms}`.</span>
 <span class="sd">        reset_v (float | torch.Tensor): membrane voltage after an action potential</span>
-<span class="sd">            is generated, :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            is generated, :math:`V_\text{reset}`, in :math:`\text{mV}`.</span>
 <span class="sd">        thresh_v (float | torch.Tensor): membrane voltage at which action potentials</span>
-<span class="sd">            are generated, \Theta(t), in :math:`\mathrm{mV}`.</span>
+<span class="sd">            are generated, \Theta(t), in :math:`\text{mV}`.</span>
 <span class="sd">        refrac_t (float | torch.Tensor): length the absolute refractory period,</span>
-<span class="sd">            in :math:`\mathrm{ms}`.</span>
+<span class="sd">            in :math:`\text{ms}`.</span>
 <span class="sd">        voltages (torch.Tensor | None): membrane voltages, V_m(t),</span>
-<span class="sd">            in :math:`\mathrm{mV}`, to maintain while in refractory periods,</span>
+<span class="sd">            in :math:`\text{mV}`, to maintain while in refractory periods,</span>
 <span class="sd">            voltages not held if None. Defaults to None.</span>
 
 <span class="sd">    Returns:</span>
@@ -268,8 +268,8 @@
 <span class="sd">        updated state containing:</span>
 
 <span class="sd">            * spikes: if the corresponding neuron generated an action potential.</span>
-<span class="sd">            * voltages: updated membrane potentials, in :math:`\mathrm{mV}`.</span>
-<span class="sd">            * refracs: remaining absolute refractory periods, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            * voltages: updated membrane potentials, in :math:`\text{mV}`.</span>
+<span class="sd">            * refracs: remaining absolute refractory periods, in :math:`\text{ms}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># decrement refractory periods and create mask</span>
     <span class="n">refracs</span> <span class="o">=</span> <span class="p">(</span><span class="n">refracs</span> <span class="o">-</span> <span class="n">step_time</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -318,30 +318,30 @@
 <span class="sd">    Membrane voltages are reset as.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        V_m(t) \leftarrow V_\mathrm{rest} + m_v \left[ V_m(t) - V_\mathrm{rest} \right] - b_v</span>
+<span class="sd">        V_m(t) \leftarrow V_\text{rest} + m_v \left[ V_m(t) - V_\text{rest} \right] - b_v</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        inputs (torch.Tensor): presynaptic currents, :math:`I(t)`,</span>
-<span class="sd">            in :math:`\mathrm{nA}`.</span>
+<span class="sd">            in :math:`\text{nA}`.</span>
 <span class="sd">        refracs (torch.Tensor): remaining absolute refractory periods,</span>
-<span class="sd">            in :math:`\mathrm{ms}`.</span>
+<span class="sd">            in :math:`\text{ms}`.</span>
 <span class="sd">        dynamics (OneToOne[torch.Tensor]): function which given input currents in</span>
-<span class="sd">            :math:`\mathrm{nA}` returns the updated membrane voltages, :math:`V_m(t)`,</span>
-<span class="sd">            in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`\text{nA}` returns the updated membrane voltages, :math:`V_m(t)`,</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
 <span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
-<span class="sd">            in :math:`\mathrm{ms}`.</span>
+<span class="sd">            in :math:`\text{ms}`.</span>
 <span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
-<span class="sd">            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
 <span class="sd">        v_slope (float | torch.Tensor): additive parameter controlling reset voltage,</span>
-<span class="sd">            :math:`b_v`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`b_v`, in :math:`\text{mV}`.</span>
 <span class="sd">        v_intercept (float | torch.Tensor): multiplicative parameter controlling</span>
 <span class="sd">            reset voltage, :math:`m_v`, unitless.</span>
 <span class="sd">        thresh_v (float | torch.Tensor): membrane voltage at which action potentials</span>
-<span class="sd">            are generated, \Theta(t), in :math:`\mathrm{mV}`.</span>
+<span class="sd">            are generated, \Theta(t), in :math:`\text{mV}`.</span>
 <span class="sd">        refrac_t (float | torch.Tensor): length the absolute refractory period,</span>
-<span class="sd">            in :math:`\mathrm{ms}`.</span>
+<span class="sd">            in :math:`\text{ms}`.</span>
 <span class="sd">        voltages (torch.Tensor | None): membrane voltages, V_m(t),</span>
-<span class="sd">            in :math:`\mathrm{mV}`, to maintain while in refractory periods,</span>
+<span class="sd">            in :math:`\text{mV}`, to maintain while in refractory periods,</span>
 <span class="sd">            voltages not held if None. Defaults to None.</span>
 
 <span class="sd">    Returns:</span>
@@ -349,8 +349,8 @@
 <span class="sd">        updated state containing:</span>
 
 <span class="sd">            * spikes: if the corresponding neuron generated an action potential.</span>
-<span class="sd">            * voltages: updated membrane potentials, in :math:`\mathrm{mV}`.</span>
-<span class="sd">            * refracs: remaining absolute refractory periods, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            * voltages: updated membrane potentials, in :math:`\text{mV}`.</span>
+<span class="sd">            * refracs: remaining absolute refractory periods, in :math:`\text{ms}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># decrement refractory periods and create mask</span>
     <span class="n">refracs</span> <span class="o">=</span> <span class="p">(</span><span class="n">refracs</span> <span class="o">-</span> <span class="n">step_time</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -389,8 +389,8 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Integrates input currents into membrane voltages using linear dynamics.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\mathrm{rest} - R_mI(t)\right]</span>
-<span class="sd">        \alpha + V_\mathrm{rest} + R_mI(t)</span>
+<span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]</span>
+<span class="sd">        \alpha + V_\text{rest} + R_mI(t)</span>
 
 <span class="sd">    Where :math:`\alpha` is the multiple for exponential decay, typically expressed</span>
 <span class="sd">    as :math:`\alpha = \exp(-\Delta t / \tau)`, where :math:`\Delta t` is the step time</span>
@@ -398,18 +398,18 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        masked_inputs (torch.Tensor): presynaptic currents masked by neurons in their</span>
-<span class="sd">            absolute refractory period, :math:`I(t)`, in :math:`\mathrm{nA}`.</span>
+<span class="sd">            absolute refractory period, :math:`I(t)`, in :math:`\text{nA}`.</span>
 <span class="sd">        voltages (torch.Tensor): membrane voltages :math:`V_m(t)`,</span>
-<span class="sd">            in :math:`\mathrm{mV}`.</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
 <span class="sd">        decay (float | torch.Tensor): exponential decay factor for membrane voltage,</span>
 <span class="sd">            :math:`\alpha`, unitless.</span>
 <span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
-<span class="sd">            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
 <span class="sd">        resistance (float | torch.Tensor): resistance across the cell membrane,</span>
-<span class="sd">            :math:`R_m`, in :math:`\mathrm{M\Omega}`.</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M\Omega}`.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\mathrm{mV}`.</span>
+<span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">v_in</span> <span class="o">=</span> <span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span>
     <span class="n">v_delta</span> <span class="o">=</span> <span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span>

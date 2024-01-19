@@ -23,26 +23,26 @@ def voltage_thresholding(
     Membrane voltages are reset as.
 
     .. math::
-        V_m(t) \leftarrow V_\mathrm{reset}
+        V_m(t) \leftarrow V_\text{reset}
 
     Args:
         inputs (torch.Tensor): presynaptic currents, :math:`I(t)`,
-            in :math:`\mathrm{nA}`.
+            in :math:`\text{nA}`.
         refracs (torch.Tensor): remaining absolute refractory periods,
-            in :math:`\mathrm{ms}`.
+            in :math:`\text{ms}`.
         dynamics (OneToOne[torch.Tensor]): function which given input currents in
-            :math:`\mathrm{nA}` returns the updated membrane voltages, :math:`V_m(t)`,
-            in :math:`\mathrm{mV}`.
+            :math:`\text{nA}` returns the updated membrane voltages, :math:`V_m(t)`,
+            in :math:`\text{mV}`.
         step_time (float | torch.Tensor): length of a simulation time step,
-            in :math:`\mathrm{ms}`.
+            in :math:`\text{ms}`.
         reset_v (float | torch.Tensor): membrane voltage after an action potential
-            is generated, :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.
+            is generated, :math:`V_\text{reset}`, in :math:`\text{mV}`.
         thresh_v (float | torch.Tensor): membrane voltage at which action potentials
-            are generated, \Theta(t), in :math:`\mathrm{mV}`.
+            are generated, \Theta(t), in :math:`\text{mV}`.
         refrac_t (float | torch.Tensor): length the absolute refractory period,
-            in :math:`\mathrm{ms}`.
+            in :math:`\text{ms}`.
         voltages (torch.Tensor | None): membrane voltages, V_m(t),
-            in :math:`\mathrm{mV}`, to maintain while in refractory periods,
+            in :math:`\text{mV}`, to maintain while in refractory periods,
             voltages not held if None. Defaults to None.
 
     Returns:
@@ -50,8 +50,8 @@ def voltage_thresholding(
         updated state containing:
 
             * spikes: if the corresponding neuron generated an action potential.
-            * voltages: updated membrane potentials, in :math:`\mathrm{mV}`.
-            * refracs: remaining absolute refractory periods, in :math:`\mathrm{ms}`.
+            * voltages: updated membrane potentials, in :math:`\text{mV}`.
+            * refracs: remaining absolute refractory periods, in :math:`\text{ms}`.
     """
     # decrement refractory periods and create mask
     refracs = (refracs - step_time).clamp(min=0)
@@ -97,30 +97,30 @@ def voltage_thresholding_slope_intercept(
     Membrane voltages are reset as.
 
     .. math::
-        V_m(t) \leftarrow V_\mathrm{rest} + m_v \left[ V_m(t) - V_\mathrm{rest} \right] - b_v
+        V_m(t) \leftarrow V_\text{rest} + m_v \left[ V_m(t) - V_\text{rest} \right] - b_v
 
     Args:
         inputs (torch.Tensor): presynaptic currents, :math:`I(t)`,
-            in :math:`\mathrm{nA}`.
+            in :math:`\text{nA}`.
         refracs (torch.Tensor): remaining absolute refractory periods,
-            in :math:`\mathrm{ms}`.
+            in :math:`\text{ms}`.
         dynamics (OneToOne[torch.Tensor]): function which given input currents in
-            :math:`\mathrm{nA}` returns the updated membrane voltages, :math:`V_m(t)`,
-            in :math:`\mathrm{mV}`.
+            :math:`\text{nA}` returns the updated membrane voltages, :math:`V_m(t)`,
+            in :math:`\text{mV}`.
         step_time (float | torch.Tensor): length of a simulation time step,
-            in :math:`\mathrm{ms}`.
+            in :math:`\text{ms}`.
         rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
-            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
+            :math:`V_\text{rest}`, in :math:`\text{mV}`.
         v_slope (float | torch.Tensor): additive parameter controlling reset voltage,
-            :math:`b_v`, in :math:`\mathrm{mV}`.
+            :math:`b_v`, in :math:`\text{mV}`.
         v_intercept (float | torch.Tensor): multiplicative parameter controlling
             reset voltage, :math:`m_v`, unitless.
         thresh_v (float | torch.Tensor): membrane voltage at which action potentials
-            are generated, \Theta(t), in :math:`\mathrm{mV}`.
+            are generated, \Theta(t), in :math:`\text{mV}`.
         refrac_t (float | torch.Tensor): length the absolute refractory period,
-            in :math:`\mathrm{ms}`.
+            in :math:`\text{ms}`.
         voltages (torch.Tensor | None): membrane voltages, V_m(t),
-            in :math:`\mathrm{mV}`, to maintain while in refractory periods,
+            in :math:`\text{mV}`, to maintain while in refractory periods,
             voltages not held if None. Defaults to None.
 
     Returns:
@@ -128,8 +128,8 @@ def voltage_thresholding_slope_intercept(
         updated state containing:
 
             * spikes: if the corresponding neuron generated an action potential.
-            * voltages: updated membrane potentials, in :math:`\mathrm{mV}`.
-            * refracs: remaining absolute refractory periods, in :math:`\mathrm{ms}`.
+            * voltages: updated membrane potentials, in :math:`\text{mV}`.
+            * refracs: remaining absolute refractory periods, in :math:`\text{ms}`.
     """
     # decrement refractory periods and create mask
     refracs = (refracs - step_time).clamp(min=0)
@@ -165,8 +165,8 @@ def voltage_integration_linear(
     r"""Integrates input currents into membrane voltages using linear dynamics.
 
     .. math::
-        V_m(t + \Delta t) = \left[V_m(t) - V_\mathrm{rest} - R_mI(t)\right]
-        \alpha + V_\mathrm{rest} + R_mI(t)
+        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]
+        \alpha + V_\text{rest} + R_mI(t)
 
     Where :math:`\alpha` is the multiple for exponential decay, typically expressed
     as :math:`\alpha = \exp(-\Delta t / \tau)`, where :math:`\Delta t` is the step time
@@ -174,18 +174,18 @@ def voltage_integration_linear(
 
     Args:
         masked_inputs (torch.Tensor): presynaptic currents masked by neurons in their
-            absolute refractory period, :math:`I(t)`, in :math:`\mathrm{nA}`.
+            absolute refractory period, :math:`I(t)`, in :math:`\text{nA}`.
         voltages (torch.Tensor): membrane voltages :math:`V_m(t)`,
-            in :math:`\mathrm{mV}`.
+            in :math:`\text{mV}`.
         decay (float | torch.Tensor): exponential decay factor for membrane voltage,
             :math:`\alpha`, unitless.
         rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
-            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
+            :math:`V_\text{rest}`, in :math:`\text{mV}`.
         resistance (float | torch.Tensor): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\mathrm{M\Omega}`.
+            :math:`R_m`, in :math:`\text{M\Omega}`.
 
     Returns:
-        torch.Tensor: membrane voltages with inputs integrated, in :math:`\mathrm{mV}`.
+        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.
     """
     v_in = resistance * masked_inputs
     v_delta = voltages - rest_v

@@ -2,6 +2,7 @@ from __future__ import annotations
 import torch
 from .base import FoldingReducer
 import inferno
+import inferno.neural.functional as nf
 from inferno.typing import OneToOne
 
 
@@ -83,7 +84,7 @@ class NearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return inferno.trace_nearest(
+        return nf.trace_nearest(
             obs,
             state,
             decay=self.decay,
@@ -204,7 +205,7 @@ class CumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return inferno.trace_nearest(
+        return nf.trace_nearest(
             obs,
             state,
             decay=self.decay,
@@ -328,7 +329,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return inferno.trace_nearest_scaled(
+        return nf.trace_nearest_scaled(
             obs,
             state,
             decay=self.decay,
@@ -452,7 +453,7 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return inferno.trace_cumulative_scaled(
+        return nf.trace_cumulative_scaled(
             obs,
             state,
             decay=self.decay,

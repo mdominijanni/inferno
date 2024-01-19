@@ -286,8 +286,8 @@ Nb^{-k} = N \left[\exp\left(-\frac{\Delta t}{\tau}\right)\right]^{k \tau_b / \De
 \[\begin{split}
 x_{t + \Delta t} =
 \begin{cases}
-    a + x_t \exp (\Delta t / \tau) &amp;\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
-    x_t \exp (\Delta t / \tau) &amp;\text{otherwise}
+    a + x_t \exp (-\Delta t / \tau) &amp;\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
+    x_t \exp (-\Delta t / \tau) &amp;\text{otherwise}
 \end{cases}
 \end{split}\]</div>
 </div>
@@ -303,7 +303,7 @@ x_{t + \Delta t} =
 x_{t + \Delta t} =
 \begin{cases}
     a &amp;\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
-    x_t \exp (\Delta t / \tau) &amp;\text{otherwise}
+    x_t \exp (-\Delta t / \tau) &amp;\text{otherwise}
 \end{cases}
 \end{split}\]</div>
 </div>
@@ -319,8 +319,8 @@ x_{t + \Delta t} =
 \[\begin{split}
 x_{t + \Delta t} =
 \begin{cases}
-    a + Sf + x_t \exp (\Delta t / \tau) &amp;K(f_{t + \Delta t}) \\
-    x_t \exp (\Delta t / \tau) &amp;\text{otherwise}
+    a + Sf + x_t \exp (-\Delta t / \tau) &amp;K(f_{t + \Delta t}) \\
+    x_t \exp (-\Delta t / \tau) &amp;\text{otherwise}
 \end{cases}
 \end{split}\]</div>
 </div>
@@ -333,7 +333,7 @@ x_{t + \Delta t} =
 x_{t + \Delta t} =
 \begin{cases}
     a + Sf &amp;K(f_{t + \Delta t}) \\
-    x_t \exp (\Delta t / \tau) &amp;\text{otherwise}
+    x_t \exp (-\Delta t / \tau) &amp;\text{otherwise}
 \end{cases}
 \end{split}\]</div>
 </div>

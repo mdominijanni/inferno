@@ -217,8 +217,8 @@
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="module-inferno.neural.functional">
 <span id="inferno-neural-functional"></span><h1>inferno.neural.functional<a class="headerlink" href="#module-inferno.neural.functional" title="Link to this heading">#</a></h1>
-<section id="neuronal-dynamics">
-<h2>Neuronal Dynamics<a class="headerlink" href="#neuronal-dynamics" title="Link to this heading">#</a></h2>
+<section id="dynamics">
+<h2>Dynamics<a class="headerlink" href="#dynamics" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -239,8 +239,8 @@
 </table>
 </div>
 </section>
-<section id="neuronal-adaptation">
-<h2>Neuronal Adaptation<a class="headerlink" href="#neuronal-adaptation" title="Link to this heading">#</a></h2>
+<section id="adaptation">
+<h2>Adaptation<a class="headerlink" href="#adaptation" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -262,6 +262,31 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.adaptive_thresholds_linear_spike.html#inferno.neural.functional.adaptive_thresholds_linear_spike" title="inferno.neural.functional.adaptive_thresholds_linear_spike"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adaptive_thresholds_linear_spike</span></code></a></p></td>
 <td><p>Update adaptive thresholds based on postsynaptic spikes.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="trace">
+<h2>Trace<a class="headerlink" href="#trace" title="Link to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable colwidths-given docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.trace_nearest.html#inferno.neural.functional.trace_nearest" title="inferno.neural.functional.trace_nearest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_nearest</span></code></a></p></td>
+<td><p>Performs a trace for a time step, considering the latest match.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.functional.trace_cumulative.html#inferno.neural.functional.trace_cumulative" title="inferno.neural.functional.trace_cumulative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_cumulative</span></code></a></p></td>
+<td><p>Performs a trace for a time step, considering all prior matches.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.functional.trace_nearest_scaled.html#inferno.neural.functional.trace_nearest_scaled" title="inferno.neural.functional.trace_nearest_scaled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_nearest_scaled</span></code></a></p></td>
+<td><p>Performs a trace for a time step, considering the latest match, scaled by the inputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.functional.trace_cumulative_scaled.html#inferno.neural.functional.trace_cumulative_scaled" title="inferno.neural.functional.trace_cumulative_scaled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_cumulative_scaled</span></code></a></p></td>
+<td><p>Performs a trace for a time step, considering all prior matches, scaled by the inputs.</p></td>
 </tr>
 </tbody>
 </table>
@@ -325,10 +350,13 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">inferno.neural.functional</a><ul>
-<li><a class="reference internal" href="#neuronal-dynamics">Neuronal Dynamics</a><ul class="simple">
+<li><a class="reference internal" href="#dynamics">Dynamics</a><ul class="simple">
 </ul>
 </li>
-<li><a class="reference internal" href="#neuronal-adaptation">Neuronal Adaptation</a><ul class="simple">
+<li><a class="reference internal" href="#adaptation">Adaptation</a><ul class="simple">
+</ul>
+</li>
+<li><a class="reference internal" href="#trace">Trace</a><ul class="simple">
 </ul>
 </li>
 </ul>

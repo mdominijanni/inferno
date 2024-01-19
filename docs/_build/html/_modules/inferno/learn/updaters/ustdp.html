@@ -231,24 +231,68 @@
 <div class="viewcode-block" id="STDP">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.learn.STDP.html#inferno.learn.STDP">[docs]</a>
 <span class="k">class</span> <span class="nc">STDP</span><span class="p">(</span><span class="n">LayerwiseUpdater</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike-timing dependent plasticity updated.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike-timing dependent plasticity updater.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \Delta w = A_+ x_\text{pre} \bigl[t = t^f_\text{post}\bigr] -</span>
+<span class="sd">        A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]</span>
+
+<span class="sd">    Where:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \begin{align*}</span>
+<span class="sd">            x^{(t)} &amp;=</span>
+<span class="sd">            \begin{cases}</span>
+<span class="sd">                1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t = t^f \text{ and cumulative trace} \\</span>
+<span class="sd">                1 &amp; t = t^f \text{ and nearest trace} \\</span>
+<span class="sd">                x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t \neq t^f</span>
+<span class="sd">            \end{cases} \\ \\</span>
+<span class="sd">            A_+ &amp;=</span>
+<span class="sd">            \begin{cases}</span>
+<span class="sd">                \Theta(w_\text{max} - w)\eta_\text{post} &amp; \exists w_\text{max} \text{ and hard bounding} \\</span>
+<span class="sd">                (w_\text{max} - w)^{\mu_+}\eta_\text{post} &amp; \exists w_\text{max} \text{ and soft bounding} \\</span>
+<span class="sd">                \eta_\text{post} &amp; \text{otherwise}</span>
+<span class="sd">            \end{cases} \\ \\</span>
+<span class="sd">            A_- &amp;=</span>
+<span class="sd">            \begin{cases}</span>
+<span class="sd">                \Theta(w - w_\text{min})\eta_\text{pre} &amp; \exists w_\text{min} \text{ and hard bounding} \\</span>
+<span class="sd">                (w - w_\text{min})^{\mu_-}\eta_\text{pre} &amp; \exists w_\text{min} \text{ and soft bounding} \\</span>
+<span class="sd">                \eta_\text{pre} &amp; \text{otherwise}</span>
+<span class="sd">            \end{cases}</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    :math:`t` and :math:`t^f` are the current time and the time of the most recent</span>
+<span class="sd">    spike, respectively.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        step_time (float): _description_</span>
-<span class="sd">        lr_post (float): learning rate for updates on postsynaptic spikes, potentiative.</span>
-<span class="sd">        lr_pre (float): learning rate for updates on presynaptic spikes, depressive.</span>
+<span class="sd">        step_time (float): length of a simulation time step, :math:`\Delta t`,</span>
+<span class="sd">            in :math:`\text{ms}`.</span>
+<span class="sd">        lr_post (float): learning rate for updates on postsynaptic spike updates (LTP),</span>
+<span class="sd">            :math:`\eta_\text{post}`.</span>
+<span class="sd">        lr_pre (float): learning rate for updates on presynaptic spike updates (LTD),</span>
+<span class="sd">            :math:`\eta_\text{pre}`.</span>
 <span class="sd">        tc_post (float): time constant for exponential decay of postsynaptic trace,</span>
-<span class="sd">            in :math:`ms`.</span>
+<span class="sd">            :math:`tau_\text{post}`, in :math:`ms`.</span>
 <span class="sd">        tc_pre (float): time constant for exponential decay of presynaptic trace,</span>
-<span class="sd">            in :math:`ms`.</span>
+<span class="sd">            :math:`tau_\text{pre}`, in :math:`ms`.</span>
 <span class="sd">        delayed (bool, optional): if the updater should assume learned delays, if</span>
 <span class="sd">            present, may change. Defaults to False.</span>
-<span class="sd">        trace_mode (Literal[&quot;cumulative&quot;, &quot;nearest&quot;], optional): _description_. Defaults to &quot;cumulative&quot;.</span>
-<span class="sd">        bounding_mode (Literal[&quot;soft&quot;, &quot;hard&quot;] | None, optional): _description_. Defaults to None.</span>
-<span class="sd">        wmin (float | None, optional): _description_. Defaults to None.</span>
-<span class="sd">        wmax (float | None, optional): _description_. Defaults to None.</span>
-<span class="sd">        wddepexp (float, optional): _description_. Defaults to 1.0.</span>
-<span class="sd">        wdpotexp (float, optional): _description_. Defaults to 1.0.</span>
+<span class="sd">        interp_tolerance (float): maximum difference in time from an observation</span>
+<span class="sd">            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.</span>
+<span class="sd">        trace_mode (Literal[&quot;cumulative&quot;, &quot;nearest&quot;], optional): method to use for</span>
+<span class="sd">            calculating spike traces. Defaults to &quot;cumulative&quot;.</span>
+<span class="sd">        wd_lower (~inferno.learn.functional.WeightDependence | None, optional):</span>
+<span class="sd">            function for applying weight dependence on a lower bound, no dependence if</span>
+<span class="sd">            None. Defaults to None.</span>
+<span class="sd">        wd_upper (~inferno.learn.functional.WeightDependence | None, optional):</span>
+<span class="sd">            function for applying weight dependence on an bound, no dependence if</span>
+<span class="sd">            None. Defaults to None.</span>
+<span class="sd">        wmin (float | None, optional): lower bound for weights, :math:`w_\text{min}`.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        wmax (float | None, optional): upper bound for weights., :math:`w_\text{max}`</span>
+<span class="sd">            Defaults to None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -260,13 +304,12 @@
         <span class="n">tc_post</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">tc_pre</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">delayed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">interp_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">trace_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;cumulative&quot;</span><span class="p">,</span> <span class="s2">&quot;nearest&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cumulative&quot;</span><span class="p">,</span>
-        <span class="n">bounding_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;soft&quot;</span><span class="p">,</span> <span class="s2">&quot;hard&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">interpolation_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">,</span>
+        <span class="n">wd_lower</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">WeightDependence</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wd_upper</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">WeightDependence</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">wmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">wmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">wddepexp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">wdpotexp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor, registers monitors</span>
@@ -280,112 +323,101 @@
                 <span class="sa">f</span><span class="s2">&quot;received </span><span class="si">{</span><span class="n">trace_mode</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">bounding_mode</span><span class="p">:</span>
-            <span class="n">bounding_mode</span> <span class="o">=</span> <span class="n">bounding_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">bounding_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;soft&quot;</span><span class="p">,</span> <span class="s2">&quot;hard&quot;</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;`bounding_mode`, if not None, must be one of &#39;soft&#39; or &#39;hard&#39;; &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;received </span><span class="si">{</span><span class="n">bounding_mode</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="p">)</span>
+        <span class="c1"># validate weight dependence</span>
+        <span class="k">if</span> <span class="n">wd_lower</span> <span class="ow">and</span> <span class="n">wmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;`wmin` cannot be None if `wd_lower` is specified.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wd_upper</span> <span class="ow">and</span> <span class="n">wmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;`wmax` cannot be None if `wd_upper` is specified.&quot;</span><span class="p">)</span>
 
         <span class="c1"># updater hyperparameters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s1">&#39;`step_time`&#39;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;gt&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`step_time`&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_post</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_pre</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tc_post</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s1">&#39;`tc_post`&#39;</span><span class="p">,</span> <span class="n">tc_post</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;gt&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tc_pre</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s1">&#39;`tc_pre`&#39;</span><span class="p">,</span> <span class="n">tc_pre</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;gt&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tc_post</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`tc_post`&quot;</span><span class="p">,</span> <span class="n">tc_post</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tc_pre</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`tc_pre`&quot;</span><span class="p">,</span> <span class="n">tc_pre</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span> <span class="o">=</span> <span class="n">delayed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">interp_tolerance</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">=</span> <span class="n">trace_mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bounding</span> <span class="o">=</span> <span class="n">bounding_mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">interpolation_tolerance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wdlower</span> <span class="o">=</span> <span class="n">wd_lower</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wdupper</span> <span class="o">=</span> <span class="n">wd_upper</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wmin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wmin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wmax</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wmax</span><span class="p">)</span>
 
-        <span class="c1"># case-specific hyperparamters</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounding</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">wmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;`wmin` and `wmax` cannot both be None.&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">wmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">wmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">wmin</span> <span class="o">&gt;=</span> <span class="n">wmax</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;received `wmax` of </span><span class="si">{</span><span class="n">wmax</span><span class="si">}</span><span class="s2"> which not greater than &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;`wmin` of </span><span class="si">{</span><span class="n">wmin</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">wmin</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">wmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">wmin</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">wmax</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">wmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">wmax</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounding</span> <span class="o">==</span> <span class="s1">&#39;soft&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">wd_lowerb_exp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wddepexp</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">wd_upperb_exp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wdpotexp</span><span class="p">)</span>
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new simulation time step length.</span>
 
-<div class="viewcode-block" id="STDP.forward">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># iterate over trainable layers</span>
-        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainables</span><span class="p">:</span>
-            <span class="c1"># skip if layer not in training mode</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">layer</span><span class="o">.</span><span class="n">training</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
-                <span class="k">continue</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            float: present simulation time step length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
 
-            <span class="c1"># post and pre synaptic traces</span>
-            <span class="n">a_post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;trace_post&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
-            <span class="n">a_pre</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;trace_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
-                    <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">selector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span>
-                <span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span> <span class="ow">and</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;trace_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
-            <span class="p">)</span>
+    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># assign new step time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`step_time`&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
-            <span class="c1"># post and pre synaptic spikes</span>
-            <span class="n">i_post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;spike_post&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
-            <span class="n">i_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;spike_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
+        <span class="c1"># update monitors accordingly</span>
+        <span class="k">for</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span><span class="p">:</span>
+            <span class="n">monitor</span><span class="o">.</span><span class="n">reducer</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
 
-            <span class="c1"># reshape postsynaptic</span>
-            <span class="n">a_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">a_post</span><span class="p">)</span>
-            <span class="n">i_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">i_post</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lrpost</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learning rate for updates on postsynaptic spikes (potentiative).</span>
 
-            <span class="c1"># reshape presynaptic</span>
-            <span class="n">a_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">a_pre</span><span class="p">)</span>
-            <span class="n">i_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">presyn_currents</span><span class="p">(</span><span class="n">i_pre</span><span class="p">)</span>
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new postsynaptic learning rate.</span>
 
-            <span class="c1"># base update</span>
-            <span class="n">update_ltp</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_post</span> <span class="o">*</span> <span class="n">a_pre</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lrpost</span>
-            <span class="p">)</span>
-            <span class="n">update_ltd</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_pre</span> <span class="o">*</span> <span class="n">a_post</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lrpre</span>
-            <span class="p">)</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            float: present postsynaptic learning rate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_post</span>
 
-            <span class="c1"># apply bounding if specified</span>
-            <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounding</span><span class="p">:</span>
-                <span class="k">case</span> <span class="s2">&quot;soft&quot;</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">update_ltd</span> <span class="o">*=</span> <span class="n">lf</span><span class="o">.</span><span class="n">soft_bounding_dep</span><span class="p">(</span>
-                            <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wd_lowerb_exp</span>
-                        <span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">update_ltp</span> <span class="o">*=</span> <span class="n">lf</span><span class="o">.</span><span class="n">soft_bounding_pot</span><span class="p">(</span>
-                            <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmax</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wd_upperb_exp</span>
-                        <span class="p">)</span>
-                <span class="k">case</span> <span class="s2">&quot;hard&quot;</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">update_ltd</span> <span class="o">*=</span> <span class="n">lf</span><span class="o">.</span><span class="n">hard_bounding_dep</span><span class="p">(</span>
-                            <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmin</span>
-                        <span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">update_ltp</span> <span class="o">*=</span> <span class="n">lf</span><span class="o">.</span><span class="n">hard_bounding_pot</span><span class="p">(</span>
-                            <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmax</span>
-                        <span class="p">)</span>
+    <span class="nd">@lrpost</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">lrpost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
-            <span class="c1"># update weights</span>
-            <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">weight</span> <span class="o">+</span> <span class="n">update_ltp</span> <span class="o">-</span> <span class="n">update_ltd</span></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lrpre</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learning rate for updates on postsynaptic spikes (depressive).</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new postsynaptic learning rate.</span>
 
-    <span class="k">def</span> <span class="nf">add_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">):</span>
-        <span class="c1"># add trainable using superclass method</span>
-        <span class="n">LayerwiseUpdater</span><span class="o">.</span><span class="n">add_trainable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">)</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            float: present postsynaptic learning rate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_pre</span>
 
-        <span class="c1"># don&#39;t add anything if monitors are already associated with this trainable</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_monitors</span><span class="p">(</span><span class="n">trainable</span><span class="p">)):</span>
-            <span class="k">return</span>
+    <span class="nd">@lrpre</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">lrpre</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+<div class="viewcode-block" id="STDP.add_monitors">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.add_monitors">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Associates base layout of monitors required by the updater with the layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trainable (Layer): layer to which monitors should be added.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the monitors were successfully added.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This adds four prepended monitors named: &quot;spike_post&quot;, &quot;spike_pre&quot;,</span>
+<span class="sd">            &quot;trace_post&quot;, and &quot;trace_pre&quot;. This method will fail to assign monitors</span>
+<span class="sd">            if a monitor with these names is already associated with ``trainable``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># do not alter state if conflicting monitors are associated</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;spike_post&quot;</span><span class="p">,</span> <span class="s2">&quot;spike_pre&quot;</span><span class="p">,</span> <span class="s2">&quot;trace_post&quot;</span><span class="p">,</span> <span class="s2">&quot;trace_pre&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitors</span><span class="p">(</span><span class="n">trainable</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># trace reducer class</span>
         <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
@@ -406,6 +438,7 @@
             <span class="s2">&quot;eval_update&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
         <span class="p">}</span>
+        <span class="n">amp</span><span class="p">,</span> <span class="n">tgt</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="kc">True</span>
 
         <span class="c1"># postsynaptic trace monitor (weights LTD)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_monitor</span><span class="p">(</span>
@@ -415,8 +448,8 @@
                 <span class="n">reducer</span><span class="o">=</span><span class="n">reducer_cls</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">tc_post</span><span class="p">,</span>
-                    <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-                    <span class="n">target</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">amplitude</span><span class="o">=</span><span class="n">amp</span><span class="p">,</span>
+                    <span class="n">target</span><span class="o">=</span><span class="n">tgt</span><span class="p">,</span>
                     <span class="n">history_len</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                 <span class="p">),</span>
                 <span class="n">attr</span><span class="o">=</span><span class="s2">&quot;neuron.spike&quot;</span><span class="p">,</span>
@@ -444,8 +477,8 @@
                 <span class="n">reducer</span><span class="o">=</span><span class="n">reducer_cls</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">tc_pre</span><span class="p">,</span>
-                    <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-                    <span class="n">target</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">amplitude</span><span class="o">=</span><span class="n">amp</span><span class="p">,</span>
+                    <span class="n">target</span><span class="o">=</span><span class="n">tgt</span><span class="p">,</span>
                     <span class="n">history_len</span><span class="o">=</span><span class="p">(</span><span class="n">trainable</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delayedby</span> <span class="k">if</span> <span class="n">delayed</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">),</span>
                 <span class="p">),</span>
                 <span class="n">attr</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;synapse.spike&quot;</span> <span class="k">if</span> <span class="n">delayed</span> <span class="k">else</span> <span class="s2">&quot;connection.synspike&quot;</span><span class="p">),</span>
@@ -464,34 +497,63 @@
             <span class="p">),</span>
         <span class="p">)</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
 
-    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># assign new step time</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s1">&#39;`step_time`&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;gt&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
-        <span class="c1"># update monitors accordingly</span>
-        <span class="k">for</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span><span class="p">:</span>
-            <span class="n">monitor</span><span class="o">.</span><span class="n">reducer</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
+<div class="viewcode-block" id="STDP.forward">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Processes update for given layers based on current monitor stored data.&quot;&quot;&quot;</span>
+        <span class="c1"># iterate over trainable layers</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainables</span><span class="p">:</span>
+            <span class="c1"># skip if layer not in training mode</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">layer</span><span class="o">.</span><span class="n">training</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
+                <span class="k">continue</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">lrpost</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_post</span>
+            <span class="c1"># get reference to composed connection</span>
+            <span class="n">conn</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span>
 
-    <span class="nd">@lrpost</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">lrpost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="c1"># post and pre synaptic traces</span>
+            <span class="n">x_post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;trace_post&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
+            <span class="n">x_pre</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;trace_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
+                    <span class="n">conn</span><span class="o">.</span><span class="n">selector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span> <span class="ow">and</span> <span class="n">conn</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;trace_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
+            <span class="p">)</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">lrpre</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_pre</span>
+            <span class="c1"># post and pre synaptic spikes</span>
+            <span class="n">i_post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;spike_post&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
+            <span class="n">i_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;spike_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
 
-    <span class="nd">@lrpre</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">lrpre</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+            <span class="c1"># reshape postsynaptic</span>
+            <span class="n">x_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">x_post</span><span class="p">)</span>
+            <span class="n">i_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">i_post</span><span class="p">)</span>
+
+            <span class="c1"># reshape presynaptic</span>
+            <span class="n">x_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">x_pre</span><span class="p">)</span>
+            <span class="n">i_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">i_pre</span><span class="p">)</span>
+
+            <span class="c1"># update amplitudes</span>
+            <span class="n">a_pos</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+
+            <span class="c1"># apply bounding factors</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdupper</span><span class="p">:</span>
+                <span class="n">a_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdupper</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmax</span><span class="p">,</span> <span class="n">a_pos</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdlower</span><span class="p">:</span>
+                <span class="n">a_neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdlower</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmin</span><span class="p">,</span> <span class="n">a_neg</span><span class="p">)</span>
+
+            <span class="c1"># apply learning rates</span>
+            <span class="n">a_pos</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">=</span> <span class="n">a_pos</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lrpost</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lrpre</span>
+
+            <span class="c1"># mask traces with spikes, reduce dimensionally, apply amplitudes</span>
+            <span class="n">dw_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_post</span> <span class="o">*</span> <span class="n">x_pre</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_pos</span>
+            <span class="n">dw_neg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_pre</span> <span class="o">*</span> <span class="n">x_post</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_neg</span>
+
+            <span class="c1"># update weights</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">weight</span> <span class="o">+</span> <span class="n">dw_pos</span> <span class="o">-</span> <span class="n">dw_neg</span></div>
+</div>
 
 </pre></div>
         </article>

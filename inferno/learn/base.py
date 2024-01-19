@@ -14,6 +14,11 @@ class LayerwiseUpdater(Module, ABC):
     Args:
         *layers (Layer): layers to add to the updater on initialization.
 
+    Caution:
+        The property :py:attr:`training` should be managed using
+        the updater's :py:meth:`attach` and :py:meth:`detach` methods rather than
+        :py:meth:`train` and :py:meth:`eval`.
+
     Note:
         Registered :py:class:`Layer` and :py:class:`Monitor` objects have their
         parameters excluded from :py:attr:`state_dict` using a hook registered with
@@ -29,8 +34,8 @@ class LayerwiseUpdater(Module, ABC):
         Module.__init__(self, **kwargs)
 
         # register modules
-        self._trainables = nn.ModuleDict()
-        self._monitors = nn.ModuleDict()
+        self.trainables_ = nn.ModuleDict()
+        self.monitors_ = nn.ModuleDict()
 
         # go through pairs
         for layer in layers:
@@ -42,9 +47,9 @@ class LayerwiseUpdater(Module, ABC):
         ) -> dict[str, Any]:
             for key in list(state_dict.keys()):
                 match key.partition(".")[0]:
-                    case "_trainables":
+                    case "trainables_":
                         del state_dict[key]
-                    case "_monitors":
+                    case "monitors_":
                         del state_dict[key]
 
             return state_dict
@@ -58,161 +63,215 @@ class LayerwiseUpdater(Module, ABC):
         r"""Registered layers to be trained.
 
         Yields:
-            Generator[Layer]: layers registered as trainable for updating.
+            Layer: registered trainables.
         """
-        return (layer for layer in self._trainables.values())
+        return (layer for layer in self.trainables_.values())
 
     @property
     def monitors(self) -> Generator[tuple[Monitor, Layer]]:
         r"""Registered monitors for capturing layer state.
 
         Yields:
-            Generator[tuple[Monitor, Layer]]: monitor and layer to which it is
-                registered.
+            tuple[Monitor, Layer]: registered monitors and their associated layer.
         """
         return itertools.chain.from_iterable(
-            ((monitor, self._trainables[key]) for monitor in monitors.values())
-            for key, monitors in self._monitors.items()
+            ((monitor, self.trainables_[key]) for monitor in monitors.values())
+            for key, monitors in self.monitors_.items()
         )
 
-    def add_trainable(self, trainable: Layer, **kwarge):
+    def add_trainable(
+        self, trainable: Layer, add_monitors: bool = True, **kwarge
+    ) -> bool:
         r"""Registers a layer as a trainable.
 
         Args:
-            trainable (Layer): layer to register as trainable.
+            trainable (Layer): layer to register as a trainable.
+            add_monitors (bool, optional): if default monitors should be added after
+                registring. Defaults to True.
 
-        Note:
-            This automatically calls :py:meth:`add_monitors` with the given
-            layer if not previously registered.
+        Returns:
+            bool: if the layer was successfully registered.
         """
         # use hexadecimal of object id as the key
         key = hex(id(trainable))
 
         # add to trainables list for accessing
-        if key not in self._trainables:
-            self._trainables[key] = trainable
+        if key in self.trainables_:
+            return False
+        self.trainables_[key] = trainable
 
         # add to mapping from layers to monitors
-        if key not in self._monitors:
-            self._monitors[key] = nn.ModuleDict()
+        if key in self.monitors_:
+            del self.monitors_[key]
+        self.monitors_[key] = nn.ModuleDict()
 
         # add default monitor layout to trainable
-        if not len(self._monitors[key]):
+        if add_monitors and not len(self.monitors_[key]):
             self.add_monitors(trainable)
 
-    def del_trainable(self, trainable: Layer, **kwarge):
-        r"""Deletes a registered layer and the associated monitors.
+        return True
+
+    def del_trainable(self, trainable: Layer, **kwarge) -> bool:
+        r"""Deletes a registered layer and its associated monitors.
 
         Args:
-            trainable (Layer): layer to delete.
+            trainable (Layer): trainable to delete.
+
+        Returns:
+            bool: if the layer was successfully deleted.
         """
         # use hexadecimal of object id as the key
         key = hex(id(trainable))
 
-        # add to trainables list for accessing
-        if key in self._trainables:
-            del self._trainables[key]
-
-        # add to mapping from layers to monitors
-        if key in self._monitors:
-            del self._monitors[key]
+        # try to delete trainable
+        try:
+            del self.trainables_[key]
+            del self.monitors_[key]
+            return True
+        except KeyError:
+            return False
 
     def add_monitor(
         self, trainable: Layer, name: str, monitor: Monitor, **kwargs
-    ) -> None:
+    ) -> bool:
+        r"""Adds and associates a monitor with a registered layer.
 
-        # check if trainable is valid
-        if trainable not in self._trainables.values():
-            raise RuntimeError(
-                f"{type(trainable).__name__} `trainable` is not a registered trainable."
-            )
+        Args:
+            trainable (Layer): layer to which the monitor should be registered.
+            name (str): identifier of the monitor to add.
+            monitor (Monitor): monitor to register.
 
-        key = hex(id(trainable))
+        Returns:
+            bool: if the monitor was successfully added.
+        """
+        # try to get the moduledict with monitors
+        try:
+            monitors = self.monitors_[hex(id(trainable))]
+        except KeyError:
+            return False
 
         # check if name is already associated with trainable
-        if name in self._monitors[key]:
-            raise KeyError(
-                f"Monitor with name '{name}' already associated "
-                "with specified trainable."
-            )
+        if name in monitors:
+            return False
 
         # check if this monitor is already registered
-        for layer in self._trainables:
-            if monitor in self._monitors[hex(id(layer))].values():
-                raise RuntimeError(
-                    f"specified {type(monitor).__name__} already associated with "
-                    f"a trainable {layer}."
-                )
+        if monitor in (mon for mon, _ in self.monitors):
+            return False
 
         monitor.deregister()
-        self._monitors[key][name] = monitor
+        monitors[name] = monitor
         if self.training:
             monitor.register(trainable)
 
-    def del_monitor(self, trainable: Layer, name: str) -> None:
-        # check if trainable is valid
-        if trainable not in self._trainables.values():
-            raise RuntimeError(
-                f"specified {type(trainable).__name__} instance not in updater."
-            )
+        return True
 
-        key = hex(id(trainable))
+    def del_monitor(self, trainable: Layer, name: str) -> bool:
+        r"""Deletes a monitor associated with a registered layer.
 
-        # check if name is not associated with trainable
-        if name not in self._monitors[key]:
-            raise KeyError(
-                f"monitor with name {name} not registered to specified trainable."
-            )
+        Args:
+            trainable (Layer): layer from which the monitor should be deleted.
+            name (str): dentifier of the monitor to delete.
 
-        del self._monitors[key][name]
+        Returns:
+            bool: if the monitor was successfully deleted.
+        """
+        # try to get the moduledict with monitors
+        try:
+            monitors = self.monitors_[hex(id(trainable))]
+        except KeyError:
+            return False
 
-    def get_monitor(self, trainable: Layer, name: str) -> Monitor:
-        # check if trainable is valid
-        if trainable not in self._trainables.values():
-            raise RuntimeError(
-                f"specified {type(trainable).__name__} instance not in updater."
-            )
+        # try to delete monitor
+        try:
+            del monitors[name]
+            return True
+        except KeyError:
+            return False
 
-        key = hex(id(trainable))
+    def get_monitor(self, trainable: Layer, name: str) -> Monitor | None:
+        r"""Retrieves a monitor associated with a registered layer.
 
-        # check if name is not associated with trainable
-        if name not in self._monitors[key]:
-            raise KeyError(
-                f"monitor with name {name} not registered to specified trainable."
-            )
+        Args:
+            trainable (Layer): layer with which the monitor is associated.
+            name (str): name of the monitor to get.
 
-        return self._monitors[key][name]
+        Returns:
+            Monitor | None: monitor specified by ``trainable`` and name if it exists.
+        """
+        # try to get the moduledict with monitors
+        try:
+            monitors = self.monitors_[hex(id(trainable))]
+        except KeyError:
+            return None
+
+        # try to retrieve monitor
+        try:
+            return monitors[name]
+        except KeyError:
+            return None
 
     @abstractmethod
-    def add_monitors(self, trainable: Layer) -> None:
+    def add_monitors(self, trainable: Layer) -> bool:
+        r"""Associates base layout of monitors required by the updater with the layer.
+
+        Args:
+            trainable (Layer): layer to which monitors should be added.
+
+        Returns:
+            bool: if the monitors were successfully added.
+
+        Raises:
+            NotImplementedError: ``add_monitors`` must be implemented by the subclass.
+        """
         raise NotImplementedError(
-            f"LayerwiseUpdater `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(LayerwiseUpdater) must implement "
             "the method `add_monitors`."
         )
 
-    def get_monitors(self, trainable: Layer) -> Generator[tuple[str, Monitor]]:
-        # check if trainable is valid
-        if trainable not in self._trainables.values():
-            raise RuntimeError(
-                f"specified {type(trainable).__name__} instance not in updater."
-            )
+    def del_monitors(self, trainable: Layer) -> bool:
+        r"""Deletes all monitors associated with a registered layer.
 
-        return (
-            (name, monitor)
-            for name, monitor in self._monitors[hex(id(trainable))].items()
-        )
+        Args:
+            trainable (Layer): layer from which monitors should be deleted.
 
-    def del_monitors(self, trainable: Layer):
-        # check if trainable is valid
-        if trainable not in self._trainables.values():
-            raise RuntimeError(
-                f"specified {type(trainable).__name__} instance not in updater."
-            )
+        Returns:
+            bool: if the monitors were successfully deleted.
+        """
+        key = hex(id(trainable))
 
-        for name in self._monitors[trainable]:
-            del self._monitors[trainable][name]
+        # try to get the moduledict with monitors
+        try:
+            monitors = self.monitors_[key]
+        except KeyError:
+            return False
 
-    def connect(self, clear: bool = True, **kwargs) -> None:
+        # remove all elements
+        monitors.clear()
+
+        return True
+
+    def get_monitors(self, trainable: Layer) -> Generator[tuple[Monitor, str]]:
+        r"""Retrieves all monitors associated with a registered layer.
+
+        Args:
+            trainable (Layer): layer for which monitors should be retrieved.
+
+        Yields:
+            tuple[Monitor, str]: registered monitors and their names.
+        """
+        # use hexadecimal of object id as the key
+        key = hex(id(trainable))
+
+        # try to get the moduledict with monitors
+        try:
+            monitors = self.monitors_[key]
+        except KeyError:
+            return None
+
+        # construct generator
+        return ((monitor, name) for name, monitor in monitors.items())
+
+    def attach(self, clear: bool = True, **kwargs) -> None:
         """Registers all of the monitors for the updater.
 
         Args:
@@ -222,23 +281,23 @@ class LayerwiseUpdater(Module, ABC):
         Note:
             Keyword arguments are passed to :py:meth:`Monitor.clear` call.
         """
-        self.train()
+        _ = self.train()
         for monitor, layer in self.monitors:
             if clear:
                 monitor.clear(**kwargs)
             monitor.register(layer)
 
-    def disconnect(self, clear: bool = False, **kwargs) -> None:
+    def detach(self, clear: bool = False, **kwargs) -> None:
         """Deregisters all of the monitors for the updater.
 
         Args:
-            clear (bool, optional): If the monitors should be cleared before deregistering
-                with submodules. Defaults to False.
+            clear (bool, optional): If the monitors should be cleared before
+                deregistering with submodules. Defaults to False.
 
         Note:
             Keyword arguments are passed to :py:meth:`Monitor.clear` call.
         """
-        self.eval()
+        _ = self.eval()
         for monitor, _ in self.monitors:
             if clear:
                 monitor.clear(**kwargs)
@@ -249,6 +308,10 @@ class LayerwiseUpdater(Module, ABC):
 
         Note:
             Keyword arguments are passed to :py:meth:`Monitor.clear` call.
+
+        Note:
+            If a subclassed updater has additional state, this should be overridden
+            to delete that state as well.
         """
 
         for monitor, _ in self.monitors:
@@ -259,9 +322,9 @@ class LayerwiseUpdater(Module, ABC):
         """Processes update for given layers based on current monitor stored data.
 
         Raises:
-            NotImplementedError: py:meth:`forward` is abstract and must be implemented by the subclass.
+            NotImplementedError: ``forward`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            "'LayerwiseUpdater.forward()' is abstract, "
-            f"{type(self).__name__} must implement forward()."
+            f"{type(self).__name__}(LayerwiseUpdater) must implement "
+            "the method `forward`."
         )

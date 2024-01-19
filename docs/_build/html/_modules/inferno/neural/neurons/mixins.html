@@ -268,7 +268,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with separate postsynaptic currents.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        data (torch.Tensor): initial currents, in :math:`\mathrm{nA}`.</span>
+<span class="sd">        data (torch.Tensor): initial currents, in :math:`\text{nA}`.</span>
 <span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
 <span class="sd">            Defaults to False.</span>
 
@@ -310,7 +310,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons driven by membrane voltage.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        data (torch.Tensor): initial membrane voltages, in :math:`\mathrm{mV}`.</span>
+<span class="sd">        data (torch.Tensor): initial membrane voltages, in :math:`\text{mV}`.</span>
 <span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
 <span class="sd">            Defaults to False.</span>
 
@@ -352,7 +352,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with refractory periods.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        refrac (torch.Tensor): initial refractory periods, in :math:`\mathrm{ms}`.</span>
+<span class="sd">        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.</span>
 <span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
 <span class="sd">            Defaults to False.</span>
 
@@ -394,7 +394,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with refractory periods with spikes based off of them.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        refrac (torch.Tensor): initial refractory periods, in :math:`\mathrm{ms}`.</span>
+<span class="sd">        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.</span>
 <span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
 <span class="sd">            Defaults to False.</span>
 
@@ -408,7 +408,7 @@
 
 <span class="sd">    Important:</span>
 <span class="sd">        This must be added to a class which has an attribute named ``refrac_t``, which</span>
-<span class="sd">        represents the length of the absolute refractory period in :math:`\mathrm{ms}`.</span>
+<span class="sd">        represents the length of the absolute refractory period in :math:`\text{ms}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -422,14 +422,14 @@
 <span class="sd">        .. math::</span>
 <span class="sd">            f(t) =</span>
 <span class="sd">            \begin{cases}</span>
-<span class="sd">                1, &amp;t_\mathrm{refrac}(t) = \mathrm{ARP}</span>
-<span class="sd">                0, &amp;\mathrm{otherwise}</span>
+<span class="sd">                1, &amp;t_\text{refrac}(t) = \text{ARP}</span>
+<span class="sd">                0, &amp;\text{otherwise}</span>
 <span class="sd">            \end{cases}</span>
 
 <span class="sd">        Where:</span>
 <span class="sd">            * :math:`f_(t)` are the postsynaptic spikes.</span>
-<span class="sd">            * :math:`t_\mathrm{refrac}`(t) are the remaining refractory periods, in :math:`\mathrm{ms}`.</span>
-<span class="sd">            * :math:`\mathrm{ARP}` is the absolute refractory period, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            * :math:`t_\text{refrac}`(t) are the remaining refractory periods, in :math:`\text{ms}`.</span>
+<span class="sd">            * :math:`\text{ARP}` is the absolute refractory period, in :math:`\text{ms}`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential</span>
@@ -439,11 +439,13 @@
 
 
 
+<div class="viewcode-block" id="CurrentSpikeRefractoryMixin">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin.html#inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin">[docs]</a>
 <span class="k">class</span> <span class="nc">CurrentSpikeRefractoryMixin</span><span class="p">(</span><span class="n">RefractoryMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with refractory periods with spikes and currents based off of them.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        refrac (torch.Tensor): initial refractory periods, in :math:`\mathrm{ms}`.</span>
+<span class="sd">        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.</span>
 <span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
 <span class="sd">            Defaults to False.</span>
 
@@ -457,9 +459,9 @@
 
 <span class="sd">    Important:</span>
 <span class="sd">        This must be added to a class which has an attribute named ``refrac_t``, which</span>
-<span class="sd">        represents the length of the absolute refractory period in :math:`\mathrm{ms}`,</span>
+<span class="sd">        represents the length of the absolute refractory period in :math:`\text{ms}`,</span>
 <span class="sd">        and an attribute named ``resistance`` which represents the membrane resistance</span>
-<span class="sd">        in in :math:`\mathrm{M\Omega}`.</span>
+<span class="sd">        in in :math:`\text{M\Omega}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -471,11 +473,11 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Postsynaptic current in nanoamperes.</span>
 
 <span class="sd">        .. math::</span>
-<span class="sd">            I_\mathrm{post}(t) = f(t) R_m</span>
+<span class="sd">            I_\text{post}(t) = f(t) R_m</span>
 
 <span class="sd">        Where:</span>
 <span class="sd">            * :math:`f_(t)` are the postsynaptic spikes.</span>
-<span class="sd">            * :math:`R_m` is the membrane resistance, in :math:`\mathrm{M\Omega}`.</span>
+<span class="sd">            * :math:`R_m` is the membrane resistance, in :math:`\text{M\Omega}`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new postsynaptic currents.</span>
@@ -491,7 +493,8 @@
 
     <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">pass</span>
+        <span class="k">pass</span></div>
+
 </pre></div>
         </article>
       </div>

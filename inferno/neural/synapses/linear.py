@@ -13,12 +13,12 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of synapses being simulated.
-        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
-        delay (float, optional): maximum supported delay, in :math:`\mathrm{ms}`.
+        step_time (float): length of a simulation time step, in :math:`\text{ms}`.
+        delay (float, optional): maximum supported delay, in :math:`\text{ms}`.
         interp_mode (Literal["nearest", "previous"], optional): interpolation mode
             for selectors between observations. Defaults to "nearest".
         interp_tol (float, optional): maximum difference in time from an observation
-            to treat as co-occurring, in :math:`\mathrm{ms}`. Defaults to 0.0.
+            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
         derive_spikes (bool, optional): if inputs will represent currents and spikes,
             with spikes derived therefrom. Defaults to True.
         current_overbound (float | None, optional): value to replace currents out of
@@ -32,7 +32,7 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
 
         The first input to :py:meth:`forward` will be assumed to be "current-like"
         input (tensors of spikes will be treated as currents of 0 or 1
-        :math:`\mathrm{nA}`). The second input will be ignored.
+        :math:`\text{nA}`). The second input will be ignored.
 
         The getter :py:attr:`spikes` will compute spikes as any nonzero currents,
         therefore if using a model with subthreshold currents, this will be invalid.
@@ -108,7 +108,7 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
             interp_mode (Literal["nearest", "previous"], optional): interpolation mode
                 for selectors between observations. Defaults to "nearest".
             interp_tol (float, optional): maximum difference in time from an observation
-                to treat as co-occurring, in :math:`\mathrm{ms}`. Defaults to 0.0.
+                to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
             derive_spikes (bool, optional): if inputs will represent currents and
                 spikes, with spikes derived therefrom. Defaults to True.
             current_overbound (float | None, optional): value to replace currents out of

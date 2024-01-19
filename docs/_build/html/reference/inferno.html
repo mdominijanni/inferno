@@ -245,8 +245,8 @@
 </table>
 </div>
 </section>
-<section id="general">
-<h2>General<a class="headerlink" href="#general" title="Link to this heading">#</a></h2>
+<section id="general-math">
+<h2>General Math<a class="headerlink" href="#general-math" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -257,80 +257,43 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.exp.html#inferno.exp" title="inferno.exp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exp</span></code></a></p></td>
 <td><p>Type agnostic exponential function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.zeros.html#inferno.zeros" title="inferno.zeros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zeros</span></code></a></p></td>
-<td><p>Returns a tensor based on input filled with zeros.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.ones.html#inferno.ones" title="inferno.ones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ones</span></code></a></p></td>
-<td><p>Returns a tensor based on input filled with ones.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.empty.html#inferno.empty" title="inferno.empty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">empty</span></code></a></p></td>
-<td><p>Returns an uninitialized tensor based on input.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.full.html#inferno.full" title="inferno.full"><code class="xref py py-obj docutils literal notranslate"><span class="pre">full</span></code></a></p></td>
-<td><p>Returns a tensor based on input filled with specified value.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="interpolations">
-<h2>Interpolations<a class="headerlink" href="#interpolations" title="Link to this heading">#</a></h2>
-<div class="table-wrapper autosummary longtable colwidths-given docutils container">
-<table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interp_previous.html#inferno.interp_previous" title="inferno.interp_previous"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_previous</span></code></a></p></td>
-<td><p>Interpolates by selecting the previous state.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interp_nearest.html#inferno.interp_nearest" title="inferno.interp_nearest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_nearest</span></code></a></p></td>
-<td><p>Interpolates by selecting the nearest state.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interp_linear.html#inferno.interp_linear" title="inferno.interp_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_linear</span></code></a></p></td>
-<td><p>Interpolates between previous and next states linearlly.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interp_exp_decay.html#inferno.interp_exp_decay" title="inferno.interp_exp_decay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_exp_decay</span></code></a></p></td>
-<td><p>Interpolates by exponentially decaying value from previous state.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="recurrence-relations">
-<h2>Recurrence Relations<a class="headerlink" href="#recurrence-relations" title="Link to this heading">#</a></h2>
-<div class="table-wrapper autosummary longtable colwidths-given docutils container">
-<table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.trace_nearest.html#inferno.trace_nearest" title="inferno.trace_nearest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_nearest</span></code></a></p></td>
-<td><p>Performs a trace for a time step, considering the latest match.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.trace_cumulative.html#inferno.trace_cumulative" title="inferno.trace_cumulative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_cumulative</span></code></a></p></td>
-<td><p>Performs a trace for a time step, considering all prior matches.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.trace_nearest_scaled.html#inferno.trace_nearest_scaled" title="inferno.trace_nearest_scaled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_nearest_scaled</span></code></a></p></td>
-<td><p>Performs a trace for a time step, considering the latest match, scaled by the inputs.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.trace_cumulative_scaled.html#inferno.trace_cumulative_scaled" title="inferno.trace_cumulative_scaled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_cumulative_scaled</span></code></a></p></td>
-<td><p>Performs a trace for a time step, considering all prior matches, scaled by the inputs.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.simple_exponential_smoothing.html#inferno.simple_exponential_smoothing" title="inferno.simple_exponential_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_exponential_smoothing</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.simple_exponential_smoothing.html#inferno.simple_exponential_smoothing" title="inferno.simple_exponential_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_exponential_smoothing</span></code></a></p></td>
 <td><p>Performs simple exponential smoothing for a time step.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.holt_linear_smoothing.html#inferno.holt_linear_smoothing" title="inferno.holt_linear_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">holt_linear_smoothing</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.holt_linear_smoothing.html#inferno.holt_linear_smoothing" title="inferno.holt_linear_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">holt_linear_smoothing</span></code></a></p></td>
 <td><p>Performs Holt linear smoothing for a time step.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 </section>
-<section id="types">
-<h2>Types<a class="headerlink" href="#types" title="Link to this heading">#</a></h2>
+<section id="tensors">
+<h2>Tensors<a class="headerlink" href="#tensors" title="Link to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable colwidths-given docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.zeros.html#inferno.zeros" title="inferno.zeros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zeros</span></code></a></p></td>
+<td><p>Returns a tensor based on input filled with zeros.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.ones.html#inferno.ones" title="inferno.ones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ones</span></code></a></p></td>
+<td><p>Returns a tensor based on input filled with ones.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.empty.html#inferno.empty" title="inferno.empty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">empty</span></code></a></p></td>
+<td><p>Returns an uninitialized tensor based on input.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.full.html#inferno.full" title="inferno.full"><code class="xref py py-obj docutils literal notranslate"><span class="pre">full</span></code></a></p></td>
+<td><p>Returns a tensor based on input filled with specified value.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="interpolation">
+<h2>Interpolation<a class="headerlink" href="#interpolation" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -340,6 +303,18 @@
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.Interpolation.html#inferno.Interpolation" title="inferno.Interpolation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Interpolation</span></code></a></p></td>
 <td><p>Callable used to interpolate in time between two tensors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interp_previous.html#inferno.interp_previous" title="inferno.interp_previous"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_previous</span></code></a></p></td>
+<td><p>Interpolates by selecting the previous state.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interp_nearest.html#inferno.interp_nearest" title="inferno.interp_nearest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_nearest</span></code></a></p></td>
+<td><p>Interpolates by selecting the nearest state.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interp_linear.html#inferno.interp_linear" title="inferno.interp_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_linear</span></code></a></p></td>
+<td><p>Interpolates between previous and next states linearlly.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interp_exp_decay.html#inferno.interp_exp_decay" title="inferno.interp_exp_decay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_exp_decay</span></code></a></p></td>
+<td><p>Interpolates by exponentially decaying value from previous state.</p></td>
 </tr>
 </tbody>
 </table>
@@ -406,16 +381,13 @@
 <li><a class="reference internal" href="#infrastructure">Infrastructure</a><ul class="simple">
 </ul>
 </li>
-<li><a class="reference internal" href="#general">General</a><ul class="simple">
+<li><a class="reference internal" href="#general-math">General Math</a><ul class="simple">
 </ul>
 </li>
-<li><a class="reference internal" href="#interpolations">Interpolations</a><ul class="simple">
+<li><a class="reference internal" href="#tensors">Tensors</a><ul class="simple">
 </ul>
 </li>
-<li><a class="reference internal" href="#recurrence-relations">Recurrence Relations</a><ul class="simple">
-</ul>
-</li>
-<li><a class="reference internal" href="#types">Types</a><ul class="simple">
+<li><a class="reference internal" href="#interpolation">Interpolation</a><ul class="simple">
 </ul>
 </li>
 </ul>

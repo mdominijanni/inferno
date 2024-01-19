@@ -5,14 +5,15 @@
 .. currentmodule:: inferno.learn.functional
 ```
 
-## Spike-Timing Dependent Plasticity
+## Weight Dependence
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
     :toctree: generated
 
-    hard_bounding_pot
-    hard_bounding_dep
-    soft_bounding_pot
-    soft_bounding_dep
+    WeightDependence
+    wdep_hard_upper_bounding
+    wdep_hard_lower_bounding
+    wdep_soft_upper_bounding
+    wdep_soft_lower_bounding
 ```

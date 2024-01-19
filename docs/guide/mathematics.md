@@ -63,8 +63,8 @@ This is the same as previously described. Cumulative comes from the fact that th
 $$
 x_{t + \Delta t} =
 \begin{cases}
-    a + x_t \exp (\Delta t / \tau) &\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
-    x_t \exp (\Delta t / \tau) &\text{otherwise}
+    a + x_t \exp (-\Delta t / \tau) &\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
+    x_t \exp (-\Delta t / \tau) &\text{otherwise}
 \end{cases}
 $$
 
@@ -79,7 +79,7 @@ $$
 x_{t + \Delta t} =
 \begin{cases}
     a &\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
-    x_t \exp (\Delta t / \tau) &\text{otherwise}
+    x_t \exp (-\Delta t / \tau) &\text{otherwise}
 \end{cases}
 $$
 
@@ -92,8 +92,8 @@ The described formulations of cumulative and nearest trace above treat any input
 $$
 x_{t + \Delta t} =
 \begin{cases}
-    a + Sf + x_t \exp (\Delta t / \tau) &K(f_{t + \Delta t}) \\
-    x_t \exp (\Delta t / \tau) &\text{otherwise}
+    a + Sf + x_t \exp (-\Delta t / \tau) &K(f_{t + \Delta t}) \\
+    x_t \exp (-\Delta t / \tau) &\text{otherwise}
 \end{cases}
 $$
 
@@ -102,7 +102,7 @@ $$
 x_{t + \Delta t} =
 \begin{cases}
     a + Sf &K(f_{t + \Delta t}) \\
-    x_t \exp (\Delta t / \tau) &\text{otherwise}
+    x_t \exp (-\Delta t / \tau) &\text{otherwise}
 \end{cases}
 $$
 

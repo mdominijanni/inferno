@@ -225,7 +225,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>refrac</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – initial refractory periods, in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
+<li><p><strong>refrac</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – initial refractory periods, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><strong>requires_grad</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the parameters created require gradients.
 Defaults to False.</p></li>
 </ul>
@@ -244,7 +244,7 @@ mixin must be called after the module constructor.</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>This must be added to a class which has an attribute named <code class="docutils literal notranslate"><span class="pre">refrac_t</span></code>, which
-represents the length of the absolute refractory period in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p>
+represents the length of the absolute refractory period in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p>
 </div>
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.neurons.mixins.SpikeRefractoryMixin.spike">
@@ -254,15 +254,15 @@ represents the length of the absolute refractory period in <span class="math not
 <div class="math notranslate nohighlight">
 \[f(t) =
 \begin{cases}
-    1, &amp;t_\mathrm{refrac}(t) = \mathrm{ARP}
-    0, &amp;\mathrm{otherwise}
+    1, &amp;t_\text{refrac}(t) = \text{ARP}
+    0, &amp;\text{otherwise}
 \end{cases}\]</div>
 </div>
 <dl class="simple">
 <dt>Where:</dt><dd><ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(f_(t)\)</span> are the postsynaptic spikes.</p></li>
-<li><p><span class="math notranslate nohighlight">\(t_\mathrm{refrac}`(t) are the remaining refractory periods, in :math:\)</span>mathrm{ms}`.</p></li>
-<li><p><span class="math notranslate nohighlight">\(\mathrm{ARP}\)</span> is the absolute refractory period, in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
+<li><p><span class="math notranslate nohighlight">\(t_\text{refrac}`(t) are the remaining refractory periods, in :math:\)</span>text{ms}`.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\text{ARP}\)</span> is the absolute refractory period, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 </ul>
 </dd>
 </dl>

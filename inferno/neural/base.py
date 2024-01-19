@@ -58,7 +58,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             NotImplementedError: ``dt`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Neuron) must implement "
             "the getter for property `dt`."
         )
 
@@ -66,7 +66,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
     @abstractmethod
     def dt(self, value: float):
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Neuron) must implement "
             "the setter for property `dt`."
         )
 
@@ -84,14 +84,14 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             NotImplementedError: ``voltage`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Neuron) must implement "
             "the getter for property `voltage`."
         )
 
     @voltage.setter
     def voltage(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Neuron) must implement "
             "the setter for property `voltage`."
         )
 
@@ -110,14 +110,14 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             NotImplementedError: ``refrac`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Neuron) must implement "
             "the getter for property `refrac`."
         )
 
     @refrac.setter
     def refrac(self, value: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Neuron) must implement "
             "the setter for property `refrac`."
         )
 
@@ -134,7 +134,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             NotImplementedError: ``spike`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Neuron) must implement "
             "the getter for property `spike`."
         )
 
@@ -153,14 +153,14 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             NotImplementedError: ``current`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Neuron) must implement "
             "the getter for property `current`."
         )
 
     @current.setter
     def current(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Neuron) must implement "
             "the setter for property `current`."
         )
 
@@ -172,7 +172,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             NotImplementedError: ``clear`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the method `clear`."
+            f"{type(self).__name__}(Neuron) must implement the method `clear`."
         )
 
     @abstractmethod
@@ -191,7 +191,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             NotImplementedError: ``forward`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Neuron `{type(self).__name__}` must implement the method `forward`."
+            f"{type(self).__name__}(Neuron) must implement the method `forward`."
         )
 
 
@@ -255,7 +255,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
            SynapseConstructor: partial constructor for synapses of a given class.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Synapse) must implement "
             "the method `partialconstructor`."
         )
 
@@ -307,7 +307,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
             NotImplementedError: ``current`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Synapse) must implement "
             "the getter for property `current`."
         )
 
@@ -315,7 +315,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
     @abstractmethod
     def current(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Synapse) must implement "
             "the setter for property `current`."
         )
 
@@ -334,7 +334,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
             NotImplementedError: ``spike`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Synapse) must implement "
             "the getter for property `spike`."
         )
 
@@ -342,7 +342,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
     @abstractmethod
     def spike(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Synapse) must implement "
             "the setter for property `spike`."
         )
 
@@ -360,7 +360,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
             NotImplementedError: ``current_at`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the method `current_at`."
+            f"{type(self).__name__}(Synapse) must implement the method `current_at`."
         )
 
     @abstractmethod
@@ -377,7 +377,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
             NotImplementedError: ``spike_at`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the method `spike_at`."
+            f"{type(self).__name__}(Synapse) must implement the method `spike_at`."
         )
 
     @abstractmethod
@@ -388,7 +388,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
             NotImplementedError: ``clear`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the method `clear`."
+            f"{type(self).__name__}(Synapse) must implement the method `clear`."
         )
 
     @abstractmethod
@@ -405,7 +405,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
             NotImplementedError: ``forward`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Synapse `{type(self).__name__}` must implement the method `forward`."
+            f"{type(self).__name__}(Synapse) must implement the method `forward`."
         )
 
 
@@ -494,7 +494,7 @@ class Connection(Module, ABC):
             NotImplementedError: ``inshape`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the getter for property `inshape`."
         )
 
@@ -510,7 +510,7 @@ class Connection(Module, ABC):
             NotImplementedError: ``outshape`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the getter for property `outshape`"
         )
 
@@ -575,7 +575,7 @@ class Connection(Module, ABC):
             NotImplementedError: ``weight`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the getter for property `weight`."
         )
 
@@ -583,7 +583,7 @@ class Connection(Module, ABC):
     @abstractmethod
     def weight(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the setter for property `weight`."
         )
 
@@ -602,7 +602,7 @@ class Connection(Module, ABC):
             NotImplementedError: ``bias`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the getter for property `bias`."
         )
 
@@ -610,7 +610,7 @@ class Connection(Module, ABC):
     @abstractmethod
     def bias(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the setter for property `bias`."
         )
 
@@ -629,7 +629,7 @@ class Connection(Module, ABC):
             NotImplementedError: ``delay`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the getter for property `delay`."
         )
 
@@ -637,7 +637,7 @@ class Connection(Module, ABC):
     @abstractmethod
     def delay(self, value: torch.Tensor):
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the setter for property `delay`."
         )
 
@@ -653,7 +653,7 @@ class Connection(Module, ABC):
             NotImplementedError: ``selector`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the getter for property `selector`."
         )
 
@@ -742,7 +742,7 @@ class Connection(Module, ABC):
             :py:attr:`binshape`
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the method `like_input`."
         )
 
@@ -770,7 +770,7 @@ class Connection(Module, ABC):
             like :py:attr:`syncurrent` or :py:attr:`synspike`
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the method `like_synaptic`."
         )
 
@@ -804,7 +804,7 @@ class Connection(Module, ABC):
                 * :math:`L` is a connection-dependent value.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the method `postsyn_receptive`."
         )
 
@@ -838,7 +838,7 @@ class Connection(Module, ABC):
                 * :math:`L` is a connection-dependent value.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement "
+            f"{type(self).__name__}(Connection) must implement "
             "the method `presyn_receptive`."
         )
 
@@ -861,5 +861,5 @@ class Connection(Module, ABC):
             :py:class:`Synapse`.
         """
         raise NotImplementedError(
-            f"Connection `{type(self).__name__}` must implement the method `forward`."
+            f"{type(self).__name__}(Connection) must implement the method `forward`."
         )

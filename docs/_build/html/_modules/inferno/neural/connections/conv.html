@@ -235,7 +235,7 @@
 <span class="sd">        width (int): width of the expected inputs.</span>
 <span class="sd">        channels (int): number of channels in the input tensor.</span>
 <span class="sd">        filters (int): number of convolutional filters (channels of the output tensor).</span>
-<span class="sd">        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.</span>
+<span class="sd">        step_time (float): length of a simulation time step, in :math:`\text{ms}`.</span>
 <span class="sd">        kernel (int | tuple[int, int]): size of the convolution kernel.</span>
 <span class="sd">        stride (int | tuple[int, int], optional): stride of the convolution.</span>
 <span class="sd">            Defaults to 1.</span>
@@ -247,7 +247,7 @@
 <span class="sd">        bias (bool, optional): if the connection should support</span>
 <span class="sd">            learnable additive bias. Defaults to False.</span>
 <span class="sd">        delay (float | None, optional): maximum supported delay length, in</span>
-<span class="sd">            :math:`\mathrm{ms}`, excludes delays when None. Defaults to None.</span>
+<span class="sd">            :math:`\text{ms}`, excludes delays when None. Defaults to None.</span>
 <span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
 <span class="sd">        weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.</span>
 <span class="sd">            Defaults to None.</span>
@@ -449,16 +449,16 @@
 <span class="sd">        Note:</span>
 <span class="sd">            Resulting tuple will be:</span>
 
-<span class="sd">            :math:`(F, H_\mathrm{out}, W_\mathrm{out})`</span>
+<span class="sd">            :math:`(F, H_\text{out}, W_\text{out})`</span>
 
 <span class="sd">            Where:</span>
 
 <span class="sd">            .. math::</span>
 
 <span class="sd">                \begin{align*}</span>
-<span class="sd">                    H_\mathrm{out} &amp;= \left\lfloor \frac{H + 2 \times p_H - d_H</span>
+<span class="sd">                    H_\text{out} &amp;= \left\lfloor \frac{H + 2 \times p_H - d_H</span>
 <span class="sd">                    \times (k_H - 1) - 1}{s_H} + 1 \right\rfloor \\</span>
-<span class="sd">                    W_\mathrm{out} &amp;= \left\lfloor \frac{W + 2 \times p_W - d_W</span>
+<span class="sd">                    W_\text{out} &amp;= \left\lfloor \frac{W + 2 \times p_W - d_W</span>
 <span class="sd">                    \times (k_W - 1) - 1}{s_W} + 1 \right\rfloor</span>
 <span class="sd">                \end{align*}</span>
 
@@ -482,16 +482,16 @@
 <span class="sd">        .. admonition:: Shape</span>
 <span class="sd">            :class: tensorshape</span>
 
-<span class="sd">            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}</span>
-<span class="sd">            \cdot W_\mathrm{out}) \times F`</span>
+<span class="sd">            :math:`B \times (C \cdot kH \cdot kW) \times (H_\text{out}</span>
+<span class="sd">            \cdot W_\text{out}) \times F`</span>
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">                * :math:`C` is the number of input channels.</span>
 <span class="sd">                * :math:`kH` is the kernel height.</span>
 <span class="sd">                * :math:`kW` is the kernel width.</span>
-<span class="sd">                * :math:`H_\mathrm{out}` is the output height.</span>
-<span class="sd">                * :math:`W_\mathrm{out}` is the output width.</span>
+<span class="sd">                * :math:`H_\text{out}` is the output height.</span>
+<span class="sd">                * :math:`W_\text{out}` is the output width.</span>
 <span class="sd">                * :math:`F` is the number of filters (output channels).</span>
 
 <span class="sd">        Caution:</span>
@@ -519,8 +519,8 @@
 
 <span class="sd">            ``data``:</span>
 
-<span class="sd">            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}</span>
-<span class="sd">            \cdot W_\mathrm{out})`</span>
+<span class="sd">            :math:`B \times (C \cdot kH \cdot kW) \times (H_\text{out}</span>
+<span class="sd">            \cdot W_\text{out})`</span>
 
 <span class="sd">            ``return``:</span>
 
@@ -531,8 +531,8 @@
 <span class="sd">                * :math:`C` is the number of input channels.</span>
 <span class="sd">                * :math:`kH` is the kernel height.</span>
 <span class="sd">                * :math:`kW` is the kernel width.</span>
-<span class="sd">                * :math:`H_\mathrm{out}` is the output height.</span>
-<span class="sd">                * :math:`W_\mathrm{out}` is the output width.</span>
+<span class="sd">                * :math:`H_\text{out}` is the output height.</span>
+<span class="sd">                * :math:`W_\text{out}` is the output width.</span>
 <span class="sd">                * :math:`H` is the input height.</span>
 <span class="sd">                * :math:`W` is the input width.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -573,8 +573,8 @@
 
 <span class="sd">            ``return``:</span>
 
-<span class="sd">            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}</span>
-<span class="sd">            \cdot W_\mathrm{out})`</span>
+<span class="sd">            :math:`B \times (C \cdot kH \cdot kW) \times (H_\text{out}</span>
+<span class="sd">            \cdot W_\text{out})`</span>
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
@@ -583,8 +583,8 @@
 <span class="sd">                * :math:`W` is the input width.</span>
 <span class="sd">                * :math:`kH` is the kernel height.</span>
 <span class="sd">                * :math:`kW` is the kernel width.</span>
-<span class="sd">                * :math:`H_\mathrm{out}` is the output height.</span>
-<span class="sd">                * :math:`W_\mathrm{out}` is the output width.</span>
+<span class="sd">                * :math:`H_\text{out}` is the output height.</span>
+<span class="sd">                * :math:`W_\text{out}` is the output width.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span>
             <span class="n">data</span><span class="p">,</span>
@@ -611,26 +611,26 @@
 
 <span class="sd">            ``data``:</span>
 
-<span class="sd">            :math:`B \times (C \cdot kH \cdot kW) \times (H_\mathrm{out}</span>
-<span class="sd">            \cdot W_\mathrm{out}) \times [F]`</span>
+<span class="sd">            :math:`B \times (C \cdot kH \cdot kW) \times (H_\text{out}</span>
+<span class="sd">            \cdot W_\text{out}) \times [F]`</span>
 
 <span class="sd">            ``return``:</span>
 
 <span class="sd">            :math:`B \times F \times C \times kH \times kW \times</span>
-<span class="sd">            (H_\mathrm{out} \cdot W_\mathrm{out})`</span>
+<span class="sd">            (H_\text{out} \cdot W_\text{out})`</span>
 
 <span class="sd">            or</span>
 
 <span class="sd">            :math:`B \times 1 \times C \times kH \times kW \times</span>
-<span class="sd">            (H_\mathrm{out} \cdot W_\mathrm{out})`</span>
+<span class="sd">            (H_\text{out} \cdot W_\text{out})`</span>
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">                * :math:`C` is the number of input channels.</span>
 <span class="sd">                * :math:`kH` is the kernel height.</span>
 <span class="sd">                * :math:`kW` is the kernel width.</span>
-<span class="sd">                * :math:`H_\mathrm{out}` is the output height.</span>
-<span class="sd">                * :math:`W_\mathrm{out}` is the output width.</span>
+<span class="sd">                * :math:`H_\text{out}` is the output height.</span>
+<span class="sd">                * :math:`W_\text{out}` is the output width.</span>
 <span class="sd">                * :math:`F` is the number of filters (output channels).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">match</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
@@ -672,18 +672,18 @@
 
 <span class="sd">            ``data``:</span>
 
-<span class="sd">            :math:`B \times F \times H_\mathrm{out} \times W_\mathrm{out}`</span>
+<span class="sd">            :math:`B \times F \times H_\text{out} \times W_\text{out}`</span>
 
 <span class="sd">            ``return``:</span>
 
 <span class="sd">            :math:`B \times F \times 1 \times 1 \times 1 \times</span>
-<span class="sd">            (H_\mathrm{out} \cdot W_\mathrm{out})`</span>
+<span class="sd">            (H_\text{out} \cdot W_\text{out})`</span>
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">                * :math:`F` is the number of filters (output channels).</span>
-<span class="sd">                * :math:`H_\mathrm{out}` is the output height.</span>
-<span class="sd">                * :math:`W_\mathrm{out}` is the output width.</span>
+<span class="sd">                * :math:`H_\text{out}` is the output height.</span>
+<span class="sd">                * :math:`W_\text{out}` is the output width.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b f oh ow -&gt; b f 1 1 1 (oh ow)&quot;</span><span class="p">)</span></div>
 
@@ -711,7 +711,7 @@
 
 <span class="sd">            ``return``:</span>
 
-<span class="sd">            :math:`B \times F \times H_\mathrm{out} \times W_\mathrm{out}`</span>
+<span class="sd">            :math:`B \times F \times H_\text{out} \times W_\text{out}`</span>
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
@@ -719,8 +719,8 @@
 <span class="sd">                * :math:`H` is the input height.</span>
 <span class="sd">                * :math:`W` is the input width.</span>
 <span class="sd">                * :math:`F` is the number of filters (output channels).</span>
-<span class="sd">                * :math:`H_\mathrm{out}` is the output height.</span>
-<span class="sd">                * :math:`W_\mathrm{out}` is the output width.</span>
+<span class="sd">                * :math:`H_\text{out}` is the output height.</span>
+<span class="sd">                * :math:`W_\text{out}` is the output width.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to</span>

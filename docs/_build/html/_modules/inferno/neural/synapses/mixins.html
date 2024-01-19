@@ -227,7 +227,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\mathrm{nA}`.</span>
+<span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.</span>
 <span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
 <span class="sd">            Defaults to False.</span>
 
@@ -273,7 +273,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current and managed spikes.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\mathrm{nA}`.</span>
+<span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.</span>
 <span class="sd">        spikes (torch.Tensor | OneToOne[torch.Tensor]): initial input spikes,</span>
 <span class="sd">            or a function to derive them from synaptic current.</span>
 <span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
@@ -346,7 +346,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current and managed spikes with selector methods.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\mathrm{nA}`.</span>
+<span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.</span>
 <span class="sd">        spikes (torch.Tensor | OneToOne[torch.Tensor]): initial input spikes,</span>
 <span class="sd">            or a function to derive them from synaptic current.</span>
 <span class="sd">        current_interp (Interpolation): interpolation function used when selecting</span>
@@ -358,7 +358,7 @@
 <span class="sd">        spike_overval (bool | None): value to replace spikes out of bounds,</span>
 <span class="sd">            uses values at observation limits if None.</span>
 <span class="sd">        tolerance (float): maximum difference in time from an observation</span>
-<span class="sd">            to treat as co-occurring, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            to treat as co-occurring, in :math:`\text{ms}`.</span>
 <span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
 <span class="sd">            Defaults to False.</span>
 
@@ -460,7 +460,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            selector (torch.Tensor): time before present for which synaptic currents</span>
-<span class="sd">                should be retrieved, in :math:`\mathrm{ms}`.</span>
+<span class="sd">                should be retrieved, in :math:`\text{ms}`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: selected synaptic currents.</span>
@@ -491,7 +491,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            selector (torch.Tensor): time before present for which spike inputs</span>
-<span class="sd">                should be retrieved, in :math:`\mathrm{ms}`.</span>
+<span class="sd">                should be retrieved, in :math:`\text{ms}`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: selected spike inputs.</span>

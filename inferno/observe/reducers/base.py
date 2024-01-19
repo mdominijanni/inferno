@@ -69,7 +69,7 @@ class FoldReducer(Reducer):
             the new input (left) and current state (right), returning the new state.
         step_time (float): length of time between observations.
         history_len (float): length of time for which observations should be stored.
-        interpolation (inferno.Interpolation, optional): interpolation function to use when retrieving
+        interpolation (~inferno.Interpolation, optional): interpolation function to use when retrieving
             data between observations. Defaults to inferno.interp_nearest.
         initializer (OneToOne[torch.Tensor] | None, optional): function to set the initial state,
             zeroes when None. Defaults to None.

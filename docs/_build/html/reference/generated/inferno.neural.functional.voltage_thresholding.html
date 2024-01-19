@@ -229,28 +229,28 @@
 <p>Membrane voltages are reset as.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[V_m(t) \leftarrow V_\mathrm{reset}\]</div>
+\[V_m(t) \leftarrow V_\text{reset}\]</div>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>inputs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – presynaptic currents, <span class="math notranslate nohighlight">\(I(t)\)</span>,
-in <span class="math notranslate nohighlight">\(\mathrm{nA}\)</span>.</p></li>
+in <span class="math notranslate nohighlight">\(\text{nA}\)</span>.</p></li>
 <li><p><strong>refracs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – remaining absolute refractory periods,
-in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
+in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><strong>dynamics</strong> (<a class="reference internal" href="inferno.typing.OneToOne.html#inferno.typing.OneToOne" title="inferno.typing.OneToOne"><em>OneToOne</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – function which given input currents in
-<span class="math notranslate nohighlight">\(\mathrm{nA}\)</span> returns the updated membrane voltages, <span class="math notranslate nohighlight">\(V_m(t)\)</span>,
-in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
+<span class="math notranslate nohighlight">\(\text{nA}\)</span> returns the updated membrane voltages, <span class="math notranslate nohighlight">\(V_m(t)\)</span>,
+in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
 <li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – length of a simulation time step,
-in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
+in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><strong>reset_v</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – membrane voltage after an action potential
-is generated, <span class="math notranslate nohighlight">\(V_\mathrm{reset}\)</span>, in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
+is generated, <span class="math notranslate nohighlight">\(V_\text{reset}\)</span>, in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
 <li><p><strong>thresh_v</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – membrane voltage at which action potentials
-are generated, Theta(t), in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
+are generated, Theta(t), in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
 <li><p><strong>refrac_t</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – length the absolute refractory period,
-in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
+in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><strong>voltages</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – membrane voltages, V_m(t),
-in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>, to maintain while in refractory periods,
+in <span class="math notranslate nohighlight">\(\text{mV}\)</span>, to maintain while in refractory periods,
 voltages not held if None. Defaults to None.</p></li>
 </ul>
 </dd>
@@ -260,8 +260,8 @@ updated state containing:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>spikes: if the corresponding neuron generated an action potential.</p></li>
-<li><p>voltages: updated membrane potentials, in <span class="math notranslate nohighlight">\(\mathrm{mV}\)</span>.</p></li>
-<li><p>refracs: remaining absolute refractory periods, in <span class="math notranslate nohighlight">\(\mathrm{ms}\)</span>.</p></li>
+<li><p>voltages: updated membrane potentials, in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
+<li><p>refracs: remaining absolute refractory periods, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 </ul>
 </div></blockquote>
 </p>

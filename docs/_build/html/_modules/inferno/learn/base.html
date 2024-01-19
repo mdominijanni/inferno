@@ -227,6 +227,22 @@
 <div class="viewcode-block" id="LayerwiseUpdater">
 <a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater">[docs]</a>
 <span class="k">class</span> <span class="nc">LayerwiseUpdater</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Updater for layers without interdependencies.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *layers (Layer): layers to add to the updater on initialization.</span>
+
+<span class="sd">    Caution:</span>
+<span class="sd">        The property :py:attr:`training` should be managed using</span>
+<span class="sd">        the updater&#39;s :py:meth:`attach` and :py:meth:`detach` methods rather than</span>
+<span class="sd">        :py:meth:`train` and :py:meth:`eval`.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Registered :py:class:`Layer` and :py:class:`Monitor` objects have their</span>
+<span class="sd">        parameters excluded from :py:attr:`state_dict` using a hook registered with</span>
+<span class="sd">        :py:meth:`_register_state_dict_hook`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="n">layers</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span>
@@ -236,8 +252,8 @@
         <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="c1"># register modules</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainables_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
 
         <span class="c1"># go through pairs</span>
         <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">:</span>
@@ -249,9 +265,9 @@
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
             <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">state_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
                 <span class="k">match</span> <span class="n">key</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
-                    <span class="k">case</span> <span class="s2">&quot;_trainables&quot;</span><span class="p">:</span>
+                    <span class="k">case</span><span class="w"> </span><span class="s2">&quot;trainables</span><span class="k">_</span><span class="s2">&quot;:</span>
                         <span class="k">del</span> <span class="n">state_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-                    <span class="k">case</span> <span class="s2">&quot;_monitors&quot;</span><span class="p">:</span>
+                    <span class="k">case</span><span class="w"> </span><span class="s2">&quot;monitors</span><span class="k">_</span><span class="s2">&quot;:</span>
                         <span class="k">del</span> <span class="n">state_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
             <span class="k">return</span> <span class="n">state_dict</span>
@@ -262,126 +278,244 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">trainables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Layer</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">layer</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered layers to be trained.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            Layer: registered trainables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">layer</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainables_</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Monitor</span><span class="p">,</span> <span class="n">Layer</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered monitors for capturing layer state.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            tuple[Monitor, Layer]: registered monitors and their associated layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span>
-            <span class="p">((</span><span class="n">monitor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="n">monitors</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">monitors</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">((</span><span class="n">monitor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainables_</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="n">monitors</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">monitors</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">add_trainable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwarge</span><span class="p">):</span>
+<div class="viewcode-block" id="LayerwiseUpdater.add_trainable">
+<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_trainable">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_trainable</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span> <span class="n">add_monitors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwarge</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registers a layer as a trainable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trainable (Layer): layer to register as a trainable.</span>
+<span class="sd">            add_monitors (bool, optional): if default monitors should be added after</span>
+<span class="sd">                registring. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the layer was successfully registered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># use hexadecimal of object id as the key</span>
         <span class="n">key</span> <span class="o">=</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">trainable</span><span class="p">))</span>
 
         <span class="c1"># add to trainables list for accessing</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">trainable</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainables_</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainables_</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">trainable</span>
 
         <span class="c1"># add to mapping from layers to monitors</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
 
         <span class="c1"># add default monitor layout to trainable</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">add_monitors</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_monitors</span><span class="p">(</span><span class="n">trainable</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">del_trainable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwarge</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="LayerwiseUpdater.del_trainable">
+<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.del_trainable">[docs]</a>
+    <span class="k">def</span> <span class="nf">del_trainable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwarge</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes a registered layer and its associated monitors.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trainable (Layer): trainable to delete.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the layer was successfully deleted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># use hexadecimal of object id as the key</span>
         <span class="n">key</span> <span class="o">=</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">trainable</span><span class="p">))</span>
 
-        <span class="c1"># add to trainables list for accessing</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="p">:</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="c1"># try to delete trainable</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainables_</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
 
-        <span class="c1"># add to mapping from layers to monitors</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">:</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">add_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">monitor</span><span class="p">:</span> <span class="n">Monitor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># check if trainable is valid</span>
-        <span class="k">if</span> <span class="n">trainable</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;specified </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">trainable</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instance not in updater.&quot;</span>
-            <span class="p">)</span>
+<div class="viewcode-block" id="LayerwiseUpdater.add_monitor">
+<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_monitor">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_monitor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">monitor</span><span class="p">:</span> <span class="n">Monitor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds and associates a monitor with a registered layer.</span>
 
-        <span class="n">key</span> <span class="o">=</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">trainable</span><span class="p">))</span>
+<span class="sd">        Args:</span>
+<span class="sd">            trainable (Layer): layer to which the monitor should be registered.</span>
+<span class="sd">            name (str): identifier of the monitor to add.</span>
+<span class="sd">            monitor (Monitor): monitor to register.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the monitor was successfully added.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># try to get the moduledict with monitors</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">monitors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">trainable</span><span class="p">))]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># check if name is already associated with trainable</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;monitor with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> already associated with specified trainable.&quot;</span>
-            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">monitors</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># check if this monitor is already registered</span>
-        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">layer</span><span class="p">))]</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;specified </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">monitor</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> already associated with &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;a trainable </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="p">)</span>
+        <span class="k">if</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="p">(</span><span class="n">mon</span> <span class="k">for</span> <span class="n">mon</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
 
         <span class="n">monitor</span><span class="o">.</span><span class="n">deregister</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">monitor</span>
+        <span class="n">monitors</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">monitor</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
             <span class="n">monitor</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">trainable</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">add_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="LayerwiseUpdater.del_monitor">
+<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.del_monitor">[docs]</a>
+    <span class="k">def</span> <span class="nf">del_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes a monitor associated with a registered layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trainable (Layer): layer from which the monitor should be deleted.</span>
+<span class="sd">            name (str): dentifier of the monitor to delete.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the monitor was successfully deleted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># try to get the moduledict with monitors</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">monitors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">trainable</span><span class="p">))]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># try to delete monitor</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">monitors</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="LayerwiseUpdater.get_monitor">
+<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.get_monitor">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Monitor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves a monitor associated with a registered layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trainable (Layer): layer with which the monitor is associated.</span>
+<span class="sd">            name (str): name of the monitor to get.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Monitor | None: monitor specified by ``trainable`` and name if it exists.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># try to get the moduledict with monitors</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">monitors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">trainable</span><span class="p">))]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># try to retrieve monitor</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">monitors</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="LayerwiseUpdater.add_monitors">
+<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_monitors">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">add_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Associates base layout of monitors required by the updater with the layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trainable (Layer): layer to which monitors should be added.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the monitors were successfully added.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``add_monitors`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;LayerwiseUpdater `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` must implement &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(LayerwiseUpdater) must implement &quot;</span>
             <span class="s2">&quot;the method `add_monitors`.&quot;</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">del_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># check if trainable is valid</span>
-        <span class="k">if</span> <span class="n">trainable</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;specified </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">trainable</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instance not in updater.&quot;</span>
-            <span class="p">)</span>
 
+<div class="viewcode-block" id="LayerwiseUpdater.del_monitors">
+<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.del_monitors">[docs]</a>
+    <span class="k">def</span> <span class="nf">del_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes all monitors associated with a registered layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trainable (Layer): layer from which monitors should be deleted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the monitors were successfully deleted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">key</span> <span class="o">=</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">trainable</span><span class="p">))</span>
 
-        <span class="c1"># check if name is not associated with trainable</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;monitor with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> not registered to specified trainable.&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># try to get the moduledict with monitors</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">monitors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
 
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
+        <span class="c1"># remove all elements</span>
+        <span class="n">monitors</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">get_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Monitor</span><span class="p">:</span>
-        <span class="c1"># check if trainable is valid</span>
-        <span class="k">if</span> <span class="n">trainable</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;specified </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">trainable</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instance not in updater.&quot;</span>
-            <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
 
+
+<div class="viewcode-block" id="LayerwiseUpdater.get_monitors">
+<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.get_monitors">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Monitor</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves all monitors associated with a registered layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trainable (Layer): layer for which monitors should be retrieved.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            tuple[Monitor, str]: registered monitors and their names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># use hexadecimal of object id as the key</span>
         <span class="n">key</span> <span class="o">=</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">trainable</span><span class="p">))</span>
 
-        <span class="c1"># check if name is not associated with trainable</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;monitor with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> not registered to specified trainable.&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># try to get the moduledict with monitors</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">monitors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
+        <span class="c1"># construct generator</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">monitor</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="n">monitors</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></div>
 
-    <span class="k">def</span> <span class="nf">get_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="n">Layer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Monitor</span><span class="p">]]:</span>
-        <span class="c1"># check if trainable is valid</span>
-        <span class="k">if</span> <span class="n">trainable</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;specified </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">trainable</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instance not in updater.&quot;</span>
-            <span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">monitor</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">trainable</span><span class="p">))]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="p">)</span>
-
-<div class="viewcode-block" id="LayerwiseUpdater.connect">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.connect">[docs]</a>
-    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="LayerwiseUpdater.attach">
+<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.attach">[docs]</a>
+    <span class="k">def</span> <span class="nf">attach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Registers all of the monitors for the updater.</span>
 
 <span class="sd">        Args:</span>
@@ -391,26 +525,26 @@
 <span class="sd">        Note:</span>
 <span class="sd">            Keyword arguments are passed to :py:meth:`Monitor.clear` call.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
                 <span class="n">monitor</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">monitor</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="LayerwiseUpdater.disconnect">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.disconnect">[docs]</a>
-    <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="LayerwiseUpdater.detach">
+<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.detach">[docs]</a>
+    <span class="k">def</span> <span class="nf">detach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deregisters all of the monitors for the updater.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            clear (bool, optional): If the monitors should be cleared before deregistering</span>
-<span class="sd">                with submodules. Defaults to False.</span>
+<span class="sd">            clear (bool, optional): If the monitors should be cleared before</span>
+<span class="sd">                deregistering with submodules. Defaults to False.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            Keyword arguments are passed to :py:meth:`Monitor.clear` call.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
                 <span class="n">monitor</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -424,6 +558,10 @@
 
 <span class="sd">        Note:</span>
 <span class="sd">            Keyword arguments are passed to :py:meth:`Monitor.clear` call.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            If a subclassed updater has additional state, this should be overridden</span>
+<span class="sd">            to delete that state as well.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">for</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span><span class="p">:</span>
@@ -437,11 +575,11 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Processes update for given layers based on current monitor stored data.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: py:meth:`forward` is abstract and must be implemented by the subclass.</span>
+<span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s2">&quot;&#39;LayerwiseUpdater.forward()&#39; is abstract, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must implement forward().&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(LayerwiseUpdater) must implement &quot;</span>
+            <span class="s2">&quot;the method `forward`.&quot;</span>
         <span class="p">)</span></div>
 </div>
 

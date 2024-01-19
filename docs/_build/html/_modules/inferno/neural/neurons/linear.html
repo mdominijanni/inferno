@@ -228,29 +228,29 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of leaky integrate-and-fire (LIF) neuron dynamics.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\mathrm{rest} - R_mI(t)\right]</span>
-<span class="sd">        \exp\left(-\frac{t}{\tau_m}\right) + V_\mathrm{rest} + R_mI(t)</span>
+<span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]</span>
+<span class="sd">        \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)</span>
 
 <span class="sd">    If a spike was generated at time :math:`t`, then.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        V_m(t) \leftarrow V_\mathrm{reset}</span>
+<span class="sd">        V_m(t) \leftarrow V_\text{reset}</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of neurons being simulated.</span>
 <span class="sd">        step_time (float): length of a simulation time step,</span>
-<span class="sd">            :math:`\Delta t`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
 <span class="sd">        rest_v (float): membrane potential difference at equilibrium,</span>
-<span class="sd">            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
 <span class="sd">        reset_v (float): membrane voltage after an action potential is generated,</span>
-<span class="sd">            :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`V_\text{reset}`, in :math:`\text{mV}`.</span>
 <span class="sd">        thresh_v (float): membrane voltage at which action potentials are generated,</span>
-<span class="sd">            in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
+<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.</span>
 <span class="sd">        time_constant (float): time constant of exponential decay for membrane voltage,</span>
-<span class="sd">            :math:`\tau_m`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            :math:`\tau_m`, in :math:`\text{ms}`.</span>
 <span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
-<span class="sd">            :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.</span>
 <span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
 
 <span class="sd">    See Also:</span>
@@ -332,7 +332,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): presynaptic currents,</span>
-<span class="sd">                :math:`I(t)`, in :math:`\mathrm{nA}`.</span>
+<span class="sd">                :math:`I(t)`, in :math:`\text{nA}`.</span>
 <span class="sd">            refrac_lock (bool, optional): if membrane voltages should be fixed while</span>
 <span class="sd">                in the refractory period. Defaults to True.</span>
 
@@ -372,8 +372,8 @@
 
 <span class="sd">    .. math::</span>
 <span class="sd">        \begin{align*}</span>
-<span class="sd">            V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\mathrm{rest} - R_mI(t)\right]</span>
-<span class="sd">            \exp\left(-\frac{t}{\tau_m}\right) + V_\mathrm{rest} + R_mI(t) \\</span>
+<span class="sd">            V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest} - R_mI(t)\right]</span>
+<span class="sd">            \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\</span>
 <span class="sd">            \Theta(t) &amp;= \Theta_\infty + \sum_k \theta_k(t) \\</span>
 <span class="sd">            \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)</span>
 <span class="sd">        \end{align*}</span>
@@ -382,29 +382,29 @@
 
 <span class="sd">    .. math::</span>
 <span class="sd">        \begin{align*}</span>
-<span class="sd">            V_m(t) &amp;\leftarrow V_\mathrm{reset} \\</span>
+<span class="sd">            V_m(t) &amp;\leftarrow V_\text{reset} \\</span>
 <span class="sd">            \theta_k(t) &amp;\leftarrow \theta_k(t) + a_k</span>
 <span class="sd">        \end{align*}</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of neurons being simulated.</span>
 <span class="sd">        step_time (float): length of a simulation time step,</span>
-<span class="sd">            :math:`\Delta t`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
 <span class="sd">        rest_v (float): membrane potential difference at equilibrium,</span>
-<span class="sd">            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
 <span class="sd">        reset_v (float): membrane voltage after an action potential is generated,</span>
-<span class="sd">            :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`V_\text{reset}`, in :math:`\text{mV}`.</span>
 <span class="sd">        thresh_eq_v (float): equilibrium of the firing threshold,</span>
-<span class="sd">            :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            :math:`\Theta_\infty$`, in :math:`\text{mV}`.</span>
+<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.</span>
 <span class="sd">        tc_membrane (float): time constant of exponential decay for membrane voltage,</span>
-<span class="sd">            :math:`\tau_m`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            :math:`\tau_m`, in :math:`\text{ms}`.</span>
 <span class="sd">        tc_adaptation (float | tuple[float]): time constant of exponential decay for</span>
-<span class="sd">            threshold adaptations, :math:`\tau_k`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            threshold adaptations, :math:`\tau_k`, in :math:`\text{ms}`.</span>
 <span class="sd">        spike_adapt_incr (float | tuple[float]): amount by which the adaptive</span>
-<span class="sd">            threshold is increased after a spike, :math:`a_k`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            threshold is increased after a spike, :math:`a_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
-<span class="sd">            :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.</span>
 <span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
 
 <span class="sd">    See Also:</span>
@@ -576,7 +576,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): presynaptic currents,</span>
-<span class="sd">                :math:`I(t)`, in :math:`\mathrm{nA}`.</span>
+<span class="sd">                :math:`I(t)`, in :math:`\text{nA}`.</span>
 <span class="sd">            adapt (bool | None, optional): if adaptations should be updated</span>
 <span class="sd">                based on this step. Defaults to None.</span>
 <span class="sd">            refrac_lock (bool, optional): if membrane voltages should be fixed</span>
@@ -699,7 +699,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): presynaptic currents,</span>
-<span class="sd">                :math:`I(t)`, in :math:`\mathrm{nA}`.</span>
+<span class="sd">                :math:`I(t)`, in :math:`\text{nA}`.</span>
 <span class="sd">            refrac_lock (bool, optional): if membrane voltages should be fixed while</span>
 <span class="sd">                in the refractory period. Defaults to True.</span>
 
@@ -718,8 +718,8 @@
 
 <span class="sd">    .. math::</span>
 <span class="sd">        \begin{align*}</span>
-<span class="sd">            V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\mathrm{rest} - R_mI(t)\right]</span>
-<span class="sd">            \exp\left(-\frac{t}{\tau_m}\right) + V_\mathrm{rest} + R_mI(t) \\</span>
+<span class="sd">            V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest} - R_mI(t)\right]</span>
+<span class="sd">            \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\</span>
 <span class="sd">            \Theta(t) &amp;= \Theta_\infty + \sum_k \theta_k(t) \\</span>
 <span class="sd">            \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)</span>
 <span class="sd">        \end{align*}</span>
@@ -728,31 +728,31 @@
 
 <span class="sd">    .. math::</span>
 <span class="sd">        \begin{align*}</span>
-<span class="sd">            V_m(t) &amp;\leftarrow V_\mathrm{rest} + m_v \left[ V_m(t) - V_\mathrm{rest} \right] - b_v \\</span>
+<span class="sd">            V_m(t) &amp;\leftarrow V_\text{rest} + m_v \left[ V_m(t) - V_\text{rest} \right] - b_v \\</span>
 <span class="sd">            \theta_k(t) &amp;\leftarrow \theta_k(t) + a_k</span>
 <span class="sd">        \end{align*}</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of neurons being simulated.</span>
 <span class="sd">        step_time (float): length of a simulation time step,</span>
-<span class="sd">            :math:`\Delta t`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
 <span class="sd">        rest_v (float): membrane potential difference at equilibrium,</span>
-<span class="sd">            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
 <span class="sd">        reset_v_add (float): additive parameter controlling reset voltage,</span>
-<span class="sd">            :math:`b_v`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            :math:`b_v`, in :math:`\text{mV}`.</span>
 <span class="sd">        reset_v_mul (float): multiplicative parameter controlling reset voltage,</span>
 <span class="sd">            :math:`m_v`, unitless.</span>
 <span class="sd">        thresh_eq_v (float): equilibrium of the firing threshold,</span>
-<span class="sd">            :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.</span>
-<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            :math:`\Theta_\infty$`, in :math:`\text{mV}`.</span>
+<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.</span>
 <span class="sd">        tc_membrane (float): time constant of exponential decay for membrane voltage,</span>
-<span class="sd">            :math:`\tau_m`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            :math:`\tau_m`, in :math:`\text{ms}`.</span>
 <span class="sd">        tc_adaptation (float | tuple[float]): time constant of exponential decay for</span>
-<span class="sd">            threshold adaptations, :math:`\tau_k`, in :math:`\mathrm{ms}`.</span>
+<span class="sd">            threshold adaptations, :math:`\tau_k`, in :math:`\text{ms}`.</span>
 <span class="sd">        spike_adapt_incr (float | tuple[float]): amount by which the adaptive</span>
-<span class="sd">            threshold is increased after a spike, :math:`a_k`, in :math:`\mathrm{mV}`.</span>
+<span class="sd">            threshold is increased after a spike, :math:`a_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
-<span class="sd">            :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.</span>
 <span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
 
 <span class="sd">    See Also:</span>
@@ -926,7 +926,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): presynaptic currents,</span>
-<span class="sd">                :math:`I(t)`, in :math:`\mathrm{nA}`.</span>
+<span class="sd">                :math:`I(t)`, in :math:`\text{nA}`.</span>
 <span class="sd">            adapt (bool | None, optional): if adaptations should be updated</span>
 <span class="sd">                based on this step. Defaults to None.</span>
 <span class="sd">            refrac_lock (bool, optional): if membrane voltages should be fixed</span>

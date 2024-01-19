@@ -13,24 +13,68 @@ from typing import Literal
 
 
 class STDP(LayerwiseUpdater):
-    r"""Spike-timing dependent plasticity updated.
+    r"""Spike-timing dependent plasticity updater.
+
+    .. math::
+
+        \Delta w = A_+ x_\text{pre} \bigl[t = t^f_\text{post}\bigr] -
+        A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]
+
+    Where:
+
+    .. math::
+
+        \begin{align*}
+            x^{(t)} &=
+            \begin{cases}
+                1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t = t^f \text{ and cumulative trace} \\
+                1 & t = t^f \text{ and nearest trace} \\
+                x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t \neq t^f
+            \end{cases} \\ \\
+            A_+ &=
+            \begin{cases}
+                \Theta(w_\text{max} - w)\eta_\text{post} & \exists w_\text{max} \text{ and hard bounding} \\
+                (w_\text{max} - w)^{\mu_+}\eta_\text{post} & \exists w_\text{max} \text{ and soft bounding} \\
+                \eta_\text{post} & \text{otherwise}
+            \end{cases} \\ \\
+            A_- &=
+            \begin{cases}
+                \Theta(w - w_\text{min})\eta_\text{pre} & \exists w_\text{min} \text{ and hard bounding} \\
+                (w - w_\text{min})^{\mu_-}\eta_\text{pre} & \exists w_\text{min} \text{ and soft bounding} \\
+                \eta_\text{pre} & \text{otherwise}
+            \end{cases}
+        \end{align*}
+
+    :math:`t` and :math:`t^f` are the current time and the time of the most recent
+    spike, respectively.
 
     Args:
-        step_time (float): _description_
-        lr_post (float): learning rate for updates on postsynaptic spikes, potentiative.
-        lr_pre (float): learning rate for updates on presynaptic spikes, depressive.
+        step_time (float): length of a simulation time step, :math:`\Delta t`,
+            in :math:`\text{ms}`.
+        lr_post (float): learning rate for updates on postsynaptic spike updates (LTP),
+            :math:`\eta_\text{post}`.
+        lr_pre (float): learning rate for updates on presynaptic spike updates (LTD),
+            :math:`\eta_\text{pre}`.
         tc_post (float): time constant for exponential decay of postsynaptic trace,
-            in :math:`ms`.
+            :math:`tau_\text{post}`, in :math:`ms`.
         tc_pre (float): time constant for exponential decay of presynaptic trace,
-            in :math:`ms`.
+            :math:`tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume learned delays, if
             present, may change. Defaults to False.
-        trace_mode (Literal["cumulative", "nearest"], optional): _description_. Defaults to "cumulative".
-        bounding_mode (Literal["soft", "hard"] | None, optional): _description_. Defaults to None.
-        wmin (float | None, optional): _description_. Defaults to None.
-        wmax (float | None, optional): _description_. Defaults to None.
-        wddepexp (float, optional): _description_. Defaults to 1.0.
-        wdpotexp (float, optional): _description_. Defaults to 1.0.
+        interp_tolerance (float): maximum difference in time from an observation
+            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
+        trace_mode (Literal["cumulative", "nearest"], optional): method to use for
+            calculating spike traces. Defaults to "cumulative".
+        wd_lower (~inferno.learn.functional.WeightDependence | None, optional):
+            function for applying weight dependence on a lower bound, no dependence if
+            None. Defaults to None.
+        wd_upper (~inferno.learn.functional.WeightDependence | None, optional):
+            function for applying weight dependence on an bound, no dependence if
+            None. Defaults to None.
+        wmin (float | None, optional): lower bound for weights, :math:`w_\text{min}`.
+            Defaults to None.
+        wmax (float | None, optional): upper bound for weights., :math:`w_\text{max}`
+            Defaults to None.
     """
 
     def __init__(
@@ -42,13 +86,12 @@ class STDP(LayerwiseUpdater):
         tc_post: float,
         tc_pre: float,
         delayed: bool = False,
+        interp_tolerance: float = 0.0,
         trace_mode: Literal["cumulative", "nearest"] = "cumulative",
-        bounding_mode: Literal["soft", "hard"] | None = None,
-        interpolation_tolerance: float = 1e-7,
+        wd_lower: lf.WeightDependence | None = None,
+        wd_upper: lf.WeightDependence | None = None,
         wmin: float | None = None,
         wmax: float | None = None,
-        wddepexp: float = 1.0,
-        wdpotexp: float = 1.0,
         **kwargs,
     ):
         # call superclass constructor, registers monitors
@@ -62,111 +105,99 @@ class STDP(LayerwiseUpdater):
                 f"received {trace_mode}."
             )
 
-        if bounding_mode:
-            bounding_mode = bounding_mode.lower()
-            if bounding_mode not in ("soft", "hard"):
-                raise ValueError(
-                    "`bounding_mode`, if not None, must be one of 'soft' or 'hard'; "
-                    f"received {bounding_mode}."
-                )
+        # validate weight dependence
+        if wd_lower and wmin is None:
+            raise RuntimeError("`wmin` cannot be None if `wd_lower` is specified.")
+        if wd_upper and wmax is None:
+            raise RuntimeError("`wmax` cannot be None if `wd_upper` is specified.")
 
         # updater hyperparameters
-        self.step_time = numeric_limit('`step_time`', step_time, 0, 'gt', float)
+        self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
         self.lr_post = float(lr_post)
         self.lr_pre = float(lr_pre)
-        self.tc_post = numeric_limit('`tc_post`', tc_post, 0, 'gt', float)
-        self.tc_pre = numeric_limit('`tc_pre`', tc_pre, 0, 'gt', float)
+        self.tc_post = numeric_limit("`tc_post`", tc_post, 0, "gt", float)
+        self.tc_pre = numeric_limit("`tc_pre`", tc_pre, 0, "gt", float)
         self.delayed = delayed
+        self.tolerance = float(interp_tolerance)
         self.trace = trace_mode
-        self.bounding = bounding_mode
-        self.tolerance = float(interpolation_tolerance)
+        self.wdlower = wd_lower
+        self.wdupper = wd_upper
+        self.wmin = float(wmin)
+        self.wmax = float(wmax)
 
-        # case-specific hyperparamters
-        if self.bounding:
-            if wmin is None and max is None:
-                raise TypeError("`wmin` and `wmax` cannot both be None.")
-            if wmin is not None and wmax is not None and wmin >= wmax:
-                raise ValueError(
-                    f"received `wmax` of {wmax} which not greater than "
-                    f"`wmin` of {wmin}."
-                )
-            self.wmin = None if wmin is None else float(wmin)
-            self.wmax = None if wmin is None else float(wmax)
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
 
-        if self.bounding == 'soft':
-            self.wd_lowerb_exp = float(wddepexp)
-            self.wd_upperb_exp = float(wdpotexp)
+        Args:
+            value (float): new simulation time step length.
 
-    def forward(self) -> None:
-        # iterate over trainable layers
-        for layer in self.trainables:
-            # skip if layer not in training mode
-            if not layer.training or not self.training:
-                continue
+        Returns:
+            float: present simulation time step length.
+        """
+        return self.step_time
 
-            # post and pre synaptic traces
-            a_post = self.get_monitor(layer, "trace_post").peek()
-            a_pre = (
-                self.get_monitor(layer, "trace_pre").view(
-                    layer.connection.selector, self.tolerance
-                )
-                if self.delayed and layer.connection.delayedby is not None
-                else self.get_monitor(layer, "trace_pre").peek()
-            )
+    @dt.setter
+    def dt(self, value: float) -> None:
+        # assign new step time
+        self.step_time = numeric_limit("`step_time`", value, 0, "gt", float)
 
-            # post and pre synaptic spikes
-            i_post = self.get_monitor(layer, "spike_post").peek()
-            i_pre = self.get_monitor(layer, "spike_pre").peek()
+        # update monitors accordingly
+        for monitor, _ in self.monitors:
+            monitor.reducer.dt = self.step_time
 
-            # reshape postsynaptic
-            a_post = layer.postsyn_receptive(a_post)
-            i_post = layer.postsyn_receptive(i_post)
+    @property
+    def lrpost(self) -> float:
+        r"""Learning rate for updates on postsynaptic spikes (potentiative).
 
-            # reshape presynaptic
-            a_pre = layer.presyn_receptive(a_pre)
-            i_pre = layer.presyn_currents(i_pre)
+        Args:
+            value (float): new postsynaptic learning rate.
 
-            # base update
-            update_ltp = (
-                torch.mean(torch.sum(i_post * a_pre, dim=-1), dim=0) * self.lrpost
-            )
-            update_ltd = (
-                torch.mean(torch.sum(i_pre * a_post, dim=-1), dim=0) * self.lrpre
-            )
+        Returns:
+            float: present postsynaptic learning rate.
+        """
+        return self.lr_post
 
-            # apply bounding if specified
-            match self.bounding:
-                case "soft":
-                    if self.wmin is not None:
-                        update_ltd *= lf.soft_bounding_dep(
-                            layer.connection.weight, self.wmin, self.wd_lowerb_exp
-                        )
-                    if self.wmax is not None:
-                        update_ltp *= lf.soft_bounding_pot(
-                            layer.connection.weight, self.wmax, self.wd_upperb_exp
-                        )
-                case "hard":
-                    if self.wmin is not None:
-                        update_ltd *= lf.hard_bounding_dep(
-                            layer.connection.weight, self.wmin
-                        )
-                    if self.wmax is not None:
-                        update_ltp *= lf.hard_bounding_pot(
-                            layer.connection.weight, self.wmax
-                        )
+    @lrpost.setter
+    def lrpost(self, value: float) -> None:
+        self.lr_post = float(value)
 
-            # update weights
-            layer.connection.weight = layer.connection.weight + update_ltp - update_ltd
+    @property
+    def lrpre(self) -> float:
+        r"""Learning rate for updates on postsynaptic spikes (depressive).
 
-    def add_monitors(self, trainable: Layer):
-        # add trainable using superclass method
-        LayerwiseUpdater.add_trainable(self, trainable)
+        Args:
+            value (float): new postsynaptic learning rate.
 
-        # escape early if monitors are already associated with this trainable
-        try:
-            next(self.get_monitors(trainable))
-        except StopIteration:
-            return
+        Returns:
+            float: present postsynaptic learning rate.
+        """
+        return self.lr_pre
+
+    @lrpre.setter
+    def lrpre(self, value: float) -> None:
+        self.lr_pre = float(value)
+
+    def add_monitors(self, trainable: Layer) -> bool:
+        r"""Associates base layout of monitors required by the updater with the layer.
+
+        Args:
+            trainable (Layer): layer to which monitors should be added.
+
+        Returns:
+            bool: if the monitors were successfully added.
+
+        Note:
+            This adds four prepended monitors named: "spike_post", "spike_pre",
+            "trace_post", and "trace_pre". This method will fail to assign monitors
+            if a monitor with these names is already associated with ``trainable``.
+        """
+        # do not alter state if conflicting monitors are associated
+        if any(
+            name in ("spike_post", "spike_pre", "trace_post", "trace_pre")
+            for _, name in self.get_monitors(trainable)
+        ):
+            return False
 
         # trace reducer class
         match self.trace:
@@ -187,6 +218,7 @@ class STDP(LayerwiseUpdater):
             "eval_update": False,
             "prepend": True,
         }
+        amp, tgt = 1.0, True
 
         # postsynaptic trace monitor (weights LTD)
         self.add_monitor(
@@ -196,8 +228,8 @@ class STDP(LayerwiseUpdater):
                 reducer=reducer_cls(
                     self.dt,
                     self.tc_post,
-                    amplitude=1.0,
-                    target=True,
+                    amplitude=amp,
+                    target=tgt,
                     history_len=0.0,
                 ),
                 attr="neuron.spike",
@@ -225,8 +257,8 @@ class STDP(LayerwiseUpdater):
                 reducer=reducer_cls(
                     self.dt,
                     self.tc_pre,
-                    amplitude=1.0,
-                    target=True,
+                    amplitude=amp,
+                    target=tgt,
                     history_len=(trainable.connection.delayedby if delayed else 0.0),
                 ),
                 attr=("synapse.spike" if delayed else "connection.synspike"),
@@ -245,31 +277,56 @@ class STDP(LayerwiseUpdater):
             ),
         )
 
-    @property
-    def dt(self) -> float:
-        return self.step_time
+        return True
 
-    @dt.setter
-    def dt(self, value: float) -> None:
-        # assign new step time
-        self.step_time = numeric_limit('`step_time`', value, 0, 'gt', float)
+    def forward(self) -> None:
+        """Processes update for given layers based on current monitor stored data."""
+        # iterate over trainable layers
+        for layer in self.trainables:
+            # skip if layer not in training mode
+            if not layer.training or not self.training:
+                continue
 
-        # update monitors accordingly
-        for monitor, _ in self.monitors:
-            monitor.reducer.dt = self.step_time
+            # get reference to composed connection
+            conn = layer.connection
 
-    @property
-    def lrpost(self) -> float:
-        return self.lr_post
+            # post and pre synaptic traces
+            x_post = self.get_monitor(layer, "trace_post").peek()
+            x_pre = (
+                self.get_monitor(layer, "trace_pre").view(
+                    conn.selector, self.tolerance
+                )
+                if self.delayed and conn.delayedby is not None
+                else self.get_monitor(layer, "trace_pre").peek()
+            )
 
-    @lrpost.setter
-    def lrpost(self, value: float) -> None:
-        self.lr_post = float(value)
+            # post and pre synaptic spikes
+            i_post = self.get_monitor(layer, "spike_post").peek()
+            i_pre = self.get_monitor(layer, "spike_pre").peek()
 
-    @property
-    def lrpre(self) -> float:
-        return self.lr_pre
+            # reshape postsynaptic
+            x_post = layer.postsyn_receptive(x_post)
+            i_post = layer.postsyn_receptive(i_post)
 
-    @lrpre.setter
-    def lrpre(self, value: float) -> None:
-        self.lr_pre = float(value)
+            # reshape presynaptic
+            x_pre = layer.presyn_receptive(x_pre)
+            i_pre = layer.presyn_receptive(i_pre)
+
+            # update amplitudes
+            a_pos, a_neg = 1.0, 1.0
+
+            # apply bounding factors
+            if self.wdupper:
+                a_pos = self.wdupper(conn.weight, self.wmax, a_pos)
+            if self.wdlower:
+                a_neg = self.wdlower(conn.weight, self.wmin, a_neg)
+
+            # apply learning rates
+            a_pos, a_neg = a_pos * self.lrpost, a_neg * self.lrpre
+
+            # mask traces with spikes, reduce dimensionally, apply amplitudes
+            dw_pos = torch.mean(torch.sum(i_post * x_pre, dim=-1), dim=0) * a_pos
+            dw_neg = torch.mean(torch.sum(i_pre * x_post, dim=-1), dim=0) * a_neg
+
+            # update weights
+            conn.weight = conn.weight + dw_pos - dw_neg

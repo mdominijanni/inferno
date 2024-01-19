@@ -9,7 +9,7 @@ class CurrentMixin:
     r"""Mixin for synapses with current.
 
     Args:
-        currents (torch.Tensor): initial synaptic currents, in :math:`\mathrm{nA}`.
+        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
@@ -52,7 +52,7 @@ class SpikeCurrentMixin(CurrentMixin):
     r"""Mixin for synapses with current and managed spikes.
 
     Args:
-        currents (torch.Tensor): initial synaptic currents, in :math:`\mathrm{nA}`.
+        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.
         spikes (torch.Tensor | OneToOne[torch.Tensor]): initial input spikes,
             or a function to derive them from synaptic current.
         requires_grad (bool, optional): if the parameters created require gradients.
@@ -122,7 +122,7 @@ class DelayedSpikeCurrentMixin(SpikeCurrentMixin):
     r"""Mixin for synapses with current and managed spikes with selector methods.
 
     Args:
-        currents (torch.Tensor): initial synaptic currents, in :math:`\mathrm{nA}`.
+        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.
         spikes (torch.Tensor | OneToOne[torch.Tensor]): initial input spikes,
             or a function to derive them from synaptic current.
         current_interp (Interpolation): interpolation function used when selecting
@@ -134,7 +134,7 @@ class DelayedSpikeCurrentMixin(SpikeCurrentMixin):
         spike_overval (bool | None): value to replace spikes out of bounds,
             uses values at observation limits if None.
         tolerance (float): maximum difference in time from an observation
-            to treat as co-occurring, in :math:`\mathrm{ms}`.
+            to treat as co-occurring, in :math:`\text{ms}`.
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
@@ -234,7 +234,7 @@ class DelayedSpikeCurrentMixin(SpikeCurrentMixin):
 
         Args:
             selector (torch.Tensor): time before present for which synaptic currents
-                should be retrieved, in :math:`\mathrm{ms}`.
+                should be retrieved, in :math:`\text{ms}`.
 
         Returns:
             torch.Tensor: selected synaptic currents.
@@ -262,7 +262,7 @@ class DelayedSpikeCurrentMixin(SpikeCurrentMixin):
 
         Args:
             selector (torch.Tensor): time before present for which spike inputs
-                should be retrieved, in :math:`\mathrm{ms}`.
+                should be retrieved, in :math:`\text{ms}`.
 
         Returns:
             torch.Tensor: selected spike inputs.

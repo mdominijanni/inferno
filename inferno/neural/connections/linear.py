@@ -20,12 +20,12 @@ class LinearDense(WeightBiasDelayMixin, Connection):
             excluding batch dimension.
         out_shape (tuple[int, ...] | int): expected shape of output tensor,
             excluding batch dimension.
-        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
+        step_time (float): length of a simulation time step, in :math:`\text{ms}`.
         synapse (SynapseConstructor): partial constructor for inner :py:class:`Synapse`.
         bias (bool, optional): if the connection should support
             learnable additive bias. Defaults to False.
         delay (float | None, optional): maximum supported delay length, in
-            :math:`\mathrm{ms}`, excludes delays when None. Defaults to None.
+            :math:`\text{ms}`, excludes delays when None. Defaults to None.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
         weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.
             Defaults to None.
@@ -357,12 +357,12 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
     Args:
         shape (tuple[int, ...] | int): expected shape of input and output tensors,
             excluding batch dimension.
-        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
+        step_time (float): length of a simulation time step, in :math:`\text{ms}`.
         synapse (SynapseConstructor): partial constructor for inner :py:class:`Synapse`.
         bias (bool, optional): if the connection should support
             learnable additive bias. Defaults to False.
         delay (float | None, optional): maximum supported delay length, in
-            :math:`\mathrm{ms}`, excludes delays when None. Defaults to None.
+            :math:`\text{ms}`, excludes delays when None. Defaults to None.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
         weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.
             Defaults to None.
@@ -656,12 +656,12 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
     Args:
         shape (tuple[int, ...] | int): expected shape of input and output tensors,
             excluding batch dimension.
-        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.
+        step_time (float): length of a simulation time step, in :math:`\text{ms}`.
         synapse (SynapseConstructor): partial constructor for inner :py:class:`Synapse`.
         bias (bool, optional): if the connection should support
             learnable additive bias. Defaults to False.
         delay (float | None, optional): maximum supported delay length, in
-            :math:`\mathrm{ms}`, excludes delays when None. Defaults to None.
+            :math:`\text{ms}`, excludes delays when None. Defaults to None.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
         weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.
             Defaults to None.

@@ -10,29 +10,29 @@ class LIF(VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
     r"""Simulation of leaky integrate-and-fire (LIF) neuron dynamics.
 
     .. math::
-        V_m(t + \Delta t) = \left[V_m(t) - V_\mathrm{rest} - R_mI(t)\right]
-        \exp\left(-\frac{t}{\tau_m}\right) + V_\mathrm{rest} + R_mI(t)
+        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]
+        \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
 
     If a spike was generated at time :math:`t`, then.
 
     .. math::
-        V_m(t) \leftarrow V_\mathrm{reset}
+        V_m(t) \leftarrow V_\text{reset}
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of neurons being simulated.
         step_time (float): length of a simulation time step,
-            :math:`\Delta t`, in :math:`\mathrm{ms}`.
+            :math:`\Delta t`, in :math:`\text{ms}`.
         rest_v (float): membrane potential difference at equilibrium,
-            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
+            :math:`V_\text{rest}`, in :math:`\text{mV}`.
         reset_v (float): membrane voltage after an action potential is generated,
-            :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.
+            :math:`V_\text{reset}`, in :math:`\text{mV}`.
         thresh_v (float): membrane voltage at which action potentials are generated,
-            in :math:`\mathrm{mV}`.
-        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.
+            in :math:`\text{mV}`.
+        refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.
         time_constant (float): time constant of exponential decay for membrane voltage,
-            :math:`\tau_m`, in :math:`\mathrm{ms}`.
+            :math:`\tau_m`, in :math:`\text{ms}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.
+            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
     See Also:
@@ -109,7 +109,7 @@ class LIF(VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
 
         Args:
             inputs (torch.Tensor): presynaptic currents,
-                :math:`I(t)`, in :math:`\mathrm{nA}`.
+                :math:`I(t)`, in :math:`\text{nA}`.
             refrac_lock (bool, optional): if membrane voltages should be fixed while
                 in the refractory period. Defaults to True.
 
@@ -145,8 +145,8 @@ class ALIF(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
 
     .. math::
         \begin{align*}
-            V_m(t + \Delta t) &= \left[V_m(t) - V_\mathrm{rest} - R_mI(t)\right]
-            \exp\left(-\frac{t}{\tau_m}\right) + V_\mathrm{rest} + R_mI(t) \\
+            V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest} - R_mI(t)\right]
+            \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
             \Theta(t) &= \Theta_\infty + \sum_k \theta_k(t) \\
             \theta_k(t + \Delta t) &= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
         \end{align*}
@@ -155,29 +155,29 @@ class ALIF(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
 
     .. math::
         \begin{align*}
-            V_m(t) &\leftarrow V_\mathrm{reset} \\
+            V_m(t) &\leftarrow V_\text{reset} \\
             \theta_k(t) &\leftarrow \theta_k(t) + a_k
         \end{align*}
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of neurons being simulated.
         step_time (float): length of a simulation time step,
-            :math:`\Delta t`, in :math:`\mathrm{ms}`.
+            :math:`\Delta t`, in :math:`\text{ms}`.
         rest_v (float): membrane potential difference at equilibrium,
-            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
+            :math:`V_\text{rest}`, in :math:`\text{mV}`.
         reset_v (float): membrane voltage after an action potential is generated,
-            :math:`V_\mathrm{reset}`, in :math:`\mathrm{mV}`.
+            :math:`V_\text{reset}`, in :math:`\text{mV}`.
         thresh_eq_v (float): equilibrium of the firing threshold,
-            :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.
-        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.
+            :math:`\Theta_\infty$`, in :math:`\text{mV}`.
+        refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.
         tc_membrane (float): time constant of exponential decay for membrane voltage,
-            :math:`\tau_m`, in :math:`\mathrm{ms}`.
+            :math:`\tau_m`, in :math:`\text{ms}`.
         tc_adaptation (float | tuple[float]): time constant of exponential decay for
-            threshold adaptations, :math:`\tau_k`, in :math:`\mathrm{ms}`.
+            threshold adaptations, :math:`\tau_k`, in :math:`\text{ms}`.
         spike_adapt_incr (float | tuple[float]): amount by which the adaptive
-            threshold is increased after a spike, :math:`a_k`, in :math:`\mathrm{mV}`.
+            threshold is increased after a spike, :math:`a_k`, in :math:`\text{mV}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.
+            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
     See Also:
@@ -344,7 +344,7 @@ class ALIF(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
 
         Args:
             inputs (torch.Tensor): presynaptic currents,
-                :math:`I(t)`, in :math:`\mathrm{nA}`.
+                :math:`I(t)`, in :math:`\text{nA}`.
             adapt (bool | None, optional): if adaptations should be updated
                 based on this step. Defaults to None.
             refrac_lock (bool, optional): if membrane voltages should be fixed
@@ -458,7 +458,7 @@ class GLIF1(VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
 
         Args:
             inputs (torch.Tensor): presynaptic currents,
-                :math:`I(t)`, in :math:`\mathrm{nA}`.
+                :math:`I(t)`, in :math:`\text{nA}`.
             refrac_lock (bool, optional): if membrane voltages should be fixed while
                 in the refractory period. Defaults to True.
 
@@ -473,8 +473,8 @@ class GLIF2(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
 
     .. math::
         \begin{align*}
-            V_m(t + \Delta t) &= \left[V_m(t) - V_\mathrm{rest} - R_mI(t)\right]
-            \exp\left(-\frac{t}{\tau_m}\right) + V_\mathrm{rest} + R_mI(t) \\
+            V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest} - R_mI(t)\right]
+            \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
             \Theta(t) &= \Theta_\infty + \sum_k \theta_k(t) \\
             \theta_k(t + \Delta t) &= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
         \end{align*}
@@ -483,31 +483,31 @@ class GLIF2(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
 
     .. math::
         \begin{align*}
-            V_m(t) &\leftarrow V_\mathrm{rest} + m_v \left[ V_m(t) - V_\mathrm{rest} \right] - b_v \\
+            V_m(t) &\leftarrow V_\text{rest} + m_v \left[ V_m(t) - V_\text{rest} \right] - b_v \\
             \theta_k(t) &\leftarrow \theta_k(t) + a_k
         \end{align*}
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of neurons being simulated.
         step_time (float): length of a simulation time step,
-            :math:`\Delta t`, in :math:`\mathrm{ms}`.
+            :math:`\Delta t`, in :math:`\text{ms}`.
         rest_v (float): membrane potential difference at equilibrium,
-            :math:`V_\mathrm{rest}`, in :math:`\mathrm{mV}`.
+            :math:`V_\text{rest}`, in :math:`\text{mV}`.
         reset_v_add (float): additive parameter controlling reset voltage,
-            :math:`b_v`, in :math:`\mathrm{mV}`.
+            :math:`b_v`, in :math:`\text{mV}`.
         reset_v_mul (float): multiplicative parameter controlling reset voltage,
             :math:`m_v`, unitless.
         thresh_eq_v (float): equilibrium of the firing threshold,
-            :math:`\Theta_\infty$`, in :math:`\mathrm{mV}`.
-        refrac_t (float): length the absolute refractory period, in :math:`\mathrm{ms}`.
+            :math:`\Theta_\infty$`, in :math:`\text{mV}`.
+        refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.
         tc_membrane (float): time constant of exponential decay for membrane voltage,
-            :math:`\tau_m`, in :math:`\mathrm{ms}`.
+            :math:`\tau_m`, in :math:`\text{ms}`.
         tc_adaptation (float | tuple[float]): time constant of exponential decay for
-            threshold adaptations, :math:`\tau_k`, in :math:`\mathrm{ms}`.
+            threshold adaptations, :math:`\tau_k`, in :math:`\text{ms}`.
         spike_adapt_incr (float | tuple[float]): amount by which the adaptive
-            threshold is increased after a spike, :math:`a_k`, in :math:`\mathrm{mV}`.
+            threshold is increased after a spike, :math:`a_k`, in :math:`\text{mV}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\mathrm{M\Omega}`. Defaults to 1.0.
+            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
     See Also:
@@ -676,7 +676,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
 
         Args:
             inputs (torch.Tensor): presynaptic currents,
-                :math:`I(t)`, in :math:`\mathrm{nA}`.
+                :math:`I(t)`, in :math:`\text{nA}`.
             adapt (bool | None, optional): if adaptations should be updated
                 based on this step. Defaults to None.
             refrac_lock (bool, optional): if membrane voltages should be fixed

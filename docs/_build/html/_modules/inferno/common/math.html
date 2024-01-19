@@ -215,7 +215,7 @@
         <article role="main">
           <h1>Source code for inferno.common.math</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">cmath</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">singledispatch</span>
+<span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -224,7 +224,7 @@
 
 <div class="viewcode-block" id="exp">
 <a class="viewcode-back" href="../../../reference/generated/inferno.exp.html#inferno.exp">[docs]</a>
-<span class="nd">@singledispatch</span>
+<span class="nd">@functools</span><span class="o">.</span><span class="n">singledispatch</span>
 <span class="k">def</span> <span class="nf">exp</span><span class="p">(</span>
     <span class="n">x</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">:</span>
@@ -269,6 +269,122 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
+<span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">dims</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Normalizes a tensor.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (torch.Tensor): data to normalize.</span>
+<span class="sd">        order (int | float): order of :math:`p`-norm by which to normalize.</span>
+<span class="sd">        scale (float | complex, optional): desired :math:`p`-norm of elements along</span>
+<span class="sd">            specified dimensions. Defaults to 1.0.</span>
+<span class="sd">        dims (int | tuple[int] | None, optional): dimensions along which to normalize,</span>
+<span class="sd">            all dimensions if None. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: normalized tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">data</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">vector_norm</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="simple_exponential_smoothing">
+<a class="viewcode-back" href="../../../reference/generated/inferno.simple_exponential_smoothing.html#inferno.simple_exponential_smoothing">[docs]</a>
+<span class="k">def</span> <span class="nf">simple_exponential_smoothing</span><span class="p">(</span>
+    <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">level</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Performs simple exponential smoothing for a time step.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{align*}</span>
+<span class="sd">            s_0 &amp;= x_0 \\</span>
+<span class="sd">            s_{t + 1} &amp;= \alpha x_{t + 1}  + (1 - \alpha) s_t</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obs (torch.Tensor): latest state to consider for exponential smoothing,</span>
+<span class="sd">            :math:`x`.</span>
+<span class="sd">        level (torch.Tensor | None): current value of the smoothed level,</span>
+<span class="sd">            :math:`s`.</span>
+<span class="sd">        alpha (float | int | complex | torch.Tensor): level smoothing factor,</span>
+<span class="sd">            :math:`\alpha`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: revised exponentially smoothed value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># initial condition</span>
+    <span class="k">if</span> <span class="n">level</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">obs</span>
+
+    <span class="c1"># standard condition</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">obs</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">level</span></div>
+
+
+
+<div class="viewcode-block" id="holt_linear_smoothing">
+<a class="viewcode-back" href="../../../reference/generated/inferno.holt_linear_smoothing.html#inferno.holt_linear_smoothing">[docs]</a>
+<span class="k">def</span> <span class="nf">holt_linear_smoothing</span><span class="p">(</span>
+    <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">level</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">trend</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Performs Holt linear smoothing for a time step.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{align*}</span>
+<span class="sd">            s_0 &amp;= x_0 \\</span>
+<span class="sd">            b_0 &amp;= x_1 - x_0 \\</span>
+<span class="sd">            s_{t + 1} &amp;= \alpha x_{t + 1}  + (1 - \alpha) s_t \\</span>
+<span class="sd">            b_{t + 1} &amp;= \beta (s_{t + 1} - s_t) + (1 - \beta) b_t</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obs (torch.Tensor): latest state to consider for exponential smoothing,</span>
+<span class="sd">            :math:`x_{t + 1}`.</span>
+<span class="sd">        level (torch.Tensor | None): current value of the smoothed level,</span>
+<span class="sd">            :math:`s`.</span>
+<span class="sd">        trend (torch.Tensor | None): current value of the smoothed trend,</span>
+<span class="sd">            :math:`b`.</span>
+<span class="sd">        alpha (float | int | complex | torch.Tensor): level smoothing factor,</span>
+<span class="sd">            :math:`\alpha`.</span>
+<span class="sd">        beta (float | int | complex | torch.Tensor): trend smoothing factor,</span>
+<span class="sd">            :math:`\beta`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple[torch.Tensor, int | torch.Tensor]: tuple containing output/updated state:</span>
+
+<span class="sd">            level: revised exponentially smoothed level.</span>
+
+<span class="sd">            trend: revised exponentially smoothed trend.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># t=0 condition</span>
+    <span class="k">if</span> <span class="n">level</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># t=1 condition (initialize trend as x1-x0)</span>
+    <span class="k">if</span> <span class="n">trend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">trend</span> <span class="o">=</span> <span class="n">obs</span> <span class="o">-</span> <span class="n">level</span>
+
+    <span class="c1"># t&gt;0 condition</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">simple_exponential_smoothing</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">level</span> <span class="o">+</span> <span class="n">trend</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">simple_exponential_smoothing</span><span class="p">(</span><span class="n">s</span> <span class="o">-</span> <span class="n">level</span><span class="p">,</span> <span class="n">trend</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span></div>
+
+
+
 <div class="viewcode-block" id="Interpolation">
 <a class="viewcode-back" href="../../../reference/generated/inferno.Interpolation.html#inferno.Interpolation">[docs]</a>
 <span class="k">class</span> <span class="nc">Interpolation</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
@@ -286,6 +402,13 @@
 <span class="sd">    Note:</span>
 <span class="sd">        ``sample_at`` is measured as the amount of time after the time at which</span>
 <span class="sd">        ``prev_data`` was sampled.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        Provided interpolation functions include :py:func:`interp_previous`,</span>
+<span class="sd">        :py:func:`interp_nearest`, :py:func:`interp_linear`, and</span>
+<span class="sd">        :py:func:`interp_exp_decay`. Some provided functions may require keyword</span>
+<span class="sd">        arguments. For arguments which require an object of type ``Interpolation``,</span>
+<span class="sd">        use a :py:func:`~functools.partial` function to fill in keyword arguments.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
@@ -294,6 +417,7 @@
         <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">step_data</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Callback protocol function.&quot;&quot;&quot;</span>
         <span class="o">...</span></div>
@@ -307,6 +431,7 @@
     <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interpolates by selecting the previous state.</span>
 
@@ -314,10 +439,13 @@
 <span class="sd">        D_{t=s} = D_{t=0}</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        prev_data (torch.Tensor): most recent observation prior to sample time, :math:`D_{t=0}`.</span>
-<span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time, :math:`D_{t=T}`.</span>
+<span class="sd">        prev_data (torch.Tensor): most recent observation prior to sample time,</span>
+<span class="sd">            :math:`D_{t=0}`.</span>
+<span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time,</span>
+<span class="sd">            :math:`D_{t=T}`.</span>
 <span class="sd">        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.</span>
-<span class="sd">        step_data (float): length of time between the prior and subsequent observations, :math:`T`.</span>
+<span class="sd">        step_data (float): length of time between the prior and subsequent observations,</span>
+<span class="sd">            :math:`T`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.</span>
@@ -333,6 +461,7 @@
     <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interpolates by selecting the nearest state.</span>
 
@@ -344,10 +473,13 @@
 <span class="sd">        \end{cases}</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        prev_data (torch.Tensor): most recent observation prior to sample time, :math:`D_{t=0}`.</span>
-<span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time, :math:`D_{t=T}`.</span>
+<span class="sd">        prev_data (torch.Tensor): most recent observation prior to sample time,</span>
+<span class="sd">            :math:`D_{t=0}`.</span>
+<span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time,</span>
+<span class="sd">            :math:`D_{t=T}`.</span>
 <span class="sd">        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.</span>
-<span class="sd">        step_data (float): length of time between the prior and subsequent observations, :math:`T`.</span>
+<span class="sd">        step_data (float): length of time between the prior and subsequent observations,</span>
+<span class="sd">            :math:`T`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.</span>
@@ -363,6 +495,7 @@
     <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interpolates between previous and next states linearlly.</span>
 
@@ -370,10 +503,13 @@
 <span class="sd">        D_{t=s} = \frac{D_{t=T} - D_{t=0}}{T} s + D_{t=0}</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        prev_data (torch.Tensor): most recent observation prior to sample time, :math:`D_{t=0}`.</span>
-<span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time, :math:`D_{t=T}`.</span>
+<span class="sd">        prev_data (torch.Tensor): most recent observation prior to sample time,</span>
+<span class="sd">            :math:`D_{t=0}`.</span>
+<span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time,</span>
+<span class="sd">            :math:`D_{t=T}`.</span>
 <span class="sd">        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.</span>
-<span class="sd">        step_data (float): length of time between the prior and subsequent observations, :math:`T`.</span>
+<span class="sd">        step_data (float): length of time between the prior and subsequent observations,</span>
+<span class="sd">            :math:`T`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.</span>
@@ -390,6 +526,7 @@
     <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -399,10 +536,13 @@
 <span class="sd">        D_{t=s} = D_{t=0} \exp\left(-\frac{s}{\tau}\right)</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        prev_data (torch.Tensor): most recent observation prior to sample time, :math:`D_{t=0}`.</span>
-<span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time, :math:`D_{t=T}`.</span>
+<span class="sd">        prev_data (torch.Tensor): most recent observation prior to sample time,</span>
+<span class="sd">            :math:`D_{t=0}`.</span>
+<span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time,</span>
+<span class="sd">            :math:`D_{t=T}`.</span>
 <span class="sd">        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.</span>
-<span class="sd">        step_data (float): length of time between the prior and subsequent observations, :math:`T`.</span>
+<span class="sd">        step_data (float): length of time between the prior and subsequent observations,</span>
+<span class="sd">            :math:`T`.</span>
 <span class="sd">        time_constant (float): time constant of exponential decay, :math:`tau`.</span>
 
 <span class="sd">    Returns:</span>
@@ -410,28 +550,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">prev_data</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">sample_at</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span></div>
 
-
-
-<span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span>
-    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">dims</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Normalizes a tensor.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        data (torch.Tensor): data to normalize.</span>
-<span class="sd">        order (int | float): order of :math:`p`-norm by which to normalize.</span>
-<span class="sd">        scale (float | complex, optional): desired :math:`p`-norm of elements along specified dimensions.</span>
-<span class="sd">            Defaults to 1.0.</span>
-<span class="sd">        dims (int | tuple[int] | None, optional): dimensions along which to normalize,</span>
-<span class="sd">            all dimensions if None. Defaults to None.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: normalized tensor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">vector_norm</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
         </article>
       </div>

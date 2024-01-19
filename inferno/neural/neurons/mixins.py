@@ -47,7 +47,7 @@ class CurrentMixin:
     r"""Mixin for neurons with separate postsynaptic currents.
 
     Args:
-        data (torch.Tensor): initial currents, in :math:`\mathrm{nA}`.
+        data (torch.Tensor): initial currents, in :math:`\text{nA}`.
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
@@ -86,7 +86,7 @@ class VoltageMixin:
     r"""Mixin for neurons driven by membrane voltage.
 
     Args:
-        data (torch.Tensor): initial membrane voltages, in :math:`\mathrm{mV}`.
+        data (torch.Tensor): initial membrane voltages, in :math:`\text{mV}`.
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
@@ -125,7 +125,7 @@ class RefractoryMixin:
     r"""Mixin for neurons with refractory periods.
 
     Args:
-        refrac (torch.Tensor): initial refractory periods, in :math:`\mathrm{ms}`.
+        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
@@ -164,7 +164,7 @@ class SpikeRefractoryMixin(RefractoryMixin):
     r"""Mixin for neurons with refractory periods with spikes based off of them.
 
     Args:
-        refrac (torch.Tensor): initial refractory periods, in :math:`\mathrm{ms}`.
+        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
@@ -178,7 +178,7 @@ class SpikeRefractoryMixin(RefractoryMixin):
 
     Important:
         This must be added to a class which has an attribute named ``refrac_t``, which
-        represents the length of the absolute refractory period in :math:`\mathrm{ms}`.
+        represents the length of the absolute refractory period in :math:`\text{ms}`.
     """
 
     def __init__(self, refrac, requires_grad=False):
@@ -192,14 +192,14 @@ class SpikeRefractoryMixin(RefractoryMixin):
         .. math::
             f(t) =
             \begin{cases}
-                1, &t_\mathrm{refrac}(t) = \mathrm{ARP}
-                0, &\mathrm{otherwise}
+                1, &t_\text{refrac}(t) = \text{ARP}
+                0, &\text{otherwise}
             \end{cases}
 
         Where:
             * :math:`f_(t)` are the postsynaptic spikes.
-            * :math:`t_\mathrm{refrac}`(t) are the remaining refractory periods, in :math:`\mathrm{ms}`.
-            * :math:`\mathrm{ARP}` is the absolute refractory period, in :math:`\mathrm{ms}`.
+            * :math:`t_\text{refrac}`(t) are the remaining refractory periods, in :math:`\text{ms}`.
+            * :math:`\text{ARP}` is the absolute refractory period, in :math:`\text{ms}`.
 
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential
@@ -212,7 +212,7 @@ class CurrentSpikeRefractoryMixin(RefractoryMixin):
     r"""Mixin for neurons with refractory periods with spikes and currents based off of them.
 
     Args:
-        refrac (torch.Tensor): initial refractory periods, in :math:`\mathrm{ms}`.
+        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
 
@@ -226,9 +226,9 @@ class CurrentSpikeRefractoryMixin(RefractoryMixin):
 
     Important:
         This must be added to a class which has an attribute named ``refrac_t``, which
-        represents the length of the absolute refractory period in :math:`\mathrm{ms}`,
+        represents the length of the absolute refractory period in :math:`\text{ms}`,
         and an attribute named ``resistance`` which represents the membrane resistance
-        in in :math:`\mathrm{M\Omega}`.
+        in in :math:`\text{M\Omega}`.
     """
 
     def __init__(self, refrac, requires_grad=False):
@@ -240,11 +240,11 @@ class CurrentSpikeRefractoryMixin(RefractoryMixin):
         r"""Postsynaptic current in nanoamperes.
 
         .. math::
-            I_\mathrm{post}(t) = f(t) R_m
+            I_\text{post}(t) = f(t) R_m
 
         Where:
             * :math:`f_(t)` are the postsynaptic spikes.
-            * :math:`R_m` is the membrane resistance, in :math:`\mathrm{M\Omega}`.
+            * :math:`R_m` is the membrane resistance, in :math:`\text{M\Omega}`.
 
         Args:
             value (torch.Tensor): new postsynaptic currents.

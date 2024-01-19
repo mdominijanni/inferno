@@ -231,12 +231,12 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of synapses being simulated.</span>
-<span class="sd">        step_time (float): length of a simulation time step, in :math:`\mathrm{ms}`.</span>
-<span class="sd">        delay (float, optional): maximum supported delay, in :math:`\mathrm{ms}`.</span>
+<span class="sd">        step_time (float): length of a simulation time step, in :math:`\text{ms}`.</span>
+<span class="sd">        delay (float, optional): maximum supported delay, in :math:`\text{ms}`.</span>
 <span class="sd">        interp_mode (Literal[&quot;nearest&quot;, &quot;previous&quot;], optional): interpolation mode</span>
 <span class="sd">            for selectors between observations. Defaults to &quot;nearest&quot;.</span>
 <span class="sd">        interp_tol (float, optional): maximum difference in time from an observation</span>
-<span class="sd">            to treat as co-occurring, in :math:`\mathrm{ms}`. Defaults to 0.0.</span>
+<span class="sd">            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.</span>
 <span class="sd">        derive_spikes (bool, optional): if inputs will represent currents and spikes,</span>
 <span class="sd">            with spikes derived therefrom. Defaults to True.</span>
 <span class="sd">        current_overbound (float | None, optional): value to replace currents out of</span>
@@ -250,7 +250,7 @@
 
 <span class="sd">        The first input to :py:meth:`forward` will be assumed to be &quot;current-like&quot;</span>
 <span class="sd">        input (tensors of spikes will be treated as currents of 0 or 1</span>
-<span class="sd">        :math:`\mathrm{nA}`). The second input will be ignored.</span>
+<span class="sd">        :math:`\text{nA}`). The second input will be ignored.</span>
 
 <span class="sd">        The getter :py:attr:`spikes` will compute spikes as any nonzero currents,</span>
 <span class="sd">        therefore if using a model with subthreshold currents, this will be invalid.</span>
@@ -328,7 +328,7 @@
 <span class="sd">            interp_mode (Literal[&quot;nearest&quot;, &quot;previous&quot;], optional): interpolation mode</span>
 <span class="sd">                for selectors between observations. Defaults to &quot;nearest&quot;.</span>
 <span class="sd">            interp_tol (float, optional): maximum difference in time from an observation</span>
-<span class="sd">                to treat as co-occurring, in :math:`\mathrm{ms}`. Defaults to 0.0.</span>
+<span class="sd">                to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.</span>
 <span class="sd">            derive_spikes (bool, optional): if inputs will represent currents and</span>
 <span class="sd">                spikes, with spikes derived therefrom. Defaults to True.</span>
 <span class="sd">            current_overbound (float | None, optional): value to replace currents out of</span>

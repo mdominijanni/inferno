@@ -1,6 +1,6 @@
 ﻿trace\_cumulative\_scaled
 =========================
 
-.. currentmodule:: inferno
+.. currentmodule:: inferno.neural.functional
 
 .. autofunction:: trace_cumulative_scaled

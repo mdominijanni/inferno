@@ -6,7 +6,7 @@ STDP (spike timing-dependent plasticity) refers to a category of methods that im
 ## Spike Timing-Dependent Plasticity (STDP)
 ### Formulation
 $$
-\frac{dw}{dt} = A_+ x_\mathrm{pre} \cdot \delta(t - t^f_\mathrm{post}) - A_- x_\mathrm{post} \cdot \delta(t - t^f_\mathrm{pre})
+\frac{dw}{dt} = A_+ x_\text{pre} \cdot \delta(t - t^f_\text{post}) - A_- x_\text{post} \cdot \delta(t - t^f_\text{pre})
 $$
 
 With solution:
@@ -14,8 +14,8 @@ With solution:
 $$
 \Delta w_t =
 \begin{cases}
-    A_+ x_\mathrm{pre} &t = t^f_\mathrm{post} \\
-    -A_- x_\mathrm{post} &t = t^f_\mathrm{pre}
+    A_+ x_\text{pre} &t = t^f_\text{post} \\
+    -A_- x_\text{post} &t = t^f_\text{pre}
 \end{cases}
 $$
 
@@ -23,11 +23,11 @@ Where:
 - $\Delta w_t$, change in weight
 - $A_+$, update magnitude for long-term potentiation (LTP)
 - $A_-$, update magnitude for long-term depression (LTD)
-- $x_\mathrm{post}$, [spike trace](<guide/mathematics:trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\mathrm{post}$
-- $x_\mathrm{pre}$, [spike trace](<guide/mathematics:trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\mathrm{pre}$
+- $x_\text{post}$, [spike trace](<guide/mathematics:trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
+- $x_\text{pre}$, [spike trace](<guide/mathematics:trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
-- $t^f_\mathrm{post}$, time of the most recent postsynaptic spike
-- $t^f_\mathrm{pre}$, time of the most recent presynaptic spike
+- $t^f_\text{post}$, time of the most recent postsynaptic spike
+- $t^f_\text{pre}$, time of the most recent presynaptic spike
 - $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
 
 ## Delayed Spike Timing-Dependent Plasticity (Delayed STDP)
@@ -42,7 +42,7 @@ $$
 $$
 
 $$
-\Delta t_{pp} = t^f_\mathrm{post} - t^f_\mathrm{pre} - d_{pp}
+\Delta t_{pp} = t^f_\text{post} - t^f_\text{pre} - d_{pp}
 $$
 
 Where:
@@ -52,14 +52,14 @@ Where:
 - $\tau_+$, time constant for potentiation
 - $\tau_-$, time constant for depression
 - $\Delta t_{pp}$, adjusted time between neighboring post and presynaptic spikes
-- $t^f_\mathrm{post}$, time of the most recent postsynaptic spike
-- $t^f_\mathrm{pre}$, time of the most recent presynaptic spike
+- $t^f_\text{post}$, time of the most recent postsynaptic spike
+- $t^f_\text{pre}$, time of the most recent presynaptic spike
 - $d_{pp}$, length of the delay between input the neuron
 
 ## Anti-Hebbian Spike Timing-Dependent Plasticity (aSTDP)
 ### Formulation
 $$
-\frac{dw}{dt} = A_+ x_\mathrm{post} \cdot \delta(t - t^f_\mathrm{pre}) - A_- x_\mathrm{pre} \cdot \delta(t - t^f_\mathrm{post})
+\frac{dw}{dt} = A_+ x_\text{post} \cdot \delta(t - t^f_\text{pre}) - A_- x_\text{pre} \cdot \delta(t - t^f_\text{post})
 $$
 
 With solution:
@@ -67,8 +67,8 @@ With solution:
 $$
 \Delta w_t =
 \begin{cases}
-    A_+ x_\mathrm{post} &t = t^f_\mathrm{pre} \\
-    -A_- x_\mathrm{pre} &t = t^f_\mathrm{post}
+    A_+ x_\text{post} &t = t^f_\text{pre} \\
+    -A_- x_\text{pre} &t = t^f_\text{post}
 \end{cases}
 $$
 
@@ -76,11 +76,11 @@ Where:
 - $\Delta w_t$, change in weight
 - $A_+$, update magnitude for long-term potentiation (LTP)
 - $A_-$, update magnitude for long-term depression (LTD)
-- $x_\mathrm{post}$, [spike trace](<guide/mathematics:trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\mathrm{post}$
-- $x_\mathrm{pre}$, [spike trace](<guide/mathematics:trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\mathrm{pre}$
+- $x_\text{post}$, [spike trace](<guide/mathematics:trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
+- $x_\text{pre}$, [spike trace](<guide/mathematics:trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
-- $t^f_\mathrm{post}$, time of the most recent postsynaptic spike
-- $t^f_\mathrm{pre}$, time of the most recent presynaptic spike
+- $t^f_\text{post}$, time of the most recent postsynaptic spike
+- $t^f_\text{pre}$, time of the most recent presynaptic spike
 - $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
 
 ### Description
@@ -94,8 +94,8 @@ This flips the sign of the update magnitudes of [STDP](#spike-timing-dependent-p
 ### Formulation
 $$
 \begin{align*}
-    A_+(w) &= (w_\mathrm{max} - w)^{\mu_+}\eta_+ \\
-    A_-(w) &= (w - w_\mathrm{min})^{\mu_-}\eta_-
+    A_+(w) &= (w_\text{max} - w)^{\mu_+}\eta_+ \\
+    A_-(w) &= (w - w_\text{min})^{\mu_-}\eta_-
 \end{align*}
 $$
 
@@ -103,8 +103,8 @@ Where:
 - $A_+$, update magnitude for long-term potentiation (LTP)
 - $A_-$, update magnitude for long-term depression (LTD)
 - $w$, connection weight being updated
-- $w_\mathrm{max}$, upper bound for connection weight
-- $w_\mathrm{min}$, lower bound for connection weight
+- $w_\text{max}$, upper bound for connection weight
+- $w_\text{min}$, lower bound for connection weight
 - $\eta_+$, learning rate for LTP
 - $\eta_-$, learning rate for LTD
 - $\mu_+$, order for upper weight bound
@@ -117,8 +117,8 @@ This method penalizes weights that are out of specified bounds by applying a pen
 ### Formulation
 $$
 \begin{align*}
-    A_+(w) &= \Theta(w_\mathrm{max} - w)\eta_+ \\
-    A_-(w) &= \Theta(w - w_\mathrm{min})\eta_-
+    A_+(w) &= \Theta(w_\text{max} - w)\eta_+ \\
+    A_-(w) &= \Theta(w - w_\text{min})\eta_-
 \end{align*}
 $$
 
@@ -126,8 +126,8 @@ Where:
 - $A_+$, update magnitude for long-term potentiation (LTP)
 - $A_-$, update magnitude for long-term depression (LTD)
 - $w$, connection weight being updated
-- $w_\mathrm{max}$, upper bound for connection weight
-- $w_\mathrm{min}$, lower bound for connection weight
+- $w_\text{max}$, upper bound for connection weight
+- $w_\text{min}$, lower bound for connection weight
 - $\eta_+$, learning rate for LTP
 - $\eta_-$, learning rate for LTD
 - $\Theta$, [Heaviside step function](<guide/mathematics:Heaviside Step Function>)

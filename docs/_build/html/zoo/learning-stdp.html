@@ -228,7 +228,7 @@
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
-\frac{dw}{dt} = A_+ x_\mathrm{pre} \cdot \delta(t - t^f_\mathrm{post}) - A_- x_\mathrm{post} \cdot \delta(t - t^f_\mathrm{pre})
+\frac{dw}{dt} = A_+ x_\text{pre} \cdot \delta(t - t^f_\text{post}) - A_- x_\text{post} \cdot \delta(t - t^f_\text{pre})
 \]</div>
 </div>
 <p>With solution:</p>
@@ -237,8 +237,8 @@
 \[\begin{split}
 \Delta w_t =
 \begin{cases}
-    A_+ x_\mathrm{pre} &amp;t = t^f_\mathrm{post} \\
-    -A_- x_\mathrm{post} &amp;t = t^f_\mathrm{pre}
+    A_+ x_\text{pre} &amp;t = t^f_\text{post} \\
+    -A_- x_\text{post} &amp;t = t^f_\text{pre}
 \end{cases}
 \end{split}\]</div>
 </div>
@@ -247,11 +247,11 @@
 <li><p><span class="math notranslate nohighlight">\(\Delta w_t\)</span>, change in weight</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for long-term potentiation (LTP)</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for long-term depression (LTD)</p></li>
-<li><p><span class="math notranslate nohighlight">\(x_\mathrm{post}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\mathrm{post}\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(x_\mathrm{pre}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\mathrm{pre}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(x_\text{post}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(x_\text{pre}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span> is the current time step</p></li>
-<li><p><span class="math notranslate nohighlight">\(t^f_\mathrm{post}\)</span>, time of the most recent postsynaptic spike</p></li>
-<li><p><span class="math notranslate nohighlight">\(t^f_\mathrm{pre}\)</span>, time of the most recent presynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of the most recent postsynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of the most recent presynaptic spike</p></li>
 <li><p><span class="math notranslate nohighlight">\(\delta\)</span>, <a class="reference internal" href="../guide/mathematics.html#dirac-delta-function"><span class="std std-ref">Dirac delta function</span></a></p></li>
 </ul>
 </section>
@@ -274,7 +274,7 @@
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
-\Delta t_{pp} = t^f_\mathrm{post} - t^f_\mathrm{pre} - d_{pp}
+\Delta t_{pp} = t^f_\text{post} - t^f_\text{pre} - d_{pp}
 \]</div>
 </div>
 <p>Where:</p>
@@ -285,8 +285,8 @@
 <li><p><span class="math notranslate nohighlight">\(\tau_+\)</span>, time constant for potentiation</p></li>
 <li><p><span class="math notranslate nohighlight">\(\tau_-\)</span>, time constant for depression</p></li>
 <li><p><span class="math notranslate nohighlight">\(\Delta t_{pp}\)</span>, adjusted time between neighboring post and presynaptic spikes</p></li>
-<li><p><span class="math notranslate nohighlight">\(t^f_\mathrm{post}\)</span>, time of the most recent postsynaptic spike</p></li>
-<li><p><span class="math notranslate nohighlight">\(t^f_\mathrm{pre}\)</span>, time of the most recent presynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of the most recent postsynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of the most recent presynaptic spike</p></li>
 <li><p><span class="math notranslate nohighlight">\(d_{pp}\)</span>, length of the delay between input the neuron</p></li>
 </ul>
 </section>
@@ -298,7 +298,7 @@
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
-\frac{dw}{dt} = A_+ x_\mathrm{post} \cdot \delta(t - t^f_\mathrm{pre}) - A_- x_\mathrm{pre} \cdot \delta(t - t^f_\mathrm{post})
+\frac{dw}{dt} = A_+ x_\text{post} \cdot \delta(t - t^f_\text{pre}) - A_- x_\text{pre} \cdot \delta(t - t^f_\text{post})
 \]</div>
 </div>
 <p>With solution:</p>
@@ -307,8 +307,8 @@
 \[\begin{split}
 \Delta w_t =
 \begin{cases}
-    A_+ x_\mathrm{post} &amp;t = t^f_\mathrm{pre} \\
-    -A_- x_\mathrm{pre} &amp;t = t^f_\mathrm{post}
+    A_+ x_\text{post} &amp;t = t^f_\text{pre} \\
+    -A_- x_\text{pre} &amp;t = t^f_\text{post}
 \end{cases}
 \end{split}\]</div>
 </div>
@@ -317,11 +317,11 @@
 <li><p><span class="math notranslate nohighlight">\(\Delta w_t\)</span>, change in weight</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for long-term potentiation (LTP)</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for long-term depression (LTD)</p></li>
-<li><p><span class="math notranslate nohighlight">\(x_\mathrm{post}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\mathrm{post}\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(x_\mathrm{pre}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\mathrm{pre}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(x_\text{post}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(x_\text{pre}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span> is the current time step</p></li>
-<li><p><span class="math notranslate nohighlight">\(t^f_\mathrm{post}\)</span>, time of the most recent postsynaptic spike</p></li>
-<li><p><span class="math notranslate nohighlight">\(t^f_\mathrm{pre}\)</span>, time of the most recent presynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of the most recent postsynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of the most recent presynaptic spike</p></li>
 <li><p><span class="math notranslate nohighlight">\(\delta\)</span>, <a class="reference internal" href="../guide/mathematics.html#dirac-delta-function"><span class="std std-ref">Dirac delta function</span></a></p></li>
 </ul>
 </section>
@@ -344,8 +344,8 @@
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
-    A_+(w) &amp;= (w_\mathrm{max} - w)^{\mu_+}\eta_+ \\
-    A_-(w) &amp;= (w - w_\mathrm{min})^{\mu_-}\eta_-
+    A_+(w) &amp;= (w_\text{max} - w)^{\mu_+}\eta_+ \\
+    A_-(w) &amp;= (w - w_\text{min})^{\mu_-}\eta_-
 \end{align*}
 \end{split}\]</div>
 </div>
@@ -354,8 +354,8 @@
 <li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for long-term potentiation (LTP)</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for long-term depression (LTD)</p></li>
 <li><p><span class="math notranslate nohighlight">\(w\)</span>, connection weight being updated</p></li>
-<li><p><span class="math notranslate nohighlight">\(w_\mathrm{max}\)</span>, upper bound for connection weight</p></li>
-<li><p><span class="math notranslate nohighlight">\(w_\mathrm{min}\)</span>, lower bound for connection weight</p></li>
+<li><p><span class="math notranslate nohighlight">\(w_\text{max}\)</span>, upper bound for connection weight</p></li>
+<li><p><span class="math notranslate nohighlight">\(w_\text{min}\)</span>, lower bound for connection weight</p></li>
 <li><p><span class="math notranslate nohighlight">\(\eta_+\)</span>, learning rate for LTP</p></li>
 <li><p><span class="math notranslate nohighlight">\(\eta_-\)</span>, learning rate for LTD</p></li>
 <li><p><span class="math notranslate nohighlight">\(\mu_+\)</span>, order for upper weight bound</p></li>
@@ -375,8 +375,8 @@
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
-    A_+(w) &amp;= \Theta(w_\mathrm{max} - w)\eta_+ \\
-    A_-(w) &amp;= \Theta(w - w_\mathrm{min})\eta_-
+    A_+(w) &amp;= \Theta(w_\text{max} - w)\eta_+ \\
+    A_-(w) &amp;= \Theta(w - w_\text{min})\eta_-
 \end{align*}
 \end{split}\]</div>
 </div>
@@ -385,8 +385,8 @@
 <li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for long-term potentiation (LTP)</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for long-term depression (LTD)</p></li>
 <li><p><span class="math notranslate nohighlight">\(w\)</span>, connection weight being updated</p></li>
-<li><p><span class="math notranslate nohighlight">\(w_\mathrm{max}\)</span>, upper bound for connection weight</p></li>
-<li><p><span class="math notranslate nohighlight">\(w_\mathrm{min}\)</span>, lower bound for connection weight</p></li>
+<li><p><span class="math notranslate nohighlight">\(w_\text{max}\)</span>, upper bound for connection weight</p></li>
+<li><p><span class="math notranslate nohighlight">\(w_\text{min}\)</span>, lower bound for connection weight</p></li>
 <li><p><span class="math notranslate nohighlight">\(\eta_+\)</span>, learning rate for LTP</p></li>
 <li><p><span class="math notranslate nohighlight">\(\eta_-\)</span>, learning rate for LTD</p></li>
 <li><p><span class="math notranslate nohighlight">\(\Theta\)</span>, <a class="reference internal" href="../guide/mathematics.html#heaviside-step-function"><span class="std std-ref">Heaviside step function</span></a></p></li>

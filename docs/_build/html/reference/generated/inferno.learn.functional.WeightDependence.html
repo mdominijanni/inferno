@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="simple_exponential_smoothing" href="inferno.simple_exponential_smoothing.html" /><link rel="prev" title="trace_nearest_scaled" href="inferno.trace_nearest_scaled.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="wdep_hard_upper_bounding" href="inferno.learn.functional.wdep_hard_upper_bounding.html" /><link rel="prev" title="inferno.learn.functional" href="../learn-functional.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
-        <title>trace_cumulative_scaled - Inferno</title>
+        <title>WeightDependence - Inferno</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
@@ -215,46 +215,37 @@
           </label>
         </div>
         <article role="main">
-          <section id="trace-cumulative-scaled">
-<h1>trace_cumulative_scaled<a class="headerlink" href="#trace-cumulative-scaled" title="Link to this heading">#</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="inferno.trace_cumulative_scaled">
-<span class="sig-name descname"><span class="pre">trace_cumulative_scaled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><span class="pre">complex</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><span class="pre">complex</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">matchfn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.typing.OneToOne.html#inferno.typing.OneToOne" title="inferno.typing.functional.OneToOne"><span class="pre">OneToOne</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/common/series.html#trace_cumulative_scaled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.trace_cumulative_scaled" title="Link to this definition">#</a></dt>
-<dd><p>Performs a trace for a time step, considering all prior matches, scaled by the inputs.</p>
-<p>Similar to <a class="reference internal" href="inferno.trace_cumulative.html#inferno.trace_cumulative" title="inferno.trace_cumulative"><code class="xref py py-func docutils literal notranslate"><span class="pre">trace_cumulative()</span></code></a>, except rather than checking for a match, with or without
-some permitted tolerance, this requires the inputs to match some predicate function. Integration
-logic also permits the scaling of inputs to affect the trace value, in addition to the additive
-component.</p>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[\begin{split}x_{t + \Delta t} =
-\begin{cases}
-    a + Sf + x_t \exp (\Delta t / \tau) &amp;K(f_{t + \Delta t}) \\
-    x_t \exp (\Delta t / \tau) &amp;\text{otherwise}
-\end{cases}\end{split}\]</div>
-</div>
+          <section id="weightdependence">
+<h1>WeightDependence<a class="headerlink" href="#weightdependence" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="inferno.learn.functional.WeightDependence">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WeightDependence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/learn/functional/update.html#WeightDependence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.functional.WeightDependence" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
+<p>Callable used to apply weight dependence to amplitudes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>observation</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – latest state to consider for the trace, <span class="math notranslate nohighlight">\(f\)</span>.</p></li>
-<li><p><strong>trace</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – current value of the trace, <span class="math notranslate nohighlight">\(x\)</span>.</p></li>
-<li><p><strong>decay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – exponential decay for adaptations,
-<span class="math notranslate nohighlight">\(\exp\left(-\frac{\Delta t}{\tau_k}\right)\)</span>, unitless.</p></li>
-<li><p><strong>amplitude</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – value to add to trace to for matching elements, <span class="math notranslate nohighlight">\(a\)</span>.</p></li>
-<li><p><strong>scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – value to multiply matching inputs by for the trace, <span class="math notranslate nohighlight">\(S\)</span>.</p></li>
-<li><p><strong>matchfn</strong> (<a class="reference internal" href="inferno.typing.OneToOne.html#inferno.typing.OneToOne" title="inferno.typing.OneToOne"><em>OneToOne</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – test if the inputs are considered a match for the trace, <span class="math notranslate nohighlight">\(K\)</span>.</p></li>
+<li><p><strong>weights</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – model weights.</p></li>
+<li><p><strong>bound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – minimum or maximum value for weights.</p></li>
+<li><p><strong>amplitude</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – amplitude of the update without weight
+dependence (e.g. the learning rate).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>updated trace, incorporating the new observation.</p>
+<dd class="field-even"><p>weight-dependant update amplitudes.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The output of <code class="docutils literal notranslate"><span class="pre">matchfn</span></code> must have the datatype of <code class="docutils literal notranslate"><span class="pre">torch.bool</span></code> as it is used as a mask.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Provided weight dependence functions include
+<a class="reference internal" href="inferno.learn.functional.wdep_soft_upper_bounding.html#inferno.learn.functional.wdep_soft_upper_bounding" title="inferno.learn.functional.wdep_soft_upper_bounding"><code class="xref py py-func docutils literal notranslate"><span class="pre">wdep_soft_upper_bounding()</span></code></a>, <a class="reference internal" href="inferno.learn.functional.wdep_soft_lower_bounding.html#inferno.learn.functional.wdep_soft_lower_bounding" title="inferno.learn.functional.wdep_soft_lower_bounding"><code class="xref py py-func docutils literal notranslate"><span class="pre">wdep_soft_lower_bounding()</span></code></a>,
+<a class="reference internal" href="inferno.learn.functional.wdep_hard_upper_bounding.html#inferno.learn.functional.wdep_hard_upper_bounding" title="inferno.learn.functional.wdep_hard_upper_bounding"><code class="xref py py-func docutils literal notranslate"><span class="pre">wdep_hard_upper_bounding()</span></code></a>, and <a class="reference internal" href="inferno.learn.functional.wdep_hard_lower_bounding.html#inferno.learn.functional.wdep_hard_lower_bounding" title="inferno.learn.functional.wdep_hard_lower_bounding"><code class="xref py py-func docutils literal notranslate"><span class="pre">wdep_hard_lower_bounding()</span></code></a>.
+Some provided functions may require keyword arguments. For arguments which
+require an object of type <code class="docutils literal notranslate"><span class="pre">WeightDependence</span></code>,
+use a <a class="reference external" href="https://docs.python.org/3/library/functools.html#functools.partial" title="(in Python v3.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">partial()</span></code></a> function to fill in keyword arguments.</p>
 </div>
 </dd></dl>
 
@@ -265,23 +256,23 @@ component.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.simple_exponential_smoothing.html">
+          <a class="next-page" href="inferno.learn.functional.wdep_hard_upper_bounding.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">simple_exponential_smoothing</div>
+                <div class="title">wdep_hard_upper_bounding</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.trace_nearest_scaled.html">
+          <a class="prev-page" href="../learn-functional.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">trace_nearest_scaled</div>
+                <div class="title">inferno.learn.functional</div>
                 
               </div>
             </a>
@@ -315,8 +306,8 @@ component.</p>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">trace_cumulative_scaled</a><ul>
-<li><a class="reference internal" href="#inferno.trace_cumulative_scaled"><code class="docutils literal notranslate"><span class="pre">trace_cumulative_scaled()</span></code></a></li>
+<li><a class="reference internal" href="#">WeightDependence</a><ul>
+<li><a class="reference internal" href="#inferno.learn.functional.WeightDependence"><code class="docutils literal notranslate"><span class="pre">WeightDependence</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -333,7 +324,5 @@ component.</p>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../_static/design-tabs.js?v=36754332"></script>
-    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>

@@ -1,13 +1,15 @@
-from .stdp import (
-    hard_bounding_pot,
-    hard_bounding_dep,
-    soft_bounding_pot,
-    soft_bounding_dep,
+from .update import (
+    WeightDependence,
+    wdep_hard_upper_bounding,
+    wdep_hard_lower_bounding,
+    wdep_soft_upper_bounding,
+    wdep_soft_lower_bounding,
 )
 
 __all__ = [
-    "hard_bounding_pot",
-    "hard_bounding_dep",
-    "soft_bounding_pot",
-    "soft_bounding_dep",
+    "WeightDependence",
+    "wdep_hard_upper_bounding",
+    "wdep_hard_lower_bounding",
+    "wdep_soft_upper_bounding",
+    "wdep_soft_lower_bounding",
 ]

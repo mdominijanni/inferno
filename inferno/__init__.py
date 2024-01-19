@@ -9,20 +9,13 @@ from .common.infrastructure import (
 from .common.math import (
     exp,
     normalize,
+    simple_exponential_smoothing,
+    holt_linear_smoothing,
     Interpolation,
     interp_previous,
     interp_nearest,
     interp_linear,
     interp_exp_decay,
-)
-
-from .common.series import (
-    trace_nearest,
-    trace_cumulative,
-    trace_nearest_scaled,
-    trace_cumulative_scaled,
-    simple_exponential_smoothing,
-    holt_linear_smoothing,
 )
 
 from .common.tensor import (
@@ -45,10 +38,6 @@ __all__ = [
     "interp_nearest",
     "interp_linear",
     "interp_exp_decay",
-    "trace_nearest",
-    "trace_cumulative",
-    "trace_nearest_scaled",
-    "trace_cumulative_scaled",
     "simple_exponential_smoothing",
     "holt_linear_smoothing",
     "zeros",

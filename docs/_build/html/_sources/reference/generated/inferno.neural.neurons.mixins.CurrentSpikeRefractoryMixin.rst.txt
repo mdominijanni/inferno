@@ -1,0 +1,8 @@
+﻿CurrentSpikeRefractoryMixin
+===========================
+
+.. currentmodule:: inferno.neural.neurons.mixins
+
+.. autoclass:: CurrentSpikeRefractoryMixin
+    :members:
+    :show-inheritance:

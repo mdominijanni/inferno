@@ -17,50 +17,38 @@
     Hook
 ```
 
-## General
+## General Math
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
     :toctree: generated
 
     exp
+    simple_exponential_smoothing
+    holt_linear_smoothing
+```
+
+## Tensors
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
     zeros
     ones
     empty
     full
 ```
 
-## Interpolations
-```{eval-rst}
-.. autosummary::
-    :nosignatures:
-    :toctree: generated
-
-    interp_previous
-    interp_nearest
-    interp_linear
-    interp_exp_decay
-```
-
-## Recurrence Relations
-```{eval-rst}
-.. autosummary::
-    :nosignatures:
-    :toctree: generated
-
-    trace_nearest
-    trace_cumulative
-    trace_nearest_scaled
-    trace_cumulative_scaled
-    simple_exponential_smoothing
-    holt_linear_smoothing
-```
-
-## Types
+## Interpolation
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
     :toctree: generated
 
     Interpolation
+    interp_previous
+    interp_nearest
+    interp_linear
+    interp_exp_decay
 ```
