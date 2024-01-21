@@ -548,7 +548,8 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies a function to posthook arguments and passes the results to the reducer.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        reducer (Reducer): underlying means for reducing samples over time and storing them.</span>
+<span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
+<span class="sd">            and storing them.</span>
 <span class="sd">        mapping (Callable[[Module, tuple[Any, ...], Any], torch.Tensor]): function</span>
 <span class="sd">            applied to the hook arguments with output passed to the reducer.</span>
 <span class="sd">        module (Module, optional): module to register as the target for monitoring,</span>

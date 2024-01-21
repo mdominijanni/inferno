@@ -214,12 +214,12 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.infrastructure</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">rsetattr</span>
+<span></span><span class="kn">import</span> <span class="nn">attrs</span>
 <span class="kn">from</span> <span class="nn">.math</span> <span class="kn">import</span> <span class="n">Interpolation</span>
-<span class="kn">import</span> <span class="nn">attrs</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">rsetattr</span><span class="p">,</span> <span class="n">instance_of</span><span class="p">,</span> <span class="n">numeric_limit</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
@@ -233,12 +233,14 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;An extension of PyTorch&#39;s `Module</span>
 <span class="sd">    &lt;https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module&gt;`_ class.</span>
 
-<span class="sd">    This extends :py:class:`torch.nn.Module` so that &quot;extra state&quot; is handled in a way similar to regular</span>
-<span class="sd">    tensor state (e.g. buffers and parameters). This enables simple export/import to/from a state dictionary.</span>
+<span class="sd">    This extends :py:class:`torch.nn.Module` so that &quot;extra state&quot; is handled in a way</span>
+<span class="sd">    similar to regular tensor state (e.g. buffers and parameters). This enables simple</span>
+<span class="sd">    export/import to/from a state dictionary.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made to the parent</span>
-<span class="sd">        class before assignment on the child. This class&#39;s constructor will automatically call PyTorch&#39;s.</span>
+<span class="sd">        Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made</span>
+<span class="sd">        to the parent class before assignment on the child. This class&#39;s constructor</span>
+<span class="sd">        will automatically call PyTorch&#39;s.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -250,16 +252,22 @@
     <span class="k">def</span> <span class="nf">register_extra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds an extra variable to the module.</span>
 
-<span class="sd">        This is typically used in a manner to :py:meth:`~torch.nn.Module.register_buffer`, except that the value being</span>
+<span class="sd">        This is typically used in a manner to</span>
+<span class="sd">        :py:meth:`~torch.nn.Module.register_buffer`, except that the value being</span>
 <span class="sd">        registered is not limited to being a :py:class:`~torch.Tensor`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            name (str): name of the extra, which can be accessed from this module using the provided name.</span>
+<span class="sd">            name (str): name of the extra, which can be accessed from this module</span>
+<span class="sd">                using the provided name.</span>
 <span class="sd">            value (Any): extra to be registered.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            TypeError: if the extra variable being registered is an instance of :py:class:`torch.Tensor`</span>
-<span class="sd">                or :py:class:`torch.nn.Module`.</span>
+<span class="sd">            TypeError: if the extra variable being registered is an instance of</span>
+<span class="sd">                :py:class:`torch.Tensor` or :py:class:`torch.nn.Module`.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            :py:class:`~torch.Tensor` and :py:class:`~torch.nn.Module` objects cannot</span>
+<span class="sd">            be registered as extras and should be registered using existing methods.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
@@ -294,9 +302,9 @@
 <span class="sd">            Any: the extra referenced ``target``.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AttributeError: if the target string references an invalid path, the terminal module is</span>
-<span class="sd">                an instance of :py:class:`torch.nn.Module` but not :py:class:`Module`, or resolves to</span>
-<span class="sd">                something that is not an extra.</span>
+<span class="sd">            AttributeError: if the target string references an invalid path, the</span>
+<span class="sd">                terminal module is an instance of :py:class:`torch.nn.Module` but not</span>
+<span class="sd">                :py:class:`Module`, or resolves to something that is not an extra.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">module_path</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">extra_name</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
 
@@ -378,8 +386,8 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Class which provides unpacking functionality when used in conjunction with</span>
 <span class="sd">    the `attrs library &lt;https://www.attrs.org/en/stable/&gt;`_.</span>
 
-<span class="sd">    When defining configuration classes which are to be wrapped by :py:func:`attrs.define`, if</span>
-<span class="sd">    this is subclassed, then it can be unpacked with ``**``.</span>
+<span class="sd">    When defining configuration classes which are to be wrapped by</span>
+<span class="sd">    :py:func:`attrs.define`, if this is subclassed, then it can be unpacked with ``**``.</span>
 
 <span class="sd">    .. automethod:: _asadict_</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -390,14 +398,16 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Controls how the fields of this class are convereted into a dictionary.</span>
 
 <span class="sd">        This will flatten any nested :py:class:`Configuration` objects using their own</span>
-<span class="sd">        :py:meth:`_asadict_` method. If there are naming conflicts (i.e. if a nested configuration has)</span>
-<span class="sd">        a field with the same name, only one will be preserved. This can be overridden to change its behavior.</span>
+<span class="sd">        :py:meth:`_asadict_` method. If there are naming conflicts (i.e. if a nested</span>
+<span class="sd">        configuration has) a field with the same name, only one will be preserved.</span>
+<span class="sd">        This can be overridden to change its behavior.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict[str, Any]: dictionary of field names to the objects they represent.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This only packages those attributes which were registered via :py:func:`attrs.field`.</span>
+<span class="sd">            This only packages those attributes which were registered via</span>
+<span class="sd">            :py:func:`attrs.field`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">d</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">fields_dict</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
@@ -445,7 +455,14 @@
 
 <span class="sd">            hook(module, args) -&gt; None or modified input</span>
 
-<span class="sd">        See :py:meth:`torch.nn.Module.register_forward_pre_hook` for further information.</span>
+<span class="sd">        Or, if ``with_kwargs`` is passed as a keyword argument.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            hook(module, args, kwargs) -&gt; None or modified input</span>
+
+<span class="sd">        See :py:meth:`torch.nn.Module.register_forward_pre_hook` for</span>
+<span class="sd">        further information.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        If not None, the signature of the posthook must be of the following form.</span>
@@ -454,13 +471,20 @@
 
 <span class="sd">            hook(module, args, output) -&gt; None or modified output</span>
 
+<span class="sd">        Or, if ``with_kwargs`` is passed as a keyword argument.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            hook(module, args, kwargs, output) -&gt; None or modified output</span>
+
 <span class="sd">        See :py:meth:`torch.nn.Module.register_forward_hook` for further information.</span>
 
 
 <span class="sd">    Raises:</span>
 <span class="sd">        RuntimeError: at least one of ``prehook`` and ``posthook`` must not be None.</span>
 <span class="sd">        RuntimeError: at least one of ``train_update`` and ``eval_update`` must be True.</span>
-<span class="sd">        TypeError: if parameter ``module`` is not ``None``, then it must be an instance of :py:class:`torch.nn.Module`.</span>
+<span class="sd">        TypeError: if parameter ``module`` is not ``None``, then it must be an instance</span>
+<span class="sd">            of :py:class:`torch.nn.Module`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -477,13 +501,13 @@
         <span class="c1"># check if at least one callable is defined</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">prehook</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">posthook</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;at least one of `prehook` and `posthook` must not be None&quot;</span>
+                <span class="s2">&quot;at least one of `prehook` and `posthook` must not be None.&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># check if at least one update is true</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">train_update</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">eval_update</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;at least one of `train_update` and `eval_update` must be True&quot;</span>
+                <span class="s2">&quot;at least one of `train_update` and `eval_update` must be True.&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># set returned handle</span>
@@ -538,13 +562,13 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_posthook_fn</span> <span class="o">=</span> <span class="p">(</span>
                         <span class="k">lambda</span> <span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="kc">None</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">module</span><span class="o">.</span><span class="n">training</span>
-                        <span class="k">else</span> <span class="n">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+                        <span class="k">else</span> <span class="n">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
                     <span class="p">)</span>
                 <span class="k">if</span> <span class="n">eval_update</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_posthook_fn</span> <span class="o">=</span> <span class="p">(</span>
                         <span class="k">lambda</span> <span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="kc">None</span>
                         <span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">training</span>
-                        <span class="k">else</span> <span class="n">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+                        <span class="k">else</span> <span class="n">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
                     <span class="p">)</span>
             <span class="c1"># signature excludes kwargs</span>
             <span class="k">else</span><span class="p">:</span>
@@ -569,40 +593,44 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Automatically deregister on deconstruction.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Automatically deregister on deconstruction.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">deregister</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Hook.register">
 <a class="viewcode-back" href="../../reference/generated/inferno.Hook.html#inferno.Hook.register">[docs]</a>
     <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Registers the hook as a forward hook/prehook with specified :py:class:`torch.nn.Module`.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registers the hook as a forward hook/prehook with specified</span>
+<span class="sd">        :py:class:`~torch.nn.Module`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            module (nn.Module): PyTorch module to which the forward hook will be registered.</span>
+<span class="sd">            module (nn.Module): PyTorch module to which the forward hook</span>
+<span class="sd">                will be registered.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            TypeError: parameter ``module`` must be an instance of :py:class:`nn.Module`</span>
+<span class="sd">            TypeError: parameter ``module`` must be an instance of</span>
+<span class="sd">                :py:class:`torch.nn.Module`.</span>
 
 <span class="sd">        Warns:</span>
-<span class="sd">            RuntimeWarning: each :py:class:`Hook` can only be registered to one :py:class:`~torch.nn.Module`</span>
-<span class="sd">            and will ignore :py:meth:`register` if already registered.</span>
+<span class="sd">            RuntimeWarning: each :py:class:`Hook` can only be registered to one</span>
+<span class="sd">                :py:class:`~torch.nn.Module` and will ignore :py:meth:`register`</span>
+<span class="sd">                if already registered.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_handle</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posthook_handle</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;&#39;module&#39; parameter of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must be an instance of </span><span class="si">{</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
+            <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;`module`&quot;</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span>
+
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_fn</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_handle</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">register_forward_pre_hook</span><span class="p">(</span>
                     <span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_prehook_kwargs</span>
                 <span class="p">)</span>
+
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posthook_fn</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_posthook_handle</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">register_forward_hook</span><span class="p">(</span>
                     <span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_posthook_kwargs</span>
                 <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;this </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> object is already registered to an object so new register() was ignored&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;this </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> object is already registered to an object &quot;</span>
+                <span class="s2">&quot;so new `register()` was ignored&quot;</span><span class="p">,</span>
                 <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">,</span>
             <span class="p">)</span></div>
 
@@ -610,8 +638,8 @@
 <div class="viewcode-block" id="Hook.deregister">
 <a class="viewcode-back" href="../../reference/generated/inferno.Hook.html#inferno.Hook.deregister">[docs]</a>
     <span class="k">def</span> <span class="nf">deregister</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deregisters the hook as a forward hook/prehook from registered :py:class:`~torch.nn.Module`,</span>
-<span class="sd">        if it is already registered.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deregisters the hook as a forward hook/prehook from registered</span>
+<span class="sd">        :py:class:`~torch.nn.Module`, if it is already registered.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_handle</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_handle</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_handle</span> <span class="o">=</span> <span class="kc">None</span>
@@ -625,7 +653,7 @@
 <div class="viewcode-block" id="DimensionalModule">
 <a class="viewcode-back" href="../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule">[docs]</a>
 <span class="k">class</span> <span class="nc">DimensionalModule</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Module with support for dimensionally constrained buffers and parameters.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Module with support for dimensionally constrained buffers and parameters.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        constraints (tuple[int, int]): tuple of (dim, size) dimensional constraints for</span>
@@ -636,9 +664,9 @@
 <span class="sd">        RuntimeError: no two constraints may share a dimension.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        Each argument must be a 2-tuple of integers, where the first element is the dimension to</span>
-<span class="sd">        which a constraint is applied and the second is the size of that dimension. Dimensions can</span>
-<span class="sd">        be negative.</span>
+<span class="sd">        Each argument must be a 2-tuple of integers, where the first element is the</span>
+<span class="sd">        dimension to which a constraint is applied and the second is the size of that</span>
+<span class="sd">        dimension. Dimensions can be negative.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -662,17 +690,34 @@
             <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;constraint </span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s2"> specifies an invalid (non-positive) number of elements.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;constraint </span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s2"> specifies an invalid (non-positive) &quot;</span>
+                    <span class="s2">&quot;number of elements.&quot;</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;constraint </span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s2"> conflicts with constraint </span><span class="si">{</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;constraint </span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s2"> conflicts with constraint &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span>
                 <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_mindims</span><span class="p">(</span><span class="n">constraints</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes minimum number of required dimensions for a constrained tensor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            constraints (dict[int, int]): constraint dictionary of (dim, size).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: minimum required number of dimensions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">maxc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+        <span class="n">minc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">maxc</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">maxc</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">minc</span> <span class="k">if</span> <span class="n">minc</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+
     <span class="nd">@cached_property</span>
     <span class="k">def</span> <span class="nf">constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the constraint dictionary, sorted by dimension.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the constraint dictionary, sorted by dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict[int, int]: active constraints, represented as a dictionary.</span>
@@ -690,7 +735,7 @@
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span> <span class="nf">constraints_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a string representation of constraints.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a string representation of constraints.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            str: active constraints, represented as a string.</span>
@@ -739,6 +784,15 @@
 
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">elems</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mindims</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Minimum number of constrained dimensions for constrained tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: minimum required number of dimensions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mindims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+
 <div class="viewcode-block" id="DimensionalModule.compatible">
 <a class="viewcode-back" href="../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.compatible">[docs]</a>
     <span class="k">def</span> <span class="nf">compatible</span><span class="p">(</span>
@@ -748,22 +802,14 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): tensor to test.</span>
-<span class="sd">            constraints (dict[int, int] | None, optional): constraint dictionary to test with,</span>
-<span class="sd">                uses current constraints if None. Defaults to None.</span>
+<span class="sd">            constraints (dict[int, int] | None, optional): constraint dictionary to</span>
+<span class="sd">                test with, uses current constraints if None. Defaults to None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if the tensor is compatible.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># select constraints</span>
-        <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span>
-
-        <span class="c1"># compute necessary minimum number of dimensions</span>
-        <span class="n">maxc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
-        <span class="n">minc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
-
         <span class="c1"># check if value has fewer than minimum required number of dimensions</span>
-        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">maxc</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">maxc</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">minc</span> <span class="k">if</span> <span class="n">minc</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mindims</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># check if constraints are met</span>
@@ -785,8 +831,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            shape (tuple[int]): shape to make compatible</span>
-<span class="sd">            constraints (dict[int, int] | None, optional): constraint dictionary to test with,</span>
-<span class="sd">                uses current constraints if None. Defaults to None.</span>
+<span class="sd">            constraints (dict[int, int] | None, optional): constraint dictionary</span>
+<span class="sd">                to test with, uses current constraints if None. Defaults to None.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            RuntimeError: dimensionality of shape is insufficient.</span>
@@ -800,14 +846,12 @@
             <span class="n">constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span>
 
         <span class="c1"># ensure shape is of sufficient dimensionality</span>
-        <span class="n">maxc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
-        <span class="n">minc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
-        <span class="n">req_ndims</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxc</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">maxc</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">minc</span> <span class="k">if</span> <span class="n">minc</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">req_ndims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mindims</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">req_ndims</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;shape </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> with dimensionality </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> cannot be made compatible, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;requires a minimum dimensionality of </span><span class="si">{</span><span class="n">req_ndims</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;`shape` </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> with dimensionality </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> cannot be made &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;compatible, requires a minimum dimensionality of </span><span class="si">{</span><span class="n">req_ndims</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># create new shape</span>
@@ -815,7 +859,7 @@
         <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">constraints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;shape </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> cannot contain non-positive sized dimensions.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;`shape` </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> cannot contain non-positive sized dimensions.&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">new_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
@@ -824,17 +868,22 @@
 
 <div class="viewcode-block" id="DimensionalModule.reconstrain">
 <a class="viewcode-back" href="../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.reconstrain">[docs]</a>
-    <span class="k">def</span> <span class="nf">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Edits existing constraints and reshapes constrained buffers and parameters accordingly.</span>
+    <span class="k">def</span> <span class="nf">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Edits existing constraints and reshapes constrained buffers and parameters</span>
+<span class="sd">        accordingly.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            dim (int): dimension to which a constraint should be added, removed, or modified.</span>
-<span class="sd">            size (int | None): size of the new constraint, or None if the constraint should be removed.</span>
+<span class="sd">            dim (int): dimension to which a constraint should be added, removed,</span>
+<span class="sd">                or modified.</span>
+<span class="sd">            size (int | None): size of the new constraint, or None if the constraint</span>
+<span class="sd">                should be removed.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            RuntimeError: constrained buffer or parameter had its shape modified externally and is no longer compatible.</span>
+<span class="sd">            RuntimeError: constrained buffer or parameter had its shape modified</span>
+<span class="sd">                externally and is no longer compatible.</span>
 <span class="sd">            ValueError: size must specify a positive number of elements.</span>
-<span class="sd">            RuntimeError: added constraint is incompatible with existing buffer or parameter.</span>
+<span class="sd">            RuntimeError: added constraint is incompatible with existing buffer or</span>
+<span class="sd">                parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># delete cache for constraint properties</span>
         <span class="k">try</span><span class="p">:</span>
@@ -911,7 +960,8 @@
                     <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">)</span>
                 <span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;constraint cannot be added, incompatible with parameter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;constraint cannot be added, incompatible with &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;parameter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span>
                     <span class="p">)</span>
 
             <span class="c1"># add new constraint</span>
@@ -987,19 +1037,18 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Registers an existing buffer or parameter as constrained.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            name (str): fully-qualified string name of the buffer or parameter to register.</span>
+<span class="sd">            name (str): fully-qualified string name of the buffer or</span>
+<span class="sd">                parameter to register.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            RuntimeError: dimension of attribute does not match constraint.</span>
 <span class="sd">            AttributeError: attribute is not a registered buffer or parameter.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            Registered parameters of type ``None`` cannot be constrained.</span>
+<span class="sd">            Registered parameters of type None cannot be constrained.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># calculate required number of dimensions</span>
-        <span class="n">maxc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span>
-        <span class="n">minc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span>
-        <span class="n">req_ndims</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxc</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">maxc</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">minc</span> <span class="k">if</span> <span class="n">minc</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">req_ndims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mindims</span>
 
         <span class="c1"># attempts to register buffer</span>
         <span class="k">try</span><span class="p">:</span>
@@ -1013,9 +1062,10 @@
                 <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
             <span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;buffer </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> has shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">buffer</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;buffer &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">buffer</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;incompatible with constrained shape </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints_repr</span><span class="si">}</span><span class="s2">, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;dimensions must match and must have at least </span><span class="si">{</span><span class="n">req_ndims</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
+                    <span class="s2">&quot;dimensions must match and must have at least &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">req_ndims</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -1029,16 +1079,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">param</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">param</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;parameter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> has shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;parameter &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;incompatible with constrained shape </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints_repr</span><span class="si">}</span><span class="s2">, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;dimensions must match and must have at least </span><span class="si">{</span><span class="n">req_ndims</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;dimensions must match and must have at least &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">req_ndims</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_parameters</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a registered buffer or parameter.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;`name` &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; does not specify a registered buffer or parameter.&quot;</span>
         <span class="p">)</span></div>
 
 
@@ -1048,7 +1099,8 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deregisters a buffer or parameter as constrained.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            name (str): fully-qualified string name of the buffer or parameter to register.</span>
+<span class="sd">            name (str): fully-qualified string name of the buffer or</span>
+<span class="sd">                parameter to register.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># remove if in buffers</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span><span class="p">:</span>
@@ -1081,14 +1133,8 @@
         <span class="n">history_len</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># ensure valid step time and history length parameters</span>
-        <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">history_len</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">step_time</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;step time must be positive, received </span><span class="si">{</span><span class="n">step_time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">history_len</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;history length must be non-negative, received </span><span class="si">{</span><span class="n">history_len</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+        <span class="n">step_time</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`step_time`&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="n">history_len</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`history_len`&quot;</span><span class="p">,</span> <span class="n">history_len</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
         <span class="c1"># calculate size of time dimension</span>
         <span class="n">history_size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">history_len</span> <span class="o">/</span> <span class="n">step_time</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
@@ -1190,7 +1236,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_pointer</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pointer</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">hsize</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> has not correctly been registered as a constrained attribute, call ignored.&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has not correctly been registered as a constrained &quot;</span>
+                <span class="s2">&quot;attribute, call ignored.&quot;</span><span class="p">,</span>
                 <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">,</span>
             <span class="p">)</span></div>
 
@@ -1248,47 +1295,64 @@
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the attribute to target.</span>
 <span class="sd">            time (float | torch.Tensor): time before present to select from.</span>
-<span class="sd">            interpolation (Interpolate): method to interpolate between discrete time steps.</span>
-<span class="sd">            tolerance (float, optional): maximum difference in time from a discrete sample to</span>
-<span class="sd">                consider it at the same time as that sample. Defaults to 1e-7.</span>
-<span class="sd">            offset (int, optional): window index offset, number of :py:meth:`tick` calls back. Defaults to 1.</span>
+<span class="sd">            interpolation (Interpolate): method to interpolate between discrete</span>
+<span class="sd">                time steps.</span>
+<span class="sd">            tolerance (float, optional): maximum difference in time from a discrete</span>
+<span class="sd">                sample to onsider it at the same time as that sample. Defaults to 1e-7.</span>
+<span class="sd">            offset (int, optional): window index offset, number of :py:meth:`tick`</span>
+<span class="sd">                calls back. Defaults to 1.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: interpolated tensor selected at a prior time.</span>
 
-<span class="sd">        Shape:</span>
-<span class="sd">            ``time``: `broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_</span>
-<span class="sd">            with :math:`N_0 \times \cdots \times [D]`, where :math:`N_0 \times \cdots` is the</span>
-<span class="sd">            underlying shape, and :math:`D` is the number of delay selectors.</span>
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
 
-<span class="sd">            **outputs**:</span>
-<span class="sd">            :math:`N_0 \times \cdots` \times [D]`, where :math:`D` is only included if</span>
-<span class="sd">            it was in ``time``.</span>
+<span class="sd">            ``time``:</span>
 
-<span class="sd">        Note:</span>
-<span class="sd">            By default, `offset` is set to `1`. This is the correct configuration to use under normal</span>
-<span class="sd">            circumstances where :py:meth:`pushto` is used for element insertion. Also this is useful for</span>
-<span class="sd">            when :py:meth:`tick` is called after a call to :py:meth:`insert` and before :py:meth:`select`.</span>
-<span class="sd">            This should be set to `0` if :py:meth:`tick` has not been called since the last :py:meth:`insert`.</span>
+<span class="sd">            :math:`N_0 \times \cdots \times [D]</span>
 
-<span class="sd">        Note:</span>
-<span class="sd">            The argument `interpolate` is a function which takes in five arguments, as follows.</span>
+<span class="sd">            ``return``:</span>
 
-<span class="sd">                - tensor: nearest observed state before the selected time.</span>
-<span class="sd">                - tensor: nearest observed state after the selected time.</span>
-<span class="sd">                - tensor: time after the &quot;before state&quot; for which results should be produced.</span>
-<span class="sd">                - float: difference in time between the before and after state.</span>
+<span class="sd">            :math:`N_0 \times \cdots \times [D]</span>
 
-<span class="sd">            It must return a tensor of values interpolated between the samples at the two times.</span>
-<span class="sd">            Some functions which meet the :py:class:`Interpolation` type are included in the library.</span>
+<span class="sd">            Where:</span>
+<span class="sd">                * :math:`N_0, \ldots` are the dimensions of the constrained tensor.</span>
+<span class="sd">                * :math:`D` is the number of times for each value to select.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            If ``time`` is an scalar and is within tolerance of an integer index, then</span>
+<span class="sd">            The constraints on the shape of ``time`` are not enforced, and follows</span>
+<span class="sd">            the underlying logic of :py:func:`torch.gather`.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            By default, `offset` is set to `1`. This is the correct configuration to</span>
+<span class="sd">            use under normal circumstances where :py:meth:`pushto` is used for element</span>
+<span class="sd">            insertion. Also this is useful for when :py:meth:`tick` is called after a</span>
+<span class="sd">            call to :py:meth:`insert` and before :py:meth:`select`. This should be set</span>
+<span class="sd">            to `0` if :py:meth:`tick` has not been called since the last</span>
+<span class="sd">            :py:meth:`insert`.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The argument `interpolate` is a function which takes in four</span>
+<span class="sd">            arguments, as follows.</span>
+
+<span class="sd">                * tensor: nearest observed state before the selected time.</span>
+<span class="sd">                * tensor: nearest observed state after the selected time.</span>
+<span class="sd">                * tensor: time after the &quot;before state&quot; for which results should be produced.</span>
+<span class="sd">                * float: difference in time between the before and after state.</span>
+
+<span class="sd">            It must return a tensor of values interpolated between the samples</span>
+<span class="sd">            at the two times. Some functions which meet the :py:class:`Interpolation`</span>
+<span class="sd">            type are included in the library.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            If ``time`` is a scalar and is within tolerance of an integer index, then</span>
 <span class="sd">            a slice will be returned without ever attempting interpolation.</span>
 
-<span class="sd">            If ``time`` is a tensor, interpolation will be called regardless, and ``select_at``</span>
-<span class="sd">            will be altered to either ``0`` or :py:attr:`self.dt`. Interpolation results are</span>
-<span class="sd">            then overwritten with exact values before returning.</span>
+<span class="sd">            If ``time`` is a tensor, interpolation will be called regardless, and</span>
+<span class="sd">            the time passed into the interpolation call will be set to either ``0``</span>
+<span class="sd">            or :py:attr:`self.dt`. Interpolation results are then overwritten with</span>
+<span class="sd">            exact values before returning.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># access underlying buffer or parameter</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span><span class="p">:</span>
@@ -1368,18 +1432,19 @@
                 <span class="n">squeeze_res</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;time has incompatible number of dimensions </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;must have number of dimensions equal to </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;`time` has incompatible number of dimensions </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="s2">&quot;must have number of dimensions equal to &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">.&quot;</span>
                 <span class="p">)</span>
 
             <span class="c1"># check that time values are in valid range</span>
             <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">time</span> <span class="o">+</span> <span class="n">tolerance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;time must only be non-negative, received </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">amin</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;`time` must only be non-negative, received </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">amin</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">time</span> <span class="o">-</span> <span class="n">tolerance</span> <span class="o">&gt;</span> <span class="n">tmax</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;time must never exceed </span><span class="si">{</span><span class="n">tmax</span><span class="si">}</span><span class="s2">, received </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">amax</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;`time` must never exceed </span><span class="si">{</span><span class="n">tmax</span><span class="si">}</span><span class="s2">, received </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">amax</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
                 <span class="p">)</span>
 
             <span class="c1"># convert time into continuous indices</span>
@@ -1436,25 +1501,28 @@
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span><span class="p">:</span>
             <span class="n">buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_buffer</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">buffer</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">buffer</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cannot reset </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, buffer is uninitialized.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cannot reset &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;, buffer is uninitialized.&quot;</span><span class="p">)</span>
             <span class="n">buffer</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_pointer</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_parameters</span><span class="p">:</span>
             <span class="n">param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">param</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">param</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cannot reset </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, parameter is uninitialized.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;cannot reset &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;, parameter is uninitialized.&quot;</span>
+                <span class="p">)</span>
             <span class="n">param</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_pointer</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a constrained buffer or parameter.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;`name` </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a constrained buffer or parameter.&quot;</span>
             <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="HistoryModule.pushto">
 <a class="viewcode-back" href="../../reference/generated/inferno.HistoryModule.html#inferno.HistoryModule.pushto">[docs]</a>
     <span class="k">def</span> <span class="nf">pushto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Inserts a slice at the current time into a constrained attribute and advances to the next time.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Inserts a slice at the current time into a constrained attribute and</span>
+<span class="sd">        advances to the next time.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the attribute to target.</span>
@@ -1471,8 +1539,8 @@
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cannot push to </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, buffer is uninitialized.&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">buffer</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;data has a shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;required shape is </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">buffer</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;`data` has a shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;required shape is </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">buffer</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
                 <span class="p">)</span>
             <span class="n">buffer</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pointer</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span> <span class="o">=</span> <span class="n">data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tick</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -1480,18 +1548,18 @@
             <span class="n">param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">param</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;cannot push to </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, parameter is uninitialized.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;cannot push to &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;, parameter is uninitialized.&quot;</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">param</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;data has a shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;required shape is </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;`data` has a shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;required shape is </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
                 <span class="p">)</span>
             <span class="n">param</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pointer</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span> <span class="o">=</span> <span class="n">data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tick</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a constrained buffer or parameter.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;`name` </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a constrained buffer or parameter.&quot;</span>
             <span class="p">)</span></div>
 
 
@@ -1503,7 +1571,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the attribute to target.</span>
 <span class="sd">            data (torch.Tensor): data to insert into history.</span>
-<span class="sd">            offset (int, optional): number of steps before present to update. Defaults to 0.</span>
+<span class="sd">            offset (int, optional): number of steps before present to update.</span>
+<span class="sd">                Defaults to 0.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># access underlying buffer or parameter</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span><span class="p">:</span>
@@ -1512,7 +1581,7 @@
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a constrained buffer or parameter.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;`name` </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a constrained buffer or parameter.&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># insert new time slice</span>
@@ -1527,7 +1596,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the attribute to target.</span>
-<span class="sd">            offset (int, optional): window index offset, number of :py:meth:`tick` calls back. Defaults to 1.</span>
+<span class="sd">            offset (int, optional): window index offset, number of :py:meth:`tick`</span>
+<span class="sd">                calls back. Defaults to 1.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AttributeError: specified name is not a constrained buffer or parameter.</span>
@@ -1536,10 +1606,12 @@
 <span class="sd">            torch.Tensor: most recent slice of the tensor selected.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            By default, `offset` is set to `1`. This is the correct configuration to use under normal</span>
-<span class="sd">            circumstances where :py:meth:`pushto` is used for element insertion. Also this is useful for</span>
-<span class="sd">            when :py:meth:`tick` is called after a call to :py:meth:`insert` and before :py:meth:`select`.</span>
-<span class="sd">            This should be set to `0` if :py:meth:`tick` has not been called since the last :py:meth:`insert`.</span>
+<span class="sd">            By default, `offset` is set to `1`. This is the correct configuration to</span>
+<span class="sd">            use under normal circumstances where :py:meth:`pushto` is used for element</span>
+<span class="sd">            insertion. Also this is useful for when :py:meth:`tick` is called after a</span>
+<span class="sd">            call to :py:meth:`insert` and before :py:meth:`select`. This should be set</span>
+<span class="sd">            to `0` if :py:meth:`tick` has not been called since the last</span>
+<span class="sd">            :py:meth:`insert`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># access underlying buffer or parameter</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span><span class="p">:</span>
@@ -1548,7 +1620,7 @@
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a constrained buffer or parameter.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;`name` </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a constrained buffer or parameter.&quot;</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pointer</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">-</span> <span class="n">offset</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">hsize</span><span class="p">]</span></div>
@@ -1561,8 +1633,10 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the attribute to target.</span>
-<span class="sd">            offset (int, optional): window index offset, number of :py:meth:`tick` calls back. Defaults to 1.</span>
-<span class="sd">            latest_first (bool, optional): if the most recent sample should be at the zeroth index. Defaults to False.</span>
+<span class="sd">            offset (int, optional): window index offset, number of :py:meth:`tick`</span>
+<span class="sd">                calls back. Defaults to 1.</span>
+<span class="sd">            latest_first (bool, optional): if the most recent sample should be at the</span>
+<span class="sd">                zeroth index. Defaults to False.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: value of the attribute at every observed time.</span>
@@ -1574,7 +1648,7 @@
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a constrained buffer or parameter.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;`name` </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> does not specify a constrained buffer or parameter.&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># sorted latest last</span>

@@ -1,9 +1,9 @@
-from inferno._internal import rsetattr
-from .math import Interpolation
 import attrs
+from .math import Interpolation
 from collections import OrderedDict
 from collections.abc import Mapping
 from functools import cached_property
+from inferno._internal import rsetattr, instance_of, numeric_limit
 import math
 import torch
 import torch.nn as nn
@@ -15,12 +15,14 @@ class Module(nn.Module):
     r"""An extension of PyTorch's `Module
     <https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module>`_ class.
 
-    This extends :py:class:`torch.nn.Module` so that "extra state" is handled in a way similar to regular
-    tensor state (e.g. buffers and parameters). This enables simple export/import to/from a state dictionary.
+    This extends :py:class:`torch.nn.Module` so that "extra state" is handled in a way
+    similar to regular tensor state (e.g. buffers and parameters). This enables simple
+    export/import to/from a state dictionary.
 
     Note:
-        Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made to the parent
-        class before assignment on the child. This class's constructor will automatically call PyTorch's.
+        Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made
+        to the parent class before assignment on the child. This class's constructor
+        will automatically call PyTorch's.
     """
 
     def __init__(self, *args, **kwargs):
@@ -30,16 +32,22 @@ class Module(nn.Module):
     def register_extra(self, name: str, value: Any):
         r"""Adds an extra variable to the module.
 
-        This is typically used in a manner to :py:meth:`~torch.nn.Module.register_buffer`, except that the value being
+        This is typically used in a manner to
+        :py:meth:`~torch.nn.Module.register_buffer`, except that the value being
         registered is not limited to being a :py:class:`~torch.Tensor`.
 
         Args:
-            name (str): name of the extra, which can be accessed from this module using the provided name.
+            name (str): name of the extra, which can be accessed from this module
+                using the provided name.
             value (Any): extra to be registered.
 
         Raises:
-            TypeError: if the extra variable being registered is an instance of :py:class:`torch.Tensor`
-                or :py:class:`torch.nn.Module`.
+            TypeError: if the extra variable being registered is an instance of
+                :py:class:`torch.Tensor` or :py:class:`torch.nn.Module`.
+
+        Note:
+            :py:class:`~torch.Tensor` and :py:class:`~torch.nn.Module` objects cannot
+            be registered as extras and should be registered using existing methods.
         """
         if not isinstance(name, str):
             raise TypeError(
@@ -71,9 +79,9 @@ class Module(nn.Module):
             Any: the extra referenced ``target``.
 
         Raises:
-            AttributeError: if the target string references an invalid path, the terminal module is
-                an instance of :py:class:`torch.nn.Module` but not :py:class:`Module`, or resolves to
-                something that is not an extra.
+            AttributeError: if the target string references an invalid path, the
+                terminal module is an instance of :py:class:`torch.nn.Module` but not
+                :py:class:`Module`, or resolves to something that is not an extra.
         """
         module_path, _, extra_name = target.rpartition(".")
 
@@ -145,8 +153,8 @@ class Configuration(Mapping):
     r"""Class which provides unpacking functionality when used in conjunction with
     the `attrs library <https://www.attrs.org/en/stable/>`_.
 
-    When defining configuration classes which are to be wrapped by :py:func:`attrs.define`, if
-    this is subclassed, then it can be unpacked with ``**``.
+    When defining configuration classes which are to be wrapped by
+    :py:func:`attrs.define`, if this is subclassed, then it can be unpacked with ``**``.
 
     .. automethod:: _asadict_
     """
@@ -155,14 +163,16 @@ class Configuration(Mapping):
         r"""Controls how the fields of this class are convereted into a dictionary.
 
         This will flatten any nested :py:class:`Configuration` objects using their own
-        :py:meth:`_asadict_` method. If there are naming conflicts (i.e. if a nested configuration has)
-        a field with the same name, only one will be preserved. This can be overridden to change its behavior.
+        :py:meth:`_asadict_` method. If there are naming conflicts (i.e. if a nested
+        configuration has) a field with the same name, only one will be preserved.
+        This can be overridden to change its behavior.
 
         Returns:
             dict[str, Any]: dictionary of field names to the objects they represent.
 
         Note:
-            This only packages those attributes which were registered via :py:func:`attrs.field`.
+            This only packages those attributes which were registered via
+            :py:func:`attrs.field`.
         """
         d = []
         for k in attrs.fields_dict(type(self)):
@@ -206,7 +216,14 @@ class Hook:
 
             hook(module, args) -> None or modified input
 
-        See :py:meth:`torch.nn.Module.register_forward_pre_hook` for further information.
+        Or, if ``with_kwargs`` is passed as a keyword argument.
+
+        .. code-block:: python
+
+            hook(module, args, kwargs) -> None or modified input
+
+        See :py:meth:`torch.nn.Module.register_forward_pre_hook` for
+        further information.
 
     Note:
         If not None, the signature of the posthook must be of the following form.
@@ -215,13 +232,20 @@ class Hook:
 
             hook(module, args, output) -> None or modified output
 
+        Or, if ``with_kwargs`` is passed as a keyword argument.
+
+        .. code-block:: python
+
+            hook(module, args, kwargs, output) -> None or modified output
+
         See :py:meth:`torch.nn.Module.register_forward_hook` for further information.
 
 
     Raises:
         RuntimeError: at least one of ``prehook`` and ``posthook`` must not be None.
         RuntimeError: at least one of ``train_update`` and ``eval_update`` must be True.
-        TypeError: if parameter ``module`` is not ``None``, then it must be an instance of :py:class:`torch.nn.Module`.
+        TypeError: if parameter ``module`` is not ``None``, then it must be an instance
+            of :py:class:`torch.nn.Module`.
     """
 
     def __init__(
@@ -238,13 +262,13 @@ class Hook:
         # check if at least one callable is defined
         if not prehook and not posthook:
             raise RuntimeError(
-                "at least one of `prehook` and `posthook` must not be None"
+                "at least one of `prehook` and `posthook` must not be None."
             )
 
         # check if at least one update is true
         if not train_update and not eval_update:
             raise RuntimeError(
-                "at least one of `train_update` and `eval_update` must be True"
+                "at least one of `train_update` and `eval_update` must be True."
             )
 
         # set returned handle
@@ -299,13 +323,13 @@ class Hook:
                     self._posthook_fn = (
                         lambda module, args, kwargs, output: None
                         if not module.training
-                        else posthook(module, args, output, kwargs)
+                        else posthook(module, args, kwargs.output)
                     )
                 if eval_update:
                     self._posthook_fn = (
                         lambda module, args, kwargs, output: None
                         if module.training
-                        else posthook(module, args, output, kwargs)
+                        else posthook(module, args, kwargs, output)
                     )
             # signature excludes kwargs
             else:
@@ -330,44 +354,48 @@ class Hook:
             self.register(module)
 
     def __del__(self) -> None:
-        """Automatically deregister on deconstruction."""
+        r"""Automatically deregister on deconstruction."""
         return self.deregister()
 
     def register(self, module: nn.Module) -> None:
-        """Registers the hook as a forward hook/prehook with specified :py:class:`torch.nn.Module`.
+        r"""Registers the hook as a forward hook/prehook with specified
+        :py:class:`~torch.nn.Module`.
 
         Args:
-            module (nn.Module): PyTorch module to which the forward hook will be registered.
+            module (nn.Module): PyTorch module to which the forward hook
+                will be registered.
 
         Raises:
-            TypeError: parameter ``module`` must be an instance of :py:class:`nn.Module`
+            TypeError: parameter ``module`` must be an instance of
+                :py:class:`torch.nn.Module`.
 
         Warns:
-            RuntimeWarning: each :py:class:`Hook` can only be registered to one :py:class:`~torch.nn.Module`
-            and will ignore :py:meth:`register` if already registered.
+            RuntimeWarning: each :py:class:`Hook` can only be registered to one
+                :py:class:`~torch.nn.Module` and will ignore :py:meth:`register`
+                if already registered.
         """
         if not self._prehook_handle and not self._posthook_handle:
-            if not isinstance(module, nn.Module):
-                raise TypeError(
-                    f"'module' parameter of type {type(self).__name__} must be an instance of {nn.Module}"
-                )
+            instance_of("`module`", module, nn.Module)
+
             if self._prehook_fn:
                 self._prehook_handle = module.register_forward_pre_hook(
                     self, **self._prehook_kwargs
                 )
+
             if self._posthook_fn:
                 self._posthook_handle = module.register_forward_hook(
                     self, **self._posthook_kwargs
                 )
         else:
             warnings.warn(
-                f"this {type(self).__name__} object is already registered to an object so new register() was ignored",
+                f"this {type(self).__name__} object is already registered to an object "
+                "so new `register()` was ignored",
                 category=RuntimeWarning,
             )
 
     def deregister(self) -> None:
-        """Deregisters the hook as a forward hook/prehook from registered :py:class:`~torch.nn.Module`,
-        if it is already registered."""
+        r"""Deregisters the hook as a forward hook/prehook from registered
+        :py:class:`~torch.nn.Module`, if it is already registered."""
         if self._prehook_handle:
             self._prehook_handle.remove()
             self._prehook_handle = None
@@ -377,7 +405,7 @@ class Hook:
 
 
 class DimensionalModule(Module):
-    """Module with support for dimensionally constrained buffers and parameters.
+    r"""Module with support for dimensionally constrained buffers and parameters.
 
     Args:
         constraints (tuple[int, int]): tuple of (dim, size) dimensional constraints for
@@ -388,9 +416,9 @@ class DimensionalModule(Module):
         RuntimeError: no two constraints may share a dimension.
 
     Note:
-        Each argument must be a 2-tuple of integers, where the first element is the dimension to
-        which a constraint is applied and the second is the size of that dimension. Dimensions can
-        be negative.
+        Each argument must be a 2-tuple of integers, where the first element is the
+        dimension to which a constraint is applied and the second is the size of that
+        dimension. Dimensions can be negative.
     """
 
     def __init__(
@@ -414,17 +442,34 @@ class DimensionalModule(Module):
             dim, size = int(dim), int(size)
             if size < 1:
                 raise ValueError(
-                    f"constraint {(dim, size)} specifies an invalid (non-positive) number of elements."
+                    f"constraint {(dim, size)} specifies an invalid (non-positive) "
+                    "number of elements."
                 )
             if dim in self._constraints:
                 raise RuntimeError(
-                    f"constraint {(dim, size)} conflicts with constraint {dim, self._constraints[dim]}."
+                    f"constraint {(dim, size)} conflicts with constraint "
+                    f"{dim, self._constraints[dim]}."
                 )
             self._constraints[dim] = size
 
+    @staticmethod
+    def _mindims(constraints: dict[int, int]) -> int:
+        """Computes minimum number of required dimensions for a constrained tensor.
+
+        Args:
+            constraints (dict[int, int]): constraint dictionary of (dim, size).
+
+        Returns:
+            int: minimum required number of dimensions.
+        """
+        maxc = max(constraints)
+        minc = min(constraints)
+
+        return (maxc + 1 if maxc >= 0 else 0) - (minc if minc <= -1 else 0)
+
     @cached_property
     def constraints(self) -> dict[int, int]:
-        """Returns the constraint dictionary, sorted by dimension.
+        r"""Returns the constraint dictionary, sorted by dimension.
 
         Returns:
             dict[int, int]: active constraints, represented as a dictionary.
@@ -442,7 +487,7 @@ class DimensionalModule(Module):
 
     @cached_property
     def constraints_repr(self) -> str:
-        """Returns a string representation of constraints.
+        r"""Returns a string representation of constraints.
 
         Returns:
             str: active constraints, represented as a string.
@@ -491,6 +536,15 @@ class DimensionalModule(Module):
 
         return f"({', '.join(elems)})"
 
+    @property
+    def mindims(self) -> int:
+        r"""Minimum number of constrained dimensions for constrained tensor.
+
+        Returns:
+            int: minimum required number of dimensions.
+        """
+        return self._mindims(self.constraints)
+
     def compatible(
         self, value: torch.Tensor, constraints: dict[int, int] | None = None
     ) -> bool:
@@ -498,22 +552,14 @@ class DimensionalModule(Module):
 
         Args:
             value (torch.Tensor): tensor to test.
-            constraints (dict[int, int] | None, optional): constraint dictionary to test with,
-                uses current constraints if None. Defaults to None.
+            constraints (dict[int, int] | None, optional): constraint dictionary to
+                test with, uses current constraints if None. Defaults to None.
 
         Returns:
             bool: if the tensor is compatible.
         """
-        # select constraints
-        if constraints is None:
-            constraints = self._constraints
-
-        # compute necessary minimum number of dimensions
-        maxc = max(constraints)
-        minc = min(constraints)
-
         # check if value has fewer than minimum required number of dimensions
-        if value.ndim < (maxc + 1 if maxc >= 0 else 0) - (minc if minc <= -1 else 0):
+        if value.ndim < self._mindims(value, constraints):
             return False
 
         # check if constraints are met
@@ -532,8 +578,8 @@ class DimensionalModule(Module):
 
         Args:
             shape (tuple[int]): shape to make compatible
-            constraints (dict[int, int] | None, optional): constraint dictionary to test with,
-                uses current constraints if None. Defaults to None.
+            constraints (dict[int, int] | None, optional): constraint dictionary
+                to test with, uses current constraints if None. Defaults to None.
 
         Raises:
             RuntimeError: dimensionality of shape is insufficient.
@@ -547,14 +593,12 @@ class DimensionalModule(Module):
             constraints = self._constraints
 
         # ensure shape is of sufficient dimensionality
-        maxc = max(constraints)
-        minc = min(constraints)
-        req_ndims = (maxc + 1 if maxc >= 0 else 0) - (minc if minc <= -1 else 0)
+        req_ndims = self._mindims(constraints)
 
         if len(shape) < req_ndims:
             raise RuntimeError(
-                f"shape {shape} with dimensionality {len(shape)} cannot be made compatible, "
-                f"requires a minimum dimensionality of {req_ndims}"
+                f"`shape` {shape} with dimensionality {len(shape)} cannot be made "
+                f"compatible, requires a minimum dimensionality of {req_ndims}."
             )
 
         # create new shape
@@ -562,23 +606,28 @@ class DimensionalModule(Module):
         for dim, size in constraints.items():
             if size < 1:
                 raise RuntimeError(
-                    f"shape {shape} cannot contain non-positive sized dimensions."
+                    f"`shape` {shape} cannot contain non-positive sized dimensions."
                 )
             else:
                 new_shape[dim] = size
         return tuple(new_shape)
 
-    def reconstrain(self, dim: int, size: int | None):
-        """Edits existing constraints and reshapes constrained buffers and parameters accordingly.
+    def reconstrain(self, dim: int, size: int | None) -> None:
+        """Edits existing constraints and reshapes constrained buffers and parameters
+        accordingly.
 
         Args:
-            dim (int): dimension to which a constraint should be added, removed, or modified.
-            size (int | None): size of the new constraint, or None if the constraint should be removed.
+            dim (int): dimension to which a constraint should be added, removed,
+                or modified.
+            size (int | None): size of the new constraint, or None if the constraint
+                should be removed.
 
         Raises:
-            RuntimeError: constrained buffer or parameter had its shape modified externally and is no longer compatible.
+            RuntimeError: constrained buffer or parameter had its shape modified
+                externally and is no longer compatible.
             ValueError: size must specify a positive number of elements.
-            RuntimeError: added constraint is incompatible with existing buffer or parameter.
+            RuntimeError: added constraint is incompatible with existing buffer or
+                parameter.
         """
         # delete cache for constraint properties
         try:
@@ -655,7 +704,8 @@ class DimensionalModule(Module):
                     and not self.compatible(param, constraints=constraints)
                 ):
                     raise RuntimeError(
-                        f"constraint cannot be added, incompatible with parameter {name}."
+                        f"constraint cannot be added, incompatible with "
+                        f"parameter {name}."
                     )
 
             # add new constraint
@@ -728,19 +778,18 @@ class DimensionalModule(Module):
         """Registers an existing buffer or parameter as constrained.
 
         Args:
-            name (str): fully-qualified string name of the buffer or parameter to register.
+            name (str): fully-qualified string name of the buffer or
+                parameter to register.
 
         Raises:
             RuntimeError: dimension of attribute does not match constraint.
             AttributeError: attribute is not a registered buffer or parameter.
 
         Note:
-            Registered parameters of type ``None`` cannot be constrained.
+            Registered parameters of type None cannot be constrained.
         """
         # calculate required number of dimensions
-        maxc = max(self._constraints)
-        minc = min(self._constraints)
-        req_ndims = (maxc + 1 if maxc >= 0 else 0) - (minc if minc <= -1 else 0)
+        req_ndims = self.mindims
 
         # attempts to register buffer
         try:
@@ -754,9 +803,10 @@ class DimensionalModule(Module):
                 and not self.compatible(buffer)
             ):
                 raise RuntimeError(
-                    f"buffer {name} has shape of {tuple(buffer.shape)} "
+                    f"buffer '{name}' has shape of {tuple(buffer.shape)} "
                     f"incompatible with constrained shape {self.constraints_repr}, "
-                    f"dimensions must match and must have at least {req_ndims} dimensions"
+                    "dimensions must match and must have at least "
+                    f"{req_ndims} dimensions"
                 )
             else:
                 self._constrained_buffers.add(name)
@@ -770,23 +820,25 @@ class DimensionalModule(Module):
         else:
             if param is not None and param.numel() > 0 and not self.compatible(param):
                 raise RuntimeError(
-                    f"parameter {name} has shape of {tuple(param.shape)} "
+                    f"parameter '{name}' has shape of {tuple(param.shape)} "
                     f"incompatible with constrained shape {self.constraints_repr}, "
-                    f"dimensions must match and must have at least {req_ndims} dimensions"
+                    f"dimensions must match and must have at least "
+                    f"{req_ndims} dimensions"
                 )
             else:
                 self._constrained_parameters.add(name)
             return
 
         raise AttributeError(
-            f"name {name} does not specify a registered buffer or parameter."
+            f"`name` '{name}' does not specify a registered buffer or parameter."
         )
 
     def deregister_constrained(self, name: str):
         """Deregisters a buffer or parameter as constrained.
 
         Args:
-            name (str): fully-qualified string name of the buffer or parameter to register.
+            name (str): fully-qualified string name of the buffer or
+                parameter to register.
         """
         # remove if in buffers
         if name in self._constrained_buffers:
@@ -815,14 +867,8 @@ class HistoryModule(DimensionalModule):
         history_len: float,
     ):
         # ensure valid step time and history length parameters
-        step_time, history_len = float(step_time), float(history_len)
-        if step_time <= 0:
-            raise ValueError(f"step time must be positive, received {step_time}")
-
-        if history_len < 0:
-            raise ValueError(
-                f"history length must be non-negative, received {history_len}"
-            )
+        step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
+        history_len = numeric_limit("`history_len`", history_len, 0, "gte", float)
 
         # calculate size of time dimension
         history_size = math.ceil(history_len / step_time) + 1
@@ -922,7 +968,8 @@ class HistoryModule(DimensionalModule):
             self._pointer[name] = (self._pointer[name] + 1) % self.hsize
         else:
             warnings.warn(
-                f"{name} has not correctly been registered as a constrained attribute, call ignored.",
+                f"'{name}' has not correctly been registered as a constrained "
+                "attribute, call ignored.",
                 category=RuntimeWarning,
             )
 
@@ -971,47 +1018,64 @@ class HistoryModule(DimensionalModule):
         Args:
             name (str): name of the attribute to target.
             time (float | torch.Tensor): time before present to select from.
-            interpolation (Interpolate): method to interpolate between discrete time steps.
-            tolerance (float, optional): maximum difference in time from a discrete sample to
-                consider it at the same time as that sample. Defaults to 1e-7.
-            offset (int, optional): window index offset, number of :py:meth:`tick` calls back. Defaults to 1.
+            interpolation (Interpolate): method to interpolate between discrete
+                time steps.
+            tolerance (float, optional): maximum difference in time from a discrete
+                sample to onsider it at the same time as that sample. Defaults to 1e-7.
+            offset (int, optional): window index offset, number of :py:meth:`tick`
+                calls back. Defaults to 1.
 
         Returns:
             torch.Tensor: interpolated tensor selected at a prior time.
 
-        Shape:
-            ``time``: `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_
-            with :math:`N_0 \times \cdots \times [D]`, where :math:`N_0 \times \cdots` is the
-            underlying shape, and :math:`D` is the number of delay selectors.
+        .. admonition:: Shape
+            :class: tensorshape
 
-            **outputs**:
-            :math:`N_0 \times \cdots` \times [D]`, where :math:`D` is only included if
-            it was in ``time``.
+            ``time``:
 
-        Note:
-            By default, `offset` is set to `1`. This is the correct configuration to use under normal
-            circumstances where :py:meth:`pushto` is used for element insertion. Also this is useful for
-            when :py:meth:`tick` is called after a call to :py:meth:`insert` and before :py:meth:`select`.
-            This should be set to `0` if :py:meth:`tick` has not been called since the last :py:meth:`insert`.
+            :math:`N_0 \times \cdots \times [D]
 
-        Note:
-            The argument `interpolate` is a function which takes in five arguments, as follows.
+            ``return``:
 
-                - tensor: nearest observed state before the selected time.
-                - tensor: nearest observed state after the selected time.
-                - tensor: time after the "before state" for which results should be produced.
-                - float: difference in time between the before and after state.
+            :math:`N_0 \times \cdots \times [D]
 
-            It must return a tensor of values interpolated between the samples at the two times.
-            Some functions which meet the :py:class:`Interpolation` type are included in the library.
+            Where:
+                * :math:`N_0, \ldots` are the dimensions of the constrained tensor.
+                * :math:`D` is the number of times for each value to select.
 
         Note:
-            If ``time`` is an scalar and is within tolerance of an integer index, then
+            The constraints on the shape of ``time`` are not enforced, and follows
+            the underlying logic of :py:func:`torch.gather`.
+
+        Note:
+            By default, `offset` is set to `1`. This is the correct configuration to
+            use under normal circumstances where :py:meth:`pushto` is used for element
+            insertion. Also this is useful for when :py:meth:`tick` is called after a
+            call to :py:meth:`insert` and before :py:meth:`select`. This should be set
+            to `0` if :py:meth:`tick` has not been called since the last
+            :py:meth:`insert`.
+
+        Note:
+            The argument `interpolate` is a function which takes in four
+            arguments, as follows.
+
+                * tensor: nearest observed state before the selected time.
+                * tensor: nearest observed state after the selected time.
+                * tensor: time after the "before state" for which results should be produced.
+                * float: difference in time between the before and after state.
+
+            It must return a tensor of values interpolated between the samples
+            at the two times. Some functions which meet the :py:class:`Interpolation`
+            type are included in the library.
+
+        Note:
+            If ``time`` is a scalar and is within tolerance of an integer index, then
             a slice will be returned without ever attempting interpolation.
 
-            If ``time`` is a tensor, interpolation will be called regardless, and ``select_at``
-            will be altered to either ``0`` or :py:attr:`self.dt`. Interpolation results are
-            then overwritten with exact values before returning.
+            If ``time`` is a tensor, interpolation will be called regardless, and
+            the time passed into the interpolation call will be set to either ``0``
+            or :py:attr:`self.dt`. Interpolation results are then overwritten with
+            exact values before returning.
         """
         # access underlying buffer or parameter
         if name in self._constrained_buffers:
@@ -1091,18 +1155,19 @@ class HistoryModule(DimensionalModule):
                 squeeze_res = False
             else:
                 raise RuntimeError(
-                    f"time has incompatible number of dimensions {time.ndim}, "
-                    f"must have number of dimensions equal to {data.ndim} or {data.ndim - 1}"
+                    f"`time` has incompatible number of dimensions {time.ndim}, "
+                    "must have number of dimensions equal to "
+                    f"{data.ndim} or {data.ndim - 1}."
                 )
 
             # check that time values are in valid range
             if torch.any(time + tolerance < 0):
                 raise ValueError(
-                    f"time must only be non-negative, received {time.amin().item()}."
+                    f"`time` must only be non-negative, received {time.amin().item()}."
                 )
             if torch.any(time - tolerance > tmax):
                 raise ValueError(
-                    f"time must never exceed {tmax}, received {time.amax().item()}."
+                    f"`time` must never exceed {tmax}, received {time.amax().item()}."
                 )
 
             # convert time into continuous indices
@@ -1156,22 +1221,25 @@ class HistoryModule(DimensionalModule):
         if name in self._constrained_buffers:
             buffer = self.get_buffer(name)
             if buffer is None or buffer.numel() == 0:
-                raise RuntimeError(f"cannot reset {name}, buffer is uninitialized.")
+                raise RuntimeError(f"cannot reset '{name}', buffer is uninitialized.")
             buffer[:] = data
             self._pointer[name] = 0
         elif name in self._constrained_parameters:
             param = self.get_parameter(name)
             if param is None or param.numel() == 0:
-                raise RuntimeError(f"cannot reset {name}, parameter is uninitialized.")
+                raise RuntimeError(
+                    f"cannot reset '{name}', parameter is uninitialized."
+                )
             param[:] = data
             self._pointer[name] = 0
         else:
             raise AttributeError(
-                f"name {name} does not specify a constrained buffer or parameter."
+                f"`name` {name} does not specify a constrained buffer or parameter."
             )
 
     def pushto(self, name: str, data: torch.Tensor) -> None:
-        r"""Inserts a slice at the current time into a constrained attribute and advances to the next time.
+        r"""Inserts a slice at the current time into a constrained attribute and
+        advances to the next time.
 
         Args:
             name (str): name of the attribute to target.
@@ -1188,8 +1256,8 @@ class HistoryModule(DimensionalModule):
                 raise RuntimeError(f"cannot push to {name}, buffer is uninitialized.")
             if data.shape != buffer.shape[:-1]:
                 raise RuntimeError(
-                    f"data has a shape of {tuple(data.shape)}, "
-                    f"required shape is {tuple(buffer.shape[:-1])}"
+                    f"`data` has a shape of {tuple(data.shape)}, "
+                    f"required shape is {tuple(buffer.shape[:-1])}."
                 )
             buffer[..., self._pointer[name]] = data
             self.tick(name)
@@ -1197,18 +1265,18 @@ class HistoryModule(DimensionalModule):
             param = self.get_parameter(name)
             if param is None:
                 raise RuntimeError(
-                    f"cannot push to {name}, parameter is uninitialized."
+                    f"cannot push to '{name}', parameter is uninitialized."
                 )
             if data.shape != param.shape[:-1]:
                 raise RuntimeError(
-                    f"data has a shape of {tuple(data.shape)}, "
-                    f"required shape is {tuple(param.shape[:-1])}"
+                    f"`data` has a shape of {tuple(data.shape)}, "
+                    f"required shape is {tuple(param.shape[:-1])}."
                 )
             param[..., self._pointer[name]] = data
             self.tick(name)
         else:
             raise AttributeError(
-                f"name {name} does not specify a constrained buffer or parameter."
+                f"`name` {name} does not specify a constrained buffer or parameter."
             )
 
     def update(self, name: str, data: torch.Tensor, offset: int = 0) -> None:
@@ -1217,7 +1285,8 @@ class HistoryModule(DimensionalModule):
         Args:
             name (str): name of the attribute to target.
             data (torch.Tensor): data to insert into history.
-            offset (int, optional): number of steps before present to update. Defaults to 0.
+            offset (int, optional): number of steps before present to update.
+                Defaults to 0.
         """
         # access underlying buffer or parameter
         if name in self._constrained_buffers:
@@ -1226,7 +1295,7 @@ class HistoryModule(DimensionalModule):
             data = self.get_parameter(name)
         else:
             raise AttributeError(
-                f"name {name} does not specify a constrained buffer or parameter."
+                f"`name` {name} does not specify a constrained buffer or parameter."
             )
 
         # insert new time slice
@@ -1238,7 +1307,8 @@ class HistoryModule(DimensionalModule):
 
         Args:
             name (str): name of the attribute to target.
-            offset (int, optional): window index offset, number of :py:meth:`tick` calls back. Defaults to 1.
+            offset (int, optional): window index offset, number of :py:meth:`tick`
+                calls back. Defaults to 1.
 
         Raises:
             AttributeError: specified name is not a constrained buffer or parameter.
@@ -1247,10 +1317,12 @@ class HistoryModule(DimensionalModule):
             torch.Tensor: most recent slice of the tensor selected.
 
         Note:
-            By default, `offset` is set to `1`. This is the correct configuration to use under normal
-            circumstances where :py:meth:`pushto` is used for element insertion. Also this is useful for
-            when :py:meth:`tick` is called after a call to :py:meth:`insert` and before :py:meth:`select`.
-            This should be set to `0` if :py:meth:`tick` has not been called since the last :py:meth:`insert`.
+            By default, `offset` is set to `1`. This is the correct configuration to
+            use under normal circumstances where :py:meth:`pushto` is used for element
+            insertion. Also this is useful for when :py:meth:`tick` is called after a
+            call to :py:meth:`insert` and before :py:meth:`select`. This should be set
+            to `0` if :py:meth:`tick` has not been called since the last
+            :py:meth:`insert`.
         """
         # access underlying buffer or parameter
         if name in self._constrained_buffers:
@@ -1259,7 +1331,7 @@ class HistoryModule(DimensionalModule):
             data = self.get_parameter(name)
         else:
             raise AttributeError(
-                f"name {name} does not specify a constrained buffer or parameter."
+                f"`name` {name} does not specify a constrained buffer or parameter."
             )
 
         return data[..., (self._pointer[name] - offset) % self.hsize]
@@ -1269,8 +1341,10 @@ class HistoryModule(DimensionalModule):
 
         Args:
             name (str): name of the attribute to target.
-            offset (int, optional): window index offset, number of :py:meth:`tick` calls back. Defaults to 1.
-            latest_first (bool, optional): if the most recent sample should be at the zeroth index. Defaults to False.
+            offset (int, optional): window index offset, number of :py:meth:`tick`
+                calls back. Defaults to 1.
+            latest_first (bool, optional): if the most recent sample should be at the
+                zeroth index. Defaults to False.
 
         Returns:
             torch.Tensor: value of the attribute at every observed time.
@@ -1282,7 +1356,7 @@ class HistoryModule(DimensionalModule):
             data = self.get_parameter(name)
         else:
             raise AttributeError(
-                f"name {name} does not specify a constrained buffer or parameter."
+                f"`name` {name} does not specify a constrained buffer or parameter."
             )
 
         # sorted latest last

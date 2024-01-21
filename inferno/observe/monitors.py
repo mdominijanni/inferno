@@ -312,7 +312,8 @@ class PostMonitor(Monitor):
     r"""Applies a function to posthook arguments and passes the results to the reducer.
 
     Args:
-        reducer (Reducer): underlying means for reducing samples over time and storing them.
+        reducer (Reducer): underlying means for reducing samples over time
+            and storing them.
         mapping (Callable[[Module, tuple[Any, ...], Any], torch.Tensor]): function
             applied to the hook arguments with output passed to the reducer.
         module (Module, optional): module to register as the target for monitoring,

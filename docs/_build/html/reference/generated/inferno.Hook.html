@@ -253,12 +253,21 @@ be registered. Defaults to <cite>None</cite>.</p></li>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">modified</span> <span class="nb">input</span>
 </pre></div>
 </div>
-<p>See <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.register_forward_pre_hook" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.nn.Module.register_forward_pre_hook()</span></code></a> for further information.</p>
+<p>Or, if <code class="docutils literal notranslate"><span class="pre">with_kwargs</span></code> is passed as a keyword argument.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">modified</span> <span class="nb">input</span>
+</pre></div>
+</div>
+<p>See <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.register_forward_pre_hook" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.nn.Module.register_forward_pre_hook()</span></code></a> for
+further information.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>If not None, the signature of the posthook must be of the following form.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">modified</span> <span class="n">output</span>
+</pre></div>
+</div>
+<p>Or, if <code class="docutils literal notranslate"><span class="pre">with_kwargs</span></code> is passed as a keyword argument.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">modified</span> <span class="n">output</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.register_forward_hook" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.nn.Module.register_forward_hook()</span></code></a> for further information.</p>
@@ -268,33 +277,36 @@ be registered. Defaults to <cite>None</cite>.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – at least one of <code class="docutils literal notranslate"><span class="pre">prehook</span></code> and <code class="docutils literal notranslate"><span class="pre">posthook</span></code> must not be None.</p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – at least one of <code class="docutils literal notranslate"><span class="pre">train_update</span></code> and <code class="docutils literal notranslate"><span class="pre">eval_update</span></code> must be True.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.12)"><strong>TypeError</strong></a> – if parameter <code class="docutils literal notranslate"><span class="pre">module</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, then it must be an instance of <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.12)"><strong>TypeError</strong></a> – if parameter <code class="docutils literal notranslate"><span class="pre">module</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, then it must be an instance
+    of <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a>.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.Hook.deregister">
 <span class="sig-name descname"><span class="pre">deregister</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/infrastructure.html#Hook.deregister"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.Hook.deregister" title="Link to this definition">#</a></dt>
-<dd><p>Deregisters the hook as a forward hook/prehook from registered <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a>,
-if it is already registered.</p>
+<dd><p>Deregisters the hook as a forward hook/prehook from registered
+<a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a>, if it is already registered.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.Hook.register">
 <span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Module</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/infrastructure.html#Hook.register"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.Hook.register" title="Link to this definition">#</a></dt>
-<dd><p>Registers the hook as a forward hook/prehook with specified <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a>.</p>
+<dd><p>Registers the hook as a forward hook/prehook with specified
+<a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>module</strong> (<em>nn.Module</em>) – PyTorch module to which the forward hook will be registered.</p>
+<dd class="field-odd"><p><strong>module</strong> (<em>nn.Module</em>) – PyTorch module to which the forward hook
+will be registered.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.12)"><strong>TypeError</strong></a> – parameter <code class="docutils literal notranslate"><span class="pre">module</span></code> must be an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Module</span></code></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.12)"><strong>TypeError</strong></a> – parameter <code class="docutils literal notranslate"><span class="pre">module</span></code> must be an instance of
+    <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a>.</p>
 </dd>
 <dt class="field-odd">Warns<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>RuntimeWarning</strong> – each <a class="reference internal" href="#inferno.Hook" title="inferno.Hook"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></a> can only be registered to one <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p></li>
-<li><p><strong>and will ignore :py:meth:`register` if already registered.</strong></p></li>
-</ul>
+<dd class="field-odd"><p><strong>RuntimeWarning</strong> – each <a class="reference internal" href="#inferno.Hook" title="inferno.Hook"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></a> can only be registered to one
+<a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a> and will ignore <a class="reference internal" href="#inferno.Hook.register" title="inferno.Hook.register"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register()</span></code></a>
+if already registered.</p>
 </dd>
 </dl>
 </dd></dl>

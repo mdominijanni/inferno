@@ -282,8 +282,10 @@ will also be freed of any other constraints.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the attribute to target.</p></li>
-<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – window index offset, number of <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> calls back. Defaults to 1.</p></li>
-<li><p><strong>latest_first</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the most recent sample should be at the zeroth index. Defaults to False.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – window index offset, number of <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a>
+calls back. Defaults to 1.</p></li>
+<li><p><strong>latest_first</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the most recent sample should be at the
+zeroth index. Defaults to False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -338,7 +340,8 @@ will also be freed of any other constraints.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the attribute to target.</p></li>
-<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – window index offset, number of <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> calls back. Defaults to 1.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – window index offset, number of <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a>
+calls back. Defaults to 1.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -353,17 +356,20 @@ will also be freed of any other constraints.</p>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>By default, <cite>offset</cite> is set to <cite>1</cite>. This is the correct configuration to use under normal
-circumstances where <a class="reference internal" href="#inferno.HistoryModule.pushto" title="inferno.HistoryModule.pushto"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pushto()</span></code></a> is used for element insertion. Also this is useful for
-when <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> is called after a call to <code class="xref py py-meth docutils literal notranslate"><span class="pre">insert()</span></code> and before <a class="reference internal" href="#inferno.HistoryModule.select" title="inferno.HistoryModule.select"><code class="xref py py-meth docutils literal notranslate"><span class="pre">select()</span></code></a>.
-This should be set to <cite>0</cite> if <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> has not been called since the last <code class="xref py py-meth docutils literal notranslate"><span class="pre">insert()</span></code>.</p>
+<p>By default, <cite>offset</cite> is set to <cite>1</cite>. This is the correct configuration to
+use under normal circumstances where <a class="reference internal" href="#inferno.HistoryModule.pushto" title="inferno.HistoryModule.pushto"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pushto()</span></code></a> is used for element
+insertion. Also this is useful for when <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> is called after a
+call to <code class="xref py py-meth docutils literal notranslate"><span class="pre">insert()</span></code> and before <a class="reference internal" href="#inferno.HistoryModule.select" title="inferno.HistoryModule.select"><code class="xref py py-meth docutils literal notranslate"><span class="pre">select()</span></code></a>. This should be set
+to <cite>0</cite> if <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> has not been called since the last
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">insert()</span></code>.</p>
 </div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.HistoryModule.pushto">
 <span class="sig-name descname"><span class="pre">pushto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/infrastructure.html#HistoryModule.pushto"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.HistoryModule.pushto" title="Link to this definition">#</a></dt>
-<dd><p>Inserts a slice at the current time into a constrained attribute and advances to the next time.</p>
+<dd><p>Inserts a slice at the current time into a constrained attribute and
+advances to the next time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -425,10 +431,12 @@ any other constraints that have been added.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the attribute to target.</p></li>
 <li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – time before present to select from.</p></li>
-<li><p><strong>interpolation</strong> (<em>Interpolate</em>) – method to interpolate between discrete time steps.</p></li>
-<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – maximum difference in time from a discrete sample to
-consider it at the same time as that sample. Defaults to 1e-7.</p></li>
-<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – window index offset, number of <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> calls back. Defaults to 1.</p></li>
+<li><p><strong>interpolation</strong> (<em>Interpolate</em>) – method to interpolate between discrete
+time steps.</p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – maximum difference in time from a discrete
+sample to onsider it at the same time as that sample. Defaults to 1e-7.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – window index offset, number of <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a>
+calls back. Defaults to 1.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -438,25 +446,38 @@ consider it at the same time as that sample. Defaults to 1e-7.</p></li>
 <dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
-<dl>
-<dt>Shape:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">time</span></code>: <a class="reference external" href="https://pytorch.org/docs/stable/notes/broadcasting.html">broadcastable</a>
-with <span class="math notranslate nohighlight">\(N_0 \times \cdots \times [D]\)</span>, where <span class="math notranslate nohighlight">\(N_0 \times \cdots\)</span> is the
-underlying shape, and <span class="math notranslate nohighlight">\(D\)</span> is the number of delay selectors.</p>
-<p><strong>outputs</strong>:
-<span class="math notranslate nohighlight">\(N_0 \times \cdots\)</span> times [D]`, where <span class="math notranslate nohighlight">\(D\)</span> is only included if
-it was in <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<div class="tensorshape admonition">
+<p class="admonition-title">Shape</p>
+<p><code class="docutils literal notranslate"><span class="pre">time</span></code>:</p>
+<p>:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>N_0 times cdots times [D]</p>
+<p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
+<p>:math:<a href="#id3"><span class="problematic" id="id4">`</span></a>N_0 times cdots times [D]</p>
+<dl class="simple">
+<dt>Where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(N_0, \ldots\)</span> are the dimensions of the constrained tensor.</p></li>
+<li><p><span class="math notranslate nohighlight">\(D\)</span> is the number of times for each value to select.</p></li>
+</ul>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>By default, <cite>offset</cite> is set to <cite>1</cite>. This is the correct configuration to use under normal
-circumstances where <a class="reference internal" href="#inferno.HistoryModule.pushto" title="inferno.HistoryModule.pushto"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pushto()</span></code></a> is used for element insertion. Also this is useful for
-when <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> is called after a call to <code class="xref py py-meth docutils literal notranslate"><span class="pre">insert()</span></code> and before <a class="reference internal" href="#inferno.HistoryModule.select" title="inferno.HistoryModule.select"><code class="xref py py-meth docutils literal notranslate"><span class="pre">select()</span></code></a>.
-This should be set to <cite>0</cite> if <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> has not been called since the last <code class="xref py py-meth docutils literal notranslate"><span class="pre">insert()</span></code>.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The argument <cite>interpolate</cite> is a function which takes in five arguments, as follows.</p>
+<p>The constraints on the shape of <code class="docutils literal notranslate"><span class="pre">time</span></code> are not enforced, and follows
+the underlying logic of <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.gather.html#torch.gather" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.gather()</span></code></a>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>By default, <cite>offset</cite> is set to <cite>1</cite>. This is the correct configuration to
+use under normal circumstances where <a class="reference internal" href="#inferno.HistoryModule.pushto" title="inferno.HistoryModule.pushto"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pushto()</span></code></a> is used for element
+insertion. Also this is useful for when <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> is called after a
+call to <code class="xref py py-meth docutils literal notranslate"><span class="pre">insert()</span></code> and before <a class="reference internal" href="#inferno.HistoryModule.select" title="inferno.HistoryModule.select"><code class="xref py py-meth docutils literal notranslate"><span class="pre">select()</span></code></a>. This should be set
+to <cite>0</cite> if <a class="reference internal" href="#inferno.HistoryModule.tick" title="inferno.HistoryModule.tick"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tick()</span></code></a> has not been called since the last
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">insert()</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The argument <cite>interpolate</cite> is a function which takes in four
+arguments, as follows.</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>tensor: nearest observed state before the selected time.</p></li>
@@ -465,16 +486,18 @@ This should be set to <cite>0</cite> if <a class="reference internal" href="#inf
 <li><p>float: difference in time between the before and after state.</p></li>
 </ul>
 </div></blockquote>
-<p>It must return a tensor of values interpolated between the samples at the two times.
-Some functions which meet the <a class="reference internal" href="inferno.Interpolation.html#inferno.Interpolation" title="inferno.Interpolation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Interpolation</span></code></a> type are included in the library.</p>
+<p>It must return a tensor of values interpolated between the samples
+at the two times. Some functions which meet the <a class="reference internal" href="inferno.Interpolation.html#inferno.Interpolation" title="inferno.Interpolation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Interpolation</span></code></a>
+type are included in the library.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is an scalar and is within tolerance of an integer index, then
+<p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is a scalar and is within tolerance of an integer index, then
 a slice will be returned without ever attempting interpolation.</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is a tensor, interpolation will be called regardless, and <code class="docutils literal notranslate"><span class="pre">select_at</span></code>
-will be altered to either <code class="docutils literal notranslate"><span class="pre">0</span></code> or <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.dt</span></code>. Interpolation results are
-then overwritten with exact values before returning.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is a tensor, interpolation will be called regardless, and
+the time passed into the interpolation call will be set to either <code class="docutils literal notranslate"><span class="pre">0</span></code>
+or <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.dt</span></code>. Interpolation results are then overwritten with
+exact values before returning.</p>
 </div>
 </dd></dl>
 
@@ -498,7 +521,8 @@ then overwritten with exact values before returning.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the attribute to target.</p></li>
 <li><p><strong>data</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – data to insert into history.</p></li>
-<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – number of steps before present to update. Defaults to 0.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – number of steps before present to update.
+Defaults to 0.</p></li>
 </ul>
 </dd>
 </dl>

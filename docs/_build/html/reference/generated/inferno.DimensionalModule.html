@@ -236,9 +236,9 @@ constrained buffers and parameters.</p>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Each argument must be a 2-tuple of integers, where the first element is the dimension to
-which a constraint is applied and the second is the size of that dimension. Dimensions can
-be negative.</p>
+<p>Each argument must be a 2-tuple of integers, where the first element is the
+dimension to which a constraint is applied and the second is the size of that
+dimension. Dimensions can be negative.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.DimensionalModule.compatible">
@@ -248,8 +248,8 @@ be negative.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – tensor to test.</p></li>
-<li><p><strong>constraints</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – constraint dictionary to test with,
-uses current constraints if None. Defaults to None.</p></li>
+<li><p><strong>constraints</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – constraint dictionary to
+test with, uses current constraints if None. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -269,8 +269,8 @@ uses current constraints if None. Defaults to None.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em>) – shape to make compatible</p></li>
-<li><p><strong>constraints</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – constraint dictionary to test with,
-uses current constraints if None. Defaults to None.</p></li>
+<li><p><strong>constraints</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – constraint dictionary
+to test with, uses current constraints if None. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -334,27 +334,47 @@ tensor but with an unspecified value.</p>
 <dd><p>Deregisters a buffer or parameter as constrained.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – fully-qualified string name of the buffer or parameter to register.</p>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – fully-qualified string name of the buffer or
+parameter to register.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.DimensionalModule.mindims">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mindims</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.DimensionalModule.mindims" title="Link to this definition">#</a></dt>
+<dd><p>Minimum number of constrained dimensions for constrained tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>minimum required number of dimensions.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.DimensionalModule.reconstrain">
-<span class="sig-name descname"><span class="pre">reconstrain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/infrastructure.html#DimensionalModule.reconstrain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.DimensionalModule.reconstrain" title="Link to this definition">#</a></dt>
-<dd><p>Edits existing constraints and reshapes constrained buffers and parameters accordingly.</p>
+<span class="sig-name descname"><span class="pre">reconstrain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/infrastructure.html#DimensionalModule.reconstrain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.DimensionalModule.reconstrain" title="Link to this definition">#</a></dt>
+<dd><p>Edits existing constraints and reshapes constrained buffers and parameters
+accordingly.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – dimension to which a constraint should be added, removed, or modified.</p></li>
-<li><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><em>None</em>) – size of the new constraint, or None if the constraint should be removed.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – dimension to which a constraint should be added, removed,
+or modified.</p></li>
+<li><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><em>None</em>) – size of the new constraint, or None if the constraint
+should be removed.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – constrained buffer or parameter had its shape modified externally and is no longer compatible.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – constrained buffer or parameter had its shape modified
+    externally and is no longer compatible.</p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – size must specify a positive number of elements.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – added constraint is incompatible with existing buffer or parameter.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – added constraint is incompatible with existing buffer or
+    parameter.</p></li>
 </ul>
 </dd>
 </dl>
@@ -366,7 +386,8 @@ tensor but with an unspecified value.</p>
 <dd><p>Registers an existing buffer or parameter as constrained.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – fully-qualified string name of the buffer or parameter to register.</p>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – fully-qualified string name of the buffer or
+parameter to register.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
@@ -377,7 +398,7 @@ tensor but with an unspecified value.</p>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Registered parameters of type <code class="docutils literal notranslate"><span class="pre">None</span></code> cannot be constrained.</p>
+<p>Registered parameters of type None cannot be constrained.</p>
 </div>
 </dd></dl>
 
@@ -447,6 +468,7 @@ tensor but with an unspecified value.</p>
 <li><a class="reference internal" href="#inferno.DimensionalModule.constraints"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.constraints</span></code></a></li>
 <li><a class="reference internal" href="#inferno.DimensionalModule.constraints_repr"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.constraints_repr</span></code></a></li>
 <li><a class="reference internal" href="#inferno.DimensionalModule.deregister_constrained"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.deregister_constrained()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.DimensionalModule.mindims"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.mindims</span></code></a></li>
 <li><a class="reference internal" href="#inferno.DimensionalModule.reconstrain"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.reconstrain()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.DimensionalModule.register_constrained"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.register_constrained()</span></code></a></li>
 </ul>
