@@ -304,22 +304,25 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies a function between the most recent previously stored data and a new observation.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        fold_fn (Callable[[torch.Tensor, torch.Tensor | None], torch.Tensor]): relation between</span>
-<span class="sd">            the new input (left) and current state (right), returning the new state.</span>
+<span class="sd">        fold_fn (Callable[[torch.Tensor, torch.Tensor | None], torch.Tensor]): relation</span>
+<span class="sd">            between the new input (left) and current state (right),</span>
+<span class="sd">            returning the new state.</span>
 <span class="sd">        step_time (float): length of time between observations.</span>
 <span class="sd">        history_len (float): length of time for which observations should be stored.</span>
-<span class="sd">        interpolation (~inferno.Interpolation, optional): interpolation function to use when retrieving</span>
-<span class="sd">            data between observations. Defaults to inferno.interp_nearest.</span>
-<span class="sd">        initializer (OneToOne[torch.Tensor] | None, optional): function to set the initial state,</span>
-<span class="sd">            zeroes when None. Defaults to None.</span>
+<span class="sd">        interpolation (~inferno.Interpolation, optional): interpolation function to use</span>
+<span class="sd">            when retrieving data between observations.</span>
+<span class="sd">            Defaults to inferno.interp_nearest.</span>
+<span class="sd">        initializer (OneToOne[torch.Tensor] | None, optional): function to set the</span>
+<span class="sd">            initial state, zeroes when None. Defaults to None.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The left-hand argument of ``fold_fn`` is the new input, and the right-hand argument</span>
-<span class="sd">        is the current state. The right-hand argument will be None when no observations have been recorded.</span>
+<span class="sd">        The left-hand argument of ``fold_fn`` is the new input, and the right-hand</span>
+<span class="sd">        argument is the current state. The right-hand argument will be None when</span>
+<span class="sd">        no observations have been recorded.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The default ``map_fn`` implemented assumes only a single input, and will therefore fail if multiple</span>
-<span class="sd">        input values are passed into :py:meth:`forward`.</span>
+<span class="sd">        The default ``map_fn`` implemented assumes only a single input, and will</span>
+<span class="sd">        therefore fail if multiple input values are passed into :py:meth:`forward`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -369,7 +372,8 @@
         <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="s2">&quot;shape of data cannot be changed, received value of shape &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, required value of shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, required value of &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">value</span>
 
@@ -448,26 +452,41 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state at a given time.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            time (float | torch.Tensor): times, measured before present, at which to select from.</span>
-<span class="sd">            tolerance (float, optional): maximum difference in time from a discrete sample to</span>
-<span class="sd">                consider it at the same time as that sample. Defaults to 1e-7.</span>
+<span class="sd">            time (float | torch.Tensor): times, measured before present, at which</span>
+<span class="sd">                to select from.</span>
+<span class="sd">            tolerance (float, optional): maximum difference in time from a discrete</span>
+<span class="sd">                sample to consider it at the same time as that sample. Defaults to 1e-7.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor | None: temporally indexed and interpolated state.</span>
 
-<span class="sd">        Shape:</span>
-<span class="sd">            ``time``: `broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_</span>
-<span class="sd">            with :math:`N_0 \times \cdots \times [D]`, where :math:`N_0 \times \cdots` is the</span>
-<span class="sd">            underlying shape, and :math:`D` is the number of delay selectors.</span>
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
 
-<span class="sd">            **outputs**:</span>
-<span class="sd">            :math:`N_0 \times \cdots` \times [D]`, where :math:`D` is only included if</span>
-<span class="sd">            it was in ``time``.</span>
+<span class="sd">            ``time``:</span>
+
+<span class="sd">            :math:`N_0 \times \cdots \times [D]</span>
+
+<span class="sd">            ``return``:</span>
+
+<span class="sd">            :math:`N_0 \times \cdots \times [D]</span>
+
+<span class="sd">            Where:</span>
+<span class="sd">                * :math:`N_0, \ldots` are the dimensions of the reducer, including any underlying batch.</span>
+<span class="sd">                * :math:`D` is the number of times for each value to select.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Before any samples have been added and before the data tensor has been</span>
+<span class="sd">            initialized, this will return None.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The constraints on the shape of ``time`` are not enforced, and follows</span>
+<span class="sd">            the underlying logic of :py:func:`torch.gather`.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            This will fail if any values in ``time`` fall outside of the possible range.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolate_</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span></div>
 
 
@@ -487,7 +506,7 @@
 <span class="sd">            Results are temporally ordered from most recent to oldest, along the</span>
 <span class="sd">            last dimension.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="n">latest_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
@@ -503,7 +522,7 @@
 <span class="sd">            Before any samples have been added and before the data tensor has been</span>
 <span class="sd">            initialized, this will return None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)</span></div>
 
 
@@ -523,7 +542,8 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes state and incorporates inputs into the reducer&#39;s state.</span>
 
-<span class="sd">        This performs any required initialization steps, maps the inputs, and pushes the new data.</span>
+<span class="sd">        This performs any required initialization steps, maps the inputs,</span>
+<span class="sd">        and pushes the new data.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            *inputs (torch.Tensor): inputs to be mapped, then pushed.</span>
@@ -622,7 +642,8 @@
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and subsequent observations.</span>
+<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: abstract methods must be implemented by subclass.</span>

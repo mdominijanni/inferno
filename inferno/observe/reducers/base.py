@@ -65,22 +65,25 @@ class FoldReducer(Reducer):
     r"""Applies a function between the most recent previously stored data and a new observation.
 
     Args:
-        fold_fn (Callable[[torch.Tensor, torch.Tensor | None], torch.Tensor]): relation between
-            the new input (left) and current state (right), returning the new state.
+        fold_fn (Callable[[torch.Tensor, torch.Tensor | None], torch.Tensor]): relation
+            between the new input (left) and current state (right),
+            returning the new state.
         step_time (float): length of time between observations.
         history_len (float): length of time for which observations should be stored.
-        interpolation (~inferno.Interpolation, optional): interpolation function to use when retrieving
-            data between observations. Defaults to inferno.interp_nearest.
-        initializer (OneToOne[torch.Tensor] | None, optional): function to set the initial state,
-            zeroes when None. Defaults to None.
+        interpolation (~inferno.Interpolation, optional): interpolation function to use
+            when retrieving data between observations.
+            Defaults to inferno.interp_nearest.
+        initializer (OneToOne[torch.Tensor] | None, optional): function to set the
+            initial state, zeroes when None. Defaults to None.
 
     Note:
-        The left-hand argument of ``fold_fn`` is the new input, and the right-hand argument
-        is the current state. The right-hand argument will be None when no observations have been recorded.
+        The left-hand argument of ``fold_fn`` is the new input, and the right-hand
+        argument is the current state. The right-hand argument will be None when
+        no observations have been recorded.
 
     Note:
-        The default ``map_fn`` implemented assumes only a single input, and will therefore fail if multiple
-        input values are passed into :py:meth:`forward`.
+        The default ``map_fn`` implemented assumes only a single input, and will
+        therefore fail if multiple input values are passed into :py:meth:`forward`.
     """
 
     def __init__(
@@ -130,7 +133,8 @@ class FoldReducer(Reducer):
         if value.shape != self._data.shape:
             raise RuntimeError(
                 "shape of data cannot be changed, received value of shape "
-                f"{tuple(value.shape)}, required value of shape {tuple(self._data.shape)}"
+                f"{tuple(value.shape)}, required value of "
+                f"shape {tuple(self._data.shape)}"
             )
         self._data = value
 
@@ -204,26 +208,41 @@ class FoldReducer(Reducer):
         r"""Returns the reducer's state at a given time.
 
         Args:
-            time (float | torch.Tensor): times, measured before present, at which to select from.
-            tolerance (float, optional): maximum difference in time from a discrete sample to
-                consider it at the same time as that sample. Defaults to 1e-7.
+            time (float | torch.Tensor): times, measured before present, at which
+                to select from.
+            tolerance (float, optional): maximum difference in time from a discrete
+                sample to consider it at the same time as that sample. Defaults to 1e-7.
 
         Returns:
             torch.Tensor | None: temporally indexed and interpolated state.
 
-        Shape:
-            ``time``: `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_
-            with :math:`N_0 \times \cdots \times [D]`, where :math:`N_0 \times \cdots` is the
-            underlying shape, and :math:`D` is the number of delay selectors.
+        .. admonition:: Shape
+            :class: tensorshape
 
-            **outputs**:
-            :math:`N_0 \times \cdots` \times [D]`, where :math:`D` is only included if
-            it was in ``time``.
+            ``time``:
+
+            :math:`N_0 \times \cdots \times [D]
+
+            ``return``:
+
+            :math:`N_0 \times \cdots \times [D]
+
+            Where:
+                * :math:`N_0, \ldots` are the dimensions of the reducer, including any underlying batch.
+                * :math:`D` is the number of times for each value to select.
+
+        Note:
+            Before any samples have been added and before the data tensor has been
+            initialized, this will return None.
+
+        Note:
+            The constraints on the shape of ``time`` are not enforced, and follows
+            the underlying logic of :py:func:`torch.gather`.
 
         Note:
             This will fail if any values in ``time`` fall outside of the possible range.
         """
-        if self.data.numel() != 0:
+        if not self._initial:
             return self.select("_data", time, self.interpolate_, tolerance=tolerance)
 
     def dump(self, **kwargs) -> torch.Tensor | None:
@@ -240,7 +259,7 @@ class FoldReducer(Reducer):
             Results are temporally ordered from most recent to oldest, along the
             last dimension.
         """
-        if self.data.numel() != 0:
+        if not self._initial:
             return self.record("_data", latest_first=True)
 
     def peek(self, **kwargs) -> torch.Tensor | None:
@@ -253,7 +272,7 @@ class FoldReducer(Reducer):
             Before any samples have been added and before the data tensor has been
             initialized, this will return None.
         """
-        if self.data.numel() != 0:
+        if not self._initial:
             return self.latest("_data")
 
     def push(self, inputs: torch.Tensor, **kwargs) -> None:
@@ -267,7 +286,8 @@ class FoldReducer(Reducer):
     def forward(self, inputs: torch.Tensor, **kwargs) -> None:
         """Initializes state and incorporates inputs into the reducer's state.
 
-        This performs any required initialization steps, maps the inputs, and pushes the new data.
+        This performs any required initialization steps, maps the inputs,
+        and pushes the new data.
 
         Args:
             *inputs (torch.Tensor): inputs to be mapped, then pushed.
@@ -354,7 +374,8 @@ class FoldingReducer(FoldReducer, ABC):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float): length of time between the prior and subsequent observations.
+            step_data (float): length of time between the prior and
+                subsequent observations.
 
         Raises:
             NotImplementedError: abstract methods must be implemented by subclass.

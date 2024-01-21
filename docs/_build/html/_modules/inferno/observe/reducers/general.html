@@ -230,10 +230,10 @@
 <span class="sd">        step_time (float): length of time between observation.</span>
 <span class="sd">        criterion (OneToOne[torch.Tensor]): function to test if the input is considered</span>
 <span class="sd">            matches for it to be considered an event.</span>
-<span class="sd">        history_len (float, optional): length of time over which results should be stored,</span>
-<span class="sd">            in the same units as ``step_time``. Defaults to 0.0.</span>
+<span class="sd">        history_len (float, optional): length of time over which results should be</span>
+<span class="sd">            stored, in the same units as ``step_time``. Defaults to 0.0.</span>
 
-<span class="sd">    Note:</span>
+<span class="sd">    Important:</span>
 <span class="sd">        The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of</span>
 <span class="sd">        :py:data:`torch.bool`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -298,7 +298,8 @@
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and subsequent observations.</span>
+<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
@@ -315,8 +316,8 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        step_time (float): length of time between observation.</span>
-<span class="sd">        history_len (float, optional): length of time over which results should be stored,</span>
-<span class="sd">            in the same units as ``step_time``. Defaults to 0.0.</span>
+<span class="sd">        history_len (float, optional): length of time over which results should be</span>
+<span class="sd">            stored, in the same units as ``step_time``. Defaults to 0.0.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -371,7 +372,8 @@
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and subsequent observations.</span>
+<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>

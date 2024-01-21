@@ -214,12 +214,13 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.observe.reducers.trace</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">FoldingReducer</span>
+<span></span><span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">FoldingReducer</span>
 <span class="kn">import</span> <span class="nn">inferno</span>
+<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span>
 <span class="kn">import</span> <span class="nn">inferno.neural.functional</span> <span class="k">as</span> <span class="nn">nf</span>
 <span class="kn">from</span> <span class="nn">inferno.typing</span> <span class="kn">import</span> <span class="n">OneToOne</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 
 
 <div class="viewcode-block" id="NearestTraceReducer">
@@ -239,15 +240,14 @@
 <span class="sd">    Args:</span>
 <span class="sd">        step_time (float): length of the discrete step time, :math:`\Delta t`.</span>
 <span class="sd">        time_constant (float): time constant of exponential decay, :math:`\tau`.</span>
-<span class="sd">        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.</span>
-<span class="sd">        target (int | float | bool | complex): target value to set trace to, :math:`f^*`.</span>
+<span class="sd">        amplitude (int | float | complex): value to set trace to for matching elements,</span>
+<span class="sd">            :math:`a`.</span>
+<span class="sd">        target (int | float | bool | complex): target value test for when determining</span>
+<span class="sd">            if an input is a match, :math:`f^*`.</span>
 <span class="sd">        tolerance (int | float | None, optional): allowable absolute difference to</span>
 <span class="sd">            still count as a match, :math:`\epsilon`. Defaults to None.</span>
-<span class="sd">        history_len (float, optional): length of time over which results should be stored,</span>
-<span class="sd">            in the same units as :math:`\Delta t`. Defaults to 0.0.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        Only a single input tensor can be provided to :py:meth:`forward` for this class.</span>
+<span class="sd">        history_len (float, optional): length of time over which results should be</span>
+<span class="sd">            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -263,15 +263,17 @@
         <span class="c1"># call superclass constructor</span>
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
 
-        <span class="c1"># register state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">time_constant</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;decay&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
+        <span class="c1"># reducer attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
+            <span class="s2">&quot;`time_constant`&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">amplitude</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">target</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">tolerance</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`amplitude`&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">tolerance</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`tolerance`&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -343,7 +345,8 @@
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and subsequent observations.</span>
+<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
@@ -372,15 +375,14 @@
 <span class="sd">    Args:</span>
 <span class="sd">        step_time (float): length of the discrete step time, :math:`\Delta t`.</span>
 <span class="sd">        time_constant (float): time constant of exponential decay, :math:`\tau`.</span>
-<span class="sd">        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.</span>
-<span class="sd">        target (int | float | bool | complex): target value to set trace to, :math:`f^*`.</span>
+<span class="sd">        amplitude (int | float | complex): value to add to trace for matching elements,</span>
+<span class="sd">            :math:`a`.</span>
+<span class="sd">        target (int | float | bool | complex): target value test for when determining</span>
+<span class="sd">            if an input is a match, :math:`f^*`.</span>
 <span class="sd">        tolerance (int | float | None, optional): allowable absolute difference to</span>
 <span class="sd">            still count as a match, :math:`\epsilon`. Defaults to None.</span>
-<span class="sd">        history_len (float, optional): length of time over which results should be stored,</span>
-<span class="sd">            in the same units as :math:`\Delta t`. Defaults to 0.0.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        Only a single input tensor can be provided to :py:meth:`forward` for this class.</span>
+<span class="sd">        history_len (float, optional): length of time over which results should be</span>
+<span class="sd">            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -396,15 +398,17 @@
         <span class="c1"># call superclass constructor</span>
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
 
-        <span class="c1"># register state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">time_constant</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;decay&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
+        <span class="c1"># reducer attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
+            <span class="s2">&quot;`time_constant`&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">amplitude</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">target</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">tolerance</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`amplitude`&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">tolerance</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`tolerance`&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -476,7 +480,8 @@
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and subsequent observations.</span>
+<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
@@ -505,18 +510,18 @@
 <span class="sd">    Args:</span>
 <span class="sd">        step_time (float): length of the discrete step time, :math:`\Delta t`.</span>
 <span class="sd">        time_constant (float): time constant of exponential decay, :math:`\tau`.</span>
-<span class="sd">        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.</span>
-<span class="sd">        scale (int | float | complex): multiplicitive scale for contributions to trace, :math:`S`.</span>
-<span class="sd">        criterion (OneToOne[torch.Tensor]): function to test if the input is considered a match for the</span>
-<span class="sd">            purpose of tracing, :math:`K`.</span>
-<span class="sd">        history_len (float, optional): length of time over which results should be stored,</span>
-<span class="sd">            in the same units as :math:`\Delta t`. Defaults to 0.0.</span>
+<span class="sd">        amplitude (int | float | complex): value to set trace to for matching elements,</span>
+<span class="sd">            :math:`a`.</span>
+<span class="sd">        scale (int | float | complex): multiplicitive scale for contributions to trace,</span>
+<span class="sd">            :math:`S`.</span>
+<span class="sd">        criterion (OneToOne[torch.Tensor]): function to test if the input is considered</span>
+<span class="sd">            a match for the purpose of tracing, :math:`K`.</span>
+<span class="sd">        history_len (float, optional): length of time over which results should be</span>
+<span class="sd">            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of :py:data:`torch.bool`.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        Only a single input tensor can be provided to :py:meth:`forward` for this class.</span>
+<span class="sd">        The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of</span>
+<span class="sd">        :py:data:`torch.bool`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -532,15 +537,13 @@
         <span class="c1"># call superclass constructor</span>
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
 
-        <span class="c1"># register state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">time_constant</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;decay&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
+        <span class="c1"># reducer attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
+            <span class="s2">&quot;`time_constant`&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">amplitude</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
-
-        <span class="c1"># set non-persistent function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`amplitude`&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
 
     <span class="nd">@property</span>
@@ -612,7 +615,8 @@
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and subsequent observations.</span>
+<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
@@ -641,18 +645,18 @@
 <span class="sd">    Args:</span>
 <span class="sd">        step_time (float): length of the discrete step time, :math:`\Delta t`.</span>
 <span class="sd">        time_constant (float): time constant of exponential decay, :math:`\tau`.</span>
-<span class="sd">        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.</span>
-<span class="sd">        scale (int | float | complex): multiplicitive scale for contributions to trace, :math:`S`.</span>
-<span class="sd">        criterion (OneToOne[torch.Tensor]): function to test if the input is considered a match for the</span>
-<span class="sd">            purpose of tracing, :math:`K`.</span>
-<span class="sd">        history_len (float, optional): length of time over which results should be stored,</span>
-<span class="sd">            in the same units as :math:`\Delta t`. Defaults to 0.0.</span>
+<span class="sd">        amplitude (int | float | complex): value to add to trace for matching elements,</span>
+<span class="sd">            :math:`a`.</span>
+<span class="sd">        scale (int | float | complex): multiplicitive scale for contributions to trace,</span>
+<span class="sd">            :math:`S`.</span>
+<span class="sd">        criterion (OneToOne[torch.Tensor]): function to test if the input is considered</span>
+<span class="sd">            a match for the purpose of tracing, :math:`K`.</span>
+<span class="sd">        history_len (float, optional): length of time over which results should be</span>
+<span class="sd">            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of :py:data:`torch.bool`.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        Only a single input tensor can be provided to :py:meth:`forward` for this class.</span>
+<span class="sd">        The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of</span>
+<span class="sd">        :py:data:`torch.bool`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -669,14 +673,12 @@
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
 
         <span class="c1"># register state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">time_constant</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;decay&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
+            <span class="s2">&quot;`time_constant`&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">amplitude</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
-
-        <span class="c1"># set non-persistent function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`amplitude`&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
 
     <span class="nd">@property</span>
@@ -748,7 +750,8 @@
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and subsequent observations.</span>
+<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>

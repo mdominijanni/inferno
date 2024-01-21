@@ -1,9 +1,10 @@
-from __future__ import annotations
-import torch
 from .base import FoldingReducer
 import inferno
+from inferno._internal import numeric_limit
 import inferno.neural.functional as nf
 from inferno.typing import OneToOne
+import math
+import torch
 
 
 class NearestTraceReducer(FoldingReducer):
@@ -21,15 +22,14 @@ class NearestTraceReducer(FoldingReducer):
     Args:
         step_time (float): length of the discrete step time, :math:`\Delta t`.
         time_constant (float): time constant of exponential decay, :math:`\tau`.
-        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.
-        target (int | float | bool | complex): target value to set trace to, :math:`f^*`.
+        amplitude (int | float | complex): value to set trace to for matching elements,
+            :math:`a`.
+        target (int | float | bool | complex): target value test for when determining
+            if an input is a match, :math:`f^*`.
         tolerance (int | float | None, optional): allowable absolute difference to
             still count as a match, :math:`\epsilon`. Defaults to None.
-        history_len (float, optional): length of time over which results should be stored,
-            in the same units as :math:`\Delta t`. Defaults to 0.0.
-
-    Note:
-        Only a single input tensor can be provided to :py:meth:`forward` for this class.
+        history_len (float, optional): length of time over which results should be
+            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
     """
 
     def __init__(
@@ -45,15 +45,17 @@ class NearestTraceReducer(FoldingReducer):
         # call superclass constructor
         FoldingReducer.__init__(self, step_time, history_len)
 
-        # register state
-        self.register_extra("time_constant", float(time_constant))
-        self.register_buffer(
-            "decay", torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        # reducer attributes
+        self.time_constant = numeric_limit(
+            "`time_constant`", time_constant, 0, "gt", float
         )
-        self.register_buffer("amplitude", torch.tensor(amplitude))
-        self.register_buffer("target", torch.tensor(target))
-        self.register_buffer(
-            "tolerance", None if tolerance is None else float(tolerance)
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.amplitude = numeric_limit("`amplitude`", amplitude, 0, "neq", None)
+        self.target = target
+        self.tolerance = (
+            None
+            if tolerance is None
+            else numeric_limit("`tolerance`", tolerance, 0, "gt", float)
         )
 
     @property
@@ -117,7 +119,8 @@ class NearestTraceReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float): length of time between the prior and subsequent observations.
+            step_data (float): length of time between the prior and
+                subsequent observations.
 
         Returns:
             torch.Tensor: interpolated data at sample time.
@@ -142,15 +145,14 @@ class CumulativeTraceReducer(FoldingReducer):
     Args:
         step_time (float): length of the discrete step time, :math:`\Delta t`.
         time_constant (float): time constant of exponential decay, :math:`\tau`.
-        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.
-        target (int | float | bool | complex): target value to set trace to, :math:`f^*`.
+        amplitude (int | float | complex): value to add to trace for matching elements,
+            :math:`a`.
+        target (int | float | bool | complex): target value test for when determining
+            if an input is a match, :math:`f^*`.
         tolerance (int | float | None, optional): allowable absolute difference to
             still count as a match, :math:`\epsilon`. Defaults to None.
-        history_len (float, optional): length of time over which results should be stored,
-            in the same units as :math:`\Delta t`. Defaults to 0.0.
-
-    Note:
-        Only a single input tensor can be provided to :py:meth:`forward` for this class.
+        history_len (float, optional): length of time over which results should be
+            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
     """
 
     def __init__(
@@ -166,15 +168,17 @@ class CumulativeTraceReducer(FoldingReducer):
         # call superclass constructor
         FoldingReducer.__init__(self, step_time, history_len)
 
-        # register state
-        self.register_extra("time_constant", float(time_constant))
-        self.register_buffer(
-            "decay", torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        # reducer attributes
+        self.time_constant = numeric_limit(
+            "`time_constant`", time_constant, 0, "gt", float
         )
-        self.register_buffer("amplitude", torch.tensor(amplitude))
-        self.register_buffer("target", torch.tensor(target))
-        self.register_buffer(
-            "tolerance", None if tolerance is None else float(tolerance)
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.amplitude = numeric_limit("`amplitude`", amplitude, 0, "neq", None)
+        self.target = target
+        self.tolerance = (
+            None
+            if tolerance is None
+            else numeric_limit("`tolerance`", tolerance, 0, "gt", float)
         )
 
     @property
@@ -238,7 +242,8 @@ class CumulativeTraceReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float): length of time between the prior and subsequent observations.
+            step_data (float): length of time between the prior and
+                subsequent observations.
 
         Returns:
             torch.Tensor: interpolated data at sample time.
@@ -263,18 +268,18 @@ class ScaledNearestTraceReducer(FoldingReducer):
     Args:
         step_time (float): length of the discrete step time, :math:`\Delta t`.
         time_constant (float): time constant of exponential decay, :math:`\tau`.
-        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.
-        scale (int | float | complex): multiplicitive scale for contributions to trace, :math:`S`.
-        criterion (OneToOne[torch.Tensor]): function to test if the input is considered a match for the
-            purpose of tracing, :math:`K`.
-        history_len (float, optional): length of time over which results should be stored,
-            in the same units as :math:`\Delta t`. Defaults to 0.0.
+        amplitude (int | float | complex): value to set trace to for matching elements,
+            :math:`a`.
+        scale (int | float | complex): multiplicitive scale for contributions to trace,
+            :math:`S`.
+        criterion (OneToOne[torch.Tensor]): function to test if the input is considered
+            a match for the purpose of tracing, :math:`K`.
+        history_len (float, optional): length of time over which results should be
+            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
-        The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of :py:data:`torch.bool`.
-
-    Note:
-        Only a single input tensor can be provided to :py:meth:`forward` for this class.
+        The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
+        :py:data:`torch.bool`.
     """
 
     def __init__(
@@ -290,15 +295,13 @@ class ScaledNearestTraceReducer(FoldingReducer):
         # call superclass constructor
         FoldingReducer.__init__(self, step_time, history_len)
 
-        # register state
-        self.register_extra("time_constant", float(time_constant))
-        self.register_buffer(
-            "decay", torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        # reducer attributes
+        self.time_constant = numeric_limit(
+            "`time_constant`", time_constant, 0, "gt", float
         )
-        self.register_buffer("amplitude", torch.tensor(amplitude))
-        self.register_buffer("scale", torch.tensor(scale))
-
-        # set non-persistent function
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.amplitude = numeric_limit("`amplitude`", amplitude, 0, "neq", None)
+        self.scale = scale
         self.criterion = criterion
 
     @property
@@ -362,7 +365,8 @@ class ScaledNearestTraceReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float): length of time between the prior and subsequent observations.
+            step_data (float): length of time between the prior and
+                subsequent observations.
 
         Returns:
             torch.Tensor: interpolated data at sample time.
@@ -387,18 +391,18 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
     Args:
         step_time (float): length of the discrete step time, :math:`\Delta t`.
         time_constant (float): time constant of exponential decay, :math:`\tau`.
-        amplitude (int | float | complex): value to set trace to for matching elements, :math:`a`.
-        scale (int | float | complex): multiplicitive scale for contributions to trace, :math:`S`.
-        criterion (OneToOne[torch.Tensor]): function to test if the input is considered a match for the
-            purpose of tracing, :math:`K`.
-        history_len (float, optional): length of time over which results should be stored,
-            in the same units as :math:`\Delta t`. Defaults to 0.0.
+        amplitude (int | float | complex): value to add to trace for matching elements,
+            :math:`a`.
+        scale (int | float | complex): multiplicitive scale for contributions to trace,
+            :math:`S`.
+        criterion (OneToOne[torch.Tensor]): function to test if the input is considered
+            a match for the purpose of tracing, :math:`K`.
+        history_len (float, optional): length of time over which results should be
+            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
-        The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of :py:data:`torch.bool`.
-
-    Note:
-        Only a single input tensor can be provided to :py:meth:`forward` for this class.
+        The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
+        :py:data:`torch.bool`.
     """
 
     def __init__(
@@ -415,14 +419,12 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, history_len)
 
         # register state
-        self.register_extra("time_constant", float(time_constant))
-        self.register_buffer(
-            "decay", torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        self.time_constant = numeric_limit(
+            "`time_constant`", time_constant, 0, "gt", float
         )
-        self.register_buffer("amplitude", torch.tensor(amplitude))
-        self.register_buffer("scale", torch.tensor(scale))
-
-        # set non-persistent function
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.amplitude = numeric_limit("`amplitude`", amplitude, 0, "neq", None)
+        self.scale = scale
         self.criterion = criterion
 
     @property
@@ -486,7 +488,8 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float): length of time between the prior and subsequent observations.
+            step_data (float): length of time between the prior and
+                subsequent observations.
 
         Returns:
             torch.Tensor: interpolated data at sample time.

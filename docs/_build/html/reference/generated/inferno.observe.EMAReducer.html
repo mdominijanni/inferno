@@ -241,15 +241,17 @@ where smoothing factor <span class="math notranslate nohighlight">\(\alpha\)</sp
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – exponential smoothing factor, <span class="math notranslate nohighlight">\(\alpha\)</span>.</p></li>
 <li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of time between observations, <span class="math notranslate nohighlight">\(\Delta t\)</span>.</p></li>
-<li><p><strong>history_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – length of time over which results should be stored,
-in the same units as <span class="math notranslate nohighlight">\(\Delta t\)</span>. Defaults to 0.0.</p></li>
+<li><p><strong>history_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – length of time over which results should be
+stored, in the same units as <span class="math notranslate nohighlight">\(\Delta t\)</span>. Defaults to 0.0.</p></li>
 </ul>
 </dd>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">alpha</span></code> is decoupled from the step time, so if the step time changes, then the underlying time
-constant will change, <code class="docutils literal notranslate"><span class="pre">alpha</span></code> will remain the same.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">alpha</span></code> is decoupled from the step time, so if the step time changes, then the</dt><dd><p>underlying time constant will change, <code class="docutils literal notranslate"><span class="pre">alpha</span></code> will remain the same.</p>
+</dd>
+</dl>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.observe.EMAReducer.fold">
@@ -299,7 +301,8 @@ None if no prior observations.</p></li>
 <li><p><strong>prev_data</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – most recent observation prior to sample time.</p></li>
 <li><p><strong>next_data</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – most recent observation subsequent to sample time.</p></li>
 <li><p><strong>sample_at</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – relative time at which to sample data.</p></li>
-<li><p><strong>step_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of time between the prior and subsequent observations.</p></li>
+<li><p><strong>step_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of time between the prior and subsequent
+observations.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

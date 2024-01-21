@@ -12,10 +12,10 @@ class EventReducer(FoldingReducer):
         step_time (float): length of time between observation.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             matches for it to be considered an event.
-        history_len (float, optional): length of time over which results should be stored,
-            in the same units as ``step_time``. Defaults to 0.0.
+        history_len (float, optional): length of time over which results should be
+            stored, in the same units as ``step_time``. Defaults to 0.0.
 
-    Note:
+    Important:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
         :py:data:`torch.bool`.
     """
@@ -72,7 +72,8 @@ class EventReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float): length of time between the prior and subsequent observations.
+            step_data (float): length of time between the prior and
+                subsequent observations.
 
         Returns:
             torch.Tensor: interpolated data at sample time.
@@ -85,8 +86,8 @@ class PassthroughReducer(FoldingReducer):
 
     Args:
         step_time (float): length of time between observation.
-        history_len (float, optional): length of time over which results should be stored,
-            in the same units as ``step_time``. Defaults to 0.0.
+        history_len (float, optional): length of time over which results should be
+            stored, in the same units as ``step_time``. Defaults to 0.0.
     """
     def __init__(
         self,
@@ -133,7 +134,8 @@ class PassthroughReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float): length of time between the prior and subsequent observations.
+            step_data (float): length of time between the prior and
+                subsequent observations.
 
         Returns:
             torch.Tensor: interpolated data at sample time.

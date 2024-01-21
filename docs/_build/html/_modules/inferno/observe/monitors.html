@@ -228,12 +228,13 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for recording input, output, or state of a Module.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        reducer (Reducer): underlying means for reducing samples over time and storing them.</span>
+<span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
+<span class="sd">            and storing them.</span>
 <span class="sd">        module (Module, optional): module to register as the target for monitoring,</span>
 <span class="sd">            can be modified after construction. Defaults to None.</span>
-<span class="sd">        prehook (Callable | None, optional): function to call before registrant&#39;s</span>
+<span class="sd">        prehook (Callable | None, optional): function to call before hooked&#39;s</span>
 <span class="sd">            :py:meth:`~torch.nn.Module.forward`. Defaults to None.</span>
-<span class="sd">        posthook (Callable | None, optional): function to call after registrant&#39;s</span>
+<span class="sd">        posthook (Callable | None, optional): function to call after hooked&#39;s</span>
 <span class="sd">            :py:meth:`~torch.nn.Module.forward`. Defaults to None.</span>
 <span class="sd">        prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to</span>
 <span class="sd">            :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to None.</span>
@@ -243,6 +244,11 @@
 <span class="sd">            being monitored is in train mode. Defaults to True.</span>
 <span class="sd">        eval_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in eval mode. Defaults to True.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        See :py:meth:`~torch.nn.Module.register_forward_pre_hook` and</span>
+<span class="sd">        :py:meth:`~torch.nn.Module.register_forward_hook` for keyword arguments that</span>
+<span class="sd">        can be passed with ``prehook_kwargs`` and ``posthook_kwargs`` respectively.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -296,22 +302,24 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records the inputs passed to a Module.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        reducer (Reducer): underlying means for reducing samples over time and storing them.</span>
+<span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
+<span class="sd">            and storing them.</span>
 <span class="sd">        module (Module, optional): module to register as the target for monitoring,</span>
-<span class="sd">            can be modified after construction.Defaults to None.</span>
+<span class="sd">            can be modified after construction. Defaults to None.</span>
 <span class="sd">        train_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in train mode. Defaults to True.</span>
 <span class="sd">        eval_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in eval mode. Defaults to True.</span>
 <span class="sd">        prepend (bool, optional): if this monitor should be called before other</span>
-<span class="sd">            registered forward hooks. Defaults to False.</span>
+<span class="sd">            registered forward prehooks. Defaults to False.</span>
 <span class="sd">        mapping (ManyToOne[torch.Tensor] | None, optional): modifies/selects</span>
 <span class="sd">            which inputs to forward to reducer. Defaults to None.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The inputs, which are received as a tuple, will be unpacked and sent to the reducer.</span>
-<span class="sd">        If there is only one input tensor, this will work as expected. Otherwise a ``mapping``</span>
-<span class="sd">        must be specified which takes the unpacked inputs and returns a single tensor.</span>
+<span class="sd">        The inputs, which are received as a tuple, will be unpacked and sent to</span>
+<span class="sd">        the reducer. If there is only one input tensor, this will work as expected.</span>
+<span class="sd">        Otherwise a ``mapping`` must be specified which takes the unpacked inputs</span>
+<span class="sd">        and returns a single tensor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -325,9 +333,12 @@
     <span class="p">):</span>
         <span class="c1"># determine arguments for superclass constructor</span>
         <span class="k">if</span> <span class="n">mapping</span><span class="p">:</span>
+
             <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
                 <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
+
         <span class="k">else</span><span class="p">:</span>
+
             <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
                 <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
 
@@ -350,22 +361,24 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records the outputs returned from a Module.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        reducer (Reducer): underlying means for reducing samples over time and storing them.</span>
+<span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
+<span class="sd">            and storing them.</span>
 <span class="sd">        module (Module, optional): module to register as the target for monitoring,</span>
-<span class="sd">            can be modified after construction.Defaults to None.</span>
+<span class="sd">            can be modified after construction. Defaults to None.</span>
 <span class="sd">        train_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in train mode. Defaults to True.</span>
 <span class="sd">        eval_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in eval mode. Defaults to True.</span>
 <span class="sd">        prepend (bool, optional): if this monitor should be called before other</span>
-<span class="sd">            registered forward hooks. Defaults to False.</span>
+<span class="sd">            registered forward posthooks. Defaults to False.</span>
 <span class="sd">        mapping (Callable[[Any], torch.Tensor] | None, optional): modifies/selects</span>
-<span class="sd">            outputs to forward to reducer. Defaults to None.</span>
+<span class="sd">            which outputs to forward to the reducer. Defaults to None.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The output depends on the :py:meth:`~torch.nn.Module.forward` of the :py:class:`~torch.nn.Module`</span>
-<span class="sd">        being called. If it a single tensor, it will work as expected. Otherwise a ``mapping``</span>
-<span class="sd">        must be specified which takes the output and returns a single tensor.</span>
+<span class="sd">        The output depends on the :py:meth:`~torch.nn.Module.forward` of the</span>
+<span class="sd">        :py:class:`~torch.nn.Module` being called. If it a single tensor, it will</span>
+<span class="sd">        work as expected. Otherwise a ``mapping`` must be specified which takes the</span>
+<span class="sd">        output and returns a single tensor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -375,14 +388,16 @@
         <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">mapping</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
-        <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mapping</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># determine arguments for superclass constructor</span>
         <span class="k">if</span> <span class="n">mapping</span><span class="p">:</span>
+
             <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
                 <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
+
         <span class="k">else</span><span class="p">:</span>
+
             <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
                 <span class="n">reducer</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
 
@@ -405,21 +420,24 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records the state of an attribute in a Module.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        reducer (Reducer): underlying means for reducing samples over time and storing them.</span>
+<span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
+<span class="sd">            and storing them.</span>
 <span class="sd">        attr (str): attribute or nested attribute to target.</span>
 <span class="sd">        module (Module, optional): module to register as the target for monitoring,</span>
-<span class="sd">            can be modified after construction.Defaults to None.</span>
+<span class="sd">            can be modified after construction. Defaults to None.</span>
 <span class="sd">        train_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in train mode. Defaults to True.</span>
 <span class="sd">        eval_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in eval mode. Defaults to True.</span>
 <span class="sd">        prepend (bool, optional): if this monitor should be called before other</span>
-<span class="sd">            registered forward hooks. Defaults to False.</span>
+<span class="sd">            registered forward prehooks or posthooks. Defaults to False.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The nested attribute should be specified with dot notation. For instance, if the registrant has an attribute</span>
-<span class="sd">        ``a`` which in turn has an attribute ``b`` that should be monitored, then ``attr`` should be ``&#39;a.b&#39;``. Even</span>
-<span class="sd">        with nested attributes, the monitor&#39;s hook will be tied to the registrant.</span>
+<span class="sd">        The nested attribute should be specified with dot notation. For instance,</span>
+<span class="sd">        if the observed module has an attribute ``a`` which in turn has an</span>
+<span class="sd">        attribute ``b`` that should be monitored, then ``attr`` should be</span>
+<span class="sd">        `&#39;a.b&#39;``. Even with nested attributes, the monitor&#39;s hook will be tied to</span>
+<span class="sd">        the module with which it is registered.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -434,14 +452,18 @@
     <span class="p">):</span>
         <span class="c1"># determine arguments for superclass constructor</span>
         <span class="k">if</span> <span class="n">as_prehook</span><span class="p">:</span>
+
             <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
                 <span class="n">reducer</span><span class="p">(</span><span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+
             <span class="n">prehook_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span>
             <span class="n">posthook</span><span class="p">,</span> <span class="n">posthook_kwargs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="k">else</span><span class="p">:</span>
+
             <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
                 <span class="n">reducer</span><span class="p">(</span><span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+
             <span class="n">posthook_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span>
             <span class="n">prehook</span><span class="p">,</span> <span class="n">prehook_kwargs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
@@ -466,19 +488,22 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies a function to prehook arguments and passes the results to the reducer.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        reducer (Reducer): underlying means for reducing samples over time and storing them.</span>
+<span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
+<span class="sd">            and storing them.</span>
 <span class="sd">        mapping (Callable[[Module, tuple[Any, ...]], torch.Tensor]): function</span>
 <span class="sd">            applied to the hook arguments with output passed to the reducer.</span>
 <span class="sd">        module (Module, optional): module to register as the target for monitoring,</span>
-<span class="sd">            can be modified after construction.Defaults to None.</span>
+<span class="sd">            can be modified after construction. Defaults to None.</span>
 <span class="sd">        train_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in train mode. Defaults to True.</span>
 <span class="sd">        eval_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in eval mode. Defaults to True.</span>
 <span class="sd">        prepend (bool, optional): if this monitor should be called before other</span>
 <span class="sd">            registered forward hooks. Defaults to False.</span>
+<span class="sd">        with_kwargs (bool, optional): if keyword arguments to the forward function</span>
+<span class="sd">            should be included in the hook call. Defaults to False.</span>
 
-<span class="sd">    Note:</span>
+<span class="sd">    See Also:</span>
 <span class="sd">        See :py:meth:`~torch.nn.Module.register_forward_pre_hook` for more information</span>
 <span class="sd">        on the contents of the prehook arguments.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -491,10 +516,18 @@
         <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">with_kwargs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># hook function</span>
-        <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-            <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">with_kwargs</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
 
         <span class="c1"># construct superclass</span>
         <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -526,8 +559,10 @@
 <span class="sd">            being monitored is in eval mode. Defaults to True.</span>
 <span class="sd">        prepend (bool, optional): if this monitor should be called before other</span>
 <span class="sd">            registered forward hooks. Defaults to False.</span>
+<span class="sd">        with_kwargs (bool, optional): if keyword arguments to the forward function</span>
+<span class="sd">            should be included in the hook call. Defaults to False.</span>
 
-<span class="sd">    Note:</span>
+<span class="sd">    See Also:</span>
 <span class="sd">        See :py:meth:`~torch.nn.Module.register_forward_hook` for more information</span>
 <span class="sd">        on the contents of the posthook arguments.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -540,10 +575,18 @@
         <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">with_kwargs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># hook function</span>
-        <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
-            <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">with_kwargs</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
 
         <span class="c1"># construct superclass</span>
         <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>

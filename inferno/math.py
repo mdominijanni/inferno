@@ -17,10 +17,12 @@ def exp(
         y = e^x
 
     Args:
-        x (int | float | complex | torch.Tensor | numpy.ndarray | numpy.number): value by which to raise :math:`e`.
+        x (int | float | complex | torch.Tensor | numpy.ndarray | numpy.number): value
+            by which to raise :math:`e`.
 
     Returns:
-        float | complex | torch.Tensor | numpy.ndarray | numpy.number: :math:`e` raised to the input.
+        float | complex | torch.Tensor | numpy.ndarray | numpy.number: :math:`e`
+        raised to the input.
     """
     raise NotImplementedError
 

@@ -8,6 +8,18 @@ def numeric_limit(
     op: Literal["lt", "lte", "gt", "gte", "neq"],
     cast: type | None = None,
 ) -> Any:
+    r"""Casts a value and compares to a limit, raising an error if the comparison is false.
+
+    Args:
+        name (str): variable name string for the error message.
+        val (Any): value being tested.
+        lim (Any): comparison value.
+        op (Literal["lt", "lte", "gt", "gte", "neq"]): operation for comparison.
+        cast (type | None, optional): type to cast value to. Defaults to None.
+
+    Returns:
+        Any: casted value.
+    """
     # cast value if a type is given
     if val is not None:
         val = cast(val)
@@ -95,6 +107,20 @@ def numeric_interval(
     op: Literal["closed", "open", "left-open", "right-open", "c", "o", "lo", "ro"],
     cast: type | None = None,
 ) -> Any:
+    """Casts a value and compares to a range, raising an error if it falls outside.
+
+    Args:
+        name (str): variable name string for the error message.
+        val (Any): value being tested.
+        lower (Any): lower bound of the range.
+        upper (Any): upper bound of the range.
+        op (Literal["closed", "open", "left-open", "right-open", "c", "o", "lo", "ro"]):
+            kind of range to test.
+        cast (type | None, optional): type used for casting. Defaults to None.
+
+    Returns:
+        Any: casted value.
+    """
     # cast value if a type is given
     if val is not None:
         val = cast(val)
@@ -159,6 +185,14 @@ def instance_of(
     obj: Any,
     typespec: type | tuple[type, ...],
 ) -> None:
+    """Checks if an object is an instance of a type or tuple thereof and raise an error if not.
+
+    Args:
+        name (str): variable name string for the error message.
+        obj (Any): object being tested.
+        typespec (type | tuple[type, ...]): type or tuple of types being tested.
+    """
+
     # inner function for type names
     def typename(atype):
         if hasattr(atype, "__name__"):
@@ -169,17 +203,17 @@ def instance_of(
     # test if object meets type specification
     if not isinstance(obj, typespec):
         # type specification is tuple of types
-        if not isinstance(typespec, type):
+        if isinstance(typespec, tuple):
             raise TypeError(
                 f"{typename(obj)} {name} must be an instance of one of "
                 f"{', '.join(typename(ts) for ts in typespec)}."
             )
 
-        # type specification is type
+        # type specification is not a tuple
         else:
             raise TypeError(
-                f"{type(obj).__name__} {name} must be an instance of "
-                f"{typespec.__name__}."
+                f"{typename(obj).__name__} {name} must be an instance of "
+                f"{typename(typespec)}."
             )
 
 
@@ -188,6 +222,14 @@ def attr_members(
     obj: Any,
     attr: str | tuple[str, ...],
 ) -> None:
+    """Checks if an object contains one or more attributes and raises an error if it doesn't.
+
+    Args:
+        name (str): variable name string for the error message.
+        obj (Any): object being tested.
+        attr (str | tuple[str, ...]): attributes being checked for.
+    """
+
     # inner function for type names
     def typename(atype):
         if hasattr(atype, "__name__"):
@@ -199,13 +241,14 @@ def attr_members(
     if isinstance(attr, str):
         if not hasattr(obj, attr):
             raise RuntimeError(
-                f"{typename(obj)} {name} must have the " f"attribute {attr}."
+                f"{typename(obj)} {name} is missing the attribute '{attr}'."
             )
 
     # multiple attribute case
     else:
+        sep = "', '"
         if not all(map(lambda a: hasattr(obj, a), attr)):
             raise RuntimeError(
-                f"{typename(obj)} {name} must have the "
-                f"attributes {', '.join(attr)}."
+                f"{typename(obj)} {name} is missing the "
+                f"attributes '{sep.join(filter(lambda a: hasattr(obj, a), attr))}'."
             )

@@ -1,7 +1,7 @@
-from __future__ import annotations
-import torch
 from .base import FoldingReducer
 import inferno
+from inferno._internal import numeric_interval
+import torch
 
 
 class EMAReducer(FoldingReducer):
@@ -24,12 +24,12 @@ class EMAReducer(FoldingReducer):
     Args:
         alpha (float): exponential smoothing factor, :math:`\alpha`.
         step_time (float): length of time between observations, :math:`\Delta t`.
-        history_len (float, optional): length of time over which results should be stored,
-            in the same units as :math:`\Delta t`. Defaults to 0.0.
+        history_len (float, optional): length of time over which results should be
+            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
-        ``alpha`` is decoupled from the step time, so if the step time changes, then the underlying time
-        constant will change, ``alpha`` will remain the same.
+        ``alpha`` is decoupled from the step time, so if the step time changes, then the
+            underlying time constant will change, ``alpha`` will remain the same.
     """
 
     def __init__(
@@ -42,8 +42,8 @@ class EMAReducer(FoldingReducer):
         # call superclass constructor
         FoldingReducer.__init__(self, step_time, history_len)
 
-        # register state
-        self.register_buffer("alpha", torch.tensor(float(alpha)))
+        # set state
+        self.alpha = numeric_interval("`alpha`", alpha, 0, 1, "closed", float)
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of exponential smoothing.
@@ -82,7 +82,8 @@ class EMAReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float): length of time between the prior and subsequent observations.
+            step_data (float): length of time between the prior and subsequent
+                observations.
 
         Returns:
             torch.Tensor: interpolated data at sample time.
