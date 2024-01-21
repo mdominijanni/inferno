@@ -45,6 +45,10 @@ class Normalization(Hook):
         # sanity check arguments
         _ = numeric_limit("`order`", order, 0, "neq", None)
         _ = numeric_limit("`scale`", scale, 0, "neq", None)
+        if not train_update and not eval_update:
+            raise RuntimeError(
+                "at least one of `train_update` and `eval_update` must be True."
+            )
 
         # configure as forward prehook
         if as_prehook:
@@ -124,7 +128,11 @@ class Clamping(Hook):
             raise TypeError("`min` and `max` cannot both be None.")
         if min is not None and max is not None and min >= max:
             raise ValueError(
-                f"received `max` of {max} which not greater than `min` of {min}."
+                f"received `max` of {max} not greater than `min` of {min}."
+            )
+        if not train_update and not eval_update:
+            raise RuntimeError(
+                "at least one of `train_update` and `eval_update` must be True."
             )
 
         # configure as forward prehook

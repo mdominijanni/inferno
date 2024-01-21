@@ -1,4 +1,4 @@
-from .common.infrastructure import (
+from .infrastructure import (
     Module,
     Configuration,
     Hook,
@@ -6,7 +6,7 @@ from .common.infrastructure import (
     HistoryModule,
 )
 
-from .common.math import (
+from .math import (
     exp,
     normalize,
     simple_exponential_smoothing,
@@ -18,7 +18,7 @@ from .common.math import (
     interp_exp_decay,
 )
 
-from .common.tensor import (
+from .tensor import (
     zeros,
     ones,
     empty,
