@@ -242,29 +242,20 @@
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        \begin{align*}</span>
-<span class="sd">            x^{(t)} &amp;=</span>
-<span class="sd">            \begin{cases}</span>
-<span class="sd">                1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t = t^f \text{ and cumulative trace} \\</span>
-<span class="sd">                1 &amp; t = t^f \text{ and nearest trace} \\</span>
-<span class="sd">                x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t \neq t^f</span>
-<span class="sd">            \end{cases} \\ \\</span>
-<span class="sd">            A_+ &amp;=</span>
-<span class="sd">            \begin{cases}</span>
-<span class="sd">                \Theta(w_\text{max} - w)\eta_\text{post} &amp; \exists w_\text{max} \text{ and hard bounding} \\</span>
-<span class="sd">                (w_\text{max} - w)^{\mu_+}\eta_\text{post} &amp; \exists w_\text{max} \text{ and soft bounding} \\</span>
-<span class="sd">                \eta_\text{post} &amp; \text{otherwise}</span>
-<span class="sd">            \end{cases} \\ \\</span>
-<span class="sd">            A_- &amp;=</span>
-<span class="sd">            \begin{cases}</span>
-<span class="sd">                \Theta(w - w_\text{min})\eta_\text{pre} &amp; \exists w_\text{min} \text{ and hard bounding} \\</span>
-<span class="sd">                (w - w_\text{min})^{\mu_-}\eta_\text{pre} &amp; \exists w_\text{min} \text{ and soft bounding} \\</span>
-<span class="sd">                \eta_\text{pre} &amp; \text{otherwise}</span>
-<span class="sd">            \end{cases}</span>
-<span class="sd">        \end{align*}</span>
+<span class="sd">        x^{(t)} &amp;=</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t = t^f \text{ and cumulative trace} \\</span>
+<span class="sd">            1 &amp; t = t^f \text{ and nearest trace} \\</span>
+<span class="sd">            x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t \neq t^f</span>
+<span class="sd">        \end{cases}</span>
 
 <span class="sd">    :math:`t` and :math:`t^f` are the current time and the time of the most recent</span>
-<span class="sd">    spike, respectively.</span>
+<span class="sd">    spike, respectively. :math:`A_+` and :math:`A_-` vary with weight dependence, but</span>
+<span class="sd">    by default are.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        A_+ = \eta_\text{post} \qquad A_- = \eta_\text{pre}</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        step_time (float): length of a simulation time step, :math:`\Delta t`,</span>
@@ -293,6 +284,12 @@
 <span class="sd">            Defaults to None.</span>
 <span class="sd">        wmax (float | None, optional): upper bound for weights., :math:`w_\text{max}`</span>
 <span class="sd">            Defaults to None.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        For more details and references, visit</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)`,</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding`, and</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>

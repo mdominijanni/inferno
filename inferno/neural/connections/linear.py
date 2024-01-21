@@ -39,15 +39,15 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
         ``LinearDense.weight``, ``LinearDense.delay``:
 
-        :math:`\prod(N_0, \cdots) \times \prod(M_0, \cdots)`
+        :math:`\prod(N_0, \ldots) \times \prod(M_0, \ldots)`
 
         ``LinearDense.bias``:
 
         :math:`(N_0 \cdot \cdots)`
 
         Where:
-            * :math:`N_0, \cdots` are the unbatched output dimensions.
-            * :math:`M_0, \cdots` are the unbatched input dimensions.
+            * :math:`N_0, \ldots` are the unbatched output dimensions.
+            * :math:`M_0, \ldots` are the unbatched input dimensions.
 
     Note:
         When ``delay`` is None, no ``delay_`` parameter is created and altering the
@@ -199,7 +199,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
             Where:
                 * :math:`B` is the batch size.
                 * :math:`M` is the number of elements across input dimensions.
-                * :math:`M_0, \cdots` are the unbatched input dimensions.
+                * :math:`M_0, \ldots` are the unbatched input dimensions.
         """
         return data.view(-1, *self.inshape)
 
@@ -225,7 +225,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`M_0, \cdots` are the unbatched input dimensions.
+                * :math:`M_0, \ldots` are the unbatched input dimensions.
                 * :math:`M` is the number of elements across input dimensions.
         """
         return ein.reduce(data, "b ... -> b (...)")
@@ -321,8 +321,8 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`M_0, \cdots` are the unbatched input dimensions.
-                * :math:`N_0, \cdots` are the unbatched output dimensions.
+                * :math:`M_0, \ldots` are the unbatched input dimensions.
+                * :math:`N_0, \ldots` are the unbatched output dimensions.
 
         Note:
             ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
@@ -376,10 +376,10 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
         ``LinearDirect.weight``, ``LinearDirect.delay``, and ``LinearDirect.bias``:
 
-        :math:`\prod(N_0, \cdots)`
+        :math:`\prod(N_0, \ldots)`
 
         Where:
-            * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+            * :math:`N_0, \ldots` are the unbatched input/output dimensions.
 
     Note:
         When ``delay`` is None, no ``delay_`` parameter is created and altering the
@@ -515,7 +515,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
             Where:
                 * :math:`B` is the batch size.
                 * :math:`N` is the number of elements across input/output dimensions.
-                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+                * :math:`N_0, \ldots` are the unbatched input/output dimensions.
         """
         return data.view(-1, *self.inshape)
 
@@ -541,7 +541,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+                * :math:`N_0, \ldots` are the unbatched input/output dimensions.
                 * :math:`N` is the number of elements across input/output dimensions.
         """
         return ein.reduce(data, "b ... -> b (...)")
@@ -624,7 +624,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+                * :math:`N_0, \ldots` are the unbatched input/output dimensions.
 
         Note:
             ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
@@ -675,7 +675,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
         ``LinearDense.weight``, ``LinearDense.delay``:
 
-        :math:`\prod(N_0, \cdots) \times \prod(N_0, \cdots)`
+        :math:`\prod(N_0, \ldots) \times \prod(N_0, \ldots)`
 
         ``LinearDense.bias``:
 
@@ -855,7 +855,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
             Where:
                 * :math:`B` is the batch size.
                 * :math:`N` is the number of elements across input/output dimensions.
-                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+                * :math:`N_0, \ldots` are the unbatched input/output dimensions.
         """
         return LinearDense.like_input(self, data)
 
@@ -881,7 +881,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
+                * :math:`N_0, \ldots` are the unbatched input/output dimensions.
                 * :math:`N` is the number of elements across input/output dimensions.
         """
         return LinearDense.like_synaptic(self, data)
@@ -968,8 +968,8 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`N_0, \cdots` are the unbatched input/output dimensions.
-                * :math:`N_0, \cdots` are the unbatched output dimensions.
+                * :math:`N_0, \ldots` are the unbatched input/output dimensions.
+                * :math:`N_0, \ldots` are the unbatched output dimensions.
 
         Note:
             ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to

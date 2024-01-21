@@ -257,15 +257,15 @@
 
 <span class="sd">        ``LinearDense.weight``, ``LinearDense.delay``:</span>
 
-<span class="sd">        :math:`\prod(N_0, \cdots) \times \prod(M_0, \cdots)`</span>
+<span class="sd">        :math:`\prod(N_0, \ldots) \times \prod(M_0, \ldots)`</span>
 
 <span class="sd">        ``LinearDense.bias``:</span>
 
 <span class="sd">        :math:`(N_0 \cdot \cdots)`</span>
 
 <span class="sd">        Where:</span>
-<span class="sd">            * :math:`N_0, \cdots` are the unbatched output dimensions.</span>
-<span class="sd">            * :math:`M_0, \cdots` are the unbatched input dimensions.</span>
+<span class="sd">            * :math:`N_0, \ldots` are the unbatched output dimensions.</span>
+<span class="sd">            * :math:`M_0, \ldots` are the unbatched input dimensions.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        When ``delay`` is None, no ``delay_`` parameter is created and altering the</span>
@@ -419,7 +419,7 @@
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">                * :math:`M` is the number of elements across input dimensions.</span>
-<span class="sd">                * :math:`M_0, \cdots` are the unbatched input dimensions.</span>
+<span class="sd">                * :math:`M_0, \ldots` are the unbatched input dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">inshape</span><span class="p">)</span></div>
 
@@ -448,7 +448,7 @@
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
-<span class="sd">                * :math:`M_0, \cdots` are the unbatched input dimensions.</span>
+<span class="sd">                * :math:`M_0, \ldots` are the unbatched input dimensions.</span>
 <span class="sd">                * :math:`M` is the number of elements across input dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">)</span></div>
@@ -553,8 +553,8 @@
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
-<span class="sd">                * :math:`M_0, \cdots` are the unbatched input dimensions.</span>
-<span class="sd">                * :math:`N_0, \cdots` are the unbatched output dimensions.</span>
+<span class="sd">                * :math:`M_0, \ldots` are the unbatched input dimensions.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched output dimensions.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to</span>
@@ -612,10 +612,10 @@
 
 <span class="sd">        ``LinearDirect.weight``, ``LinearDirect.delay``, and ``LinearDirect.bias``:</span>
 
-<span class="sd">        :math:`\prod(N_0, \cdots)`</span>
+<span class="sd">        :math:`\prod(N_0, \ldots)`</span>
 
 <span class="sd">        Where:</span>
-<span class="sd">            * :math:`N_0, \cdots` are the unbatched input/output dimensions.</span>
+<span class="sd">            * :math:`N_0, \ldots` are the unbatched input/output dimensions.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        When ``delay`` is None, no ``delay_`` parameter is created and altering the</span>
@@ -753,7 +753,7 @@
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">                * :math:`N` is the number of elements across input/output dimensions.</span>
-<span class="sd">                * :math:`N_0, \cdots` are the unbatched input/output dimensions.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched input/output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">inshape</span><span class="p">)</span></div>
 
@@ -782,7 +782,7 @@
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
-<span class="sd">                * :math:`N_0, \cdots` are the unbatched input/output dimensions.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched input/output dimensions.</span>
 <span class="sd">                * :math:`N` is the number of elements across input/output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">)</span></div>
@@ -874,7 +874,7 @@
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
-<span class="sd">                * :math:`N_0, \cdots` are the unbatched input/output dimensions.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched input/output dimensions.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to</span>
@@ -929,7 +929,7 @@
 
 <span class="sd">        ``LinearDense.weight``, ``LinearDense.delay``:</span>
 
-<span class="sd">        :math:`\prod(N_0, \cdots) \times \prod(N_0, \cdots)`</span>
+<span class="sd">        :math:`\prod(N_0, \ldots) \times \prod(N_0, \ldots)`</span>
 
 <span class="sd">        ``LinearDense.bias``:</span>
 
@@ -1111,7 +1111,7 @@
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">                * :math:`N` is the number of elements across input/output dimensions.</span>
-<span class="sd">                * :math:`N_0, \cdots` are the unbatched input/output dimensions.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched input/output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">LinearDense</span><span class="o">.</span><span class="n">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
@@ -1140,7 +1140,7 @@
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
-<span class="sd">                * :math:`N_0, \cdots` are the unbatched input/output dimensions.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched input/output dimensions.</span>
 <span class="sd">                * :math:`N` is the number of elements across input/output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">LinearDense</span><span class="o">.</span><span class="n">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
@@ -1236,8 +1236,8 @@
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
-<span class="sd">                * :math:`N_0, \cdots` are the unbatched input/output dimensions.</span>
-<span class="sd">                * :math:`N_0, \cdots` are the unbatched output dimensions.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched input/output dimensions.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched output dimensions.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to</span>

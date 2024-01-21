@@ -47,7 +47,7 @@ def wdep_soft_upper_bounding(
 
     .. math::
 
-        A_+ = (w_\text{max} - w)^{\mu_-} \eta_+
+        A_+ = (w_\text{max} - w)^{\mu_+} \eta_+
 
     Where
 
@@ -70,6 +70,10 @@ def wdep_soft_upper_bounding(
 
     Returns:
         torch.Tensor: amplitudes :math:`A_+` after applying weight bound.
+
+    See Also:
+        For more details and references, visit
+        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.
     """
     return ((wmax - weights) ** power) * amplitude
 
@@ -99,6 +103,9 @@ def wdep_soft_lower_bounding(
     Returns:
         torch.Tensor: amplitudes :math:`A_-` after applying weight bound.
 
+    See Also:
+        For more details and references, visit
+        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.
     """
     return ((weights - wmin) ** power) * amplitude
 
@@ -133,6 +140,10 @@ def wdep_hard_upper_bounding(
 
     Returns:
         torch.Tensor: amplitudes :math:`A_+` after applying weight bound.
+
+    See Also:
+        For more details and references, visit
+        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.
     """
     diff = wmax - weights
     return torch.heaviside(diff, inferno.zeros(diff, shape=((),))) * amplitude
@@ -166,6 +177,10 @@ def wdep_hard_lower_bounding(
 
     Returns:
         torch.Tensor: amplitudes :math:`A_-` after applying weight bound.
+
+    See Also:
+        For more details and references, visit
+        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.
     """
     diff = weights - wmin
     return torch.heaviside(diff, inferno.zeros(diff, shape=((),))) * amplitude

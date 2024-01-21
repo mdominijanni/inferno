@@ -81,11 +81,14 @@ class ShapeMixin(BatchMixin):
         # call superclass constructor
         BatchMixin.__init__(self, batch_size)
 
-        # register extras
+        # validate and set shape
         try:
-            self.register_extra("_shape", (int(shape),))
+            self._shape = numeric_limit("`shape`", shape, 0, "gt", int)
         except TypeError:
-            self.register_extra("_shape", tuple(int(s) for s in shape))
+            self._shape = tuple(
+                numeric_limit(f"`shape[{idx}]`", s, 0, "gt", int)
+                for idx, s in enumerate(shape)
+            )
 
     @property
     def bsize(self) -> int:

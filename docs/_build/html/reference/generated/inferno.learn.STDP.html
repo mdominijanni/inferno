@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="inferno.learn.functional" href="../learn-functional.html" /><link rel="prev" title="LayerwiseUpdater" href="inferno.learn.LayerwiseUpdater.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="RateClassifier" href="inferno.learn.RateClassifier.html" /><link rel="prev" title="LayerwiseUpdater" href="inferno.learn.LayerwiseUpdater.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>STDP - Inferno</title>
@@ -230,29 +230,20 @@ A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]\]</div>
 <p>Where:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{align*}
-    x^{(t)} &amp;=
-    \begin{cases}
-        1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t = t^f \text{ and cumulative trace} \\
-        1 &amp; t = t^f \text{ and nearest trace} \\
-        x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t \neq t^f
-    \end{cases} \\ \\
-    A_+ &amp;=
-    \begin{cases}
-        \Theta(w_\text{max} - w)\eta_\text{post} &amp; \exists w_\text{max} \text{ and hard bounding} \\
-        (w_\text{max} - w)^{\mu_+}\eta_\text{post} &amp; \exists w_\text{max} \text{ and soft bounding} \\
-        \eta_\text{post} &amp; \text{otherwise}
-    \end{cases} \\ \\
-    A_- &amp;=
-    \begin{cases}
-        \Theta(w - w_\text{min})\eta_\text{pre} &amp; \exists w_\text{min} \text{ and hard bounding} \\
-        (w - w_\text{min})^{\mu_-}\eta_\text{pre} &amp; \exists w_\text{min} \text{ and soft bounding} \\
-        \eta_\text{pre} &amp; \text{otherwise}
-    \end{cases}
-\end{align*}\end{split}\]</div>
+\[\begin{split}x^{(t)} &amp;=
+\begin{cases}
+    1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t = t^f \text{ and cumulative trace} \\
+    1 &amp; t = t^f \text{ and nearest trace} \\
+    x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t \neq t^f
+\end{cases}\end{split}\]</div>
 </div>
 <p><span class="math notranslate nohighlight">\(t\)</span> and <span class="math notranslate nohighlight">\(t^f\)</span> are the current time and the time of the most recent
-spike, respectively.</p>
+spike, respectively. <span class="math notranslate nohighlight">\(A_+\)</span> and <span class="math notranslate nohighlight">\(A_-\)</span> vary with weight dependence, but
+by default are.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[A_+ = \eta_\text{post} \qquad A_- = \eta_\text{pre}\]</div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -283,6 +274,13 @@ Defaults to None.</p></li>
 </ul>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>For more details and references, visit
+<a class="reference internal" href="../../zoo/learning-stdp.html#spike-timing-dependent-plasticity-stdp"><span class="std std-ref">Spike Timing-Dependent Plasticity (STDP)</span></a>,
+<a class="reference internal" href="../../zoo/learning-stdp.html#weight-dependence-soft-bounding"><span class="std std-ref">Weight Dependence, Soft Bounding</span></a>, and
+<a class="reference internal" href="../../zoo/learning-stdp.html#weight-dependence-hard-bounding"><span class="std std-ref">Weight Dependence, Hard Bounding</span></a> in the zoo.</p>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.learn.STDP.add_monitors">
 <span class="sig-name descname"><span class="pre">add_monitors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP.add_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP.add_monitors" title="Link to this definition">#</a></dt>
@@ -372,12 +370,12 @@ if a monitor with these names is already associated with <code class="docutils l
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../learn-functional.html">
+          <a class="next-page" href="inferno.learn.RateClassifier.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">inferno.learn.functional</div>
+                <div class="title">RateClassifier</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>

@@ -1,0 +1,8 @@
+﻿RateClassifier
+==============
+
+.. currentmodule:: inferno.learn
+
+.. autoclass:: RateClassifier
+    :members:
+    :show-inheritance:

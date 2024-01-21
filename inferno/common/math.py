@@ -3,6 +3,7 @@ import functools
 import math
 import numpy as np
 import torch
+import torch.nn.functional as F
 from typing import Protocol
 
 
@@ -55,6 +56,7 @@ def normalize(
     order: int | float,
     scale: float | complex = 1.0,
     dims: int | tuple[int] | None = None,
+    epsilon: float = 1e-12,
 ) -> torch.Tensor:
     r"""Normalizes a tensor.
 
@@ -65,13 +67,13 @@ def normalize(
             specified dimensions. Defaults to 1.0.
         dims (int | tuple[int] | None, optional): dimensions along which to normalize,
             all dimensions if None. Defaults to None.
+        epsilon (float, optional): value added to the demoninator in case of
+            zero-valued norms. Defaults to 1e-12.
 
     Returns:
         torch.Tensor: normalized tensor.
     """
-    return scale * (
-        data / torch.linalg.vector_norm(data, ord=order, dim=dims, keepdim=True)
-    )
+    return scale * F.normalize(data, p=order, dim=dims, eps=epsilon)
 
 
 def simple_exponential_smoothing(

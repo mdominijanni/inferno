@@ -11,6 +11,10 @@ from .updaters.sstdp import (
     MSTDPET,
 )
 
+from .classifiers.simple import (
+    RateClassifier,
+)
+
 from .hooks import (
     WeightNormalization,
     WeightClamping,
@@ -21,6 +25,7 @@ __all__ = [
     "STDP",
     "MSTDP",
     "MSTDPET",
+    "RateClassifier",
     "WeightNormalization",
     "WeightClamping",
 ]

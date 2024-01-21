@@ -21,3 +21,12 @@
 
     STDP
 ```
+
+## Classifiers
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    RateClassifier
+```

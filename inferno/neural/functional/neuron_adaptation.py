@@ -77,7 +77,7 @@ def adaptive_currents_linear(
 
         Where:
             * :math:`B` is the batch size.
-            * :math:`N_0, \cdots` are dimensions of the group of neurons simulated.
+            * :math:`N_0, \ldots` are dimensions of the group of neurons simulated.
             * :math:`K` is the number of sets of adaptation parameters.
 
     Tip:
@@ -187,7 +187,7 @@ def adaptive_thresholds_linear_voltage(
 
         Where:
             * :math:`B` is the batch size.
-            * :math:`N_0, \cdots` are dimensions of the group of neurons simulated.
+            * :math:`N_0, \ldots` are dimensions of the group of neurons simulated.
             * :math:`K` is the number of sets of adaptation parameters.
 
     Note:
@@ -289,7 +289,7 @@ def adaptive_thresholds_linear_spike(
 
         Where:
             * :math:`B` is the batch size.
-            * :math:`N_0, \cdots` are dimensions of the group of neurons simulated.
+            * :math:`N_0, \ldots` are dimensions of the group of neurons simulated.
             * :math:`K` is the number of sets of adaptation parameters.
 
     Tip:

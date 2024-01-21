@@ -24,29 +24,20 @@ class STDP(LayerwiseUpdater):
 
     .. math::
 
-        \begin{align*}
-            x^{(t)} &=
-            \begin{cases}
-                1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t = t^f \text{ and cumulative trace} \\
-                1 & t = t^f \text{ and nearest trace} \\
-                x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t \neq t^f
-            \end{cases} \\ \\
-            A_+ &=
-            \begin{cases}
-                \Theta(w_\text{max} - w)\eta_\text{post} & \exists w_\text{max} \text{ and hard bounding} \\
-                (w_\text{max} - w)^{\mu_+}\eta_\text{post} & \exists w_\text{max} \text{ and soft bounding} \\
-                \eta_\text{post} & \text{otherwise}
-            \end{cases} \\ \\
-            A_- &=
-            \begin{cases}
-                \Theta(w - w_\text{min})\eta_\text{pre} & \exists w_\text{min} \text{ and hard bounding} \\
-                (w - w_\text{min})^{\mu_-}\eta_\text{pre} & \exists w_\text{min} \text{ and soft bounding} \\
-                \eta_\text{pre} & \text{otherwise}
-            \end{cases}
-        \end{align*}
+        x^{(t)} &=
+        \begin{cases}
+            1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t = t^f \text{ and cumulative trace} \\
+            1 & t = t^f \text{ and nearest trace} \\
+            x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t \neq t^f
+        \end{cases}
 
     :math:`t` and :math:`t^f` are the current time and the time of the most recent
-    spike, respectively.
+    spike, respectively. :math:`A_+` and :math:`A_-` vary with weight dependence, but
+    by default are.
+
+    .. math::
+
+        A_+ = \eta_\text{post} \qquad A_- = \eta_\text{pre}
 
     Args:
         step_time (float): length of a simulation time step, :math:`\Delta t`,
@@ -75,6 +66,12 @@ class STDP(LayerwiseUpdater):
             Defaults to None.
         wmax (float | None, optional): upper bound for weights., :math:`w_\text{max}`
             Defaults to None.
+
+    See Also:
+        For more details and references, visit
+        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)`,
+        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding`, and
+        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.
     """
 
     def __init__(

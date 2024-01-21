@@ -268,7 +268,7 @@
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        A_+ = (w_\text{max} - w)^{\mu_-} \eta_+</span>
+<span class="sd">        A_+ = (w_\text{max} - w)^{\mu_+} \eta_+</span>
 
 <span class="sd">    Where</span>
 
@@ -291,6 +291,10 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: amplitudes :math:`A_+` after applying weight bound.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        For more details and references, visit</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">((</span><span class="n">wmax</span> <span class="o">-</span> <span class="n">weights</span><span class="p">)</span> <span class="o">**</span> <span class="n">power</span><span class="p">)</span> <span class="o">*</span> <span class="n">amplitude</span></div>
 
@@ -323,6 +327,9 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: amplitudes :math:`A_-` after applying weight bound.</span>
 
+<span class="sd">    See Also:</span>
+<span class="sd">        For more details and references, visit</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">((</span><span class="n">weights</span> <span class="o">-</span> <span class="n">wmin</span><span class="p">)</span> <span class="o">**</span> <span class="n">power</span><span class="p">)</span> <span class="o">*</span> <span class="n">amplitude</span></div>
 
@@ -360,6 +367,10 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: amplitudes :math:`A_+` after applying weight bound.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        For more details and references, visit</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">diff</span> <span class="o">=</span> <span class="n">wmax</span> <span class="o">-</span> <span class="n">weights</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">heaviside</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">inferno</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">((),)))</span> <span class="o">*</span> <span class="n">amplitude</span></div>
@@ -396,6 +407,10 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: amplitudes :math:`A_-` after applying weight bound.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        For more details and references, visit</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">diff</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">-</span> <span class="n">wmin</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">heaviside</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">inferno</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">((),)))</span> <span class="o">*</span> <span class="n">amplitude</span></div>

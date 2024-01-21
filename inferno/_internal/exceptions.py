@@ -87,6 +87,73 @@ def numeric_limit(
             )
 
 
+def numeric_interval(
+    name: str,
+    val: Any,
+    lower: Any,
+    upper: Any,
+    op: Literal["closed", "open", "left-open", "right-open", "c", "o", "lo", "ro"],
+    cast: type | None = None,
+) -> Any:
+    # cast value if a type is given
+    if val is not None:
+        val = cast(val)
+
+    # perform comparison
+    match str(op).lower():
+        # less than
+        case "closed" | "c":
+            # return cast value if valid
+            if lower <= val <= upper:
+                return val
+
+            raise ValueError(
+                f"{name} must exist on the interval [{lower}, {upper}], "
+                f"received {val}."
+            )
+
+        # less than or equal
+        case "open" | "o":
+            # return cast value if valid
+            if lower < val < upper:
+                return val
+
+            raise ValueError(
+                f"{name} must exist on the interval ({lower}, {upper}), "
+                f"received {val}."
+            )
+
+        # greater than
+        case "left-open" | "lo":
+            # return cast value if valid
+            if lower < val <= upper:
+                return val
+
+            raise ValueError(
+                f"{name} must exist on the interval ({lower}, {upper}], "
+                f"received {val}."
+            )
+
+        # greater than or equal
+        case "right-open" | "ro":
+            # return cast value if valid
+            if lower <= val < upper:
+                return val
+
+            raise ValueError(
+                f"{name} must exist on the interval [{lower}, {upper}), "
+                f"received {val}."
+            )
+
+        # invalid operator
+        case _:
+            raise ValueError(
+                "operator must be one of "
+                "'closed', 'open', 'left-open', 'right-open', 'c', 'o', 'lo', or 'ro', "
+                f"received '{str(op).lower()}'."
+            )
+
+
 def instance_of(
     name: str,
     obj: Any,
@@ -94,7 +161,7 @@ def instance_of(
 ) -> None:
     # inner function for type names
     def typename(atype):
-        if hasattr(atype, '__name__'):
+        if hasattr(atype, "__name__"):
             return atype.__name__
         else:
             return atype
@@ -123,7 +190,7 @@ def attr_members(
 ) -> None:
     # inner function for type names
     def typename(atype):
-        if hasattr(atype, '__name__'):
+        if hasattr(atype, "__name__"):
             return atype.__name__
         else:
             return atype
