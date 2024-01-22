@@ -272,6 +272,8 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="normalize">
+<a class="viewcode-back" href="../../reference/generated/inferno.normalize.html#inferno.normalize">[docs]</a>
 <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
@@ -294,7 +296,52 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: normalized tensor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">epsilon</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">epsilon</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="rescale">
+<a class="viewcode-back" href="../../reference/generated/inferno.rescale.html#inferno.rescale">[docs]</a>
+<span class="k">def</span> <span class="nf">rescale</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">resmin</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">resmax</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">srcmin</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">srcmax</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dims</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Rescales a tensor (min-max normalization).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (torch.Tensor): tensor to rescale.</span>
+<span class="sd">        resmin (int | float | torch.Tensor | None): minimum value for the</span>
+<span class="sd">            tensor after rescaling, unchanged if None.</span>
+<span class="sd">        resmax (int | float | torch.Tensor | None): maximum value for the</span>
+<span class="sd">            tensor after rescaling, unchanged if None.</span>
+<span class="sd">        srcmin (int | float | torch.Tensor | None, optional): minimum value for the</span>
+<span class="sd">            tensor before rescaling, computed if None.. Defaults to None.</span>
+<span class="sd">        srcmax (int | float | torch.Tensor | None, optional): maximum value for the</span>
+<span class="sd">            tensor before rescaling, computed if None. Defaults to None.</span>
+<span class="sd">        dims (int | tuple[int, ...] | None, optional): dimensions along which amin/amax</span>
+<span class="sd">            are computed if not provided, all dimensions if None. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: rescaled tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># perform substitutions</span>
+    <span class="k">if</span> <span class="n">srcmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">srcmin</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">srcmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">srcmax</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">resmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">resmin</span> <span class="o">=</span> <span class="n">srcmin</span>
+    <span class="k">if</span> <span class="n">resmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">resmax</span> <span class="o">=</span> <span class="n">srcmax</span>
+
+    <span class="c1"># rescale and return</span>
+    <span class="k">return</span> <span class="n">srcmin</span> <span class="o">+</span> <span class="p">(((</span><span class="n">data</span> <span class="o">-</span> <span class="n">srcmin</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">resmax</span> <span class="o">-</span> <span class="n">resmin</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">srcmax</span> <span class="o">-</span> <span class="n">srcmin</span><span class="p">))</span></div>
+
 
 
 <div class="viewcode-block" id="simple_exponential_smoothing">

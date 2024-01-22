@@ -78,6 +78,47 @@ def normalize(
     return scale * F.normalize(data, p=order, dim=dims, eps=epsilon)
 
 
+def rescale(
+    data: torch.Tensor,
+    resmin: int | float | torch.Tensor | None,
+    resmax: int | float | torch.Tensor | None,
+    *,
+    srcmin: int | float | torch.Tensor | None = None,
+    srcmax: int | float | torch.Tensor | None = None,
+    dims: int | tuple[int, ...] | None = None,
+) -> torch.Tensor:
+    r"""Rescales a tensor (min-max normalization).
+
+    Args:
+        data (torch.Tensor): tensor to rescale.
+        resmin (int | float | torch.Tensor | None): minimum value for the
+            tensor after rescaling, unchanged if None.
+        resmax (int | float | torch.Tensor | None): maximum value for the
+            tensor after rescaling, unchanged if None.
+        srcmin (int | float | torch.Tensor | None, optional): minimum value for the
+            tensor before rescaling, computed if None.. Defaults to None.
+        srcmax (int | float | torch.Tensor | None, optional): maximum value for the
+            tensor before rescaling, computed if None. Defaults to None.
+        dims (int | tuple[int, ...] | None, optional): dimensions along which amin/amax
+            are computed if not provided, all dimensions if None. Defaults to None.
+
+    Returns:
+        torch.Tensor: rescaled tensor.
+    """
+    # perform substitutions
+    if srcmin is None:
+        srcmin = torch.amin(data, dim=dims, keepdim=True)
+    if srcmax is None:
+        srcmax = torch.amax(data, dim=dims, keepdim=True)
+    if resmin is None:
+        resmin = srcmin
+    if resmax is None:
+        resmax = srcmax
+
+    # rescale and return
+    return srcmin + (((data - srcmin) * (resmax - resmin)) / (srcmax - srcmin))
+
+
 def simple_exponential_smoothing(
     obs: torch.Tensor,
     level: torch.Tensor | None,

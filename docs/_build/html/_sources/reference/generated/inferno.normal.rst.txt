@@ -1,0 +1,6 @@
+﻿normal
+======
+
+.. currentmodule:: inferno
+
+.. autofunction:: normal

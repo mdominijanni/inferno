@@ -24,6 +24,8 @@
     :toctree: generated
 
     exp
+    normalize
+    rescale
     simple_exponential_smoothing
     holt_linear_smoothing
 ```
@@ -38,6 +40,8 @@
     ones
     empty
     full
+    uniform
+    normal
 ```
 
 ## Interpolation

@@ -1033,11 +1033,11 @@ class HistoryModule(DimensionalModule):
 
             ``time``:
 
-            :math:`N_0 \times \cdots \times [D]
+            :math:`N_0 \times \cdots \times [D]`
 
             ``return``:
 
-            :math:`N_0 \times \cdots \times [D]
+            :math:`N_0 \times \cdots \times [D]`
 
             Where:
                 * :math:`N_0, \ldots` are the dimensions of the constrained tensor.

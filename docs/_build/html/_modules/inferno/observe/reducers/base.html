@@ -309,9 +309,9 @@
 <span class="sd">            returning the new state.</span>
 <span class="sd">        step_time (float): length of time between observations.</span>
 <span class="sd">        history_len (float): length of time for which observations should be stored.</span>
-<span class="sd">        interpolation (~inferno.Interpolation, optional): interpolation function to use</span>
+<span class="sd">        interpolation (inferno.Interpolation, optional): interpolation function to use</span>
 <span class="sd">            when retrieving data between observations.</span>
-<span class="sd">            Defaults to inferno.interp_nearest.</span>
+<span class="sd">            Defaults to :py:func:`inferno.interp_nearest`.</span>
 <span class="sd">        initializer (OneToOne[torch.Tensor] | None, optional): function to set the</span>
 <span class="sd">            initial state, zeroes when None. Defaults to None.</span>
 
@@ -465,11 +465,11 @@
 
 <span class="sd">            ``time``:</span>
 
-<span class="sd">            :math:`N_0 \times \cdots \times [D]</span>
+<span class="sd">            :math:`N_0 \times \cdots \times [D]`</span>
 
 <span class="sd">            ``return``:</span>
 
-<span class="sd">            :math:`N_0 \times \cdots \times [D]</span>
+<span class="sd">            :math:`N_0 \times \cdots \times [D]`</span>
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`N_0, \ldots` are the dimensions of the reducer, including any underlying batch.</span>

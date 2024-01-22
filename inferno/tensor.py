@@ -38,11 +38,7 @@ def zeros(
     requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
 
     return torch.zeros(
-        *shape,
-        dtype=dtype,
-        layout=layout,
-        device=device,
-        requires_grad=requires_grad
+        *shape, dtype=dtype, layout=layout, device=device, requires_grad=requires_grad
     )
 
 
@@ -83,11 +79,7 @@ def ones(
     requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
 
     return torch.ones(
-        *shape,
-        dtype=dtype,
-        layout=layout,
-        device=device,
-        requires_grad=requires_grad
+        *shape, dtype=dtype, layout=layout, device=device, requires_grad=requires_grad
     )
 
 
@@ -128,11 +120,7 @@ def empty(
     requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
 
     return torch.empty(
-        *shape,
-        dtype=dtype,
-        layout=layout,
-        device=device,
-        requires_grad=requires_grad
+        *shape, dtype=dtype, layout=layout, device=device, requires_grad=requires_grad
     )
 
 
@@ -150,6 +138,7 @@ def full(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
+        value (bool | int | float | complex): value with to fill the output.
         shape (tuple[int] | torch.Size | None, optional): overrides shape from
             ``tensor`` if specified. Defaults to None.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
@@ -166,7 +155,7 @@ def full(
         with ``value``.
 
     Note:
-        To construct a scalar, set ``shape`` to ``((),)
+        To construct a scalar, set ``shape`` to ``((),)``.
     """
     shape = tensor.shape if shape is None else shape
     dtype = tensor.dtype if dtype is None else dtype
@@ -177,6 +166,112 @@ def full(
     return torch.full(
         *shape,
         fill_value=value,
+        dtype=dtype,
+        layout=layout,
+        device=device,
+        requires_grad=requires_grad
+    )
+
+
+def uniform(
+    tensor: torch.Tensor,
+    *,
+    shape: tuple[int] | torch.Size | None = None,
+    dtype: torch.dtype | None = None,
+    layout: torch.layout | None = None,
+    device: torch.device | None = None,
+    requires_grad: bool | None = None,
+    generator: torch.Generator | None = None
+) -> torch.Tensor:
+    r"""Returns a tensor based on input filled with random values sampled uniformly.
+
+    Args:
+        tensor (torch.Tensor): determines default output properties.
+        shape (tuple[int] | torch.Size | None, optional): overrides shape from
+            ``tensor`` if specified. Defaults to None.
+        dtype (torch.dtype | None, optional): overrides data type from ``tensor``
+            if specified. Defaults to None.
+        layout (torch.layout | None, optional): overrides layout from ``tensor``
+            if specified. Defaults to None.
+        device (torch.device | None, optional): overrides device from ``tensor``
+            if specified. Defaults to None.
+        requires_grad (bool | None, optional): overrides gradient requirement from
+            ``tensor`` if specified. Defaults to None.
+        generator (torch.Generator | None, optional): pseudorandom number generator
+            for sampling. Defaults to None.
+
+    Returns:
+        torch.Tensor: tensor like ``tensor``, modified by parameters, filled
+        with ``value``.
+
+    Note:
+        To construct a scalar, set ``shape`` to ``((),)``.
+
+    See Also:
+        See :py:func:`torch.rand` for the function which this extends.
+    """
+    shape = tensor.shape if shape is None else shape
+    dtype = tensor.dtype if dtype is None else dtype
+    layout = tensor.layout if layout is None else layout
+    device = tensor.device if device is None else device
+    requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
+
+    return torch.rand(
+        *shape,
+        generator=generator,
+        dtype=dtype,
+        layout=layout,
+        device=device,
+        requires_grad=requires_grad
+    )
+
+
+def normal(
+    tensor: torch.Tensor,
+    *,
+    shape: tuple[int] | torch.Size | None = None,
+    dtype: torch.dtype | None = None,
+    layout: torch.layout | None = None,
+    device: torch.device | None = None,
+    requires_grad: bool | None = None,
+    generator: torch.Generator | None = None
+) -> torch.Tensor:
+    r"""Returns a tensor based on input filled with random values sampled normally.
+
+    Args:
+        tensor (torch.Tensor): determines default output properties.
+        shape (tuple[int] | torch.Size | None, optional): overrides shape from
+            ``tensor`` if specified. Defaults to None.
+        dtype (torch.dtype | None, optional): overrides data type from ``tensor``
+            if specified. Defaults to None.
+        layout (torch.layout | None, optional): overrides layout from ``tensor``
+            if specified. Defaults to None.
+        device (torch.device | None, optional): overrides device from ``tensor``
+            if specified. Defaults to None.
+        requires_grad (bool | None, optional): overrides gradient requirement from
+            ``tensor`` if specified. Defaults to None.
+        generator (torch.Generator | None, optional): pseudorandom number generator
+            for sampling. Defaults to None.
+
+    Returns:
+        torch.Tensor: tensor like ``tensor``, modified by parameters, filled
+        with ``value``.
+
+    Note:
+        To construct a scalar, set ``shape`` to ``((),)``.
+
+    See Also:
+        See :py:func:`torch.randn` for the function which this extends.
+    """
+    shape = tensor.shape if shape is None else shape
+    dtype = tensor.dtype if dtype is None else dtype
+    layout = tensor.layout if layout is None else layout
+    device = tensor.device if device is None else device
+    requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
+
+    return torch.randn(
+        *shape,
+        generator=generator,
         dtype=dtype,
         layout=layout,
         device=device,

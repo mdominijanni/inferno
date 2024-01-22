@@ -1,0 +1,6 @@
+﻿normalize
+=========
+
+.. currentmodule:: inferno
+
+.. autofunction:: normalize

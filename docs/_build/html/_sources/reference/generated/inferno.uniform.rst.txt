@@ -1,0 +1,6 @@
+﻿uniform
+=======
+
+.. currentmodule:: inferno
+
+.. autofunction:: uniform

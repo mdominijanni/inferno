@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Interpolation" href="inferno.Interpolation.html" /><link rel="prev" title="empty" href="inferno.empty.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="uniform" href="inferno.uniform.html" /><link rel="prev" title="empty" href="inferno.empty.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>full - Inferno</title>
@@ -225,6 +225,7 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tensor</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – determines default output properties.</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a>) – value with to fill the output.</p></li>
 <li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>] </em><em>| </em><em>torch.Size</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – overrides shape from
 <code class="docutils literal notranslate"><span class="pre">tensor</span></code> if specified. Defaults to None.</p></li>
 <li><p><strong>dtype</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensor_attributes.html#torch.dtype" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.dtype</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – overrides data type from <code class="docutils literal notranslate"><span class="pre">tensor</span></code>
@@ -247,7 +248,7 @@ with <code class="docutils literal notranslate"><span class="pre">value</span></
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>To construct a scalar, set <code class="docutils literal notranslate"><span class="pre">shape</span></code> to <a href="#id1"><span class="problematic" id="id2">``</span></a>((),)</p>
+<p>To construct a scalar, set <code class="docutils literal notranslate"><span class="pre">shape</span></code> to <code class="docutils literal notranslate"><span class="pre">((),)</span></code>.</p>
 </div>
 </dd></dl>
 
@@ -258,12 +259,12 @@ with <code class="docutils literal notranslate"><span class="pre">value</span></
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.Interpolation.html">
+          <a class="next-page" href="inferno.uniform.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Interpolation</div>
+                <div class="title">uniform</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>

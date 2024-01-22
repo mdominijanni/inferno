@@ -9,6 +9,7 @@ from .infrastructure import (
 from .math import (
     exp,
     normalize,
+    rescale,
     simple_exponential_smoothing,
     holt_linear_smoothing,
     Interpolation,
@@ -23,6 +24,8 @@ from .tensor import (
     ones,
     empty,
     full,
+    uniform,
+    normal
 )
 
 __all__ = [
@@ -33,6 +36,7 @@ __all__ = [
     "HistoryModule",
     "exp",
     "normalize",
+    "rescale",
     "Interpolation",
     "interp_previous",
     "interp_nearest",
@@ -44,4 +48,6 @@ __all__ = [
     "ones",
     "empty",
     "full",
+    "uniform",
+    "normal",
 ]

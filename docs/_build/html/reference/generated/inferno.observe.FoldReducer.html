@@ -230,9 +230,9 @@ between the new input (left) and current state (right),
 returning the new state.</p></li>
 <li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of time between observations.</p></li>
 <li><p><strong>history_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of time for which observations should be stored.</p></li>
-<li><p><strong>interpolation</strong> (<a class="reference internal" href="inferno.Interpolation.html#inferno.Interpolation" title="inferno.Interpolation"><em>Interpolation</em></a><em>, </em><em>optional</em>) – interpolation function to use
+<li><p><strong>interpolation</strong> (<a class="reference internal" href="inferno.Interpolation.html#inferno.Interpolation" title="inferno.Interpolation"><em>inferno.Interpolation</em></a><em>, </em><em>optional</em>) – interpolation function to use
 when retrieving data between observations.
-Defaults to inferno.interp_nearest.</p></li>
+Defaults to <a class="reference internal" href="inferno.interp_nearest.html#inferno.interp_nearest" title="inferno.interp_nearest"><code class="xref py py-func docutils literal notranslate"><span class="pre">inferno.interp_nearest()</span></code></a>.</p></li>
 <li><p><strong>initializer</strong> (<a class="reference internal" href="inferno.typing.OneToOne.html#inferno.typing.OneToOne" title="inferno.typing.OneToOne"><em>OneToOne</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – function to set the
 initial state, zeroes when None. Defaults to None.</p></li>
 </ul>
@@ -428,9 +428,9 @@ sample to consider it at the same time as that sample. Defaults to 1e-7.</p></li
 <div class="tensorshape admonition">
 <p class="admonition-title">Shape</p>
 <p><code class="docutils literal notranslate"><span class="pre">time</span></code>:</p>
-<p>:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>N_0 times cdots times [D]</p>
+<p><span class="math notranslate nohighlight">\(N_0 \times \cdots \times [D]\)</span></p>
 <p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
-<p>:math:<a href="#id3"><span class="problematic" id="id4">`</span></a>N_0 times cdots times [D]</p>
+<p><span class="math notranslate nohighlight">\(N_0 \times \cdots \times [D]\)</span></p>
 <dl class="simple">
 <dt>Where:</dt><dd><ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(N_0, \ldots\)</span> are the dimensions of the reducer, including any underlying batch.</p></li>

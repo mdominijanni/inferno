@@ -256,11 +256,7 @@
     <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">shape</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
-        <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
-        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
-        <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
+        <span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
     <span class="p">)</span></div>
 
 
@@ -304,11 +300,7 @@
     <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">shape</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
-        <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
-        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
-        <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
+        <span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
     <span class="p">)</span></div>
 
 
@@ -352,11 +344,7 @@
     <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">shape</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
-        <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
-        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
-        <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
+        <span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
     <span class="p">)</span></div>
 
 
@@ -377,6 +365,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        tensor (torch.Tensor): determines default output properties.</span>
+<span class="sd">        value (bool | int | float | complex): value with to fill the output.</span>
 <span class="sd">        shape (tuple[int] | torch.Size | None, optional): overrides shape from</span>
 <span class="sd">            ``tensor`` if specified. Defaults to None.</span>
 <span class="sd">        dtype (torch.dtype | None, optional): overrides data type from ``tensor``</span>
@@ -393,7 +382,7 @@
 <span class="sd">        with ``value``.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        To construct a scalar, set ``shape`` to ``((),)</span>
+<span class="sd">        To construct a scalar, set ``shape`` to ``((),)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">shape</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">shape</span>
     <span class="n">dtype</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dtype</span>
@@ -404,6 +393,118 @@
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
         <span class="o">*</span><span class="n">shape</span><span class="p">,</span>
         <span class="n">fill_value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+        <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+        <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="uniform">
+<a class="viewcode-back" href="../../reference/generated/inferno.uniform.html#inferno.uniform">[docs]</a>
+<span class="k">def</span> <span class="nf">uniform</span><span class="p">(</span>
+    <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">layout</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">layout</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a tensor based on input filled with random values sampled uniformly.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tensor (torch.Tensor): determines default output properties.</span>
+<span class="sd">        shape (tuple[int] | torch.Size | None, optional): overrides shape from</span>
+<span class="sd">            ``tensor`` if specified. Defaults to None.</span>
+<span class="sd">        dtype (torch.dtype | None, optional): overrides data type from ``tensor``</span>
+<span class="sd">            if specified. Defaults to None.</span>
+<span class="sd">        layout (torch.layout | None, optional): overrides layout from ``tensor``</span>
+<span class="sd">            if specified. Defaults to None.</span>
+<span class="sd">        device (torch.device | None, optional): overrides device from ``tensor``</span>
+<span class="sd">            if specified. Defaults to None.</span>
+<span class="sd">        requires_grad (bool | None, optional): overrides gradient requirement from</span>
+<span class="sd">            ``tensor`` if specified. Defaults to None.</span>
+<span class="sd">        generator (torch.Generator | None, optional): pseudorandom number generator</span>
+<span class="sd">            for sampling. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: tensor like ``tensor``, modified by parameters, filled</span>
+<span class="sd">        with ``value``.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        To construct a scalar, set ``shape`` to ``((),)``.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        See :py:func:`torch.rand` for the function which this extends.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">shape</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dtype</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">layout</span> <span class="k">if</span> <span class="n">layout</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">layout</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">device</span> <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">device</span>
+    <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
+
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span>
+        <span class="o">*</span><span class="n">shape</span><span class="p">,</span>
+        <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+        <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+        <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="normal">
+<a class="viewcode-back" href="../../reference/generated/inferno.normal.html#inferno.normal">[docs]</a>
+<span class="k">def</span> <span class="nf">normal</span><span class="p">(</span>
+    <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">layout</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">layout</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a tensor based on input filled with random values sampled normally.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tensor (torch.Tensor): determines default output properties.</span>
+<span class="sd">        shape (tuple[int] | torch.Size | None, optional): overrides shape from</span>
+<span class="sd">            ``tensor`` if specified. Defaults to None.</span>
+<span class="sd">        dtype (torch.dtype | None, optional): overrides data type from ``tensor``</span>
+<span class="sd">            if specified. Defaults to None.</span>
+<span class="sd">        layout (torch.layout | None, optional): overrides layout from ``tensor``</span>
+<span class="sd">            if specified. Defaults to None.</span>
+<span class="sd">        device (torch.device | None, optional): overrides device from ``tensor``</span>
+<span class="sd">            if specified. Defaults to None.</span>
+<span class="sd">        requires_grad (bool | None, optional): overrides gradient requirement from</span>
+<span class="sd">            ``tensor`` if specified. Defaults to None.</span>
+<span class="sd">        generator (torch.Generator | None, optional): pseudorandom number generator</span>
+<span class="sd">            for sampling. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: tensor like ``tensor``, modified by parameters, filled</span>
+<span class="sd">        with ``value``.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        To construct a scalar, set ``shape`` to ``((),)``.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        See :py:func:`torch.randn` for the function which this extends.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">shape</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dtype</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">layout</span> <span class="k">if</span> <span class="n">layout</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">layout</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">device</span> <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">device</span>
+    <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
+
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
+        <span class="o">*</span><span class="n">shape</span><span class="p">,</span>
+        <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
         <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
         <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
