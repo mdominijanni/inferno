@@ -133,10 +133,10 @@ class LinearDense(WeightBiasDelayMixin, Connection):
         if weight_init:
             self.weight = weight_init(self.weight)
 
-        if bias_init and bias:
+        if bias_init and self.biased:
             self.bias = bias_init(self.bias)
 
-        if delay_init and delay:
+        if delay_init and self.delayedby is not None:
             self.delay = delay_init(self.delay)
 
     @property
@@ -450,10 +450,10 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
         if weight_init:
             self.weight = weight_init(self.weight)
 
-        if bias_init and bias:
+        if bias_init and self.biased:
             self.bias = bias_init(self.bias)
 
-        if delay_init and delay:
+        if delay_init and self.delayedby is not None:
             self.delay = delay_init(self.delay)
 
     @property
@@ -701,9 +701,9 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
         step_time: float,
         *,
         synapse: SynapseConstructor,
-        batch_size: int = 1,
         bias: bool = False,
         delay: float | None = None,
+        batch_size: int = 1,
         weight_init: OneToOne | None = None,
         bias_init: OneToOne | None = None,
         delay_init: OneToOne | None = None,
@@ -752,10 +752,10 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
         if weight_init:
             self.weight = weight_init(self.weight)
 
-        if bias_init and bias:
+        if bias_init and self.biased:
             self.bias = bias_init(self.bias)
 
-        if delay_init and delay:
+        if delay_init and self.delayedby is not None:
             self.delay = delay_init(self.delay)
 
     @property

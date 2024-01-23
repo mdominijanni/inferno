@@ -89,9 +89,9 @@ class WeightClamping(Hook):
 
     Args:
         *layers (Layers): layers for which normalization should be performed.
-        min (int | float | None, optional): inclusive lower-bound of the clamped range.
+        wmin (int | float | None, optional): inclusive lower-bound of the clamped range.
             Defaults to None.
-        max (int | float | None, optional): inclusive upper-bound of the clamped range.
+        wmax (int | float | None, optional): inclusive upper-bound of the clamped range.
             Defaults to None.
         train_update (bool, optional): if weights should be normalized for layers
             in train mode. Defaults to True.
@@ -107,8 +107,8 @@ class WeightClamping(Hook):
     def __init__(
         self,
         *layers: Layer,
-        min: int | float | None = None,
-        max: int | float | None = None,
+        wmin: int | float | None = None,
+        wmax: int | float | None = None,
         train_update: bool = True,
         eval_update: bool = False,
         prepend: bool = False,
@@ -116,11 +116,11 @@ class WeightClamping(Hook):
         module: Module | None = None,
     ):
         # sanity check arguments
-        if min is None and max is None:
-            raise TypeError("`min` and `max` cannot both be None.")
-        if min is not None and max is not None and min >= max:
+        if wmin is None and wmax is None:
+            raise TypeError("`wmin` and `wmax` cannot both be None.")
+        if wmin is not None and wmax is not None and wmin >= wmax:
             raise ValueError(
-                f"received `max` of {max} not greater than `min` of {min}."
+                f"received `wmax` of {wmax} not greater than `wmin` of {wmin}."
             )
         if not train_update and not eval_update:
             raise RuntimeError(
@@ -133,7 +133,7 @@ class WeightClamping(Hook):
             def clamp_hook(module, args, output):  # noqa:F811
                 for layer in layers:
                     layer.connection.weight = torch.clamp(
-                        layer.connection.weight, min=min, max=max
+                        layer.connection.weight, min=wmin, max=wmax
                     )
 
         if train_update and not eval_update:
@@ -142,7 +142,7 @@ class WeightClamping(Hook):
                 for layer in layers:
                     if layer.training:
                         layer.connection.weight = torch.clamp(
-                            layer.connection.weight, min=min, max=max
+                            layer.connection.weight, min=wmin, max=wmax
                         )
 
         if not train_update and eval_update:
@@ -151,7 +151,7 @@ class WeightClamping(Hook):
                 for layer in layers:
                     if not layer.training:
                         layer.connection.weight = torch.clamp(
-                            layer.connection.weight, min=min, max=max
+                            layer.connection.weight, min=wmin, max=wmax
                         )
 
         # construct hook

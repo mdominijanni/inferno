@@ -15,9 +15,9 @@ class Layer(Module):
         connection (Connection): connection between the layer inputs and the neurons.
         neuron (Neuron): neurons which take their input from the connection and their
             output is returned.
-        connection_kwargs (dict[str, str  |  str] | None, optional): keyword argument
+        connection_kwargs (dict[str, str] | None, optional): keyword argument
                 mapping for connection methods. Defaults to None.
-        neuron_kwargs (dict[str, str  |  str] | None, optional): keyword argument
+        neuron_kwargs (dict[str, str] | None, optional): keyword argument
                 mapping for neuron methods. Defaults to None.
 
     Note:
@@ -40,8 +40,8 @@ class Layer(Module):
         self,
         connection: Connection,
         neuron: Neuron,
-        connection_kwargs: dict[str, str | str] | None = None,
-        neuron_kwargs: dict[str, str | str] | None = None,
+        connection_kwargs: dict[str, str] | None = None,
+        neuron_kwargs: dict[str, str] | None = None,
     ):
         Module.__init__(self)
         # warn if connection and neuron are inconsistent

@@ -250,11 +250,11 @@ class RateClassifier(Module):
                 * :math:`K` is the number of possible classes.
         """
         # associations between neurons and classes
-        assocs = ein.rearrange(self.proportions, "... k -> (...) k")
+        assocs = F.one_hot(
+            ein.rearrange(self.assignments, "... -> (...)"), self.nclass
+        )
         if proportional:
-            assocs = assocs * ein.rearrange(
-                F.one_hot(assocs, self.nclass).float(), "... k -> (...) k"
-            )
+            assocs = assocs * ein.rearrange(self.proportions, "... k -> (...) k")
 
         # compute logits
         logits = (

@@ -196,10 +196,10 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         if weight_init:
             self.weight = weight_init(self.weight)
 
-        if bias_init and bias:
+        if bias_init and self.biased:
             self.bias = bias_init(self.bias)
 
-        if delay_init and delay:
+        if delay_init and self.delayedby is not None:
             self.delay = delay_init(self.delay)
 
     @property
