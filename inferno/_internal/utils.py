@@ -18,7 +18,7 @@ def newtensor(obj: Any) -> torch.Tensor:
         return torch.tensor(obj)
 
 
-def rgetattr(obj: object, attr: str, *args) -> Any:
+def rgetattr(obj: object, attr: str, *default) -> Any:
     r"""Accesses and returns an object attribute recursively using dot notation.
 
     For example, if we have an object ``obj`` and a string ``"so1.so2.so3"``,
@@ -29,7 +29,7 @@ def rgetattr(obj: object, attr: str, *args) -> Any:
         obj (object): object from which to retrieve the nested attribute.
         attr (str): string in dot notation for the nested attribute to retrieve,
             excluding the initial dot.
-        default (Any, optional): if specified, including with None, it will be
+        *default (Any, optional): if specified, including with None, it will be
             returned if attr is not found.
 
     Returns:
@@ -38,13 +38,18 @@ def rgetattr(obj: object, attr: str, *args) -> Any:
 
     Note:
         If a default is specified, it will be returned if at any point in the chain,
-        the attribute is not found.
+        the attribute is not found. If multiple values are passed with ``*default``,
+        only the first will be used.
     """
 
-    def getattr_(obj, attr):
-        return getattr(obj, attr, *args)
+    try:
+        return reduce(getattr, [obj] + attr.split("."))
 
-    return reduce(getattr_, [obj] + attr.split("."))
+    except AttributeError:
+        if default:
+            return default[0]
+        else:
+            raise
 
 
 def rsetattr(obj: object, attr: str, val: Any):
@@ -61,5 +66,5 @@ def rsetattr(obj: object, attr: str, val: Any):
             excluding the initial dot.
         val (Any): value to which the attribute will be set.
     """
-    pre, _, post = attr.rpartition('.')
+    pre, _, post = attr.rpartition(".")
     return setattr(rgetattr(obj, pre) if pre else obj, post, val)
