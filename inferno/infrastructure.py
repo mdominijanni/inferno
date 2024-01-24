@@ -353,6 +353,15 @@ class Hook:
         if module is not None:
             self.register(module)
 
+    @property
+    def registered(self) -> bool:
+        r"""If there is a module to which this hook is registered
+
+        Returns:
+            bool: if a module to which this hook is registred.
+        """
+        return self._prehook_handle or self._posthook_handle
+
     def __del__(self) -> None:
         r"""Automatically deregister on deconstruction."""
         return self.deregister()
@@ -408,9 +417,9 @@ class StateHook(Hook):
     r"""Interactable hook which only acts on module state.
 
     Args:
-        module (nn.Module): module to which the hook should be registered.
         hook (Callable[[nn.Module], None]): function to call on hooked module's
             :py:meth:`~torch.nn.Module.__call__`.
+        module (nn.Module): module to which the hook should be registered.
         train_update (bool, optional): if the hook should be run when hooked module is
             in train mode. Defaults to True.
         eval_update (bool, optional): if the hook should be run when hooked module is
@@ -433,8 +442,8 @@ class StateHook(Hook):
 
     def __init__(
         self,
-        module: nn.Module,
         hook: Callable[[nn.Module], None],
+        module: nn.Module,
         train_update: bool = True,
         eval_update: bool = True,
         *,
@@ -443,8 +452,8 @@ class StateHook(Hook):
         always_call: bool = False,
     ):
         # core state
-        self._module = module
         self._hook = hook
+        self._module = module
         self._handle = None
 
         # conditional activation
@@ -532,23 +541,20 @@ class StateHook(Hook):
         self._wheneval = bool(value)
 
     def deregister(self) -> None:
-        """Deregisters the hook as a forward hook/prehook.
-        """
+        """Deregisters the hook as a forward hook/prehook."""
         if self.registered:
             self._handle.remove()
             self._handle = None
 
     def register(self) -> None:
-        """Registers the hook as a forward hook/prehook.
-        """
+        """Registers the hook as a forward hook/prehook."""
         if not self.registered:
             self._handle = self._reg_func(
                 self.module, self._onforward, **self._reg_kwargs
             )
 
     def __call__(self):
-        r"""Executes the hook at any time, only if it is registered.
-        """
+        r"""Executes the hook at any time, only if it is registered."""
         if self.registered:
             self.hook(self.module)
 

@@ -54,8 +54,8 @@ class Normalization(StateHook):
         # call superclass constructor
         StateHook.__init__(
             self,
-            module,
             hook,
+            module,
             train_update=train_update,
             eval_update=eval_update,
             as_prehook=as_prehook,
@@ -116,8 +116,8 @@ class Clamping(StateHook):
         # call superclass constructor
         StateHook.__init__(
             self,
-            module,
             hook,
+            module,
             train_update=train_update,
             eval_update=eval_update,
             as_prehook=as_prehook,
