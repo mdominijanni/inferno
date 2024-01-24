@@ -466,6 +466,9 @@ class StateHook(Hook):
 
         self._reg_func = register
 
+        # register by default
+        self.register()
+
     def _onforward(self, module: nn.Module, *args, **kwargs) -> None:
         r"""Wrapper for hook to take expected inputs.
 
