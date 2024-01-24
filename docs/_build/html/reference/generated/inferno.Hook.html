@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="exp" href="inferno.exp.html" /><link rel="prev" title="Configuration" href="inferno.Configuration.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="StateHook" href="inferno.StateHook.html" /><link rel="prev" title="Configuration" href="inferno.Configuration.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>Hook - Inferno</title>
@@ -230,17 +230,17 @@ to deregister itself.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>prehook</strong> (<em>Callable</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – function to call before registrant’s
+<li><p><strong>prehook</strong> (<em>Callable</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – function to call before hooked module’s
 <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.forward" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code></a>. Defaults to None.</p></li>
-<li><p><strong>posthook</strong> (<em>Callable</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – function to call after registrant’s
+<li><p><strong>posthook</strong> (<em>Callable</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – function to call after hooked module’s
 <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.forward" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code></a>. Defaults to None.</p></li>
 <li><p><strong>prehook_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – keyword arguments passed to
 <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.register_forward_pre_hook" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_forward_pre_hook()</span></code></a>. Defaults to None.</p></li>
 <li><p><strong>posthook_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – keyword arguments passed to
 <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.register_forward_hook" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_forward_hook()</span></code></a>. Defaults to None.</p></li>
-<li><p><strong>train_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the hooks should be run when registrant is
+<li><p><strong>train_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the hooks should be run when hooked module is
 in train mode. Defaults to True.</p></li>
-<li><p><strong>eval_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the hooks should be run when registrant is
+<li><p><strong>eval_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the hooks should be run when hooked module is
 in eval mode. Defaults to True.</p></li>
 <li><p><strong>module</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – PyTorch module to which the forward hook will
 be registered. Defaults to <cite>None</cite>.</p></li>
@@ -320,12 +320,12 @@ if already registered.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.exp.html">
+          <a class="next-page" href="inferno.StateHook.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">exp</div>
+                <div class="title">StateHook</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>

@@ -233,9 +233,9 @@
 <span class="sd">        connection (Connection): connection between the layer inputs and the neurons.</span>
 <span class="sd">        neuron (Neuron): neurons which take their input from the connection and their</span>
 <span class="sd">            output is returned.</span>
-<span class="sd">        connection_kwargs (dict[str, str  |  str] | None, optional): keyword argument</span>
+<span class="sd">        connection_kwargs (dict[str, str] | None, optional): keyword argument</span>
 <span class="sd">                mapping for connection methods. Defaults to None.</span>
-<span class="sd">        neuron_kwargs (dict[str, str  |  str] | None, optional): keyword argument</span>
+<span class="sd">        neuron_kwargs (dict[str, str] | None, optional): keyword argument</span>
 <span class="sd">                mapping for neuron methods. Defaults to None.</span>
 
 <span class="sd">    Note:</span>
@@ -258,8 +258,8 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">connection</span><span class="p">:</span> <span class="n">Connection</span><span class="p">,</span>
         <span class="n">neuron</span><span class="p">:</span> <span class="n">Neuron</span><span class="p">,</span>
-        <span class="n">connection_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">neuron_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">connection_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">neuron_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="c1"># warn if connection and neuron are inconsistent</span>

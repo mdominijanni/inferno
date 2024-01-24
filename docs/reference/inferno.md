@@ -15,6 +15,7 @@
     HistoryModule
     Configuration
     Hook
+    StateHook
 ```
 
 ## General Math

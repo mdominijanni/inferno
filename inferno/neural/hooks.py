@@ -1,13 +1,14 @@
-from inferno import Hook, normalize
+from inferno import StateHook, normalize
 from inferno._internal import numeric_limit, rgetattr, rsetattr
 import torch
 import torch.nn as nn
 
 
-class Normalization(Hook):
+class Normalization(StateHook):
     r"""Normalizes attribute of registered module on call.
 
     Args:
+        module (nn.Module): module to which the hook should be registered.
         name (str): fully-qualified string name of attribute to normalize.
         order (int | float): order of :math:`p`-norm by which to normalize.
         scale (float | complex): desired :math:`p`-norm of elements along
@@ -24,12 +25,11 @@ class Normalization(Hook):
             previously registered to the hooked module. Defaults to False.
         always_call (bool, optional): if the hook should be run even if an exception
             occurs, only applies when ``as_prehook`` is False. Defaults to False.
-        module (nn.Module | None, optional): module to which the hook should be
-            registered. Defaults to None.
     """
 
     def __init__(
         self,
+        module: nn.Module,
         name: str,
         order: int | float,
         scale: float | complex,
@@ -40,57 +40,35 @@ class Normalization(Hook):
         as_prehook: bool = False,
         prepend: bool = False,
         always_call: bool = False,
-        module: nn.Module | None = None,
     ):
         # sanity check arguments
         _ = numeric_limit("`order`", order, 0, "neq", None)
         _ = numeric_limit("`scale`", scale, 0, "neq", None)
-        if not train_update and not eval_update:
-            raise RuntimeError(
-                "at least one of `train_update` and `eval_update` must be True."
+
+        # inner hook function
+        def hook(module):
+            rsetattr(
+                module, name, normalize(rgetattr(module, name), order, scale, dims)
             )
 
-        # configure as forward prehook
-        if as_prehook:
-
-            def norm_hook(module, args):
-                rsetattr(
-                    module, name, normalize(rgetattr(module, name), order, scale, dims)
-                )
-
-            Hook.__init__(
-                self,
-                norm_hook,
-                None,
-                prehook_kwargs={"prepend": prepend},
-                train_update=train_update,
-                eval_update=eval_update,
-                module=module,
-            )
-
-        # configure as forward posthook
-        else:
-
-            def norm_hook(module, args, output):
-                rsetattr(
-                    module, name, normalize(rgetattr(module, name), order, scale, dims)
-                )
-
-            Hook.__init__(
-                self,
-                None,
-                norm_hook,
-                posthook_kwargs={"prepend": prepend, "always_call": always_call},
-                train_update=train_update,
-                eval_update=eval_update,
-                module=module,
-            )
+        # call superclass constructor
+        StateHook.__init__(
+            self,
+            module,
+            hook,
+            train_update=train_update,
+            eval_update=eval_update,
+            as_prehook=as_prehook,
+            prepend=prepend,
+            always_call=always_call,
+        )
 
 
-class Clamping(Hook):
+class Clamping(StateHook):
     """Clamps attribute of registered module on call.
 
     Args:
+        module (nn.Module): module to which the hook should be registered.
         name (str): fully-qualified string name of attribute to normalize.
         min (int | float | None, optional): inclusive lower-bound of the clamped range.
             Defaults to None.
@@ -106,8 +84,6 @@ class Clamping(Hook):
             previously registered to the hooked module. Defaults to False.
         always_call (bool, optional): if the hook should be run even if an exception
             occurs, only applies when ``as_prehook`` is False. Defaults to False.
-        module (nn.Module | None, optional): module to which the hook should be
-            registered. Defaults to None.
     """
 
     def __init__(
@@ -130,43 +106,21 @@ class Clamping(Hook):
             raise ValueError(
                 f"received `max` of {max} not greater than `min` of {min}."
             )
-        if not train_update and not eval_update:
-            raise RuntimeError(
-                "at least one of `train_update` and `eval_update` must be True."
+
+        # inner hook function
+        def hook(module):
+            rsetattr(
+                module, name, torch.clamp(rgetattr(module, name), min=min, max=max)
             )
 
-        # configure as forward prehook
-        if as_prehook:
-
-            def norm_hook(module, args):
-                rsetattr(
-                    module, name, torch.clamp(rgetattr(module, name), min=min, max=max)
-                )
-
-            Hook.__init__(
-                self,
-                norm_hook,
-                None,
-                prehook_kwargs={"prepend": prepend},
-                train_update=train_update,
-                eval_update=eval_update,
-                module=module,
-            )
-
-        # configure as forward posthook
-        else:
-
-            def norm_hook(module, args, output):
-                rsetattr(
-                    module, name, torch.clamp(rgetattr(module, name), min=min, max=max)
-                )
-
-            Hook.__init__(
-                self,
-                None,
-                norm_hook,
-                posthook_kwargs={"prepend": prepend, "always_call": always_call},
-                train_update=train_update,
-                eval_update=eval_update,
-                module=module,
-            )
+        # call superclass constructor
+        StateHook.__init__(
+            self,
+            module,
+            hook,
+            train_update=train_update,
+            eval_update=eval_update,
+            as_prehook=as_prehook,
+            prepend=prepend,
+            always_call=always_call,
+        )

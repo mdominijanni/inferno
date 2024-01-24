@@ -470,11 +470,11 @@
 <span class="sd">                * :math:`K` is the number of possible classes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># associations between neurons and classes</span>
-        <span class="n">assocs</span> <span class="o">=</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proportions</span><span class="p">,</span> <span class="s2">&quot;... k -&gt; (...) k&quot;</span><span class="p">)</span>
+        <span class="n">assocs</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span>
+            <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assignments</span><span class="p">,</span> <span class="s2">&quot;... -&gt; (...)&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclass</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">proportional</span><span class="p">:</span>
-            <span class="n">assocs</span> <span class="o">=</span> <span class="n">assocs</span> <span class="o">*</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span>
-                <span class="n">F</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">assocs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclass</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="s2">&quot;... k -&gt; (...) k&quot;</span>
-            <span class="p">)</span>
+            <span class="n">assocs</span> <span class="o">=</span> <span class="n">assocs</span> <span class="o">*</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proportions</span><span class="p">,</span> <span class="s2">&quot;... k -&gt; (...) k&quot;</span><span class="p">)</span>
 
         <span class="c1"># compute logits</span>
         <span class="n">logits</span> <span class="o">=</span> <span class="p">(</span>
