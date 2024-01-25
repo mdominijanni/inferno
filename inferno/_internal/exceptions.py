@@ -220,35 +220,19 @@ def instance_of(
 def attr_members(
     name: str,
     obj: Any,
-    attr: str | tuple[str, ...],
+    *attr: str,
 ) -> None:
     """Checks if an object contains one or more attributes and raises an error if it doesn't.
 
     Args:
         name (str): variable name string for the error message.
         obj (Any): object being tested.
-        attr (str | tuple[str, ...]): attributes being checked for.
+        *attr (str): attributes being checked for.
     """
 
-    # inner function for type names
-    def typename(atype):
-        if hasattr(atype, "__name__"):
-            return atype.__name__
-        else:
-            return atype
-
-    # single attribute case
-    if isinstance(attr, str):
-        if not hasattr(obj, attr):
-            raise RuntimeError(
-                f"{typename(obj)} {name} is missing the attribute '{attr}'."
-            )
-
-    # multiple attribute case
-    else:
-        sep = "', '"
-        if not all(map(lambda a: hasattr(obj, a), attr)):
-            raise RuntimeError(
-                f"{typename(obj)} {name} is missing the "
-                f"attributes '{sep.join(filter(lambda a: hasattr(obj, a), attr))}'."
-            )
+    sep = "', '"
+    if not all(map(lambda a: hasattr(obj, a), attr)):
+        raise RuntimeError(
+            f"{type(obj).__name__} {name} is missing the "
+            f"attributes: '{sep.join(filter(lambda a: hasattr(obj, a), attr))}'."
+        )

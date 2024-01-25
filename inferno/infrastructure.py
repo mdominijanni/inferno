@@ -4,6 +4,7 @@ from collections import OrderedDict
 from collections.abc import Mapping
 from functools import cached_property
 from inferno._internal import rsetattr, instance_of, numeric_limit
+import itertools
 import math
 import torch
 import torch.nn as nn
@@ -574,6 +575,11 @@ class DimensionalModule(Module):
         Each argument must be a 2-tuple of integers, where the first element is the
         dimension to which a constraint is applied and the second is the size of that
         dimension. Dimensions can be negative.
+
+    Important:
+        Constraints are not checked on every assignment and as such may be invalidated.
+        This can be tested with :py:meth:`reconstrain`.
+
     """
 
     def __init__(
@@ -582,10 +588,6 @@ class DimensionalModule(Module):
     ):
         # call superclass constructor
         Module.__init__(self)
-
-        # disallow empty constraints
-        if not len(constraints):
-            raise RuntimeError("no constraints were specified")
 
         # register extras
         self.register_extra("_constraints", dict())
@@ -597,7 +599,7 @@ class DimensionalModule(Module):
             dim, size = int(dim), int(size)
             if size < 1:
                 raise ValueError(
-                    f"constraint {(dim, size)} specifies an invalid (non-positive) "
+                    f"constraint {(dim, size)} specifies an invalid (nonpositive) "
                     "number of elements."
                 )
             if dim in self._constraints:
@@ -608,7 +610,7 @@ class DimensionalModule(Module):
             self._constraints[dim] = size
 
     @staticmethod
-    def _mindims(constraints: dict[int, int]) -> int:
+    def mindims_(constraints: dict[int, int]) -> int:
         """Computes minimum number of required dimensions for a constrained tensor.
 
         Args:
@@ -617,10 +619,74 @@ class DimensionalModule(Module):
         Returns:
             int: minimum required number of dimensions.
         """
+        if not constraints:
+            return 0
+
         maxc = max(constraints)
         minc = min(constraints)
 
         return (maxc + 1 if maxc >= 0 else 0) - (minc if minc <= -1 else 0)
+
+    @classmethod
+    def compatible_(cls, value: torch.Tensor, constraints: dict[int, int]) -> bool:
+        """Test if a tensor is compatible with a set of constraints.
+
+        Args:
+            value (torch.Tensor): tensor to test.
+            constraints (dict[int, int]): constraint dictionary to test with.
+
+        Returns:
+            bool: if the tensor is compatible.
+        """
+        # check if value has fewer than minimum required number of dimensions
+        if value.ndim < cls.mindims_(constraints):
+            return False
+
+        # check if constraints are met
+        for dim, size in constraints.items():
+            if value.shape[dim] != size:
+                return False
+
+        return True
+
+    @classmethod
+    def compatible_like_(
+        cls,
+        shape: tuple[int],
+        constraints: dict[int, int],
+    ) -> tuple[int]:
+        """Generates a shape like the input, but compatible with the constraints.
+
+        Args:
+            shape (tuple[int]): shape to make compatible
+            constraints (dict[int, int]): constraint dictionary to test against.
+
+        Raises:
+            RuntimeError: dimensionality of shape is insufficient.
+            RuntimeError: constraints contains nonpositive sized dimensions.
+
+        Returns:
+            tuple[int]: compatiblized shape.
+        """
+        # ensure shape is of sufficient dimensionality
+        req_ndims = cls.mindims_(constraints)
+
+        if len(shape) < req_ndims:
+            raise RuntimeError(
+                f"`shape` {shape} with dimensionality {len(shape)} cannot be made "
+                f"compatible, requires a minimum dimensionality of {req_ndims}."
+            )
+
+        # create new shape
+        new_shape = list(shape)
+        for dim, size in constraints.items():
+            if size < 1:
+                raise RuntimeError(
+                    f"`shape` {shape} cannot contain nonpositive sized dimensions."
+                )
+            else:
+                new_shape[dim] = size
+        return tuple(new_shape)
 
     @cached_property
     def constraints(self) -> dict[int, int]:
@@ -698,38 +764,21 @@ class DimensionalModule(Module):
         Returns:
             int: minimum required number of dimensions.
         """
-        return self._mindims(self.constraints)
+        return self.mindims_(self.constraints)
 
-    def compatible(
-        self, value: torch.Tensor, constraints: dict[int, int] | None = None
-    ) -> bool:
+    def compatible(self, value: torch.Tensor) -> bool:
         """Test if a tensor is compatible with the module's constraints.
 
         Args:
             value (torch.Tensor): tensor to test.
-            constraints (dict[int, int] | None, optional): constraint dictionary to
-                test with, uses current constraints if None. Defaults to None.
 
         Returns:
             bool: if the tensor is compatible.
         """
-        # check if value has fewer than minimum required number of dimensions
-        if value.ndim < self._mindims(value, constraints):
-            return False
+        return self.compatible_(value, self._constraints)
 
-        # check if constraints are met
-        for dim, size in constraints.items():
-            if value.shape[dim] != size:
-                return False
-
-        return True
-
-    def compatible_like(
-        self,
-        shape: tuple[int],
-        constraints: dict[int, int] | None = None,
-    ) -> tuple[int]:
-        """Generates a shape like the input, but compatible with constraints.
+    def compatible_like(self, shape: tuple[int]) -> tuple[int]:
+        """Generates a shape like the input, but compatible with the constraints.
 
         Args:
             shape (tuple[int]): shape to make compatible
@@ -738,42 +787,20 @@ class DimensionalModule(Module):
 
         Raises:
             RuntimeError: dimensionality of shape is insufficient.
-            RuntimeError: constraints contains non-positive sized dimensions.
+            RuntimeError: constraints contains nonpositive sized dimensions.
 
         Returns:
             tuple[int]: compatiblized shape.
         """
-        # select constraints
-        if constraints is None:
-            constraints = self._constraints
+        return self.compatible_like_(shape, self._constraints)
 
-        # ensure shape is of sufficient dimensionality
-        req_ndims = self._mindims(constraints)
-
-        if len(shape) < req_ndims:
-            raise RuntimeError(
-                f"`shape` {shape} with dimensionality {len(shape)} cannot be made "
-                f"compatible, requires a minimum dimensionality of {req_ndims}."
-            )
-
-        # create new shape
-        new_shape = list(shape)
-        for dim, size in constraints.items():
-            if size < 1:
-                raise RuntimeError(
-                    f"`shape` {shape} cannot contain non-positive sized dimensions."
-                )
-            else:
-                new_shape[dim] = size
-        return tuple(new_shape)
-
-    def reconstrain(self, dim: int, size: int | None) -> None:
+    def reconstrain(self, dim: int | None, size: int | None) -> None:
         """Edits existing constraints and reshapes constrained buffers and parameters
         accordingly.
 
         Args:
-            dim (int): dimension to which a constraint should be added, removed,
-                or modified.
+            dim (int | None): dimension to which a constraint should be added, removed,
+                or modified, or if None, only existing constraints are tested.
             size (int | None): size of the new constraint, or None if the constraint
                 should be removed.
 
@@ -781,7 +808,7 @@ class DimensionalModule(Module):
             RuntimeError: constrained buffer or parameter had its shape modified
                 externally and is no longer compatible.
             ValueError: size must specify a positive number of elements.
-            RuntimeError: added constraint is incompatible with existing buffer or
+            ValueError: added constraint is incompatible with existing buffer or
                 parameter.
         """
         # delete cache for constraint properties
@@ -823,21 +850,24 @@ class DimensionalModule(Module):
                     f"constrained parameter {name} has been invalidated."
                 )
 
-        # convert to integers
+        # end early if no dimensions (check mode)
+        if dim is None:
+            return
+
+        # convert arguments to integers
         dim, size = int(dim), None if size is None else int(size)
 
         # check for valid size constraint
         if size is not None and size < 1:
             raise ValueError(
-                f"size {size} specifies an invalid (non-positive) number of elements."
+                f"`size` {size} specifies an invalid (nonpositive) number of elements."
             )
 
         # addition of constraint
         if dim not in self._constraints and size is not None:
             # create constraints with new addition
-            constraints = {
-                d: s for d, s in tuple(self._constraints.items()) + ((dim, size),)
-            }
+            constraints = itertools.chain(self._constraints.items(), ((dim, size),))
+            constraints = {d: s for d, s in constraints}
 
             # ensure constrained buffers and parameters are compatible
             for name in self._constrained_buffers:
@@ -845,10 +875,10 @@ class DimensionalModule(Module):
                 if (
                     buffer is not None
                     and buffer.numel() > 0
-                    and not self.compatible(buffer, constraints=constraints)
+                    and not self.compatible_(buffer, constraints)
                 ):
-                    raise RuntimeError(
-                        f"constraint cannot be added, incompatible with buffer {name}."
+                    raise ValueError(
+                        f"constraint is incompatible with buffer '{name}'."
                     )
 
             for name in self._constrained_parameters:
@@ -856,11 +886,10 @@ class DimensionalModule(Module):
                 if (
                     param is not None
                     and param.numel() > 0
-                    and not self.compatible(param, constraints=constraints)
+                    and not self.compatible_(param, constraints)
                 ):
-                    raise RuntimeError(
-                        f"constraint cannot be added, incompatible with "
-                        f"parameter {name}."
+                    raise ValueError(
+                        f"constraint is incompatible with parameter '{name}'."
                     )
 
             # add new constraint
@@ -869,20 +898,13 @@ class DimensionalModule(Module):
 
         # removal of constraint
         if dim in self._constraints and size is None:
-            if len(self._constraints) == 1:
-                raise RuntimeError(
-                    f"cannot remove constraint on {dim}, final constraint."
-                )
-            else:
-                del self._constraints[dim]
+            del self._constraints[dim]
             return
 
         # alteration of constraint
         if dim in self._constraints and size is not None:
-            # create constraints with new addition
-            constraints = {
-                d: s for d, s in tuple(self._constraints.items()) + ((dim, size),)
-            }
+            # alter stored constraint value
+            self._constraints[dim] = size
 
             # reallocate buffers
             for name in self._constrained_buffers:
@@ -892,10 +914,7 @@ class DimensionalModule(Module):
                         self,
                         name,
                         torch.zeros(
-                            self.compatible_like(
-                                buffer.shape,
-                                constraints=constraints,
-                            ),
+                            self.compatible_like(buffer.shape),
                             dtype=buffer.dtype,
                             layout=buffer.layout,
                             device=buffer.device,
@@ -913,10 +932,7 @@ class DimensionalModule(Module):
                         name,
                         nn.Parameter(
                             torch.zeros(
-                                self.compatible_like(
-                                    param.shape,
-                                    constraints=constraints,
-                                ),
+                                self.compatible_like(param.shape),
                                 dtype=param.dtype,
                                 layout=param.layout,
                                 device=param.device,
@@ -925,8 +941,6 @@ class DimensionalModule(Module):
                             requires_grad=param.requires_grad,
                         ),
                     )
-
-            self._constraints[dim] = size
             return
 
     def register_constrained(self, name: str):
@@ -977,7 +991,7 @@ class DimensionalModule(Module):
                 raise RuntimeError(
                     f"parameter '{name}' has shape of {tuple(param.shape)} "
                     f"incompatible with constrained shape {self.constraints_repr}, "
-                    f"dimensions must match and must have at least "
+                    "dimensions must match and must have at least "
                     f"{req_ndims} dimensions"
                 )
             else:
@@ -1013,7 +1027,7 @@ class HistoryModule(DimensionalModule):
 
     Raises:
         ValueError: step time must be positive.
-        ValueError: history length must be non-negative.
+        ValueError: history length must be nonnegative.
     """
 
     def __init__(
@@ -1092,7 +1106,7 @@ class HistoryModule(DimensionalModule):
 
         # ensure valid history length
         if value < 0:
-            raise RuntimeError(f"history length must be non-negative, received {value}")
+            raise RuntimeError(f"history length must be nonnegative, received {value}")
 
         # compute revised time dimension size
         hsize = math.ceil(value / self.dt) + 1
@@ -1264,7 +1278,7 @@ class HistoryModule(DimensionalModule):
 
             # check that time is in valid range
             if time + tolerance < 0:
-                raise ValueError(f"time must be non-negative, received {time}.")
+                raise ValueError(f"time must be nonnegative, received {time}.")
             if time - tolerance > tmax:
                 raise ValueError(f"time must not exceed {tmax}, received {time}.")
 
@@ -1318,7 +1332,7 @@ class HistoryModule(DimensionalModule):
             # check that time values are in valid range
             if torch.any(time + tolerance < 0):
                 raise ValueError(
-                    f"`time` must only be non-negative, received {time.amin().item()}."
+                    f"`time` must only be nonnegative, received {time.amin().item()}."
                 )
             if torch.any(time - tolerance > tmax):
                 raise ValueError(

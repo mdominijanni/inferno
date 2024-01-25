@@ -1,4 +1,4 @@
-from inferno import DimensionalModule
+from inferno import DimensionalModule, Module
 from inferno._internal import attr_members, instance_of
 import torch
 import torch.nn as nn
@@ -14,7 +14,7 @@ class AdaptationMixin:
 
     Caution:
         This must be added to a class which inherits from
-        :py:class:`DimensionalModule`, and the constructor for this
+        :py:class:`Module`, and the constructor for this
         mixin must be called after the module constructor.
 
     Note:
@@ -22,9 +22,8 @@ class AdaptationMixin:
     """
 
     def __init__(self, data: torch.Tensor, requires_grad=False):
-        instance_of("`self`", self, DimensionalModule)
+        instance_of("`self`", self, Module)
         self.register_parameter("adaptation_", nn.Parameter(data, requires_grad))
-        self.register_constrained("adaptation_")
 
     @property
     def adaptation(self) -> torch.Tensor:
@@ -182,7 +181,7 @@ class SpikeRefractoryMixin(RefractoryMixin):
     """
 
     def __init__(self, refrac, requires_grad=False):
-        attr_members("`self`", self, "`refrac_t`")
+        attr_members("`self`", self, "refrac_t")
         RefractoryMixin.__init__(self, refrac, requires_grad)
 
     @property
@@ -208,7 +207,7 @@ class SpikeRefractoryMixin(RefractoryMixin):
         return self.refracs == self.refrac_t
 
 
-class CurrentSpikeRefractoryMixin(RefractoryMixin):
+class CurrentSpikeRefractoryMixin(SpikeRefractoryMixin):
     r"""Mixin for neurons with refractory periods with spikes and currents based off of them.
 
     Args:
@@ -232,7 +231,7 @@ class CurrentSpikeRefractoryMixin(RefractoryMixin):
     """
 
     def __init__(self, refrac, requires_grad=False):
-        attr_members("`self`", self, "`resistance`")
+        attr_members("`self`", self, "resistance")
         SpikeRefractoryMixin.__init__(self, refrac, requires_grad)
 
     @property
