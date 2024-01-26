@@ -4,31 +4,27 @@ import torch
 from typing import Protocol
 
 
-class WeightDependence(Protocol):
-    r"""Callable used to apply weight dependence to amplitudes.
+class WeightBoundingCall(Protocol):
+    r"""Callable used to apply weight bounding to amplitudes.
 
     Args:
         weights (torch.Tensor): model weights.
-        bound (float | torch.Tensor): minimum or maximum value for weights.
         amplitude (float | torch.Tensor): amplitude of the update without weight
-            dependence (e.g. the learning rate).
+            bounding (e.g. the learning rate).
 
     Returns:
-        torch.Tensor: weight-dependant update amplitudes.
+        torch.Tensor: weight-bound update amplitudes.
 
     See Also:
-        Provided weight dependence functions include
+        Provided weight bounding functions include
         :py:func:`wdep_soft_upper_bounding`, :py:func:`wdep_soft_lower_bounding`,
         :py:func:`wdep_hard_upper_bounding`, and :py:func:`wdep_hard_lower_bounding`.
-        Some provided functions may require keyword arguments. For arguments which
-        require an object of type ``WeightDependence``,
-        use a :py:func:`~functools.partial` function to fill in keyword arguments.
+        Use a :py:func:`~functools.partial` function to fill in keyword arguments.
     """
 
     def __call__(
         self,
         weights: torch.Tensor,
-        bound: float | torch.Tensor,
         amplitude: float | torch.Tensor,
         /,
     ) -> torch.Tensor:
@@ -38,9 +34,9 @@ class WeightDependence(Protocol):
 
 def wdep_soft_upper_bounding(
     weights: torch.Tensor,
-    wmax: float | torch.Tensor,
     amplitude: float | torch.Tensor,
     /,
+    wmax: float | torch.Tensor,
     power: float = 1.0,
 ) -> torch.Tensor:
     r"""Applies soft weight bounding on potentiative update amplitude.
@@ -49,22 +45,11 @@ def wdep_soft_upper_bounding(
 
         A_+ = (w_\text{max} - w)^{\mu_+} \eta_+
 
-    Where
-
-    .. math::
-
-        \Theta(x) =
-        \begin{cases}
-            1 &x \geq 0 \\
-            0 & x < 0
-        \end{cases}
-
-
     Args:
         weights (torch.Tensor): model weights, :math:`w`.
-        wmax (float | torch.Tensor): upper bound of weights, :math:`w_\text{max}`.
         amplitude (float | torch.Tensor): amplitude of the update excluding weight
             dependence, :math:`\eta_+`.
+        wmax (float | torch.Tensor): upper bound of weights, :math:`w_\text{max}`.
         power (float, optional): exponent of weight dependence, :math:`\mu_+`.
             Defaults to 1.0.
 
@@ -80,9 +65,9 @@ def wdep_soft_upper_bounding(
 
 def wdep_soft_lower_bounding(
     weights: torch.Tensor,
-    wmin: float | torch.Tensor,
     amplitude: float | torch.Tensor,
     /,
+    wmin: float | torch.Tensor,
     power: float = 1.0,
 ) -> torch.Tensor:
     r"""Applies soft weight bounding on depressive update amplitude.
@@ -94,9 +79,9 @@ def wdep_soft_lower_bounding(
 
     Args:
         weights (torch.Tensor): model weights, :math:`w`.
-        wmin (float | torch.Tensor): lower bound of weights, :math:`w_\text{min}`.
         amplitude (float | torch.Tensor): amplitude of the update excluding weight
             dependence, :math:`\eta_-`.
+        wmin (float | torch.Tensor): lower bound of weights, :math:`w_\text{min}`.
         power (float, optional): exponent of weight dependence, :math:`\mu_-`.
             Defaults to 1.0.
 
@@ -112,9 +97,9 @@ def wdep_soft_lower_bounding(
 
 def wdep_hard_upper_bounding(
     weights: torch.Tensor,
-    wmax: float | torch.Tensor,
     amplitude: float | torch.Tensor,
     /,
+    wmax: float | torch.Tensor,
 ) -> torch.Tensor:
     r"""Applies hard weight bounding on potentiative update amplitude.
 
@@ -134,9 +119,9 @@ def wdep_hard_upper_bounding(
 
     Args:
         weights (torch.Tensor): model weights, :math:`w`.
-        wmax (float | torch.Tensor): upper bound of weights, :math:`w_\text{max}`.
         amplitude (float | torch.Tensor): amplitude of the update excluding weight
             dependence, :math:`\eta_+`.
+        wmax (float | torch.Tensor): upper bound of weights, :math:`w_\text{max}`.
 
     Returns:
         torch.Tensor: amplitudes :math:`A_+` after applying weight bound.
@@ -151,9 +136,9 @@ def wdep_hard_upper_bounding(
 
 def wdep_hard_lower_bounding(
     weights: torch.Tensor,
-    wmin: float | torch.Tensor,
     amplitude: float | torch.Tensor,
     /,
+    wmin: float | torch.Tensor,
 ) -> torch.Tensor:
     r"""Applies hard weight bounding on depressive update amplitude.
 
@@ -171,9 +156,9 @@ def wdep_hard_lower_bounding(
 
     Args:
         weights (torch.Tensor): model weights, :math:`w`.
-        wmin (float | torch.Tensor): lower bound of weights, :math:`w_\text{min}`.
         amplitude (float | torch.Tensor): amplitude of the update excluding weight
             dependence, :math:`\eta_-`.
+        wmin (float | torch.Tensor): lower bound of weights, :math:`w_\text{min}`.
 
     Returns:
         torch.Tensor: amplitudes :math:`A_-` after applying weight bound.

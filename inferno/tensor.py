@@ -29,7 +29,7 @@ def zeros(
         torch.Tensor: tensor like ``tensor``, modified by parameters, filled with 0.
 
     Note:
-        To construct a scalar, set ``shape`` to ``((),)``.
+        To construct a scalar, set ``shape`` to ``()``.
     """
     shape = tensor.shape if shape is None else shape
     dtype = tensor.dtype if dtype is None else dtype
@@ -38,7 +38,7 @@ def zeros(
     requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
 
     return torch.zeros(
-        *shape, dtype=dtype, layout=layout, device=device, requires_grad=requires_grad
+        shape, dtype=dtype, layout=layout, device=device, requires_grad=requires_grad
     )
 
 
@@ -70,7 +70,7 @@ def ones(
         torch.Tensor: tensor like ``tensor``, modified by parameters, filled with 1.
 
     Note:
-        To construct a scalar, set ``shape`` to ``((),)``.
+        To construct a scalar, set ``shape`` to ``()``.
     """
     shape = tensor.shape if shape is None else shape
     dtype = tensor.dtype if dtype is None else dtype
@@ -79,7 +79,7 @@ def ones(
     requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
 
     return torch.ones(
-        *shape, dtype=dtype, layout=layout, device=device, requires_grad=requires_grad
+        shape, dtype=dtype, layout=layout, device=device, requires_grad=requires_grad
     )
 
 
@@ -111,7 +111,7 @@ def empty(
         torch.Tensor: uninitialized tensor like ``tensor``, modified by parameters.
 
     Note:
-        To construct a scalar, set ``shape`` to ``((),)``.
+        To construct a scalar, set ``shape`` to ``()``.
     """
     shape = tensor.shape if shape is None else shape
     dtype = tensor.dtype if dtype is None else dtype
@@ -120,7 +120,7 @@ def empty(
     requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
 
     return torch.empty(
-        *shape, dtype=dtype, layout=layout, device=device, requires_grad=requires_grad
+        shape, dtype=dtype, layout=layout, device=device, requires_grad=requires_grad
     )
 
 
@@ -155,7 +155,7 @@ def full(
         with ``value``.
 
     Note:
-        To construct a scalar, set ``shape`` to ``((),)``.
+        To construct a scalar, set ``shape`` to ``()``.
     """
     shape = tensor.shape if shape is None else shape
     dtype = tensor.dtype if dtype is None else dtype
@@ -164,7 +164,7 @@ def full(
     requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
 
     return torch.full(
-        *shape,
+        shape,
         fill_value=value,
         dtype=dtype,
         layout=layout,
@@ -205,7 +205,7 @@ def uniform(
         with ``value``.
 
     Note:
-        To construct a scalar, set ``shape`` to ``((),)``.
+        To construct a scalar, set ``shape`` to ``()``.
 
     See Also:
         See :py:func:`torch.rand` for the function which this extends.
@@ -217,7 +217,7 @@ def uniform(
     requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
 
     return torch.rand(
-        *shape,
+        shape,
         generator=generator,
         dtype=dtype,
         layout=layout,
@@ -258,7 +258,7 @@ def normal(
         with ``value``.
 
     Note:
-        To construct a scalar, set ``shape`` to ``((),)``.
+        To construct a scalar, set ``shape`` to ``()``.
 
     See Also:
         See :py:func:`torch.randn` for the function which this extends.
@@ -270,7 +270,7 @@ def normal(
     requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
 
     return torch.randn(
-        *shape,
+        shape,
         generator=generator,
         dtype=dtype,
         layout=layout,

@@ -60,7 +60,7 @@ class Layer(Module):
 
         if connection.outshape != neuron.shape:
             raise RuntimeError(
-                f"incompatible shapes, {connection.output} "
+                f"incompatible shapes, {connection.outshape} "
                 f"for connection output and {neuron.shape} for neuron."
             )
 

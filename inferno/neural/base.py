@@ -26,6 +26,10 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
         DimensionalModule.__init__(self)
         ShapeMixin.__init__(self, shape, batch_size)
 
+    def extra_repr(self) -> str:
+        r"""Returns extra information on this module."""
+        return f"shape={self.shape}, bsize={self.bsize}, dt={self.dt}"
+
     @property
     def bsize(self) -> int:
         r"""Batch size of the neuron group.
@@ -176,9 +180,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
         )
 
     @abstractmethod
-    def forward(
-        self, inputs: torch.Tensor, **kwargs
-    ) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
         Args:

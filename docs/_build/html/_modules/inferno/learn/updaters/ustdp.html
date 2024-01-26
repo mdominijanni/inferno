@@ -274,16 +274,12 @@
 <span class="sd">            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.</span>
 <span class="sd">        trace_mode (Literal[&quot;cumulative&quot;, &quot;nearest&quot;], optional): method to use for</span>
 <span class="sd">            calculating spike traces. Defaults to &quot;cumulative&quot;.</span>
-<span class="sd">        wd_lower (~inferno.learn.functional.WeightDependence | None, optional):</span>
-<span class="sd">            function for applying weight dependence on a lower bound, no dependence if</span>
+<span class="sd">        wd_lower (~inferno.learn.functional.WeightBoundingCall | None, optional):</span>
+<span class="sd">            callable for applying weight dependence on a lower bound, no dependence if</span>
 <span class="sd">            None. Defaults to None.</span>
-<span class="sd">        wd_upper (~inferno.learn.functional.WeightDependence | None, optional):</span>
-<span class="sd">            function for applying weight dependence on an bound, no dependence if</span>
+<span class="sd">        wd_upper (~inferno.learn.functional.WeightBoundingCall | None, optional):</span>
+<span class="sd">            callable for applying weight dependence on an bound, no dependence if</span>
 <span class="sd">            None. Defaults to None.</span>
-<span class="sd">        wmin (float | None, optional): lower bound for weights, :math:`w_\text{min}`.</span>
-<span class="sd">            Defaults to None.</span>
-<span class="sd">        wmax (float | None, optional): upper bound for weights., :math:`w_\text{max}`</span>
-<span class="sd">            Defaults to None.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
@@ -303,10 +299,8 @@
         <span class="n">delayed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">interp_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">trace_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;cumulative&quot;</span><span class="p">,</span> <span class="s2">&quot;nearest&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cumulative&quot;</span><span class="p">,</span>
-        <span class="n">wd_lower</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">WeightDependence</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">wd_upper</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">WeightDependence</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">wmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">wmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wd_lower</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">WeightBoundingCall</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wd_upper</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">WeightBoundingCall</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor, registers monitors</span>
@@ -320,12 +314,6 @@
                 <span class="sa">f</span><span class="s2">&quot;received </span><span class="si">{</span><span class="n">trace_mode</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
 
-        <span class="c1"># validate weight dependence</span>
-        <span class="k">if</span> <span class="n">wd_lower</span> <span class="ow">and</span> <span class="n">wmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;`wmin` cannot be None if `wd_lower` is specified.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">wd_upper</span> <span class="ow">and</span> <span class="n">wmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;`wmax` cannot be None if `wd_upper` is specified.&quot;</span><span class="p">)</span>
-
         <span class="c1"># updater hyperparameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`step_time`&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_post</span><span class="p">)</span>
@@ -337,8 +325,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">=</span> <span class="n">trace_mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wdlower</span> <span class="o">=</span> <span class="n">wd_lower</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wdupper</span> <span class="o">=</span> <span class="n">wd_upper</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wmin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wmin</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wmax</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wmax</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -537,9 +523,9 @@
 
             <span class="c1"># apply bounding factors</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdupper</span><span class="p">:</span>
-                <span class="n">a_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdupper</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmax</span><span class="p">,</span> <span class="n">a_pos</span><span class="p">)</span>
+                <span class="n">a_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdupper</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">a_pos</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdlower</span><span class="p">:</span>
-                <span class="n">a_neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdlower</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wmin</span><span class="p">,</span> <span class="n">a_neg</span><span class="p">)</span>
+                <span class="n">a_neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdlower</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">a_neg</span><span class="p">)</span>
 
             <span class="c1"># apply learning rates</span>
             <span class="n">a_pos</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">=</span> <span class="n">a_pos</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lrpost</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lrpre</span>

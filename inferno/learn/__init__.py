@@ -11,6 +11,13 @@ from .updaters.sstdp import (
     MSTDPET,
 )
 
+
+from .updaters.bounding import (
+    WeightBounding,
+    HardWeightDependence,
+    SoftWeightDependence,
+)
+
 from .classifiers.simple import (
     RateClassifier,
 )
@@ -28,4 +35,7 @@ __all__ = [
     "RateClassifier",
     "WeightNormalization",
     "WeightClamping",
+    "WeightBounding",
+    "HardWeightDependence",
+    "SoftWeightDependence",
 ]

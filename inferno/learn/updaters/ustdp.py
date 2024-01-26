@@ -56,16 +56,12 @@ class STDP(LayerwiseUpdater):
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to "cumulative".
-        wd_lower (~inferno.learn.functional.WeightDependence | None, optional):
-            function for applying weight dependence on a lower bound, no dependence if
+        wd_lower (~inferno.learn.functional.WeightBoundingCall | None, optional):
+            callable for applying weight dependence on a lower bound, no dependence if
             None. Defaults to None.
-        wd_upper (~inferno.learn.functional.WeightDependence | None, optional):
-            function for applying weight dependence on an bound, no dependence if
+        wd_upper (~inferno.learn.functional.WeightBoundingCall | None, optional):
+            callable for applying weight dependence on an bound, no dependence if
             None. Defaults to None.
-        wmin (float | None, optional): lower bound for weights, :math:`w_\text{min}`.
-            Defaults to None.
-        wmax (float | None, optional): upper bound for weights., :math:`w_\text{max}`
-            Defaults to None.
 
     See Also:
         For more details and references, visit
@@ -85,10 +81,8 @@ class STDP(LayerwiseUpdater):
         delayed: bool = False,
         interp_tolerance: float = 0.0,
         trace_mode: Literal["cumulative", "nearest"] = "cumulative",
-        wd_lower: lf.WeightDependence | None = None,
-        wd_upper: lf.WeightDependence | None = None,
-        wmin: float | None = None,
-        wmax: float | None = None,
+        wd_lower: lf.WeightBoundingCall | None = None,
+        wd_upper: lf.WeightBoundingCall | None = None,
         **kwargs,
     ):
         # call superclass constructor, registers monitors
@@ -102,12 +96,6 @@ class STDP(LayerwiseUpdater):
                 f"received {trace_mode}."
             )
 
-        # validate weight dependence
-        if wd_lower and wmin is None:
-            raise RuntimeError("`wmin` cannot be None if `wd_lower` is specified.")
-        if wd_upper and wmax is None:
-            raise RuntimeError("`wmax` cannot be None if `wd_upper` is specified.")
-
         # updater hyperparameters
         self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
         self.lr_post = float(lr_post)
@@ -119,8 +107,6 @@ class STDP(LayerwiseUpdater):
         self.trace = trace_mode
         self.wdlower = wd_lower
         self.wdupper = wd_upper
-        self.wmin = float(wmin)
-        self.wmax = float(wmax)
 
     @property
     def dt(self) -> float:
@@ -314,9 +300,9 @@ class STDP(LayerwiseUpdater):
 
             # apply bounding factors
             if self.wdupper:
-                a_pos = self.wdupper(conn.weight, self.wmax, a_pos)
+                a_pos = self.wdupper(conn.weight, a_pos)
             if self.wdlower:
-                a_neg = self.wdlower(conn.weight, self.wmin, a_neg)
+                a_neg = self.wdlower(conn.weight, a_neg)
 
             # apply learning rates
             a_pos, a_neg = a_pos * self.lrpost, a_neg * self.lrpre

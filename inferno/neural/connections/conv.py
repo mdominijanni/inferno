@@ -186,6 +186,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
         # call mixin constructor
         WeightBiasDelayMixin.__init__(
+            self,
             weight=torch.rand(filters, channels, *kernel),
             bias=(None if not bias else torch.rand(filters)),
             delay=(None if delay is None else torch.zeros(filters, channels, *kernel)),

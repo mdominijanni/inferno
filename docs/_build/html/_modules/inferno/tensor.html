@@ -247,7 +247,7 @@
 <span class="sd">        torch.Tensor: tensor like ``tensor``, modified by parameters, filled with 0.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        To construct a scalar, set ``shape`` to ``((),)``.</span>
+<span class="sd">        To construct a scalar, set ``shape`` to ``()``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">shape</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">shape</span>
     <span class="n">dtype</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dtype</span>
@@ -256,7 +256,7 @@
     <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
+        <span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
     <span class="p">)</span></div>
 
 
@@ -291,7 +291,7 @@
 <span class="sd">        torch.Tensor: tensor like ``tensor``, modified by parameters, filled with 1.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        To construct a scalar, set ``shape`` to ``((),)``.</span>
+<span class="sd">        To construct a scalar, set ``shape`` to ``()``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">shape</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">shape</span>
     <span class="n">dtype</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dtype</span>
@@ -300,7 +300,7 @@
     <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
+        <span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
     <span class="p">)</span></div>
 
 
@@ -335,7 +335,7 @@
 <span class="sd">        torch.Tensor: uninitialized tensor like ``tensor``, modified by parameters.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        To construct a scalar, set ``shape`` to ``((),)``.</span>
+<span class="sd">        To construct a scalar, set ``shape`` to ``()``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">shape</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">shape</span>
     <span class="n">dtype</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dtype</span>
@@ -344,7 +344,7 @@
     <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
+        <span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span>
     <span class="p">)</span></div>
 
 
@@ -382,7 +382,7 @@
 <span class="sd">        with ``value``.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        To construct a scalar, set ``shape`` to ``((),)``.</span>
+<span class="sd">        To construct a scalar, set ``shape`` to ``()``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">shape</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">shape</span>
     <span class="n">dtype</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dtype</span>
@@ -391,7 +391,7 @@
     <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">shape</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">,</span>
         <span class="n">fill_value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
         <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
@@ -435,7 +435,7 @@
 <span class="sd">        with ``value``.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        To construct a scalar, set ``shape`` to ``((),)``.</span>
+<span class="sd">        To construct a scalar, set ``shape`` to ``()``.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        See :py:func:`torch.rand` for the function which this extends.</span>
@@ -447,7 +447,7 @@
     <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">shape</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">,</span>
         <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
         <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
@@ -491,7 +491,7 @@
 <span class="sd">        with ``value``.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        To construct a scalar, set ``shape`` to ``((),)``.</span>
+<span class="sd">        To construct a scalar, set ``shape`` to ``()``.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        See :py:func:`torch.randn` for the function which this extends.</span>
@@ -503,7 +503,7 @@
     <span class="n">requires_grad</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">requires_grad</span>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">shape</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">,</span>
         <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
         <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>

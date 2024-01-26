@@ -83,7 +83,7 @@ class ShapeMixin(BatchMixin):
 
         # validate and set shape
         try:
-            self._shape = numeric_limit("`shape`", shape, 0, "gt", int)
+            self._shape = (numeric_limit("`shape`", shape, 0, "gt", int),)
         except TypeError:
             self._shape = tuple(
                 numeric_limit(f"`shape[{idx}]`", s, 0, "gt", int)

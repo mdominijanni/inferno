@@ -1,0 +1,8 @@
+﻿SoftWeightDependence
+====================
+
+.. currentmodule:: inferno.learn
+
+.. autoclass:: SoftWeightDependence
+    :members:
+    :show-inheritance:

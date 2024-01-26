@@ -1,0 +1,8 @@
+﻿WeightBounding
+==============
+
+.. currentmodule:: inferno.learn
+
+.. autoclass:: WeightBounding
+    :members:
+    :show-inheritance:

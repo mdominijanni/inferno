@@ -123,6 +123,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
         # call mixin constructor
         WeightBiasDelayMixin.__init__(
+            self,
             weight=torch.rand(out_size, in_size),
             bias=(None if not bias else torch.rand(out_size)),
             delay=(None if delay is None else torch.zeros(out_size, in_size)),
@@ -440,6 +441,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
         # call mixin constructor
         WeightBiasDelayMixin.__init__(
+            self,
             weight=torch.rand(size),
             bias=(None if not bias else torch.rand(size)),
             delay=(None if delay is None else torch.zeros(size)),
@@ -742,6 +744,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
         # call mixin constructor
         WeightBiasDelayMixin.__init__(
+            self,
             weight=(torch.rand(size, size) * self.mask),
             bias=(None if not bias else torch.rand(size)),
             delay=(None if delay is None else torch.zeros(size, size) * self.mask),

@@ -59,7 +59,7 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
         batch_size: int = 1,
     ):
         # call superclass constructor
-        Synapse.__init__(self, shape, step_time, batch_size, delay)
+        Synapse.__init__(self, shape, step_time, delay, batch_size)
 
         # determine mixin arguments
         currents = torch.zeros(*self.bshape, self.hsize)

@@ -11,7 +11,7 @@
     :nosignatures:
     :toctree: generated
 
-    WeightDependence
+    WeightBoundingCall
     wdep_hard_upper_bounding
     wdep_hard_lower_bounding
     wdep_soft_upper_bounding

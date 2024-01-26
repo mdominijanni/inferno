@@ -220,6 +220,7 @@
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">rsetattr</span><span class="p">,</span> <span class="n">instance_of</span><span class="p">,</span> <span class="n">numeric_limit</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
@@ -754,7 +755,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if the module is currently hooked.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">whentrain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -831,6 +832,11 @@
 <span class="sd">        Each argument must be a 2-tuple of integers, where the first element is the</span>
 <span class="sd">        dimension to which a constraint is applied and the second is the size of that</span>
 <span class="sd">        dimension. Dimensions can be negative.</span>
+
+<span class="sd">    Important:</span>
+<span class="sd">        Constraints are not checked on every assignment and as such may be invalidated.</span>
+<span class="sd">        This can be tested with :py:meth:`reconstrain`.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -839,10 +845,6 @@
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
         <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-
-        <span class="c1"># disallow empty constraints</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;no constraints were specified&quot;</span><span class="p">)</span>
 
         <span class="c1"># register extras</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;_constraints&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
@@ -854,7 +856,7 @@
             <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;constraint </span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s2"> specifies an invalid (non-positive) &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;constraint </span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s2"> specifies an invalid (nonpositive) &quot;</span>
                     <span class="s2">&quot;number of elements.&quot;</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">:</span>
@@ -864,8 +866,10 @@
                 <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
 
+<div class="viewcode-block" id="DimensionalModule.mindims_">
+<a class="viewcode-back" href="../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.mindims_">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_mindims</span><span class="p">(</span><span class="n">constraints</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">mindims_</span><span class="p">(</span><span class="n">constraints</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes minimum number of required dimensions for a constrained tensor.</span>
 
 <span class="sd">        Args:</span>
@@ -874,10 +878,81 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            int: minimum required number of dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">constraints</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
         <span class="n">maxc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
         <span class="n">minc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">maxc</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">maxc</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">minc</span> <span class="k">if</span> <span class="n">minc</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">maxc</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">maxc</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">minc</span> <span class="k">if</span> <span class="n">minc</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DimensionalModule.compatible_">
+<a class="viewcode-back" href="../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.compatible_">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">compatible_</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Test if a tensor is compatible with a set of constraints.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): tensor to test.</span>
+<span class="sd">            constraints (dict[int, int]): constraint dictionary to test with.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the tensor is compatible.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check if value has fewer than minimum required number of dimensions</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="bp">cls</span><span class="o">.</span><span class="n">mindims_</span><span class="p">(</span><span class="n">constraints</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># check if constraints are met</span>
+        <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">constraints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">!=</span> <span class="n">size</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="DimensionalModule.compatible_like_">
+<a class="viewcode-back" href="../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.compatible_like_">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">compatible_like_</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">constraints</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a shape like the input, but compatible with the constraints.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            shape (tuple[int]): shape to make compatible</span>
+<span class="sd">            constraints (dict[int, int]): constraint dictionary to test against.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: dimensionality of shape is insufficient.</span>
+<span class="sd">            RuntimeError: constraints contains nonpositive sized dimensions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int]: compatiblized shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># ensure shape is of sufficient dimensionality</span>
+        <span class="n">req_ndims</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">mindims_</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">req_ndims</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;`shape` </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> with dimensionality </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> cannot be made &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;compatible, requires a minimum dimensionality of </span><span class="si">{</span><span class="n">req_ndims</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># create new shape</span>
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">constraints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;`shape` </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> cannot contain nonpositive sized dimensions.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span></div>
+
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span> <span class="nf">constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
@@ -955,43 +1030,26 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            int: minimum required number of dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mindims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mindims_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DimensionalModule.compatible">
 <a class="viewcode-back" href="../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.compatible">[docs]</a>
-    <span class="k">def</span> <span class="nf">compatible</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">compatible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Test if a tensor is compatible with the module&#39;s constraints.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): tensor to test.</span>
-<span class="sd">            constraints (dict[int, int] | None, optional): constraint dictionary to</span>
-<span class="sd">                test with, uses current constraints if None. Defaults to None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if the tensor is compatible.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># check if value has fewer than minimum required number of dimensions</span>
-        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mindims</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
-            <span class="k">return</span> <span class="kc">False</span>
-
-        <span class="c1"># check if constraints are met</span>
-        <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">constraints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">!=</span> <span class="n">size</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span>
-
-        <span class="k">return</span> <span class="kc">True</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DimensionalModule.compatible_like">
 <a class="viewcode-back" href="../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.compatible_like">[docs]</a>
-    <span class="k">def</span> <span class="nf">compatible_like</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
-        <span class="n">constraints</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a shape like the input, but compatible with constraints.</span>
+    <span class="k">def</span> <span class="nf">compatible_like</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a shape like the input, but compatible with the constraints.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            shape (tuple[int]): shape to make compatible</span>
@@ -1000,45 +1058,23 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            RuntimeError: dimensionality of shape is insufficient.</span>
-<span class="sd">            RuntimeError: constraints contains non-positive sized dimensions.</span>
+<span class="sd">            RuntimeError: constraints contains nonpositive sized dimensions.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: compatiblized shape.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># select constraints</span>
-        <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span>
-
-        <span class="c1"># ensure shape is of sufficient dimensionality</span>
-        <span class="n">req_ndims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mindims</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">req_ndims</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;`shape` </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> with dimensionality </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> cannot be made &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;compatible, requires a minimum dimensionality of </span><span class="si">{</span><span class="n">req_ndims</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># create new shape</span>
-        <span class="n">new_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">constraints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;`shape` </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> cannot contain non-positive sized dimensions.&quot;</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">new_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_like_</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DimensionalModule.reconstrain">
 <a class="viewcode-back" href="../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.reconstrain">[docs]</a>
-    <span class="k">def</span> <span class="nf">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Edits existing constraints and reshapes constrained buffers and parameters</span>
 <span class="sd">        accordingly.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            dim (int): dimension to which a constraint should be added, removed,</span>
-<span class="sd">                or modified.</span>
+<span class="sd">            dim (int | None): dimension to which a constraint should be added, removed,</span>
+<span class="sd">                or modified, or if None, only existing constraints are tested.</span>
 <span class="sd">            size (int | None): size of the new constraint, or None if the constraint</span>
 <span class="sd">                should be removed.</span>
 
@@ -1046,7 +1082,7 @@
 <span class="sd">            RuntimeError: constrained buffer or parameter had its shape modified</span>
 <span class="sd">                externally and is no longer compatible.</span>
 <span class="sd">            ValueError: size must specify a positive number of elements.</span>
-<span class="sd">            RuntimeError: added constraint is incompatible with existing buffer or</span>
+<span class="sd">            ValueError: added constraint is incompatible with existing buffer or</span>
 <span class="sd">                parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># delete cache for constraint properties</span>
@@ -1088,21 +1124,24 @@
                     <span class="sa">f</span><span class="s2">&quot;constrained parameter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> has been invalidated.&quot;</span>
                 <span class="p">)</span>
 
-        <span class="c1"># convert to integers</span>
+        <span class="c1"># end early if no dimensions (check mode)</span>
+        <span class="k">if</span> <span class="n">dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># convert arguments to integers</span>
         <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
 
         <span class="c1"># check for valid size constraint</span>
         <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;size </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2"> specifies an invalid (non-positive) number of elements.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;`size` </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2"> specifies an invalid (nonpositive) number of elements.&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># addition of constraint</span>
         <span class="k">if</span> <span class="n">dim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="ow">and</span> <span class="n">size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># create constraints with new addition</span>
-            <span class="n">constraints</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="n">d</span><span class="p">:</span> <span class="n">s</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">+</span> <span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">),)</span>
-            <span class="p">}</span>
+            <span class="n">constraints</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">),))</span>
+            <span class="n">constraints</span> <span class="o">=</span> <span class="p">{</span><span class="n">d</span><span class="p">:</span> <span class="n">s</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">constraints</span><span class="p">}</span>
 
             <span class="c1"># ensure constrained buffers and parameters are compatible</span>
             <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span><span class="p">:</span>
@@ -1110,10 +1149,10 @@
                 <span class="k">if</span> <span class="p">(</span>
                     <span class="n">buffer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                     <span class="ow">and</span> <span class="n">buffer</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span>
-                    <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
                 <span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;constraint cannot be added, incompatible with buffer </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;constraint is incompatible with buffer &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
                     <span class="p">)</span>
 
             <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_parameters</span><span class="p">:</span>
@@ -1121,11 +1160,10 @@
                 <span class="k">if</span> <span class="p">(</span>
                     <span class="n">param</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                     <span class="ow">and</span> <span class="n">param</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span>
-                    <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
                 <span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;constraint cannot be added, incompatible with &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;parameter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;constraint is incompatible with parameter &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
                     <span class="p">)</span>
 
             <span class="c1"># add new constraint</span>
@@ -1134,20 +1172,13 @@
 
         <span class="c1"># removal of constraint</span>
         <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="ow">and</span> <span class="n">size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;cannot remove constraint on </span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">, final constraint.&quot;</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span>
             <span class="k">return</span>
 
         <span class="c1"># alteration of constraint</span>
         <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="ow">and</span> <span class="n">size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># create constraints with new addition</span>
-            <span class="n">constraints</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="n">d</span><span class="p">:</span> <span class="n">s</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">+</span> <span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">),)</span>
-            <span class="p">}</span>
+            <span class="c1"># alter stored constraint value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
 
             <span class="c1"># reallocate buffers</span>
             <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span><span class="p">:</span>
@@ -1157,10 +1188,7 @@
                         <span class="bp">self</span><span class="p">,</span>
                         <span class="n">name</span><span class="p">,</span>
                         <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">compatible_like</span><span class="p">(</span>
-                                <span class="n">buffer</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-                                <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
-                            <span class="p">),</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">compatible_like</span><span class="p">(</span><span class="n">buffer</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
                             <span class="n">dtype</span><span class="o">=</span><span class="n">buffer</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
                             <span class="n">layout</span><span class="o">=</span><span class="n">buffer</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span>
                             <span class="n">device</span><span class="o">=</span><span class="n">buffer</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
@@ -1178,10 +1206,7 @@
                         <span class="n">name</span><span class="p">,</span>
                         <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
                             <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">compatible_like</span><span class="p">(</span>
-                                    <span class="n">param</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-                                    <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
-                                <span class="p">),</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">compatible_like</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
                                 <span class="n">dtype</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
                                 <span class="n">layout</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span>
                                 <span class="n">device</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
@@ -1190,8 +1215,6 @@
                             <span class="n">requires_grad</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">,</span>
                         <span class="p">),</span>
                     <span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
             <span class="k">return</span></div>
 
 
@@ -1245,7 +1268,7 @@
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;parameter &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;incompatible with constrained shape </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints_repr</span><span class="si">}</span><span class="s2">, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;dimensions must match and must have at least &quot;</span>
+                    <span class="s2">&quot;dimensions must match and must have at least &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">req_ndims</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1288,7 +1311,7 @@
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: step time must be positive.</span>
-<span class="sd">        ValueError: history length must be non-negative.</span>
+<span class="sd">        ValueError: history length must be nonnegative.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -1367,7 +1390,7 @@
 
         <span class="c1"># ensure valid history length</span>
         <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;history length must be non-negative, received </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;history length must be nonnegative, received </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># compute revised time dimension size</span>
         <span class="n">hsize</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">value</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
@@ -1550,7 +1573,7 @@
 
             <span class="c1"># check that time is in valid range</span>
             <span class="k">if</span> <span class="n">time</span> <span class="o">+</span> <span class="n">tolerance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;time must be non-negative, received </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;time must be nonnegative, received </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">time</span> <span class="o">-</span> <span class="n">tolerance</span> <span class="o">&gt;</span> <span class="n">tmax</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;time must not exceed </span><span class="si">{</span><span class="n">tmax</span><span class="si">}</span><span class="s2">, received </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
@@ -1604,7 +1627,7 @@
             <span class="c1"># check that time values are in valid range</span>
             <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">time</span> <span class="o">+</span> <span class="n">tolerance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;`time` must only be non-negative, received </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">amin</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;`time` must only be nonnegative, received </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">amin</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">time</span> <span class="o">-</span> <span class="n">tolerance</span> <span class="o">&gt;</span> <span class="n">tmax</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>

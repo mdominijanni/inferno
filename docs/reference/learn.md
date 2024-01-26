@@ -22,6 +22,17 @@
     STDP
 ```
 
+## Weight Dependence
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    WeightBounding
+    SoftWeightDependence
+    HardWeightDependence
+```
+
 ## Classifiers
 ```{eval-rst}
 .. autosummary::

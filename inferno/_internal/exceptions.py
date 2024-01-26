@@ -21,7 +21,7 @@ def numeric_limit(
         Any: casted value.
     """
     # cast value if a type is given
-    if val is not None:
+    if cast is not None:
         val = cast(val)
 
     # perform comparison
@@ -122,7 +122,7 @@ def numeric_interval(
         Any: casted value.
     """
     # cast value if a type is given
-    if val is not None:
+    if cast is not None:
         val = cast(val)
 
     # perform comparison

@@ -1,5 +1,5 @@
 from .update import (
-    WeightDependence,
+    WeightBoundingCall,
     wdep_hard_upper_bounding,
     wdep_hard_lower_bounding,
     wdep_soft_upper_bounding,
@@ -7,7 +7,7 @@ from .update import (
 )
 
 __all__ = [
-    "WeightDependence",
+    "WeightBoundingCall",
     "wdep_hard_upper_bounding",
     "wdep_hard_lower_bounding",
     "wdep_soft_upper_bounding",

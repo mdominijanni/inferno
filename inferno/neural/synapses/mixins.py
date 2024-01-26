@@ -174,7 +174,7 @@ class DelayedSpikeCurrentMixin(SpikeCurrentMixin):
         self._spikeinterp = spike_interp
         self._currentobv = None if current_overval is None else float(current_overval)
         self._spikeobv = None if spike_overval is None else float(spike_overval)
-        self._interptol = numeric_limit("`tolerance`", tolerance, 0, "gt", float)
+        self._interptol = numeric_limit("`tolerance`", tolerance, 0, "gte", float)
 
     def _synparam_at(
         self,

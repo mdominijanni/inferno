@@ -507,7 +507,7 @@ class StateHook(Hook):
         Returns:
             bool: if the module is currently hooked.
         """
-        return self._handle is None
+        return self._handle is not None
 
     @property
     def whentrain(self) -> bool:
