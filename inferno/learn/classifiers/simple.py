@@ -43,7 +43,7 @@ class RateClassifier(Module):
                 for idx, s in enumerate(shape)
             )
 
-        num_classes = num_classes("`num_classes`", num_classes, 0, "gt", int)
+        num_classes = numeric_limit("`num_classes`", num_classes, 0, "gt", int)
 
         if reduction.lower() not in ("sum", "mean"):
             raise ValueError(

@@ -5,7 +5,11 @@ import torch
 
 class IntervalPoisson(Module):
     def __init__(
-        self, step_time: float, steps: int, generator: torch.Generator | None = None
+        self,
+        step_time: float,
+        steps: int,
+        maxfreq: float,
+        generator: torch.Generator | None = None,
     ):
         # call superclass constructor
         Module.__init__(self)
@@ -13,6 +17,7 @@ class IntervalPoisson(Module):
         # encoder attributes
         self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
         self.num_steps = numeric_limit("`steps`", steps, 0, "gt", int)
+        self.maxfreq = numeric_limit("`maxfreq`", maxfreq, 0, "gte", float)
         self.rng = generator
 
     @property
