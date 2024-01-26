@@ -56,10 +56,10 @@ class STDP(LayerwiseUpdater):
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to "cumulative".
-        wd_lower (~inferno.learn.functional.WeightBoundingCall | None, optional):
+        wd_lower (~inferno.learn.functional.BindWeights | None, optional):
             callable for applying weight dependence on a lower bound, no dependence if
             None. Defaults to None.
-        wd_upper (~inferno.learn.functional.WeightBoundingCall | None, optional):
+        wd_upper (~inferno.learn.functional.BindWeights | None, optional):
             callable for applying weight dependence on an bound, no dependence if
             None. Defaults to None.
 
@@ -81,8 +81,8 @@ class STDP(LayerwiseUpdater):
         delayed: bool = False,
         interp_tolerance: float = 0.0,
         trace_mode: Literal["cumulative", "nearest"] = "cumulative",
-        wd_lower: lf.WeightBoundingCall | None = None,
-        wd_upper: lf.WeightBoundingCall | None = None,
+        wd_lower: lf.BindWeights | None = None,
+        wd_upper: lf.BindWeights | None = None,
         **kwargs,
     ):
         # call superclass constructor, registers monitors

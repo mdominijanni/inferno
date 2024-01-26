@@ -315,6 +315,7 @@ class FoldingReducer(FoldReducer, ABC):
 
     def __init__(self, step_time: float, history_len: float):
         FoldReducer.__init__(
+            self,
             fold_fn=self.fold,
             step_time=step_time,
             history_len=history_len,

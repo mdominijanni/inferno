@@ -122,7 +122,7 @@ class WeightBounding(ABC):
             NotImplementedError: ``lower`` must be implemented by the subclass.
 
         Note:
-            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be
+            This has the signature of :py:class:`~lf.BindWeights` and can be
             passed in where a parameter of that type is required.
         """
         raise NotImplementedError(
@@ -148,7 +148,7 @@ class WeightBounding(ABC):
             NotImplementedError: ``upper`` must be implemented by the subclass.
 
         Note:
-            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be
+            This has the signature of :py:class:`~lf.BindWeights` and can be
             passed in where a parameter of that type is required.
         """
         raise NotImplementedError(
@@ -200,7 +200,7 @@ class HardWeightDependence(WeightBounding):
             RuntimeError: cannot apply lower bounds if the lower bound was not given.
 
         Note:
-            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be
+            This has the signature of :py:class:`~lf.BindWeights` and can be
             passed in where a parameter of that type is required.
         """
         if self.hasmin:
@@ -239,7 +239,7 @@ class HardWeightDependence(WeightBounding):
             RuntimeError: cannot apply upper bounds if the lower bound was not given.
 
         Note:
-            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be
+            This has the signature of :py:class:`~lf.BindWeights` and can be
             passed in where a parameter of that type is required.
         """
         if self.hasmax:
@@ -351,7 +351,7 @@ class SoftWeightDependence(WeightBounding):
             RuntimeError: cannot apply lower bounds if the lower bound was not given.
 
         Note:
-            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be
+            This has the signature of :py:class:`~lf.BindWeights` and can be
             passed in where a parameter of that type is required.
         """
         if self.hasmin:
@@ -382,7 +382,7 @@ class SoftWeightDependence(WeightBounding):
             RuntimeError: cannot apply upper bounds if the lower bound was not given.
 
         Note:
-            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be
+            This has the signature of :py:class:`~lf.BindWeights` and can be
             passed in where a parameter of that type is required.
         """
         if self.hasmax:

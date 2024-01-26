@@ -31,7 +31,7 @@ class HookBundle(Hook):
         Returns:
             bool: if the module is currently hooked.
         """
-        return self.registered
+        return self.hook.registered
 
     def deregister(self) -> None:
         """Deregisters the hook as a forward hook/prehook."""

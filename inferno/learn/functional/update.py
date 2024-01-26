@@ -4,7 +4,7 @@ import torch
 from typing import Protocol
 
 
-class WeightBoundingCall(Protocol):
+class BindWeights(Protocol):
     r"""Callable used to apply weight bounding to amplitudes.
 
     Args:
@@ -131,7 +131,7 @@ def wdep_hard_upper_bounding(
         :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.
     """
     diff = wmax - weights
-    return torch.heaviside(diff, inferno.zeros(diff, shape=((),))) * amplitude
+    return torch.heaviside(diff, inferno.zeros(diff, shape=())) * amplitude
 
 
 def wdep_hard_lower_bounding(
@@ -168,4 +168,4 @@ def wdep_hard_lower_bounding(
         :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.
     """
     diff = weights - wmin
-    return torch.heaviside(diff, inferno.zeros(diff, shape=((),))) * amplitude
+    return torch.heaviside(diff, inferno.zeros(diff, shape=())) * amplitude
