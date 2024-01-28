@@ -218,8 +218,8 @@ class TensorList(nn.Module):
                     raise RuntimeError("recieved improperly formatted 'extra state'.")
 
     def to(self, *args, **kwargs) -> TensorList:
-        self.datato(*args, **kwargs)
-        return nn.Module.to(*args, **kwargs)
+        self.data_to(*args, **kwargs)
+        return nn.Module.to(self, *args, **kwargs)
 
     def zero_grad(self, set_to_none: bool = True) -> None:
         for d in self.data:
@@ -237,9 +237,9 @@ class TensorList(nn.Module):
         return nn.Module.zero_grad(set_to_none=set_to_none)
 
     def condense(self) -> None:
-        self.data_filter_(lambda x: x is not None, ignore_none=False)
+        self.filter_(lambda x: x is not None, ignore_none=False)
 
-    def data_filter(
+    def filter(
         self,
         fn: callable[[torch.Tensor | None], bool],
         ignore_none: bool = True,
@@ -247,14 +247,14 @@ class TensorList(nn.Module):
         ffn = (lambda x: True if x is None else fn(x)) if ignore_none else fn
         return TensorList(filter(ffn, self.data))
 
-    def data_filter_(
+    def filter_(
         self,
         fn: callable[[torch.Tensor | None], bool],
         ignore_none: bool = True,
     ) -> None:
-        self.data = self.data_filter(fn, ignore_none=ignore_none).data
+        self.data = self.filter(fn, ignore_none=ignore_none).data
 
-    def data_map(
+    def map(
         self,
         fn: callable[[torch.Tensor | None], torch.Tensor | None],
         ignore_none: bool = True,
@@ -262,15 +262,15 @@ class TensorList(nn.Module):
         ffn = (lambda x: x if x is None else fn(x)) if ignore_none else fn
         return TensorList(map(ffn, self.data))
 
-    def data_map_(
+    def map_(
         self,
         fn: callable[[torch.Tensor | None], torch.Tensor | None],
         ignore_none: bool = True,
     ) -> None:
-        self.data = self.data_map(fn, ignore_none=ignore_none).data
+        self.data = self.map(fn, ignore_none=ignore_none).data
 
     def data_to(self, *args, **kwargs) -> None:
-        self.data_map_(lambda x: x.to(*args, **kwargs))
+        self.map_(lambda x: x.to(*args, **kwargs))
 
     def append(self, value: torch.Tensor | None) -> None:
         if value is None or isinstance(value, torch.Tensor):
