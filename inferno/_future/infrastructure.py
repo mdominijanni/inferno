@@ -51,22 +51,44 @@ class HookBundle(Hook):
 
 
 class TensorList(nn.Module):
-    def __init__(self, length: int = 0):
+    def __init__(self, src: int | Iterable[torch.Tensor | None] = None, /):
+        # call superclass constructor
         nn.Module.__init__(self)
-        self.data = [None for _ in range(length)]
+
+        # default case
+        self.data = []
+
+        # source is defined
+        if src is not None:
+            # wrap tensor source in list
+            if isinstance(src, torch.Tensor):
+                src = [src]
+
+            # try to convet source to integer length
+            try:
+                length = int(src)
+
+            # type error (must be iterable)
+            except TypeError:
+                self.extend(src)
+
+            # integer source
+            else:
+                self.data = [None for _ in range(length)]
 
     def __iter__(self):
         return iter(self.data)
 
-    def __getitem__(
-        self, idx: int | slice
-    ) -> None | torch.Tensor | list[torch.Tensor | None]:
-        return self.data[idx]
+    def __getitem__(self, idx: int | slice) -> torch.Tensor | None | TensorList:
+        if isinstance(idx, slice):
+            return TensorList(self.data[idx])
+        else:
+            return self.data[idx]
 
     def __setitem__(
         self,
         idx: int | slice,
-        value: None | torch.Tensor | Iterable[torch.Tensor | None],
+        value: torch.Tensor | None | Iterable[torch.Tensor | None],
     ) -> None:
         # singleton assignment
         if value is None or isinstance(value, torch.Tensor):
@@ -109,7 +131,7 @@ class TensorList(nn.Module):
         del self.data[idx]
 
     def __iadd__(
-        self, value: None | torch.Tensor | Iterable[torch.Tensor | None]
+        self, value: torch.Tensor | None | Iterable[torch.Tensor | None]
     ) -> None:
         if value is None or isinstance(value, torch.Tensor):
             self.append(value)
@@ -215,28 +237,37 @@ class TensorList(nn.Module):
         return nn.Module.zero_grad(set_to_none=set_to_none)
 
     def condense(self) -> None:
-        self.data_filter(lambda x: x is not None, exclude_none=False)
+        self.data_filter_(lambda x: x is not None, ignore_none=False)
+
+    def data_filter(
+        self,
+        fn: callable[[torch.Tensor | None], bool],
+        ignore_none: bool = True,
+    ) -> TensorList:
+        ffn = (lambda x: True if x is None else fn(x)) if ignore_none else fn
+        return TensorList(filter(ffn, self.data))
 
     def data_filter_(
-        self, fn: callable[[torch.Tensor | None], bool], exclude_none: bool = True
+        self,
+        fn: callable[[torch.Tensor | None], bool],
+        ignore_none: bool = True,
     ) -> None:
-        data = []
-        for d in self.data:
-            if d is not None or not exclude_none:
-                if fn(d):
-                    data.append(d)
-            else:
-                data.append(d)
-        self.data = data
+        self.data = self.data_filter(fn, ignore_none=ignore_none).data
+
+    def data_map(
+        self,
+        fn: callable[[torch.Tensor | None], torch.Tensor | None],
+        ignore_none: bool = True,
+    ) -> TensorList:
+        ffn = (lambda x: x if x is None else fn(x)) if ignore_none else fn
+        return TensorList(map(ffn, self.data))
 
     def data_map_(
         self,
         fn: callable[[torch.Tensor | None], torch.Tensor | None],
-        exclude_none: bool = True,
+        ignore_none: bool = True,
     ) -> None:
-        for idx in range(len(self.data)):
-            if self.data[idx] is not None or not exclude_none:
-                self.data[idx] = fn(self.data[idx])
+        self.data = self.data_map(fn, ignore_none=ignore_none).data
 
     def data_to(self, *args, **kwargs) -> None:
         self.data_map_(lambda x: x.to(*args, **kwargs))

@@ -5,10 +5,12 @@ from .encoders import (
 
 from .infrastructure import (
     HookBundle,
+    TensorList
 )
 
 __all__ = [
     "IntervalPoisson",
     "interval_poisson",
     "HookBundle",
+    "TensorList",
 ]
