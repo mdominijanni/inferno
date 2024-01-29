@@ -262,9 +262,9 @@ class LinearDense(WeightBiasDelayMixin, Connection):
         """
         match data.ndim:
             case 3:
-                return ein.rearrange(data, "b i -> b 1 i 1")
-            case 2:
                 return ein.rearrange(data, "b i o -> b o i 1")
+            case 2:
+                return ein.rearrange(data, "b i -> b 1 i 1")
             case _:
                 raise RuntimeError(
                     f"data with invalid number of dimensions {data.ndim} received."
