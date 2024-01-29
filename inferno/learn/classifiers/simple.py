@@ -234,7 +234,7 @@ class RateClassifier(Module):
 
             ``spikes``:
 
-            :math:`B \times N_0 \times \cdots \times [T]`
+            :math:`B \times N_0 \times \cdots`
 
             ``return (logits=False)``:
 
@@ -257,7 +257,7 @@ class RateClassifier(Module):
             assocs = assocs * ein.rearrange(self.proportions, "... k -> (...) k")
 
         # compute logits
-        logits = (
+        ylogits = (
             torch.mm(
                 ein.rearrange(spikes, "b ... -> b (...)"),
                 assocs,
@@ -268,9 +268,9 @@ class RateClassifier(Module):
 
         # return logits or predictions
         if logits:
-            return logits
+            return ylogits
         else:
-            return torch.argmax(logits, dim=1)
+            return torch.argmax(ylogits, dim=1)
 
     def learn(
         self,
