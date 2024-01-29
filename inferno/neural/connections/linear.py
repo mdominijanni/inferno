@@ -229,7 +229,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
                 * :math:`M_0, \ldots` are the unbatched input dimensions.
                 * :math:`M` is the number of elements across input dimensions.
         """
-        return ein.reduce(data, "b ... -> b (...)")
+        return ein.rearrange(data, "b ... -> b (...)")
 
     def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like the synapse state for pre-post learning methods.
@@ -335,7 +335,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
             *(self.like_synaptic(inp) for inp in inputs), **kwargs
         )  # B I
 
-        if self.delayed:
+        if self.delayedby:
             res = self.syncurrent  # B I O
 
             if self.biased:
@@ -546,7 +546,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
                 * :math:`N_0, \ldots` are the unbatched input/output dimensions.
                 * :math:`N` is the number of elements across input/output dimensions.
         """
-        return ein.reduce(data, "b ... -> b (...)")
+        return ein.rearrange(data, "b ... -> b (...)")
 
     def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like the synapse state for pre-post learning methods.
@@ -600,7 +600,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
         """
         return ein.rearrange(data, "b n -> b n 1")
 
-    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
+    def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
 
         Outputs are determined as the learned linear transformation applied to synaptic
@@ -638,7 +638,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
             *(self.like_synaptic(inp) for inp in inputs), **kwargs
         )  # B N
 
-        if self.delayed:
+        if self.delayedby:
             res = ein.rearrange(self.syncurrent, "b n 1 -> b n")
 
         if self.biased:

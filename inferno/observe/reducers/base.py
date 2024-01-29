@@ -260,7 +260,7 @@ class FoldReducer(Reducer):
             last dimension.
         """
         if not self._initial:
-            return self.record("_data", latest_first=True)
+            return self.history("_data", latest_first=True)
 
     def peek(self, **kwargs) -> torch.Tensor | None:
         r"""Returns the reducer's current state.
@@ -294,7 +294,7 @@ class FoldReducer(Reducer):
         """
         # initialize data iff uninitialized
         if self.data.numel() == 0:
-            self._data = inferno.empty(self._data, shape=(inputs.shape + (self.hlen,)))
+            self._data = inferno.empty(self._data, shape=(*inputs.shape, self.hsize))
             self.data = self.initialize_(self.data)
 
         # integrate inputs

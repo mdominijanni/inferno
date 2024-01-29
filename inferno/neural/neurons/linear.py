@@ -365,7 +365,7 @@ class ALIF(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
             step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=nf.neuron_adaptation.apply_adaptive_thresholds(
-                self.thresh_eq_v, self.adaptations
+                self.thresh_eq_v, self.adaptation
             ),
             refrac_t=self.refrac_t,
             voltages=(self.voltage if refrac_lock else None),
@@ -380,10 +380,10 @@ class ALIF(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
             # use adaptive thresholds update function
             adaptations = nf.adaptive_thresholds_linear_spike(
                 adaptations=self.adaptation,
-                postsyn_spikes=spikes,
+                spikes=spikes,
                 decay=self.adapt_decay,
                 spike_increment=self.adapt_increment,
-                refracs=(self.refracs if refrac_lock else None),
+                refracs=(self.refrac if refrac_lock else None),
             )
             # update parameter
             self.adaptation = torch.mean(adaptations, dim=0)
@@ -699,7 +699,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
             v_slope=self.reset_v_mul,
             v_intercept=self.reset_v_add,
             thresh_v=nf.neuron_adaptation.apply_adaptive_thresholds(
-                self.thresh_eq_v, self.adaptations
+                self.thresh_eq_v, self.adaptation
             ),
             refrac_t=self.refrac_t,
             voltages=(self.voltage if refrac_lock else None),
@@ -714,10 +714,10 @@ class GLIF2(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
             # use adaptive thresholds update function
             adaptations = nf.adaptive_thresholds_linear_spike(
                 adaptations=self.adaptation,
-                postsyn_spikes=spikes,
+                spikes=spikes,
                 decay=self.adapt_decay,
                 spike_increment=self.adapt_increment,
-                refracs=(self.refracs if refrac_lock else None),
+                refracs=(self.refrac if refrac_lock else None),
             )
             # update parameter
             self.adaptation = torch.mean(adaptations, dim=0)

@@ -102,7 +102,7 @@ def interval_poisson(
         res[res > steps] = 0
 
         # convert steps to spikes via scattering
-        res = torch.zeros_like(res).scatter_(dim=0, index=res.long(), src=1)
+        res = torch.zeros_like(res).scatter_(0, res.long(), 1.0)
 
         # trim zeroth step (will be all ones since it was the "no spike" condition)
         res = res[1:]

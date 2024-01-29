@@ -108,7 +108,7 @@ class SpikeCurrentMixin(CurrentMixin):
             If :py:attr:`spikesderived` is True, then the setter does not alter state.
         """
         if self.spikesderived:
-            return self.tospike_(self.current)
+            return self._tospike(self.current)
         else:
             return self.latest("spike_")
 

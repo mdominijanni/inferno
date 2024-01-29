@@ -204,7 +204,7 @@ class SpikeRefractoryMixin(RefractoryMixin):
             torch.Tensor: if the corresponding neuron generated an action potential
                 during the prior step.
         """
-        return self.refracs == self.refrac_t
+        return self.refrac == self.refrac_t
 
 
 class CurrentSpikeRefractoryMixin(SpikeRefractoryMixin):

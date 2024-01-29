@@ -76,15 +76,15 @@ class Layer(Module):
 
         # kwarg mapping for connection
         if connection_kwargs is None:
-            self.kwargmap_c = functools.partial(filterkwargs, connection_kwargs)
-        else:
             self.kwargmap_c = lambda x: x
+        else:
+            self.kwargmap_c = functools.partial(filterkwargs, connection_kwargs)
 
         # kwarg mapping for neuron
         if neuron_kwargs is None:
-            self.kwargmap_n = functools.partial(filterkwargs, neuron_kwargs)
-        else:
             self.kwargmap_n = lambda x: x
+        else:
+            self.kwargmap_n = functools.partial(filterkwargs, neuron_kwargs)
 
     @property
     def connection(self) -> Connection:

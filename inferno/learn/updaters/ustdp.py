@@ -288,12 +288,12 @@ class STDP(LayerwiseUpdater):
             i_pre = self.get_monitor(layer, "spike_pre").peek()
 
             # reshape postsynaptic
-            x_post = layer.postsyn_receptive(x_post)
-            i_post = layer.postsyn_receptive(i_post)
+            x_post = layer.connection.postsyn_receptive(x_post)
+            i_post = layer.connection.postsyn_receptive(i_post)
 
             # reshape presynaptic
-            x_pre = layer.presyn_receptive(x_pre)
-            i_pre = layer.presyn_receptive(i_pre)
+            x_pre = layer.connection.presyn_receptive(x_pre)
+            i_pre = layer.connection.presyn_receptive(i_pre)
 
             # update amplitudes
             a_pos, a_neg = 1.0, 1.0

@@ -666,7 +666,7 @@ class Connection(Module, ABC):
         Returns:
             bool: if the connection has learnable biases.
         """
-        return self.bias is None
+        return self.bias is not None
 
     @property
     def delayedby(self) -> float | None:

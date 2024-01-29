@@ -62,7 +62,19 @@ class Monitor(Module, Hook):
 
     def clear(self, **kwargs) -> None:
         r"""Reinitializes the reducer's state."""
-        self.reducer_.clear(**kwargs)
+        return self.reducer_.clear(**kwargs)
+
+    def view(self, *args, **kwargs) -> torch.Tensor | None:
+        r"""Returns the reducer's state at a given time."""
+        return self.reducer_.view(*args, **kwargs)
+
+    def dump(self, *args, **kwargs) -> torch.Tensor | None:
+        r"""Returns the reducer's state over all observations."""
+        return self.reducer_.dump(*args, **kwargs)
+
+    def peek(self, *args, **kwargs) -> torch.Tensor | None:
+        r"""Returns the reducer's current state."""
+        return self.reducer_.peek(*args, **kwargs)
 
     @property
     def reducer(self) -> Reducer:

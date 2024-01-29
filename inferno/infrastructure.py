@@ -389,12 +389,12 @@ class Hook:
 
             if self._prehook_fn:
                 self._prehook_handle = module.register_forward_pre_hook(
-                    self, **self._prehook_kwargs
+                    self._prehook_fn, **self._prehook_kwargs
                 )
 
             if self._posthook_fn:
                 self._posthook_handle = module.register_forward_hook(
-                    self, **self._posthook_kwargs
+                    self._posthook_fn, **self._posthook_kwargs
                 )
         else:
             warnings.warn(
