@@ -284,7 +284,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
             ``data``:
 
-            :math:`B \times N`
+            :math:`B \times N_0 \times \cdots`
 
             ``return``:
 
@@ -292,9 +292,10 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
+                * :math:`N_0, \ldots` are the unbatched output dimensions.
                 * :math:`N` is the number of elements across output dimensions.
         """
-        return ein.rearrange(data, "b o -> b o 1 1")
+        return ein.rearrange(data, "b ... -> b (...) 1 1")
 
     def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
@@ -588,7 +589,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
             ``data``:
 
-            :math:`B \times N`
+            :math:`B \times N_0 \times \cdots`
 
             ``return``:
 
@@ -596,9 +597,10 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`N` is the number of elements across output dimensions.
+                * :math:`N_0, \ldots` are the unbatched input\output dimensions.
+                * :math:`N` is the number of elements across input\output dimensions.
         """
-        return ein.rearrange(data, "b n -> b n 1")
+        return ein.rearrange(data, "b ... -> b (...) 1")
 
     def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Generates connection output from inputs, after passing through the synapse.
@@ -933,7 +935,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
             ``data``:
 
-            :math:`B \times N`
+            :math:`B \times N_0 \times \cdots`
 
             ``return``:
 
@@ -941,7 +943,8 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`N` is the number of elements across input/output dimensions.
+                * :math:`N_0, \ldots` are the unbatched input\output dimensions.
+                * :math:`N` is the number of elements across input\output dimensions.
         """
         return LinearDense.postsyn_receptive(self, data)
 
