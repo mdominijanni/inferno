@@ -1,25 +1,27 @@
 import einops as ein
 from inferno import Module
-from inferno._internal import numeric_limit, numeric_interval
+from inferno._internal import numeric_limit
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Literal
 
 
-class RateClassifier(Module):
-    r"""Classifies spikes by per-class rates.
+class MaxRateClassifier(Module):
+    r"""Classifies spikes by maximum per-class rates.
+
+    The classifier uses an internal parameter :py:attr:`rates` internally for other
+    calculations. When learning, the existing rates are decayed, multiplying them by
+    :math:`\exp{-\lambda b_k}` where :math:`b_k` is number of elements of class
+    :math:`k` in the batch.
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of neurons with
             their output being classified.
         num_classes (int): total number of possible classes.
-        decay (float, optional): per-update amount by which previous results
-            are scaled. Defaults to 1.0.
+        decay_rate (float): per-update amount by which previous results
+            are scaled, :math:`\lambda`.
         proportional (float, optional): if logits should be computed with
             class-proportional rates. Defaults to True.
-        reduction (Literal["sum", "mean"], optional): method by which non-reduced
-            spikes should be reduced. Defaults to "sum".
     """
 
     def __init__(
@@ -29,7 +31,6 @@ class RateClassifier(Module):
         *,
         decay: float = 1.0,
         proportional: float = True,
-        reduction: Literal["sum", "mean"] = "sum",
     ):
         # call superclass constructor
         Module.__init__(self)
@@ -45,15 +46,8 @@ class RateClassifier(Module):
 
         num_classes = numeric_limit("`num_classes`", num_classes, 0, "gt", int)
 
-        if reduction.lower() not in ("sum", "mean"):
-            raise ValueError(
-                "`reduction` must be one of 'sum' or 'mean', "
-                f"received '{reduction}.'"
-            )
-
         # class attributes
-        self.proportional = proportional
-        self.reduction = reduction.lower()
+        self._proportional = proportional
 
         # register parameter
         self.register_parameter(
@@ -61,24 +55,33 @@ class RateClassifier(Module):
         )
 
         # register derived buffers
-        self.register_buffer("assigns", torch.zeros(*shape).long())
-        self.register_buffer("counts", torch.zeros(num_classes).long())
-        self.register_buffer("props", torch.zeros(*shape, num_classes).float())
+        self.register_buffer(
+            "assignments_", torch.zeros(*shape).long(), persistent=False
+        )
+        self.register_buffer(
+            "occurances_", torch.zeros(num_classes).long(), persistent=False
+        )
+        self.register_buffer(
+            "proportions_", torch.zeros(*shape, num_classes).float(), persistent=False
+        )
 
-        self.decay = numeric_interval("`decay`", decay, 0, 1, "closed", float)
+        # class attribute
+        self.decay = numeric_limit("`decay`", decay, 0, "gte", float)
+
+        # run after loading state_dict to recompute non-persistent buffers
+        def sdhook(module, incompatible_keys) -> None:
+            module.rates = module.rates
+        self.register_load_state_dict_post_hook(sdhook)
 
     @property
     def assignments(self) -> torch.Tensor:
         r"""Class assignments per-neuron.
 
-        Args:
-            value (torch.Tensor): new class assignments per-neuron.
+        The label, computed as the argument of the maximum of normalized rates
+        (proportions), per neuron.
 
         Returns:
             torch.Tensor: present class assignments per-neuron.
-
-        Note:
-            :py:attr:`occurances` is automatically recalculated on assignment.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -88,19 +91,13 @@ class RateClassifier(Module):
             Where:
                 * :math:`N_0, \ldots` are the dimensions of the spikes being classified.
         """
-        return self.assigns
-
-    @assignments.setter
-    def assignments(self, value: torch.Tensor) -> None:
-        self.assigns = value
-        self.counts = torch.bincount(self.assignments.view(-1), None, self.nclass)
+        return self.assignments_
 
     @property
     def occurances(self) -> torch.Tensor:
         r"""Number of assigned neurons per-class.
 
-        Args:
-            value (torch.Tensor): new number of assigned neurons per-class.
+        The number of neurons which are assigned to each label.
 
         Returns:
             torch.Tensor: present number of assigned neurons per-class.
@@ -113,24 +110,17 @@ class RateClassifier(Module):
             Where:
                 * :math:`K` is the number of possible classes.
         """
-        return self.counts
-
-    @occurances.setter
-    def occurances(self, value: torch.Tensor) -> None:
-        self.counts = value
+        return self.occurances_
 
     @property
     def proportions(self) -> torch.Tensor:
         r"""Class-normalized spike rates.
 
-        Args:
-            value (torch.Tensor): new class-normalized spike rates.
+        The rates :math:`L_1`-normalized such that for a given neuron, such that the
+        normalized rates for it over the different classes sum to 1.
 
         Returns:
             torch.Tensor: present class-normalized spike rates.
-
-        Note:
-            :py:attr:`assignments` is automatically recalculated on assignment.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -141,16 +131,15 @@ class RateClassifier(Module):
                 * :math:`N_0, \ldots` are the dimensions of the spikes being classified.
                 * :math:`K` is the number of possible classes.
         """
-        return self.props
-
-    @proportions.setter
-    def proportions(self, value: torch.Tensor) -> None:
-        self.props = value
-        self.assignments = torch.argmax(self.proportions, dim=-1)
+        return self.proportions_
 
     @property
     def rates(self) -> torch.Tensor:
         r"""Computed per-class, per-neuron spike rates.
+
+        These are the raw rates
+        :math:`\left(\frac{\text{# spikes}}{\text{# steps}}\right)`
+        for each neuron, per class.
 
         Args:
             value (torch.Tensor): new computed per-class, per-neuron spike rates.
@@ -159,7 +148,8 @@ class RateClassifier(Module):
             torch.Tensor: present computed per-class, per-neuron spike rates.
 
         Note:
-            :py:attr:`proportions` is automatically recalculated on assignment.
+            The attributes :py:attr:`proportions`, :py:attr:`assignments`, and
+            :py:attr:`occurances are automatically recalculated on assignment.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -174,17 +164,27 @@ class RateClassifier(Module):
 
     @rates.setter
     def rates(self, value: torch.Tensor) -> None:
+        # rates are assigned directly
         self.rates_.data = value
-        self.proportions = F.normalize(self.rates, p=1, dim=-1)
+        self.proportions_ = F.normalize(self.rates, p=1, dim=-1)
+        self.assignments_ = torch.argmax(self.proportions, dim=-1)
+        self.occurances_ = torch.bincount(self.assignments.view(-1), None, self.nclass)
 
     @property
-    def isprop(self) -> bool:
+    def proportional(self) -> bool:
         r"""If inference is weighted by class-average rates.
+
+        Args:
+            value (bool): if inference should be computed using class-average rates.
 
         Returns:
             bool: if inference is weighted by class-average rates.
         """
-        return self.proportional
+        return self._proportional
+
+    @proportional.setter
+    def proportional(self, value: bool) -> None:
+        return self._proportional
 
     @property
     def ndim(self) -> int:
@@ -250,9 +250,7 @@ class RateClassifier(Module):
                 * :math:`K` is the number of possible classes.
         """
         # associations between neurons and classes
-        assocs = F.one_hot(
-            ein.rearrange(self.assignments, "... -> (...)"), self.nclass
-        )
+        assocs = F.one_hot(ein.rearrange(self.assignments, "... -> (...)"), self.nclass)
         if proportional:
             assocs = assocs * ein.rearrange(self.proportions, "... k -> (...) k")
 
@@ -274,13 +272,13 @@ class RateClassifier(Module):
 
     def learn(
         self,
-        spikes: torch.Tensor,
+        inputs: torch.Tensor,
         labels: torch.Tensor,
     ) -> None:
         r"""Updates stored rates from reduced spikes and labels
 
         Args:
-            spikes (torch.Tensor): reduced spikes from which to update state.
+            inputs (torch.Tensor): batch spike rates from which to update state.
             labels (torch.Tensor): ground-truth sample labels.
 
         .. admonition:: Shape
@@ -299,31 +297,29 @@ class RateClassifier(Module):
                 * :math:`N_0, \ldots` are the dimensions of the spikes being classified.
         """
         # number of instances per-class
-        batchcls = torch.bincount(labels, None, self.nclass)
+        clscounts = torch.bincount(labels, None, self.nclass)
 
         # compute per-class scaled spike rates
-        batchrates = (
+        rates = (
             torch.zeros_like(self.rates)
-            .scatter_add(
+            .scatter_add_(
                 dim=-1,
-                index=labels.expand_like(self.rates),
-                src=ein.rearrange(spikes, "b ... -> ... b"),
+                index=labels.expand_as(self.rates),
+                src=ein.rearrange(inputs, "b ... -> ... b"),
             )
-            .div(batchcls)
-            .nan_to_num(0)
+            .div(clscounts)
+            .nan_to_num(pos_inf=0)
         )
 
         # update rates, other properties update automatically
-        self.rates = torch.where(
-            batchcls.bool(), self.rates * self.decay + batchrates, self.rates
-        )
+        self.rates = torch.exp(-self.decay * clscounts) * self.rates + rates
 
     def forward(
         self,
         spikes: torch.Tensor,
         labels: torch.Tensor | None,
         logits: bool = False,
-    ) -> torch.Tensor:
+    ) -> torch.Tensor | None:
         r"""Performs inference and if labels are specified, updates state.
 
         Args:
@@ -331,6 +327,8 @@ class RateClassifier(Module):
             labels (torch.Tensor | None): ground-truth sample labels.
             logits (bool, optional): if logits rather than class predictions
                 should be returned.. Defaults to False.
+            proportional (bool | None, optional): if not None, then it overrides the
+                class inference behavior. Defaults to None.
 
         Returns:
             torch.Tensor: inferences, either logits or predictions.
@@ -362,10 +360,10 @@ class RateClassifier(Module):
         """
         # reduce along input time dimension, if present, to generate spike counts
         if spikes.ndim == self.ndim + 2:
-            spikes = ein.reduce(spikes, "b ... t -> b ...", self.reduction)
+            spikes = ein.reduce(spikes, "b ... t -> b ...", "mean")
 
-        # infer
-        inferred = self.infer(spikes, proportional=self.isprop, logits=logits)
+        # inference
+        inferred = self.infer(spikes, logits=logits)
 
         # update state
         if labels is not None:

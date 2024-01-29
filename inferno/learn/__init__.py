@@ -19,7 +19,7 @@ from .updaters.bounding import (
 )
 
 from .classifiers.simple import (
-    RateClassifier,
+    MaxRateClassifier,
 )
 
 from .hooks import (
@@ -32,7 +32,7 @@ __all__ = [
     "STDP",
     "MSTDP",
     "MSTDPET",
-    "RateClassifier",
+    "MaxRateClassifier",
     "WeightNormalization",
     "WeightClamping",
     "WeightBounding",
