@@ -5,7 +5,7 @@
 $$
 \begin{align*}
     \tau_m \frac{dV_m(t)}{dt} &= - \left[V_m(t) - V_\text{rest}\right] + R_mI(t) \\
-    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
+    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest}] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
 \end{align*}
 $$
 
@@ -65,7 +65,7 @@ $$
 
 $$
 \begin{align*}
-    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
+    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest}] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
     \theta_k(t + \Delta t) &= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 \end{align*}
 $$
@@ -119,7 +119,7 @@ $$
 
 $$
 \begin{align*}
-    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
+    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest}] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
     \theta_k(t + \Delta t) &= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 \end{align*}
 $$

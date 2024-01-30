@@ -165,7 +165,7 @@ def voltage_integration_linear(
     r"""Integrates input currents into membrane voltages using linear dynamics.
 
     .. math::
-        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]
+        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}]
         \alpha + V_\text{rest} + R_mI(t)
 
     Where :math:`\alpha` is the multiple for exponential decay, typically expressed
@@ -187,6 +187,4 @@ def voltage_integration_linear(
     Returns:
         torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.
     """
-    v_in = resistance * masked_inputs
-    v_delta = voltages - rest_v
-    return v_in + (v_delta - v_in) * decay + rest_v
+    return rest_v + (voltages - rest_v) * decay + resistance * masked_inputs

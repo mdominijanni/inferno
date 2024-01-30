@@ -71,6 +71,7 @@ class MaxRateClassifier(Module):
         # run after loading state_dict to recompute non-persistent buffers
         def sdhook(module, incompatible_keys) -> None:
             module.rates = module.rates
+
         self.register_load_state_dict_post_hook(sdhook)
 
     @property
@@ -215,14 +216,13 @@ class MaxRateClassifier(Module):
 
     def infer(
         self,
-        spikes: torch.Tensor,
-        proportional: bool,
+        inputs: torch.Tensor,
         logits: bool,
     ) -> torch.Tensor:
         r"""Infers classes from reduced spikes
 
         Args:
-            spikes (torch.Tensor): reduced spikes to classify.
+            inputs (torch.Tensor): batch spike rates to classify.
             proportional (bool): if inference is weighted by class-average rates.
             logits (bool): if logits rather than class predictions should be returned.
 
@@ -232,7 +232,7 @@ class MaxRateClassifier(Module):
         .. admonition:: Shape
             :class: tensorshape
 
-            ``spikes``:
+            ``inputs``:
 
             :math:`B \times N_0 \times \cdots`
 
@@ -250,18 +250,21 @@ class MaxRateClassifier(Module):
                 * :math:`K` is the number of possible classes.
         """
         # associations between neurons and classes
-        assocs = F.one_hot(ein.rearrange(self.assignments, "... -> (...)"), self.nclass)
-        if proportional:
-            assocs = assocs * ein.rearrange(self.proportions, "... k -> (...) k")
+        if self.proportional:
+            assocs = F.one_hot(self.assignments.view(-1), self.nclass) * ein.rearrange(
+                self.proportions, "... k -> (...) k"
+            )
+        else:
+            assocs = F.one_hot(self.assignments.view(-1), self.nclass).float()
 
         # compute logits
         ylogits = (
             torch.mm(
-                ein.rearrange(spikes, "b ... -> b (...)"),
+                ein.rearrange(inputs, "b ... -> b (...)"),
                 assocs,
             )
             .div(self.occurances)
-            .nan_to_num(0)
+            .nan_to_num(nan=0, posinf=0)
         )
 
         # return logits or predictions
@@ -284,7 +287,7 @@ class MaxRateClassifier(Module):
         .. admonition:: Shape
             :class: tensorshape
 
-            ``spikes``:
+            ``inputs``:
 
             :math:`B \times N_0 \times \cdots`
 
@@ -304,11 +307,11 @@ class MaxRateClassifier(Module):
             torch.zeros_like(self.rates)
             .scatter_add_(
                 dim=-1,
-                index=labels.expand_as(self.rates),
+                index=labels.expand(*self.shape, -1),
                 src=ein.rearrange(inputs, "b ... -> ... b"),
             )
-            .div(clscounts)
-            .nan_to_num(pos_inf=0)
+            .div_(clscounts)
+            .nan_to_num(nan=0, posinf=0)
         )
 
         # update rates, other properties update automatically
@@ -323,7 +326,7 @@ class MaxRateClassifier(Module):
         r"""Performs inference and if labels are specified, updates state.
 
         Args:
-            spikes (torch.Tensor): reduced spikes to classify.
+            spikes (torch.Tensor): spikes or spike rates to classify.
             labels (torch.Tensor | None): ground-truth sample labels.
             logits (bool, optional): if logits rather than class predictions
                 should be returned.. Defaults to False.
@@ -360,7 +363,9 @@ class MaxRateClassifier(Module):
         """
         # reduce along input time dimension, if present, to generate spike counts
         if spikes.ndim == self.ndim + 2:
-            spikes = ein.reduce(spikes, "b ... t -> b ...", "mean")
+            spikes = ein.reduce(
+                spikes.to(dtype=self.rates.dtype), "b ... t -> b ...", "mean"
+            )
 
         # inference
         inferred = self.infer(spikes, logits=logits)

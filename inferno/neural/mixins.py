@@ -105,7 +105,8 @@ class ShapeMixin(BatchMixin):
     @bsize.setter
     def bsize(self, value: int) -> None:
         BatchMixin.bsize.fset(self, value)
-        del self.bshape
+        if hasattr(self, 'bshape'):
+            del self.bshape
 
     @property
     def shape(self) -> tuple[int, ...]:

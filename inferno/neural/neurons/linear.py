@@ -10,7 +10,7 @@ class LIF(VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
     r"""Simulation of leaky integrate-and-fire (LIF) neuron dynamics.
 
     .. math::
-        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]
+        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}]
         \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
 
     If a spike was generated at time :math:`t`, then.
@@ -145,7 +145,7 @@ class ALIF(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
 
     .. math::
         \begin{align*}
-            V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest} - R_mI(t)\right]
+            V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest}]
             \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
             \Theta(t) &= \Theta_\infty + \sum_k \theta_k(t) \\
             \theta_k(t + \Delta t) &= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
@@ -473,7 +473,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, CurrentSpikeRefractoryMixin, Neuron):
 
     .. math::
         \begin{align*}
-            V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest} - R_mI(t)\right]
+            V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest}]
             \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
             \Theta(t) &= \Theta_\infty + \sum_k \theta_k(t) \\
             \theta_k(t + \Delta t) &= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)

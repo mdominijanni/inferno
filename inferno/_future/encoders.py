@@ -45,8 +45,12 @@ class IntervalPoisson(Module):
         self.num_steps = numeric_limit("`value`", value, 0, "gt", int)
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        # inputs as 0-1 range, multiplied by maxfreq
         return interval_poisson(
-            inputs, step_time=self.dt, steps=self.steps, generator=self.generator
+            self.maxfreq * inputs,
+            step_time=self.dt,
+            steps=self.steps,
+            generator=self.generator,
         )
 
 
