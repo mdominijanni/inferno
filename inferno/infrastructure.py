@@ -453,7 +453,7 @@ class StateHook(Hook):
         always_call: bool = False,
     ):
         # core state
-        self._hook = hook
+        self._hook_fn = hook
         self._module = module
         self._handle = None
 
@@ -486,10 +486,10 @@ class StateHook(Hook):
             module (nn.Module): hooked module.
         """
         if module.training and self.whentrain:
-            self.hook(module)
+            self._hook_fn(module)
 
         if not module.training and self.wheneval:
-            self.hook(module)
+            self._hook_fn(module)
 
     @property
     def module(self) -> nn.Module:
@@ -557,7 +557,7 @@ class StateHook(Hook):
     def __call__(self):
         r"""Executes the hook at any time, only if it is registered."""
         if self.registered:
-            self.hook(self.module)
+            self._hook_fn(self.module)
 
 
 class DimensionalModule(Module):

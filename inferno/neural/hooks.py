@@ -88,6 +88,7 @@ class Clamping(StateHook):
 
     def __init__(
         self,
+        module: nn.Module,
         name: str,
         min: int | float | None = None,
         max: int | float | None = None,
@@ -97,7 +98,6 @@ class Clamping(StateHook):
         as_prehook: bool = False,
         prepend: bool = False,
         always_call: bool = False,
-        module: nn.Module | None = None,
     ):
         # sanity check arguments
         if min is None and max is None:
