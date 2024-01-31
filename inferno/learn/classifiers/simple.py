@@ -150,7 +150,7 @@ class MaxRateClassifier(Module):
 
         Note:
             The attributes :py:attr:`proportions`, :py:attr:`assignments`, and
-            :py:attr:`occurances are automatically recalculated on assignment.
+            :py:attr:`occurances` are automatically recalculated on assignment.
 
         .. admonition:: Shape
             :class: tensorshape

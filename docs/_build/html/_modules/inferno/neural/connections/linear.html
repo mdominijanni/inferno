@@ -452,7 +452,7 @@
 <span class="sd">                * :math:`M_0, \ldots` are the unbatched input dimensions.</span>
 <span class="sd">                * :math:`M` is the number of elements across input dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LinearDense.presyn_receptive">
@@ -488,9 +488,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">match</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
             <span class="k">case</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b i -&gt; b 1 i 1&quot;</span><span class="p">)</span>
-            <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b i o -&gt; b o i 1&quot;</span><span class="p">)</span>
+            <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b i -&gt; b 1 i 1&quot;</span><span class="p">)</span>
             <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;data with invalid number of dimensions </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> received.&quot;</span>
@@ -513,7 +513,7 @@
 
 <span class="sd">            ``data``:</span>
 
-<span class="sd">            :math:`B \times N`</span>
+<span class="sd">            :math:`B \times N_0 \times \cdots`</span>
 
 <span class="sd">            ``return``:</span>
 
@@ -521,9 +521,10 @@
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched output dimensions.</span>
 <span class="sd">                * :math:`N` is the number of elements across output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b o -&gt; b o 1 1&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...) 1 1&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LinearDense.forward">
@@ -567,7 +568,7 @@
             <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">like_synaptic</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span> <span class="k">for</span> <span class="n">inp</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>  <span class="c1"># B I</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayedby</span><span class="p">:</span>
             <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">syncurrent</span>  <span class="c1"># B I O</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">biased</span><span class="p">:</span>
@@ -787,7 +788,7 @@
 <span class="sd">                * :math:`N_0, \ldots` are the unbatched input/output dimensions.</span>
 <span class="sd">                * :math:`N` is the number of elements across input/output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LinearDirect.presyn_receptive">
@@ -835,7 +836,7 @@
 
 <span class="sd">            ``data``:</span>
 
-<span class="sd">            :math:`B \times N`</span>
+<span class="sd">            :math:`B \times N_0 \times \cdots`</span>
 
 <span class="sd">            ``return``:</span>
 
@@ -843,14 +844,15 @@
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
-<span class="sd">                * :math:`N` is the number of elements across output dimensions.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched input\output dimensions.</span>
+<span class="sd">                * :math:`N` is the number of elements across input\output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b n -&gt; b n 1&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...) 1&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LinearDirect.forward">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates connection output from inputs, after passing through the synapse.</span>
 
 <span class="sd">        Outputs are determined as the learned linear transformation applied to synaptic</span>
@@ -888,7 +890,7 @@
             <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">like_synaptic</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span> <span class="k">for</span> <span class="n">inp</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>  <span class="c1"># B N</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayedby</span><span class="p">:</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">syncurrent</span><span class="p">,</span> <span class="s2">&quot;b n 1 -&gt; b n&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">biased</span><span class="p">:</span>
@@ -1198,7 +1200,7 @@
 
 <span class="sd">            ``data``:</span>
 
-<span class="sd">            :math:`B \times N`</span>
+<span class="sd">            :math:`B \times N_0 \times \cdots`</span>
 
 <span class="sd">            ``return``:</span>
 
@@ -1206,7 +1208,8 @@
 
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
-<span class="sd">                * :math:`N` is the number of elements across input/output dimensions.</span>
+<span class="sd">                * :math:`N_0, \ldots` are the unbatched input\output dimensions.</span>
+<span class="sd">                * :math:`N` is the number of elements across input\output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">LinearDense</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 

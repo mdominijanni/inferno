@@ -1,0 +1,8 @@
+﻿BindWeights
+===========
+
+.. currentmodule:: inferno.learn.functional
+
+.. autoclass:: BindWeights
+    :members:
+    :show-inheritance:

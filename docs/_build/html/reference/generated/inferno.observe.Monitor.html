@@ -227,7 +227,7 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>reducer</strong> (<a class="reference internal" href="inferno.observe.Reducer.html#inferno.observe.Reducer" title="inferno.observe.Reducer"><em>Reducer</em></a>) – underlying means for reducing samples over time
 and storing them.</p></li>
-<li><p><strong>module</strong> (<a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.Module"><em>Module</em></a><em>, </em><em>optional</em>) – module to register as the target for monitoring,
+<li><p><strong>module</strong> (<a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.Module"><em>Module</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – module to register as the target for monitoring,
 can be modified after construction. Defaults to None.</p></li>
 <li><p><strong>prehook</strong> (<em>Callable</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – function to call before hooked’s
 <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.forward" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code></a>. Defaults to None.</p></li>
@@ -256,6 +256,18 @@ can be passed with <code class="docutils literal notranslate"><span class="pre">
 <dd><p>Reinitializes the reducer’s state.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.observe.Monitor.dump">
+<span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/monitors.html#Monitor.dump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.Monitor.dump" title="Link to this definition">#</a></dt>
+<dd><p>Returns the reducer’s state over all observations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.observe.Monitor.peek">
+<span class="sig-name descname"><span class="pre">peek</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/monitors.html#Monitor.peek"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.Monitor.peek" title="Link to this definition">#</a></dt>
+<dd><p>Returns the reducer’s current state.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.observe.Monitor.reducer">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reducer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="inferno.observe.Reducer.html#inferno.observe.Reducer" title="inferno.observe.reducers.base.Reducer"><span class="pre">Reducer</span></a></em><a class="headerlink" href="#inferno.observe.Monitor.reducer" title="Link to this definition">#</a></dt>
@@ -268,6 +280,12 @@ can be passed with <code class="docutils literal notranslate"><span class="pre">
 <dd class="field-even"><p><a class="reference internal" href="inferno.observe.Reducer.html#inferno.observe.Reducer" title="inferno.observe.Reducer">Reducer</a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.observe.Monitor.view">
+<span class="sig-name descname"><span class="pre">view</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/monitors.html#Monitor.view"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.Monitor.view" title="Link to this definition">#</a></dt>
+<dd><p>Returns the reducer’s state at a given time.</p>
 </dd></dl>
 
 </dd></dl>
@@ -332,7 +350,10 @@ can be passed with <code class="docutils literal notranslate"><span class="pre">
 <li><a class="reference internal" href="#">Monitor</a><ul>
 <li><a class="reference internal" href="#inferno.observe.Monitor"><code class="docutils literal notranslate"><span class="pre">Monitor</span></code></a><ul>
 <li><a class="reference internal" href="#inferno.observe.Monitor.clear"><code class="docutils literal notranslate"><span class="pre">Monitor.clear()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.observe.Monitor.dump"><code class="docutils literal notranslate"><span class="pre">Monitor.dump()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.observe.Monitor.peek"><code class="docutils literal notranslate"><span class="pre">Monitor.peek()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Monitor.reducer"><code class="docutils literal notranslate"><span class="pre">Monitor.reducer</span></code></a></li>
+<li><a class="reference internal" href="#inferno.observe.Monitor.view"><code class="docutils literal notranslate"><span class="pre">Monitor.view()</span></code></a></li>
 </ul>
 </li>
 </ul>

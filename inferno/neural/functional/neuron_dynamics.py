@@ -165,7 +165,7 @@ def voltage_integration_linear(
     r"""Integrates input currents into membrane voltages using linear dynamics.
 
     .. math::
-        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}]
+        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right]
         \alpha + V_\text{rest} + R_mI(t)
 
     Where :math:`\alpha` is the multiple for exponential decay, typically expressed

@@ -247,10 +247,12 @@
 </li>
         <li><a href="reference/generated/inferno.neural.functional.adaptive_thresholds_linear_voltage.html#inferno.neural.functional.adaptive_thresholds_linear_voltage">adaptive_thresholds_linear_voltage() (in module inferno.neural.functional)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_monitor">add_monitor() (LayerwiseUpdater method)</a>
+        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.add_inner">add_inner() (RemoteHook method)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_monitor">add_monitor() (LayerwiseUpdater method)</a>
+</li>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_monitors">add_monitors() (LayerwiseUpdater method)</a>
 
         <ul>
@@ -265,7 +267,7 @@
 </li>
         <li><a href="reference/generated/inferno.neural.functional.apply_adaptive_thresholds.html#inferno.neural.functional.apply_adaptive_thresholds">apply_adaptive_thresholds() (in module inferno.neural.functional)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.assignments">assignments (RateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.assignments">assignments (MaxRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.attach">attach() (LayerwiseUpdater method)</a>
 </li>
@@ -305,6 +307,8 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.biased">(LinearLateral property)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.learn.functional.BindWeights.html#inferno.learn.functional.BindWeights">BindWeights (class in inferno.learn.functional)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.binshape">binshape (Connection property)</a>
 
         <ul>
@@ -317,6 +321,8 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.binshape">(LinearLateral property)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.boutshape">boutshape (Connection property)</a>
 
         <ul>
@@ -329,8 +335,6 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.boutshape">(LinearLateral property)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin.bshape">bshape (ShapeMixin property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.ALIF.html#inferno.neural.ALIF.bsize">bsize (ALIF property)</a>
@@ -518,21 +522,17 @@
         <li><a href="reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin">DelayedSpikeCurrentMixin (class in inferno.neural.synapses.mixins)</a>
 </li>
         <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.deregister">deregister() (Hook method)</a>
-
-        <ul>
-          <li><a href="reference/generated/inferno.StateHook.html#inferno.StateHook.deregister">(StateHook method)</a>
 </li>
-        </ul></li>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.deregister_constrained">deregister_constrained() (DimensionalModule method)</a>
 
         <ul>
           <li><a href="reference/generated/inferno.HistoryModule.html#inferno.HistoryModule.deregister_constrained">(HistoryModule method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.detach">detach() (LayerwiseUpdater method)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule">DimensionalModule (class in inferno)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.ALIF.html#inferno.neural.ALIF.dt">dt (ALIF property)</a>
@@ -578,6 +578,8 @@
         <li><a href="reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.dump">dump() (FoldReducer method)</a>
 
         <ul>
+          <li><a href="reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.dump">(Monitor method)</a>
+</li>
           <li><a href="reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.dump">(Reducer method)</a>
 </li>
         </ul></li>
@@ -656,11 +658,11 @@
 </li>
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.forward">(LinearLateral method)</a>
 </li>
+          <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.forward">(MaxRateClassifier method)</a>
+</li>
           <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.forward">(Neuron method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.PassthroughSynapse.html#inferno.neural.PassthroughSynapse.forward">(PassthroughSynapse method)</a>
-</li>
-          <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.forward">(RateClassifier method)</a>
 </li>
           <li><a href="reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.forward">(Reducer method)</a>
 </li>
@@ -735,7 +737,7 @@
   <h2>I</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.infer">infer() (RateClassifier method)</a>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.infer">infer() (MaxRateClassifier method)</a>
 </li>
         <li>
     inferno.learn
@@ -783,6 +785,8 @@
           <li><a href="reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer.initialize">(ScaledNearestTraceReducer method)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.innerhook">innerhook() (RemoteHook method)</a>
+</li>
         <li><a href="reference/generated/inferno.observe.InputMonitor.html#inferno.observe.InputMonitor">InputMonitor (class in inferno.observe)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.inshape">inshape (Connection property)</a>
@@ -839,8 +843,6 @@
         </ul></li>
         <li><a href="reference/generated/inferno.Interpolation.html#inferno.Interpolation">Interpolation (class in inferno)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.isprop">isprop (RateClassifier property)</a>
-</li>
     </ul></td>
   </tr></table>
 </section>
@@ -855,7 +857,7 @@
 </li>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater">LayerwiseUpdater (class in inferno.learn)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.learn">learn() (RateClassifier method)</a>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.learn">learn() (MaxRateClassifier method)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.LIF.html#inferno.neural.LIF">LIF (class in inferno.neural)</a>
 </li>
@@ -921,6 +923,8 @@
 </li>
         <li><a href="reference/generated/inferno.learn.SoftWeightDependence.html#inferno.learn.SoftWeightDependence.maxpow">maxpow (SoftWeightDependence property)</a>
 </li>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier">MaxRateClassifier (class in inferno.learn)</a>
+</li>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.mindims">mindims (DimensionalModule property)</a>
 </li>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.mindims_">mindims_() (DimensionalModule static method)</a>
@@ -958,9 +962,9 @@
   <h2>N</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.nclass">nclass (RateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.nclass">nclass (MaxRateClassifier property)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.ndim">ndim (RateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.ndim">ndim (MaxRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer">NearestTraceReducer (class in inferno.observe)</a>
 </li>
@@ -984,7 +988,15 @@
   <h2>O</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.occurances">occurances (RateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.occurances">occurances (MaxRateClassifier property)</a>
+</li>
+        <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.on_eval">on_eval (Hook property)</a>
+</li>
+        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.on_eval_inner">on_eval_inner (RemoteHook property)</a>
+</li>
+        <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.on_train">on_train (Hook property)</a>
+</li>
+        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.on_train_inner">on_train_inner (RemoteHook property)</a>
 </li>
         <li><a href="reference/generated/inferno.ones.html#inferno.ones">ones() (in module inferno)</a>
 </li>
@@ -996,6 +1008,8 @@
 </li>
         <li><a href="reference/generated/inferno.typing.OneToOneMethod.html#inferno.typing.OneToOneMethod">OneToOneMethod (class in inferno.typing)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.observe.OutputMonitor.html#inferno.observe.OutputMonitor">OutputMonitor (class in inferno.observe)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.outshape">outshape (Connection property)</a>
@@ -1010,8 +1024,6 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.outshape">(LinearLateral property)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.outsize">outsize (Connection property)</a>
 
         <ul>
@@ -1045,9 +1057,13 @@
         <li><a href="reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.peek">peek() (FoldReducer method)</a>
 
         <ul>
+          <li><a href="reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.peek">(Monitor method)</a>
+</li>
           <li><a href="reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.peek">(Reducer method)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.posthook">posthook() (Hook method)</a>
+</li>
         <li><a href="reference/generated/inferno.observe.PostMonitor.html#inferno.observe.PostMonitor">PostMonitor (class in inferno.observe)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.postsyn_receptive">postsyn_receptive() (Connection method)</a>
@@ -1064,6 +1080,8 @@
         </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.prehook">prehook() (Hook method)</a>
+</li>
         <li><a href="reference/generated/inferno.observe.PreMonitor.html#inferno.observe.PreMonitor">PreMonitor (class in inferno.observe)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.presyn_receptive">presyn_receptive() (Connection method)</a>
@@ -1078,7 +1096,9 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.presyn_receptive">(LinearLateral method)</a>
 </li>
         </ul></li>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.proportions">proportions (RateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.proportional">proportional (MaxRateClassifier property)</a>
+</li>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.proportions">proportions (MaxRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.push">push() (FoldReducer method)</a>
 
@@ -1096,9 +1116,7 @@
   <h2>R</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier">RateClassifier (class in inferno.learn)</a>
-</li>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.rates">rates (RateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.rates">rates (MaxRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.reconstrain">reconstrain() (DimensionalModule method)</a>
 </li>
@@ -1139,11 +1157,11 @@
         <li><a href="reference/generated/inferno.Module.html#inferno.Module.register_extra">register_extra() (Module method)</a>
 </li>
         <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.registered">registered (Hook property)</a>
-
-        <ul>
-          <li><a href="reference/generated/inferno.StateHook.html#inferno.StateHook.registered">(StateHook property)</a>
 </li>
-        </ul></li>
+        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook">RemoteHook (class in inferno)</a>
+</li>
+        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.remove_inner">remove_inner() (RemoteHook method)</a>
+</li>
         <li><a href="reference/generated/inferno.rescale.html#inferno.rescale">rescale() (in module inferno)</a>
 </li>
         <li><a href="reference/generated/inferno.HistoryModule.html#inferno.HistoryModule.reset">reset() (HistoryModule method)</a>
@@ -1176,7 +1194,7 @@
         </ul></li>
         <li><a href="reference/generated/inferno.Module.html#inferno.Module.set_extra_state">set_extra_state() (Module method)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.shape">shape (RateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.shape">shape (MaxRateClassifier property)</a>
 
         <ul>
           <li><a href="reference/generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin.shape">(ShapeMixin property)</a>
@@ -1323,6 +1341,8 @@
         <li><a href="reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.view">view() (FoldReducer method)</a>
 
         <ul>
+          <li><a href="reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.view">(Monitor method)</a>
+</li>
           <li><a href="reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.view">(Reducer method)</a>
 </li>
         </ul></li>
@@ -1388,13 +1408,7 @@
 </li>
         <li><a href="reference/generated/inferno.learn.WeightBounding.html#inferno.learn.WeightBounding">WeightBounding (class in inferno.learn)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.functional.WeightBoundingCall.html#inferno.learn.functional.WeightBoundingCall">WeightBoundingCall (class in inferno.learn.functional)</a>
-</li>
         <li><a href="reference/generated/inferno.neural.connections.mixins.WeightMixin.html#inferno.neural.connections.mixins.WeightMixin">WeightMixin (class in inferno.neural.connections.mixins)</a>
-</li>
-        <li><a href="reference/generated/inferno.StateHook.html#inferno.StateHook.wheneval">wheneval (StateHook property)</a>
-</li>
-        <li><a href="reference/generated/inferno.StateHook.html#inferno.StateHook.whentrain">whentrain (StateHook property)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.WeightBounding.html#inferno.learn.WeightBounding.wmax">wmax (WeightBounding property)</a>
 </li>

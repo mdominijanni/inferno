@@ -230,7 +230,7 @@
 <span class="sd">    Args:</span>
 <span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
 <span class="sd">            and storing them.</span>
-<span class="sd">        module (Module, optional): module to register as the target for monitoring,</span>
+<span class="sd">        module (Module | None, optional): module to register as the target for monitoring,</span>
 <span class="sd">            can be modified after construction. Defaults to None.</span>
 <span class="sd">        prehook (Callable | None, optional): function to call before hooked&#39;s</span>
 <span class="sd">            :py:meth:`~torch.nn.Module.forward`. Defaults to None.</span>
@@ -254,7 +254,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
-        <span class="n">module</span><span class="p">:</span> <span class="n">Module</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">module</span><span class="p">:</span> <span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">prehook</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">posthook</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">prehook_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -272,8 +272,11 @@
             <span class="n">posthook_kwargs</span><span class="o">=</span><span class="n">posthook_kwargs</span><span class="p">,</span>
             <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
             <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
-            <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="c1"># register if as module is provided</span>
+        <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
 
         <span class="c1"># register submodule</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span> <span class="o">=</span> <span class="n">reducer</span>
@@ -282,7 +285,28 @@
 <a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.clear">[docs]</a>
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reinitializes the reducer&#39;s state.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Monitor.view">
+<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.view">[docs]</a>
+    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state at a given time.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Monitor.dump">
+<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.dump">[docs]</a>
+    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state over all observations.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Monitor.peek">
+<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.peek">[docs]</a>
+    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s current state.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">peek</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>

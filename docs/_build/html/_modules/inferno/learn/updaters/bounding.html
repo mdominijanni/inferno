@@ -342,7 +342,7 @@
 <span class="sd">            NotImplementedError: ``lower`` must be implemented by the subclass.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be</span>
+<span class="sd">            This has the signature of :py:class:`~lf.BindWeights` and can be</span>
 <span class="sd">            passed in where a parameter of that type is required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
@@ -371,7 +371,7 @@
 <span class="sd">            NotImplementedError: ``upper`` must be implemented by the subclass.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be</span>
+<span class="sd">            This has the signature of :py:class:`~lf.BindWeights` and can be</span>
 <span class="sd">            passed in where a parameter of that type is required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
@@ -429,7 +429,7 @@
 <span class="sd">            RuntimeError: cannot apply lower bounds if the lower bound was not given.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be</span>
+<span class="sd">            This has the signature of :py:class:`~lf.BindWeights` and can be</span>
 <span class="sd">            passed in where a parameter of that type is required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasmin</span><span class="p">:</span>
@@ -471,7 +471,7 @@
 <span class="sd">            RuntimeError: cannot apply upper bounds if the lower bound was not given.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be</span>
+<span class="sd">            This has the signature of :py:class:`~lf.BindWeights` and can be</span>
 <span class="sd">            passed in where a parameter of that type is required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasmax</span><span class="p">:</span>
@@ -589,7 +589,7 @@
 <span class="sd">            RuntimeError: cannot apply lower bounds if the lower bound was not given.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be</span>
+<span class="sd">            This has the signature of :py:class:`~lf.BindWeights` and can be</span>
 <span class="sd">            passed in where a parameter of that type is required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasmin</span><span class="p">:</span>
@@ -623,7 +623,7 @@
 <span class="sd">            RuntimeError: cannot apply upper bounds if the lower bound was not given.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This has the signature of :py:class:`~lf.WeightBoundingCall` and can be</span>
+<span class="sd">            This has the signature of :py:class:`~lf.BindWeights` and can be</span>
 <span class="sd">            passed in where a parameter of that type is required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasmax</span><span class="p">:</span>

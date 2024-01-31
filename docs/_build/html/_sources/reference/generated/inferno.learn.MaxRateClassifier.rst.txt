@@ -1,0 +1,8 @@
+﻿MaxRateClassifier
+=================
+
+.. currentmodule:: inferno.learn
+
+.. autoclass:: MaxRateClassifier
+    :members:
+    :show-inheritance:

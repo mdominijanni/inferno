@@ -1,8 +1,0 @@
-﻿WeightBoundingCall
-==================
-
-.. currentmodule:: inferno.learn.functional
-
-.. autoclass:: WeightBoundingCall
-    :members:
-    :show-inheritance:

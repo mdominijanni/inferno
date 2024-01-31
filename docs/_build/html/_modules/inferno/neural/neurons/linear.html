@@ -228,7 +228,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of leaky integrate-and-fire (LIF) neuron dynamics.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]</span>
+<span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right]</span>
 <span class="sd">        \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)</span>
 
 <span class="sd">    If a spike was generated at time :math:`t`, then.</span>
@@ -372,7 +372,7 @@
 
 <span class="sd">    .. math::</span>
 <span class="sd">        \begin{align*}</span>
-<span class="sd">            V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest} - R_mI(t)\right]</span>
+<span class="sd">            V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest}\right]</span>
 <span class="sd">            \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\</span>
 <span class="sd">            \Theta(t) &amp;= \Theta_\infty + \sum_k \theta_k(t) \\</span>
 <span class="sd">            \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)</span>
@@ -597,7 +597,7 @@
             <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
             <span class="n">reset_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span>
             <span class="n">thresh_v</span><span class="o">=</span><span class="n">nf</span><span class="o">.</span><span class="n">neuron_adaptation</span><span class="o">.</span><span class="n">apply_adaptive_thresholds</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">thresh_eq_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptations</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">thresh_eq_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span>
             <span class="p">),</span>
             <span class="n">refrac_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span>
             <span class="n">voltages</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
@@ -612,10 +612,10 @@
             <span class="c1"># use adaptive thresholds update function</span>
             <span class="n">adaptations</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">adaptive_thresholds_linear_spike</span><span class="p">(</span>
                 <span class="n">adaptations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
-                <span class="n">postsyn_spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
+                <span class="n">spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
                 <span class="n">decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span><span class="p">,</span>
                 <span class="n">spike_increment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_increment</span><span class="p">,</span>
-                <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refracs</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="c1"># update parameter</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">adaptations</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -718,7 +718,7 @@
 
 <span class="sd">    .. math::</span>
 <span class="sd">        \begin{align*}</span>
-<span class="sd">            V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest} - R_mI(t)\right]</span>
+<span class="sd">            V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest}\right]</span>
 <span class="sd">            \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\</span>
 <span class="sd">            \Theta(t) &amp;= \Theta_\infty + \sum_k \theta_k(t) \\</span>
 <span class="sd">            \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)</span>
@@ -949,7 +949,7 @@
             <span class="n">v_slope</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v_mul</span><span class="p">,</span>
             <span class="n">v_intercept</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v_add</span><span class="p">,</span>
             <span class="n">thresh_v</span><span class="o">=</span><span class="n">nf</span><span class="o">.</span><span class="n">neuron_adaptation</span><span class="o">.</span><span class="n">apply_adaptive_thresholds</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">thresh_eq_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptations</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">thresh_eq_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span>
             <span class="p">),</span>
             <span class="n">refrac_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span>
             <span class="n">voltages</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
@@ -964,10 +964,10 @@
             <span class="c1"># use adaptive thresholds update function</span>
             <span class="n">adaptations</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">adaptive_thresholds_linear_spike</span><span class="p">(</span>
                 <span class="n">adaptations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
-                <span class="n">postsyn_spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
+                <span class="n">spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
                 <span class="n">decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span><span class="p">,</span>
                 <span class="n">spike_increment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_increment</span><span class="p">,</span>
-                <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refracs</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="c1"># update parameter</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">adaptations</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>

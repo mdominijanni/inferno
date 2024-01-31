@@ -288,7 +288,7 @@ are passed through.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.LinearDirect.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/connections/linear.html#LinearDirect.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.LinearDirect.forward" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/connections/linear.html#LinearDirect.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.LinearDirect.forward" title="Link to this definition">#</a></dt>
 <dd><p>Generates connection output from inputs, after passing through the synapse.</p>
 <p>Outputs are determined as the learned linear transformation applied to synaptic
 currents, after new input is applied to the synapse, then reshaped to match
@@ -408,13 +408,14 @@ also passed through.</p>
 <div class="tensorshape admonition">
 <p class="admonition-title">Shape</p>
 <p><code class="docutils literal notranslate"><span class="pre">data</span></code>:</p>
-<p><span class="math notranslate nohighlight">\(B \times N\)</span></p>
+<p><span class="math notranslate nohighlight">\(B \times N_0 \times \cdots\)</span></p>
 <p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
 <p><span class="math notranslate nohighlight">\(B \times N \times 1\)</span></p>
 <dl class="simple">
 <dt>Where:</dt><dd><ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(B\)</span> is the batch size.</p></li>
-<li><p><span class="math notranslate nohighlight">\(N\)</span> is the number of elements across output dimensions.</p></li>
+<li><p><span class="math notranslate nohighlight">\(N_0, \ldots\)</span> are the unbatched inputoutput dimensions.</p></li>
+<li><p><span class="math notranslate nohighlight">\(N\)</span> is the number of elements across inputoutput dimensions.</p></li>
 </ul>
 </dd>
 </dl>

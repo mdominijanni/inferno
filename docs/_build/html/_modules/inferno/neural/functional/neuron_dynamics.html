@@ -389,7 +389,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Integrates input currents into membrane voltages using linear dynamics.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]</span>
+<span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right]</span>
 <span class="sd">        \alpha + V_\text{rest} + R_mI(t)</span>
 
 <span class="sd">    Where :math:`\alpha` is the multiple for exponential decay, typically expressed</span>
@@ -411,9 +411,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">v_in</span> <span class="o">=</span> <span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span>
-    <span class="n">v_delta</span> <span class="o">=</span> <span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span>
-    <span class="k">return</span> <span class="n">v_in</span> <span class="o">+</span> <span class="p">(</span><span class="n">v_delta</span> <span class="o">-</span> <span class="n">v_in</span><span class="p">)</span> <span class="o">*</span> <span class="n">decay</span> <span class="o">+</span> <span class="n">rest_v</span></div>
+    <span class="k">return</span> <span class="n">rest_v</span> <span class="o">+</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span> <span class="o">*</span> <span class="n">decay</span> <span class="o">+</span> <span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span></div>
 
 </pre></div>
         </article>

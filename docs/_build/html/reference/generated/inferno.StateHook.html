@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="exp" href="inferno.exp.html" /><link rel="prev" title="Hook" href="inferno.Hook.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="RemoteHook" href="inferno.RemoteHook.html" /><link rel="prev" title="Hook" href="inferno.Hook.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>StateHook - Inferno</title>
@@ -249,14 +249,8 @@ call the <code class="docutils literal notranslate"><span class="pre">StateHook<
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Unlike with <a class="reference internal" href="inferno.Hook.html#inferno.Hook" title="inferno.Hook"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></a>, the <code class="docutils literal notranslate"><span class="pre">hook</span></code> here will only be passed a single
-argument (the registered module) and any output will be ignored.</p>
+argument (the registered module itself) and any output will be ignored.</p>
 </div>
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.StateHook.deregister">
-<span class="sig-name descname"><span class="pre">deregister</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/infrastructure.html#StateHook.deregister"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.StateHook.deregister" title="Link to this definition">#</a></dt>
-<dd><p>Deregisters the hook as a forward hook/prehook.</p>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.StateHook.module">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Module</span></a></em><a class="headerlink" href="#inferno.StateHook.module" title="Link to this definition">#</a></dt>
@@ -277,54 +271,6 @@ argument (the registered module) and any output will be ignored.</p>
 <dd><p>Registers the hook as a forward hook/prehook.</p>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.StateHook.registered">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">registered</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#inferno.StateHook.registered" title="Link to this definition">#</a></dt>
-<dd><p>If the module is currently hooked.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>if the module is currently hooked.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.StateHook.wheneval">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wheneval</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#inferno.StateHook.wheneval" title="Link to this definition">#</a></dt>
-<dd><p>If the hook should be run when the hooked module is in eval mode.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – if the hook is run when module is in eval mode.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>if the hook is run when module is in eval mode.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.StateHook.whentrain">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">whentrain</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#inferno.StateHook.whentrain" title="Link to this definition">#</a></dt>
-<dd><p>If the hook should be run when the hooked module is in train mode.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – if the hook is run when module is in train mode.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>if the hook is run when module is in train mode.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -334,12 +280,12 @@ argument (the registered module) and any output will be ignored.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.exp.html">
+          <a class="next-page" href="inferno.RemoteHook.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">exp</div>
+                <div class="title">RemoteHook</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -386,12 +332,8 @@ argument (the registered module) and any output will be ignored.</p>
             <ul>
 <li><a class="reference internal" href="#">StateHook</a><ul>
 <li><a class="reference internal" href="#inferno.StateHook"><code class="docutils literal notranslate"><span class="pre">StateHook</span></code></a><ul>
-<li><a class="reference internal" href="#inferno.StateHook.deregister"><code class="docutils literal notranslate"><span class="pre">StateHook.deregister()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.StateHook.module"><code class="docutils literal notranslate"><span class="pre">StateHook.module</span></code></a></li>
 <li><a class="reference internal" href="#inferno.StateHook.register"><code class="docutils literal notranslate"><span class="pre">StateHook.register()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.StateHook.registered"><code class="docutils literal notranslate"><span class="pre">StateHook.registered</span></code></a></li>
-<li><a class="reference internal" href="#inferno.StateHook.wheneval"><code class="docutils literal notranslate"><span class="pre">StateHook.wheneval</span></code></a></li>
-<li><a class="reference internal" href="#inferno.StateHook.whentrain"><code class="docutils literal notranslate"><span class="pre">StateHook.whentrain</span></code></a></li>
 </ul>
 </li>
 </ul>

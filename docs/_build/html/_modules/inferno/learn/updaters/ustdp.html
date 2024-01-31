@@ -274,10 +274,10 @@
 <span class="sd">            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.</span>
 <span class="sd">        trace_mode (Literal[&quot;cumulative&quot;, &quot;nearest&quot;], optional): method to use for</span>
 <span class="sd">            calculating spike traces. Defaults to &quot;cumulative&quot;.</span>
-<span class="sd">        wd_lower (~inferno.learn.functional.WeightBoundingCall | None, optional):</span>
+<span class="sd">        wd_lower (~inferno.learn.functional.BindWeights | None, optional):</span>
 <span class="sd">            callable for applying weight dependence on a lower bound, no dependence if</span>
 <span class="sd">            None. Defaults to None.</span>
-<span class="sd">        wd_upper (~inferno.learn.functional.WeightBoundingCall | None, optional):</span>
+<span class="sd">        wd_upper (~inferno.learn.functional.BindWeights | None, optional):</span>
 <span class="sd">            callable for applying weight dependence on an bound, no dependence if</span>
 <span class="sd">            None. Defaults to None.</span>
 
@@ -299,8 +299,8 @@
         <span class="n">delayed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">interp_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">trace_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;cumulative&quot;</span><span class="p">,</span> <span class="s2">&quot;nearest&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cumulative&quot;</span><span class="p">,</span>
-        <span class="n">wd_lower</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">WeightBoundingCall</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">wd_upper</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">WeightBoundingCall</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wd_lower</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">BindWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wd_upper</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">BindWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor, registers monitors</span>
@@ -511,12 +511,12 @@
             <span class="n">i_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;spike_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
 
             <span class="c1"># reshape postsynaptic</span>
-            <span class="n">x_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">x_post</span><span class="p">)</span>
-            <span class="n">i_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">i_post</span><span class="p">)</span>
+            <span class="n">x_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">x_post</span><span class="p">)</span>
+            <span class="n">i_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">i_post</span><span class="p">)</span>
 
             <span class="c1"># reshape presynaptic</span>
-            <span class="n">x_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">x_pre</span><span class="p">)</span>
-            <span class="n">i_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">i_pre</span><span class="p">)</span>
+            <span class="n">x_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">x_pre</span><span class="p">)</span>
+            <span class="n">i_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">i_pre</span><span class="p">)</span>
 
             <span class="c1"># update amplitudes</span>
             <span class="n">a_pos</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
