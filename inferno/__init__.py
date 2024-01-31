@@ -3,6 +3,7 @@ from .infrastructure import (
     Configuration,
     Hook,
     StateHook,
+    RemoteHook,
     DimensionalModule,
     HistoryModule,
 )
@@ -34,6 +35,7 @@ __all__ = [
     "Configuration",
     "Hook",
     "StateHook",
+    "RemoteHook",
     "DimensionalModule",
     "HistoryModule",
     "exp",

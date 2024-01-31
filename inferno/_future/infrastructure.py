@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Callable
 from inferno import Hook
 from itertools import zip_longest
 import torch
@@ -241,7 +241,7 @@ class TensorList(nn.Module):
 
     def filter(
         self,
-        fn: callable[[torch.Tensor | None], bool],
+        fn: Callable[[torch.Tensor | None], bool],
         ignore_none: bool = True,
     ) -> TensorList:
         ffn = (lambda x: True if x is None else fn(x)) if ignore_none else fn
@@ -249,14 +249,14 @@ class TensorList(nn.Module):
 
     def filter_(
         self,
-        fn: callable[[torch.Tensor | None], bool],
+        fn: Callable[[torch.Tensor | None], bool],
         ignore_none: bool = True,
     ) -> None:
         self.data = self.filter(fn, ignore_none=ignore_none).data
 
     def map(
         self,
-        fn: callable[[torch.Tensor | None], torch.Tensor | None],
+        fn: Callable[[torch.Tensor | None], torch.Tensor | None],
         ignore_none: bool = True,
     ) -> TensorList:
         ffn = (lambda x: x if x is None else fn(x)) if ignore_none else fn
@@ -264,7 +264,7 @@ class TensorList(nn.Module):
 
     def map_(
         self,
-        fn: callable[[torch.Tensor | None], torch.Tensor | None],
+        fn: Callable[[torch.Tensor | None], torch.Tensor | None],
         ignore_none: bool = True,
     ) -> None:
         self.data = self.map(fn, ignore_none=ignore_none).data
