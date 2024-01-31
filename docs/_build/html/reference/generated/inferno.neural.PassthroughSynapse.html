@@ -234,8 +234,8 @@ as for the connection, except potentially shiften in time.</p>
 for selectors between observations. Defaults to “nearest”.</p></li>
 <li><p><strong>interp_tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – maximum difference in time from an observation
 to treat as co-occurring, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>. Defaults to 0.0.</p></li>
-<li><p><strong>derive_spikes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if inputs will represent currents and spikes,
-with spikes derived therefrom. Defaults to True.</p></li>
+<li><p><strong>derive_spikes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if spikes should be computed from internal
+currents. Defaults to True.</p></li>
 <li><p><strong>current_overbound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – value to replace currents out of
 bounds, uses values at observation limits if None. Defaults to 0.0.</p></li>
 <li><p><strong>spike_overbound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – value to replace spikes out of bounds,
@@ -246,14 +246,10 @@ uses values at observation limits if None. Defaults to False.</p></li>
 </dl>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>When <code class="docutils literal notranslate"><span class="pre">derive_spikes</span></code> is set the following behaviors are changed.</p>
-<p>The first input to <a class="reference internal" href="#inferno.neural.PassthroughSynapse.forward" title="inferno.neural.PassthroughSynapse.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code></a> will be assumed to be “current-like”
-input (tensors of spikes will be treated as currents of 0 or 1
-<span class="math notranslate nohighlight">\(\text{nA}\)</span>). The second input will be ignored.</p>
-<p>The getter <code class="xref py py-attr docutils literal notranslate"><span class="pre">spikes</span></code> will compute spikes as any nonzero currents,
-therefore if using a model with subthreshold currents, this will be invalid.
-The setter for <code class="xref py py-attr docutils literal notranslate"><span class="pre">spikes</span></code> will do nothing, but will not raise a warning
-or exception.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">derive_spikes</span></code> is set to True, only the parameter <code class="docutils literal notranslate"><span class="pre">current</span></code> is
+maintained, and <code class="docutils literal notranslate"><span class="pre">spike</span></code> is computed as currents greater than or equal to 1.
+This is normally unproblematic, although issues my arise if added subthreshold
+currents exceed 1.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -346,13 +342,9 @@ should be retrieved, in <span class="math notranslate nohighlight">\(\text{ms}\)
 </dl>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p><code class="docutils literal notranslate"><span class="pre">*inputs</span></code> can either be a single tensor representing the input current,
-or it can be two tensors where the first is the spikes and the second is
-an override for the currents. If <a class="reference internal" href="#inferno.neural.PassthroughSynapse.spikesderived" title="inferno.neural.PassthroughSynapse.spikesderived"><code class="xref py py-attr docutils literal notranslate"><span class="pre">spikesderived</span></code></a>, then only the
-first input is used. Otherwise both may be used, the first will be assigned
-as the spikes, and the second, if specified, will be assigned to the
-currents (if the second is not specified the first will be used for both).
-Currents are in nanoamperes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">*inputs</span></code> can either be a single tensor representing the input spikes.
+The first will always be the input spikes, and any subsequent tensors will
+be treated as additional currents.</p>
 </div>
 </dd></dl>
 

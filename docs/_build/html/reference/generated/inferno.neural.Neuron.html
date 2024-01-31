@@ -260,26 +260,6 @@ excluding the batch dim.</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Neuron.current">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.Neuron.current" title="Link to this definition">#</a></dt>
-<dd><p>Postsynaptic current in nanoamperes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – new postsynaptic currents.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present postsynaptic currents.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">current</span></code> must be implemented by the subclass.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.Neuron.dt">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><a class="headerlink" href="#inferno.neural.Neuron.dt" title="Link to this definition">#</a></dt>
 <dd><p>Length of the simulation time step, in milliseconds.</p>
@@ -449,7 +429,6 @@ excluding the batch dim.</p></li>
 <li><a class="reference internal" href="#inferno.neural.Neuron"><code class="docutils literal notranslate"><span class="pre">Neuron</span></code></a><ul>
 <li><a class="reference internal" href="#inferno.neural.Neuron.bsize"><code class="docutils literal notranslate"><span class="pre">Neuron.bsize</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Neuron.clear"><code class="docutils literal notranslate"><span class="pre">Neuron.clear()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Neuron.current"><code class="docutils literal notranslate"><span class="pre">Neuron.current</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Neuron.dt"><code class="docutils literal notranslate"><span class="pre">Neuron.dt</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Neuron.extra_repr"><code class="docutils literal notranslate"><span class="pre">Neuron.extra_repr()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Neuron.forward"><code class="docutils literal notranslate"><span class="pre">Neuron.forward()</span></code></a></li>

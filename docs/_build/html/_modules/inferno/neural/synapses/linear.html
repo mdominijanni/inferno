@@ -237,8 +237,8 @@
 <span class="sd">            for selectors between observations. Defaults to &quot;nearest&quot;.</span>
 <span class="sd">        interp_tol (float, optional): maximum difference in time from an observation</span>
 <span class="sd">            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.</span>
-<span class="sd">        derive_spikes (bool, optional): if inputs will represent currents and spikes,</span>
-<span class="sd">            with spikes derived therefrom. Defaults to True.</span>
+<span class="sd">        derive_spikes (bool, optional): if spikes should be computed from internal</span>
+<span class="sd">            currents. Defaults to True.</span>
 <span class="sd">        current_overbound (float | None, optional): value to replace currents out of</span>
 <span class="sd">            bounds, uses values at observation limits if None. Defaults to 0.0.</span>
 <span class="sd">        spike_overbound (bool | None, optional): value to replace spikes out of bounds,</span>
@@ -246,16 +246,10 @@
 <span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
 
 <span class="sd">    Important:</span>
-<span class="sd">        When ``derive_spikes`` is set the following behaviors are changed.</span>
-
-<span class="sd">        The first input to :py:meth:`forward` will be assumed to be &quot;current-like&quot;</span>
-<span class="sd">        input (tensors of spikes will be treated as currents of 0 or 1</span>
-<span class="sd">        :math:`\text{nA}`). The second input will be ignored.</span>
-
-<span class="sd">        The getter :py:attr:`spikes` will compute spikes as any nonzero currents,</span>
-<span class="sd">        therefore if using a model with subthreshold currents, this will be invalid.</span>
-<span class="sd">        The setter for :py:attr:`spikes` will do nothing, but will not raise a warning</span>
-<span class="sd">        or exception.</span>
+<span class="sd">        When ``derive_spikes`` is set to True, only the parameter ``current`` is</span>
+<span class="sd">        maintained, and ``spike`` is computed as currents greater than or equal to 1.</span>
+<span class="sd">        This is normally unproblematic, although issues my arise if added subthreshold</span>
+<span class="sd">        currents exceed 1.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        When ``interp_mode`` is set to ``&quot;nearest&quot;``, the closest observation will be</span>
@@ -283,7 +277,7 @@
         <span class="n">currents</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hsize</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">derive_spikes</span><span class="p">:</span>
-            <span class="n">spikes</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mi">0</span>  <span class="c1"># noqa: E731</span>
+            <span class="n">spikes</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span> <span class="o">&gt;=</span> <span class="mi">1</span>  <span class="c1"># noqa: E731</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">spikes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
 
@@ -382,19 +376,17 @@
 <span class="sd">            torch.Tensor: synaptic currents after simulation step.</span>
 
 <span class="sd">        Important:</span>
-<span class="sd">            ``*inputs`` can either be a single tensor representing the input current,</span>
-<span class="sd">            or it can be two tensors where the first is the spikes and the second is</span>
-<span class="sd">            an override for the currents. If :py:attr:`spikesderived`, then only the</span>
-<span class="sd">            first input is used. Otherwise both may be used, the first will be assigned</span>
-<span class="sd">            as the spikes, and the second, if specified, will be assigned to the</span>
-<span class="sd">            currents (if the second is not specified the first will be used for both).</span>
-<span class="sd">            Currents are in nanoamperes.</span>
+<span class="sd">            ``*inputs`` can either be a single tensor representing the input spikes.</span>
+<span class="sd">            The first will always be the input spikes, and any subsequent tensors will</span>
+<span class="sd">            be treated as additional currents.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spikesderived</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spikes</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">spike</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">currents</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">currents</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spikes</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current</span></div>
 </div>

@@ -363,32 +363,6 @@
             <span class="s2">&quot;the getter for property `spike`.&quot;</span>
         <span class="p">)</span>
 
-    <span class="nd">@property</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Postsynaptic current in nanoamperes.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new postsynaptic currents.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: present postsynaptic currents.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``current`` must be implemented by the subclass.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
-            <span class="s2">&quot;the getter for property `current`.&quot;</span>
-        <span class="p">)</span>
-
-    <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
-            <span class="s2">&quot;the setter for property `current`.&quot;</span>
-        <span class="p">)</span>
-
 <div class="viewcode-block" id="Neuron.clear">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.clear">[docs]</a>
     <span class="nd">@abstractmethod</span>

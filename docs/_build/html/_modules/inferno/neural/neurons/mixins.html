@@ -264,7 +264,7 @@
 <div class="viewcode-block" id="CurrentMixin">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.CurrentMixin.html#inferno.neural.neurons.mixins.CurrentMixin">[docs]</a>
 <span class="k">class</span> <span class="nc">CurrentMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with separate postsynaptic currents.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with membrane currents.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        data (torch.Tensor): initial currents, in :math:`\text{nA}`.</span>
@@ -287,13 +287,13 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Postsynaptic current in nanoamperes.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane current in nanoamperes.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new postsynaptic currents.</span>
+<span class="sd">            value (torch.Tensor): new membrane currents.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: present postsynaptic currents.</span>
+<span class="sd">            torch.Tensor: present membrane currents.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_</span><span class="o">.</span><span class="n">data</span>
 
@@ -435,64 +435,6 @@
 <span class="sd">                during the prior step.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span></div>
-
-
-
-<div class="viewcode-block" id="CurrentSpikeRefractoryMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin.html#inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">CurrentSpikeRefractoryMixin</span><span class="p">(</span><span class="n">SpikeRefractoryMixin</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with refractory periods with spikes and currents based off of them.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.</span>
-<span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
-<span class="sd">            Defaults to False.</span>
-
-<span class="sd">    Caution:</span>
-<span class="sd">        This must be added to a class which inherits from</span>
-<span class="sd">        :py:class:`DimensionalModule`, and the constructor for this</span>
-<span class="sd">        mixin must be called after the module constructor.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        This registers a parameter ``refrac_`` and sets it as constrained.</span>
-
-<span class="sd">    Important:</span>
-<span class="sd">        This must be added to a class which has an attribute named ``refrac_t``, which</span>
-<span class="sd">        represents the length of the absolute refractory period in :math:`\text{ms}`,</span>
-<span class="sd">        and an attribute named ``resistance`` which represents the membrane resistance</span>
-<span class="sd">        in in :math:`\text{M\Omega}`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">attr_members</span><span class="p">(</span><span class="s2">&quot;`self`&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;resistance&quot;</span><span class="p">)</span>
-        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Postsynaptic current in nanoamperes.</span>
-
-<span class="sd">        .. math::</span>
-<span class="sd">            I_\text{post}(t) = f(t) R_m</span>
-
-<span class="sd">        Where:</span>
-<span class="sd">            * :math:`f_(t)` are the postsynaptic spikes.</span>
-<span class="sd">            * :math:`R_m` is the membrane resistance, in :math:`\text{M\Omega}`.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new postsynaptic currents.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: present postsynaptic currents.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            Currents are derived from spiking activity and membrane resistance, and</span>
-<span class="sd">            consequentially the setter for this property has no function.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">spike</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span>
-
-    <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">pass</span></div>
 
 </pre></div>
         </article>

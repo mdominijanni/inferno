@@ -19,8 +19,8 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
             for selectors between observations. Defaults to "nearest".
         interp_tol (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
-        derive_spikes (bool, optional): if inputs will represent currents and spikes,
-            with spikes derived therefrom. Defaults to True.
+        derive_spikes (bool, optional): if spikes should be computed from internal
+            currents. Defaults to True.
         current_overbound (float | None, optional): value to replace currents out of
             bounds, uses values at observation limits if None. Defaults to 0.0.
         spike_overbound (bool | None, optional): value to replace spikes out of bounds,
@@ -28,16 +28,10 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
     Important:
-        When ``derive_spikes`` is set the following behaviors are changed.
-
-        The first input to :py:meth:`forward` will be assumed to be "current-like"
-        input (tensors of spikes will be treated as currents of 0 or 1
-        :math:`\text{nA}`). The second input will be ignored.
-
-        The getter :py:attr:`spikes` will compute spikes as any nonzero currents,
-        therefore if using a model with subthreshold currents, this will be invalid.
-        The setter for :py:attr:`spikes` will do nothing, but will not raise a warning
-        or exception.
+        When ``derive_spikes`` is set to True, only the parameter ``current`` is
+        maintained, and ``spike`` is computed as currents greater than or equal to 1.
+        This is normally unproblematic, although issues my arise if added subthreshold
+        currents exceed 1.
 
     Note:
         When ``interp_mode`` is set to ``"nearest"``, the closest observation will be
@@ -65,7 +59,7 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
         currents = torch.zeros(*self.bshape, self.hsize)
 
         if derive_spikes:
-            spikes = lambda c: c > 0  # noqa: E731
+            spikes = lambda c: c >= 1  # noqa: E731
         else:
             spikes = torch.zeros(*self.bshape, self.hsize, dtype=torch.bool)
 
@@ -156,18 +150,16 @@ class PassthroughSynapse(DelayedSpikeCurrentMixin, Synapse):
             torch.Tensor: synaptic currents after simulation step.
 
         Important:
-            ``*inputs`` can either be a single tensor representing the input current,
-            or it can be two tensors where the first is the spikes and the second is
-            an override for the currents. If :py:attr:`spikesderived`, then only the
-            first input is used. Otherwise both may be used, the first will be assigned
-            as the spikes, and the second, if specified, will be assigned to the
-            currents (if the second is not specified the first will be used for both).
-            Currents are in nanoamperes.
+            ``*inputs`` can either be a single tensor representing the input spikes.
+            The first will always be the input spikes, and any subsequent tensors will
+            be treated as additional currents.
         """
-        if self.spikesderived:
+        if len(inputs) == 1:
             self.current = inputs[0]
+            self.spikes = inputs[0]
         else:
-            self.current = inputs[0] if len(inputs) == 1 else inputs[1]
-            self.spike = inputs[0]
+            currents = torch.sum(torch.stack(inputs[1:], dim=0), dim=0)
+            self.current = inputs[0] + currents
+            self.spikes = inputs[0]
 
         return self.current

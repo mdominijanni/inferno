@@ -14,7 +14,6 @@ LIF
     .. rubric:: Properties
 
     .. autoproperty:: LIF.bsize
-    .. autoproperty:: LIF.current
     .. autoproperty:: LIF.dt
     .. autoproperty:: LIF.refrac
     .. autoproperty:: LIF.spike

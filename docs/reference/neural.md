@@ -78,7 +78,6 @@
     mixins.ShapeMixin
     neurons.mixins.AdaptationMixin
     neurons.mixins.CurrentMixin
-    neurons.mixins.CurrentSpikeRefractoryMixin
     neurons.mixins.RefractoryMixin
     neurons.mixins.SpikeRefractoryMixin
     neurons.mixins.VoltageMixin
