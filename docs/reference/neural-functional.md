@@ -12,6 +12,7 @@
     :toctree: generated
 
     voltage_integration_linear
+    voltage_integration_quadratic
     voltage_thresholding
     voltage_thresholding_slope_intercept
 ```

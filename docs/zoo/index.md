@@ -9,6 +9,7 @@ Here, the neuron models as well as the training methods implemented in Inferno a
 
 neurons-adaptation
 neurons-linear
+neurons-nonlinear
 ```
 
 ## Learning Methods

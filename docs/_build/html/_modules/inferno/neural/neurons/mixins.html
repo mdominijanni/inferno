@@ -176,6 +176,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-nonlinear.html">Neuron Models, Non-Linear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -421,13 +422,13 @@
 <span class="sd">        .. math::</span>
 <span class="sd">            f(t) =</span>
 <span class="sd">            \begin{cases}</span>
-<span class="sd">                1, &amp;t_\text{refrac}(t) = \text{ARP}</span>
+<span class="sd">                1, &amp;t_\text{refrac}(t) = \text{ARP} \\</span>
 <span class="sd">                0, &amp;\text{otherwise}</span>
 <span class="sd">            \end{cases}</span>
 
 <span class="sd">        Where:</span>
 <span class="sd">            * :math:`f_(t)` are the postsynaptic spikes.</span>
-<span class="sd">            * :math:`t_\text{refrac}`(t) are the remaining refractory periods, in :math:`\text{ms}`.</span>
+<span class="sd">            * :math:`t_\text{refrac}(t)` are the remaining refractory periods, in :math:`\text{ms}`.</span>
 <span class="sd">            * :math:`\text{ARP}` is the absolute refractory period, in :math:`\text{ms}`.</span>
 
 <span class="sd">        Returns:</span>

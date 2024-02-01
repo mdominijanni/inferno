@@ -182,9 +182,61 @@ def voltage_integration_linear(
         rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
             :math:`V_\text{rest}`, in :math:`\text{mV}`.
         resistance (float | torch.Tensor): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M\Omega}`.
+            :math:`R_m`, in :math:`\text{M}\Omega`.
 
     Returns:
         torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.
     """
     return rest_v + (voltages - rest_v) * decay + resistance * masked_inputs
+
+
+def voltage_integration_quadratic(
+    masked_inputs: torch.Tensor,
+    voltages: torch.Tensor,
+    *,
+    step_time: float | torch.Tensor,
+    rest_v: float | torch.Tensor,
+    crit_v: float | torch.Tensor,
+    attraction: float | torch.Tensor,
+    time_constant: float | torch.Tensor,
+    resistance: float | torch.Tensor,
+) -> torch.Tensor:
+    r"""Integrates input currents into membrane voltages using quadratic dynamics.
+
+    Implemented as an approximation using Euler's method.
+
+    .. math::
+        V_m(t + \Delta t) = \frac{\Delta t}{\tau_m}
+        \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) \right]
+        + R_mI(t)
+
+    Args:
+        masked_inputs (torch.Tensor): presynaptic currents masked by neurons in their
+            absolute refractory period, :math:`I(t)`, in :math:`\text{nA}`.
+        voltages (torch.Tensor): membrane voltages :math:`V_m(t)`,
+            in :math:`\text{mV}`.
+        step_time (float | torch.Tensor): length of a simulation time step,
+            :math:`\Delta t`, in :math:`\text{ms}`.
+        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
+            :math:`V_\text{rest}`, in :math:`\text{mV}`.
+        crit_v (float | torch.Tensor): membrane potential difference at which potential
+            naturally increases, :math:`V_\text{crit}`, in :math:`\text{mV}`.
+        attraction (float | torch.Tensor): controls the strength of the membrane
+            potential's drift towards :math:`V_\text{rest}` and away from
+            :math:`V_\text{crit}`, :math:`a`, unitless.
+        time_constant (float | torch.Tensor): time constant of exponential decay,
+            :math:`\tau_m`, in :math:`\text{ms}`.
+        resistance (float | torch.Tensor): resistance across the cell membrane,
+            :math:`R_m`, in :math:`\text{M}\Omega`.
+
+    Returns:
+        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.
+    """
+    return (
+        voltages
+        + (step_time / time_constant)
+        * attraction
+        * (voltages - rest_v)
+        * (voltages - crit_v)
+        + (resistance * masked_inputs)
+    )

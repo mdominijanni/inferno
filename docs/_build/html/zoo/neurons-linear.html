@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="STDP-Like Learning Methods" href="learning-stdp.html" /><link rel="prev" title="Neuronal Adaptation" href="neurons-adaptation.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Neuron Models, Non-Linear" href="neurons-nonlinear.html" /><link rel="prev" title="Neuronal Adaptation" href="neurons-adaptation.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>Neuron Models, Linear - Inferno</title>
@@ -177,6 +177,7 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Model and Method Zoo</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html">Neuron Models, Non-Linear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -223,12 +224,16 @@
 <h3>Formulation<a class="headerlink" href="#formulation" title="Link to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}
-\begin{align*}
-    \tau_m \frac{dV_m(t)}{dt} &amp;= - \left[V_m(t) - V_\text{rest}\right] + R_mI(t) \\
-    V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
-\end{align*}
-\end{split}\]</div>
+\[
+\tau_m \frac{dV_m(t)}{dt} = - \left[V_m(t) - V_\text{rest}\right] + R_mI(t)
+\]</div>
+</div>
+<p><em>With solution:</em></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
+\]</div>
 </div>
 <p><em>After an action potential is generated:</em></p>
 <div class="math-wrapper docutils container">
@@ -261,8 +266,8 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 \end{align*}
 \end{split}\]</div>
 </div>
-<p>In the first alternative formulation, the membrane resistance <span class="math notranslate nohighlight">\(R_m\)</span>, given in <span class="math notranslate nohighlight">\(\text{M\Omega}\)</span>, is not multiplied into each side, leaving the membrane capacitance <span class="math notranslate nohighlight">\(C_m\)</span>, given in <span class="math notranslate nohighlight">\(\text{nF}\)</span>.</p>
-<p>In the second alternative formulation, rather than considering the resistance of the membrane, it is instead phrased in terms of the membrane’s leak conductance <span class="math notranslate nohighlight">\(g_L\)</span>, given in <span class="math notranslate nohighlight">\(\text{\mu S}\)</span>.</p>
+<p>In the first alternative formulation, the membrane resistance <span class="math notranslate nohighlight">\(R_m\)</span>, given in <span class="math notranslate nohighlight">\(\text{M}\Omega\)</span>, is not multiplied into each side, leaving the membrane capacitance <span class="math notranslate nohighlight">\(C_m\)</span>, given in <span class="math notranslate nohighlight">\(\text{nF}\)</span>.</p>
+<p>In the second alternative formulation, rather than considering the resistance of the membrane, it is instead phrased in terms of the membrane’s leak conductance <span class="math notranslate nohighlight">\(g_L\)</span>, given in <span class="math notranslate nohighlight">\(\mu\text{S}\)</span>.</p>
 <p>These formulations are all equivalent, but expose different underlying properties of the neuron. Given the formulation used in Inferno, the other values can be calculated as follows.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -433,12 +438,12 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="learning-stdp.html">
+          <a class="next-page" href="neurons-nonlinear.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">STDP-Like Learning Methods</div>
+                <div class="title">Neuron Models, Non-Linear</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>

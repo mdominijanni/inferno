@@ -32,7 +32,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         time_constant (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\text{ms}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.
+            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
     See Also:
@@ -177,7 +177,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         spike_adapt_incr (float | tuple[float]): amount by which the adaptive
             threshold is increased after a spike, :math:`a_k`, in :math:`\text{mV}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.
+            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
     See Also:
@@ -498,7 +498,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         reset_v_mul (float): multiplicative parameter controlling reset voltage,
             :math:`m_v`, unitless.
         thresh_eq_v (float): equilibrium of the firing threshold,
-            :math:`\Theta_\infty$`, in :math:`\text{mV}`.
+            :math:`\Theta_\infty`, in :math:`\text{mV}`.
         refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.
         tc_membrane (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\text{ms}`.
@@ -507,7 +507,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         spike_adapt_incr (float | tuple[float]): amount by which the adaptive
             threshold is increased after a spike, :math:`a_k`, in :math:`\text{mV}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.
+            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
 
     See Also:

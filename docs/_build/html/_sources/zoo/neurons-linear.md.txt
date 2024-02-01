@@ -3,10 +3,13 @@
 ## Leaky Integrate-and-Fire (LIF)
 ### Formulation
 $$
-\begin{align*}
-    \tau_m \frac{dV_m(t)}{dt} &= - \left[V_m(t) - V_\text{rest}\right] + R_mI(t) \\
-    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
-\end{align*}
+\tau_m \frac{dV_m(t)}{dt} = - \left[V_m(t) - V_\text{rest}\right] + R_mI(t)
+$$
+
+*With solution:*
+
+$$
+V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
 $$
 
 *After an action potential is generated:*
@@ -33,9 +36,9 @@ C_m \frac{dV_m(t)}{dt} &= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right] + I
 \end{align*}
 $$
 
-In the first alternative formulation, the membrane resistance $R_m$, given in $\text{M\Omega}$, is not multiplied into each side, leaving the membrane capacitance $C_m$, given in $\text{nF}$.
+In the first alternative formulation, the membrane resistance $R_m$, given in $\text{M}\Omega$, is not multiplied into each side, leaving the membrane capacitance $C_m$, given in $\text{nF}$.
 
-In the second alternative formulation, rather than considering the resistance of the membrane, it is instead phrased in terms of the membrane's leak conductance $g_L$, given in $\text{\mu S}$.
+In the second alternative formulation, rather than considering the resistance of the membrane, it is instead phrased in terms of the membrane's leak conductance $g_L$, given in $\mu\text{S}$.
 
 These formulations are all equivalent, but expose different underlying properties of the neuron. Given the formulation used in Inferno, the other values can be calculated as follows.
 

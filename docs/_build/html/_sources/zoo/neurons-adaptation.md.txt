@@ -29,7 +29,7 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 - $I_+$, input current before adaptation $(\text{nA})$
 - $V_m$, electric potential difference across the cell membrane $(\text{mV})$
 - $V_\text{rest}$, equilibrium of the membrane potential $(\text{mV})$
-- $a_k$, subthreshold adaptation, voltage-current coupling $(\text{\mu S})$
+- $a_k$, subthreshold adaptation, voltage-current coupling $(\mu\text{S})$
 - $b_k$, spike-triggered current adaptation $(\text{nA})$
 - $\tau_k$, adaptation time constant $(\text{ms})$
 - $t$, current time of the simulation $(\text{ms})$
@@ -80,7 +80,9 @@ $$
 
 *With approximation:*
 
-$$\theta_k(t + \Delta t) \approx \Delta t \left[a_k \left[ V_m(t) - V_\text{rest} \right] - b_k \theta_k(t)\right] + \theta_k(t)$$
+$$
+\theta_k(t + \Delta t) \approx \Delta t \left[a_k \left[ V_m(t) - V_\text{rest} \right] - b_k \theta_k(t)\right] + \theta_k(t)
+$$
 
 *After an action potential is generated:*
 

@@ -40,7 +40,7 @@ def adaptive_currents_linear(
         time_constant (float | torch.Tensor): time constant of exponential decay,
             :math:`\tau_k`, in :math:`\text{ms}`.
         voltage_coupling (float | torch.Tensor): strength of coupling to membrane
-            voltage, :math:`a_k`, in :math:`\text{\mu S}`.
+            voltage, :math:`a_k`, in :math:`\mu\text{S}`.
         spike_increment (float | torch.Tensor): amount by which the adaptive current is
             increased after a spike, :math:`b_k`, in :math:`\text{nA}`.
         refracs (torch.Tensor | None): remaining absolute refractory periods,
@@ -132,7 +132,7 @@ def adaptive_thresholds_linear_voltage(
     If a spike was generated at time :math:`t`, then.
 
     .. math::
-        \theta_k(t) \leftarrow \max(\theta_k(t), {\theta_\text{reset}}_k)
+        \theta_k(t) \leftarrow \max(\theta_k(t), \theta_\text{reset})
 
     Args:
         adaptations (torch.Tensor): last adaptations applied to membrane voltage
@@ -149,7 +149,7 @@ def adaptive_thresholds_linear_voltage(
             threshold voltage term, :math:`b_k`, in :math:`\text{ms}^{-1}`.
         adapt_reset_lb (float | torch.Tensor | None, optional): lower bound for
             the threshold adaptation permitted after a postsynaptic potential,
-            :math:`{\theta_\text{reset}}_k`, in :math:`\text{mV}`. Defaults to None.
+            :math:`\theta_\text{reset}`, in :math:`\text{mV}`. Defaults to None.
         spikes (torch.Tensor | None, optional): if the corresponding neuron generated an
             action potential. Defaults to None.
         refracs (torch.Tensor | None): remaining absolute refractory periods,
@@ -238,7 +238,7 @@ def adaptive_thresholds_linear_spike(
     r"""Update adaptive thresholds based on postsynaptic spikes.
 
     .. math::
-        \theta_k(t + \Delta t) = \theta_k(t) \alpha_k\right)
+        \theta_k(t + \Delta t) = \theta_k(t) \alpha_k
 
     Where :math:`\alpha_k` is the multiple for exponential decay, typically expressed
     as :math:`\alpha_k = \exp(-\Delta t / \tau_k)`, where :math:`\Delta t` is the
@@ -348,7 +348,7 @@ def apply_adaptive_thresholds(
 
     Args:
         threshold (float | torch.Tensor): equilibrium of the firing threshold,
-            :math:`\Theta_\infty$`, in :math:`\text{mV}`.
+            :math:`\Theta_\infty`, in :math:`\text{mV}`.
         adaptations (torch.Tensor): :math:`k` threshold adaptations, :math:`\theta_k`,
             in :math:`\text{mV}`.
 

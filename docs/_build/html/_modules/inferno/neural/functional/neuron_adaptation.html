@@ -176,6 +176,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-nonlinear.html">Neuron Models, Non-Linear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -258,7 +259,7 @@
 <span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay,</span>
 <span class="sd">            :math:`\tau_k`, in :math:`\text{ms}`.</span>
 <span class="sd">        voltage_coupling (float | torch.Tensor): strength of coupling to membrane</span>
-<span class="sd">            voltage, :math:`a_k`, in :math:`\text{\mu S}`.</span>
+<span class="sd">            voltage, :math:`a_k`, in :math:`\mu\text{S}`.</span>
 <span class="sd">        spike_increment (float | torch.Tensor): amount by which the adaptive current is</span>
 <span class="sd">            increased after a spike, :math:`b_k`, in :math:`\text{nA}`.</span>
 <span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
@@ -353,7 +354,7 @@
 <span class="sd">    If a spike was generated at time :math:`t`, then.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \theta_k(t) \leftarrow \max(\theta_k(t), {\theta_\text{reset}}_k)</span>
+<span class="sd">        \theta_k(t) \leftarrow \max(\theta_k(t), \theta_\text{reset})</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        adaptations (torch.Tensor): last adaptations applied to membrane voltage</span>
@@ -370,7 +371,7 @@
 <span class="sd">            threshold voltage term, :math:`b_k`, in :math:`\text{ms}^{-1}`.</span>
 <span class="sd">        adapt_reset_lb (float | torch.Tensor | None, optional): lower bound for</span>
 <span class="sd">            the threshold adaptation permitted after a postsynaptic potential,</span>
-<span class="sd">            :math:`{\theta_\text{reset}}_k`, in :math:`\text{mV}`. Defaults to None.</span>
+<span class="sd">            :math:`\theta_\text{reset}`, in :math:`\text{mV}`. Defaults to None.</span>
 <span class="sd">        spikes (torch.Tensor | None, optional): if the corresponding neuron generated an</span>
 <span class="sd">            action potential. Defaults to None.</span>
 <span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
@@ -462,7 +463,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update adaptive thresholds based on postsynaptic spikes.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \theta_k(t + \Delta t) = \theta_k(t) \alpha_k\right)</span>
+<span class="sd">        \theta_k(t + \Delta t) = \theta_k(t) \alpha_k</span>
 
 <span class="sd">    Where :math:`\alpha_k` is the multiple for exponential decay, typically expressed</span>
 <span class="sd">    as :math:`\alpha_k = \exp(-\Delta t / \tau_k)`, where :math:`\Delta t` is the</span>
@@ -578,7 +579,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        threshold (float | torch.Tensor): equilibrium of the firing threshold,</span>
-<span class="sd">            :math:`\Theta_\infty$`, in :math:`\text{mV}`.</span>
+<span class="sd">            :math:`\Theta_\infty`, in :math:`\text{mV}`.</span>
 <span class="sd">        adaptations (torch.Tensor): :math:`k` threshold adaptations, :math:`\theta_k`,</span>
 <span class="sd">            in :math:`\text{mV}`.</span>
 

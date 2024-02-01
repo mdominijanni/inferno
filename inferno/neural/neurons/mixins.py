@@ -191,13 +191,13 @@ class SpikeRefractoryMixin(RefractoryMixin):
         .. math::
             f(t) =
             \begin{cases}
-                1, &t_\text{refrac}(t) = \text{ARP}
+                1, &t_\text{refrac}(t) = \text{ARP} \\
                 0, &\text{otherwise}
             \end{cases}
 
         Where:
             * :math:`f_(t)` are the postsynaptic spikes.
-            * :math:`t_\text{refrac}`(t) are the remaining refractory periods, in :math:`\text{ms}`.
+            * :math:`t_\text{refrac}(t)` are the remaining refractory periods, in :math:`\text{ms}`.
             * :math:`\text{ARP}` is the absolute refractory period, in :math:`\text{ms}`.
 
         Returns:

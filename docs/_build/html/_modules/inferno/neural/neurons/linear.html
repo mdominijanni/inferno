@@ -176,6 +176,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-nonlinear.html">Neuron Models, Non-Linear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -250,7 +251,7 @@
 <span class="sd">        time_constant (float): time constant of exponential decay for membrane voltage,</span>
 <span class="sd">            :math:`\tau_m`, in :math:`\text{ms}`.</span>
 <span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
-<span class="sd">            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.</span>
 <span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
 
 <span class="sd">    See Also:</span>
@@ -404,7 +405,7 @@
 <span class="sd">        spike_adapt_incr (float | tuple[float]): amount by which the adaptive</span>
 <span class="sd">            threshold is increased after a spike, :math:`a_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
-<span class="sd">            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.</span>
 <span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
 
 <span class="sd">    See Also:</span>
@@ -743,7 +744,7 @@
 <span class="sd">        reset_v_mul (float): multiplicative parameter controlling reset voltage,</span>
 <span class="sd">            :math:`m_v`, unitless.</span>
 <span class="sd">        thresh_eq_v (float): equilibrium of the firing threshold,</span>
-<span class="sd">            :math:`\Theta_\infty$`, in :math:`\text{mV}`.</span>
+<span class="sd">            :math:`\Theta_\infty`, in :math:`\text{mV}`.</span>
 <span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.</span>
 <span class="sd">        tc_membrane (float): time constant of exponential decay for membrane voltage,</span>
 <span class="sd">            :math:`\tau_m`, in :math:`\text{ms}`.</span>
@@ -752,7 +753,7 @@
 <span class="sd">        spike_adapt_incr (float | tuple[float]): amount by which the adaptive</span>
 <span class="sd">            threshold is increased after a spike, :math:`a_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
-<span class="sd">            :math:`R_m`, in :math:`\text{M\Omega}`. Defaults to 1.0.</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.</span>
 <span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
 
 <span class="sd">    See Also:</span>

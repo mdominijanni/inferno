@@ -2,6 +2,7 @@ from .neuron_dynamics import (
     voltage_thresholding,
     voltage_thresholding_slope_intercept,
     voltage_integration_linear,
+    voltage_integration_quadratic,
 )
 
 from .neuron_adaptation import (
@@ -23,6 +24,7 @@ __all__ = [
     "voltage_thresholding",
     "voltage_thresholding_slope_intercept",
     "voltage_integration_linear",
+    "voltage_integration_quadratic",
     "adaptive_currents_linear",
     "adaptive_thresholds_linear_voltage",
     "adaptive_thresholds_linear_spike",

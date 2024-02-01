@@ -177,6 +177,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-nonlinear.html">Neuron Models, Non-Linear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -252,7 +253,7 @@
 <li><p><strong>reset_v_mul</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – multiplicative parameter controlling reset voltage,
 <span class="math notranslate nohighlight">\(m_v\)</span>, unitless.</p></li>
 <li><p><strong>thresh_eq_v</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – equilibrium of the firing threshold,
-<span class="math notranslate nohighlight">\(\Theta_\infty$\)</span>, in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
+<span class="math notranslate nohighlight">\(\Theta_\infty\)</span>, in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
 <li><p><strong>refrac_t</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length the absolute refractory period, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><strong>tc_membrane</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time constant of exponential decay for membrane voltage,
 <span class="math notranslate nohighlight">\(\tau_m\)</span>, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
@@ -261,7 +262,7 @@ threshold adaptations, <span class="math notranslate nohighlight">\(\tau_k\)</sp
 <li><p><strong>spike_adapt_incr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>]</em>) – amount by which the adaptive
 threshold is increased after a spike, <span class="math notranslate nohighlight">\(a_k\)</span>, in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
 <li><p><strong>resistance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – resistance across the cell membrane,
-<span class="math notranslate nohighlight">\(R_m\)</span>, in <span class="math notranslate nohighlight">\(\text{M\Omega}\)</span>. Defaults to 1.0.</p></li>
+<span class="math notranslate nohighlight">\(R_m\)</span>, in <span class="math notranslate nohighlight">\(\text{M}\Omega\)</span>. Defaults to 1.0.</p></li>
 <li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – size of input batches for simualtion. Defaults to 1.</p></li>
 </ul>
 </dd>
@@ -388,16 +389,16 @@ is in training mode but not when it is in evaluation mode.</p>
 <dd><p>Action potentials last generated.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[f(t) =
+\[\begin{split}f(t) =
 \begin{cases}
-    1, &amp;t_\text{refrac}(t) = \text{ARP}
+    1, &amp;t_\text{refrac}(t) = \text{ARP} \\
     0, &amp;\text{otherwise}
-\end{cases}\]</div>
+\end{cases}\end{split}\]</div>
 </div>
 <dl class="simple">
 <dt>Where:</dt><dd><ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(f_(t)\)</span> are the postsynaptic spikes.</p></li>
-<li><p><span class="math notranslate nohighlight">\(t_\text{refrac}`(t) are the remaining refractory periods, in :math:\)</span>text{ms}`.</p></li>
+<li><p><span class="math notranslate nohighlight">\(t_\text{refrac}(t)\)</span> are the remaining refractory periods, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><span class="math notranslate nohighlight">\(\text{ARP}\)</span> is the absolute refractory period, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 </ul>
 </dd>

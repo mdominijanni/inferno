@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="voltage_thresholding" href="inferno.neural.functional.voltage_thresholding.html" /><link rel="prev" title="inferno.neural.functional" href="../neural-functional.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="voltage_integration_quadratic" href="inferno.neural.functional.voltage_integration_quadratic.html" /><link rel="prev" title="inferno.neural.functional" href="../neural-functional.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>voltage_integration_linear - Inferno</title>
@@ -177,6 +177,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-nonlinear.html">Neuron Models, Non-Linear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -241,7 +242,7 @@ in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
 <li><p><strong>rest_v</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – membrane potential difference at equilibrium,
 <span class="math notranslate nohighlight">\(V_\text{rest}\)</span>, in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
 <li><p><strong>resistance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – resistance across the cell membrane,
-<span class="math notranslate nohighlight">\(R_m\)</span>, in <span class="math notranslate nohighlight">\(\text{M\Omega}\)</span>.</p></li>
+<span class="math notranslate nohighlight">\(R_m\)</span>, in <span class="math notranslate nohighlight">\(\text{M}\Omega\)</span>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -260,12 +261,12 @@ in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.neural.functional.voltage_thresholding.html">
+          <a class="next-page" href="inferno.neural.functional.voltage_integration_quadratic.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">voltage_thresholding</div>
+                <div class="title">voltage_integration_quadratic</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
