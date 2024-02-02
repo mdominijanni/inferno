@@ -6,7 +6,7 @@ import torch
 
 
 class QIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
-    r"""Simulation of quadratic integrate-and-fire (LIF) neuron dynamics.
+    r"""Simulation of quadratic integrate-and-fire (QIF) neuron dynamics.
 
     .. math::
         V_m(t + \Delta t) = \frac{\Delta t}{\tau_m}

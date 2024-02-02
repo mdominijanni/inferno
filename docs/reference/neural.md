@@ -26,6 +26,7 @@
     ALIF
     GLIF1
     GLIF2
+    QIF
 ```
 
 ## Synapses

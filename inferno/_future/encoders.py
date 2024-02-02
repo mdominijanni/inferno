@@ -75,7 +75,7 @@ def interval_poisson(
     Args:
         inputs (torch.Tensor): expected spike frequencies, in :math:`\text{Hz}`.
         step_time (float): length of time between outputs, in :math:`\text{ms}`.
-        steps (int | None, optional): number of spikes to generate.
+        steps (int): number of spikes to generate.
         generator (torch.Generator | None, optional): pseudorandom number generator
             for sampling. Defaults to None.
 
@@ -100,28 +100,107 @@ def interval_poisson(
     """
     # disable gradient computation
     with torch.no_grad():
-        # convert frequencies to rates (Poisson parameter)
+        # convert frequencies to Poisson rate parameter
         res = torch.nan_to_num(1 / inputs, posinf=0) * (1000 / step_time)
 
         # convert rates into intervals via sampling
         res = torch.poisson(res.expand(steps + 1, *res.shape), generator=generator)
 
         # increment zero-intervals at nonzero-rates to avoid collisions
-        res[:, inputs != 0] += res[:, inputs != 0] == 0
+        mask = inputs != 0
+        res[:, mask] += res[:, mask] == 0
 
         # convert intervals to steps via cumumlative summation
         res = res.cumsum(dim=0)
 
-        # set steps exceeding simulation steps to zero
-        res[res > steps] = 0
+        # limit steps to the maximum given
+        res.clamp_max_(steps)
 
         # convert steps to spikes via scattering
         res = torch.zeros_like(res).scatter_(0, res.long(), 1.0)
 
-        # trim zeroth step (will be all ones since it was the "no spike" condition)
-        res = res[1:]
+        # trim last "fake" step and cast to boolean (spike datatype)
+        res = res[:-1].bool()
 
-        # cast to boolean (datatype used for spikes)
-        res = res.bool()
+    return res
+
+
+def interval_poisson_v2(
+    inputs: torch.Tensor,
+    step_time: float,
+    duration: float,
+    refrac: float = 0.0,
+    generator: torch.Generator | None = None,
+):
+    r"""Generates a tensor of spikes using a Poisson distribution.
+
+    Args:
+        inputs (torch.Tensor): expected spike frequencies, :math:`f`,
+            in :math:`\text{Hz}`.
+        step_time (float): length of time between outputs, :math:`\Delta t`,
+            in :math:`\text{ms}`.
+        duration (float): duration of the spike train, :math:`T`,
+            in :math:`\text{ms}`.
+        refrac (float, optional): minimum interal between spikes, in :math:`\text{ms}`.
+            Defaults to 0.0.
+        generator (torch.Generator | None, optional): pseudorandom number generator
+            for sampling. Defaults to None.
+
+    .. admonition:: Shape
+        :class: tensorshape
+
+        ``inputs``:
+
+        :math:`B \times N_0 \times \cdots`
+
+        ``return``:
+
+        :math:`\left\lfloor\frac{T}{\Delta t}\right\rfloor \times B \times N_0 \times \cdots`
+
+        Where:
+            * :math:`B` is the batch size.
+            * :math:`N_0, \ldots` are the dimensions of the spikes being generated.
+            * :math:`T` is the duration of the spike train, ``duration``.
+            * :math:`\Delta t` is the length of each simulation step ``step_time``.
+
+    Important:
+        All elements of ``inputs`` must be nonnegative.
+    """
+    # disable gradient computation
+    with torch.no_grad():
+        # get number of steps, convert refrac from time to continuous steps
+        steps, refrac = int(duration // step_time), refrac / step_time
+
+        # convert frequencies (in Hz) to expected time between spikes (in steps)
+        res = (1000 / inputs) / step_time
+
+        # generate interspike intervals, compensate for refrac
+        nbins = steps // int(refrac + 1)
+        res = (
+            inputs.new_empty(nbins, *inputs.shape).exponential_(
+                1.0, generator=generator
+            )
+            / (res - refrac)
+            + refrac
+        )
+
+        # convert rates into intervals via sampling
+        res = torch.poisson(res.expand(steps + 1, *res.shape), generator=generator)
+
+        # increment zero-intervals at nonzero-rates to avoid collisions
+        mask = inputs != 0
+        res[:, mask] += res[:, mask] == 0
+
+        # convert intervals to steps via cumumlative summation
+        res = res.cumsum(dim=0)
+
+        # limit steps to the maximum given
+        res.clamp_max_(steps)
+
+        # convert steps to spikes via scattering
+        res = torch.zeros_like(res).scatter_(0, res.long(), 1.0)
+
+        # trim last "fake" step and cast to boolean (spike datatype)
+        res = res[:-1].bool()
 
     return res
