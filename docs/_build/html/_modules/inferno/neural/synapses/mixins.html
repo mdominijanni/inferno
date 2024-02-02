@@ -246,7 +246,9 @@
         <span class="n">currents</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;`self`&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">HistoryModule</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">HistoryModule</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">currents</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">)</span>
 
@@ -399,7 +401,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_spikeinterp</span> <span class="o">=</span> <span class="n">spike_interp</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_currentobv</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">current_overval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">current_overval</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_spikeobv</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">spike_overval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">spike_overval</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`tolerance`&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
     <span class="k">def</span> <span class="nf">_synparam_at</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>

@@ -2,7 +2,7 @@ from ..base import Connection, SynapseConstructor
 from ..base import Synapse  # noqa:F401, for docstrings
 from .mixins import WeightBiasDelayMixin
 import einops as ein
-from inferno._internal import numeric_limit
+from inferno._internal import numeric_limit, regroup
 from inferno.typing import OneToOne
 import math
 import torch
@@ -96,72 +96,112 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         delay_init: OneToOne[torch.Tensor] | None = None,
     ):
         # connection attributes
-        self.height = numeric_limit("`height`", height, 0, "gt", int)
-        self.width = numeric_limit("`width`", width, 0, "gt", int)
-        self.channels = numeric_limit("`channels`", channels, 0, "gt", int)
-        self.filters = numeric_limit("`filters`", filters, 0, "gt", int)
+        self.height, e = numeric_limit("height", height, 0, "gt", int)
+        if e:
+            raise e
+        self.width, e = numeric_limit("width", width, 0, "gt", int)
+        if e:
+            raise e
+        self.channels, e = numeric_limit("channels", channels, 0, "gt", int)
+        if e:
+            raise e
+        self.filters, e = numeric_limit("filters", filters, 0, "gt", int)
+        if e:
+            raise e
 
         try:
-            self.kernel = (
-                numeric_limit("`kernel[0]`", kernel[0], 0, "gt", int),
-                numeric_limit("`kernel[1]`", kernel[1], 0, "gt", int),
+            self.kernel, e1, e2 = regroup(
+                (
+                    *numeric_limit("kernel[0]", kernel[0], 0, "gt", int),
+                    *numeric_limit("kernel[1]", kernel[1], 0, "gt", int),
+                ),
+                ((0, 2), 1, 3),
             )
+            if e1:
+                raise e1
+            if e2:
+                raise e2
         except TypeError:
-            self.kernel = (
-                numeric_limit("`kernel`", kernel, 0, "gt", int),
-                numeric_limit(int(kernel)),
+            self.kernel, e = regroup(
+                numeric_limit("kernel", kernel, 0, "gt", int), ((0, 0), 1)
             )
+            if e:
+                raise e
         except IndexError:
             raise ValueError(
-                "nonscalar `kernel` must be of length 2, is of "
+                "nonscalar 'kernel' must be of length 2, is of "
                 f"length {len(kernel)}."
             )
 
         try:
-            self.stride = (
-                numeric_limit("`stride[0]`", stride[0], 0, "gt", int),
-                numeric_limit("`stride[1]`", stride[1], 0, "gt", int),
+            self.stride, e1, e2 = regroup(
+                (
+                    numeric_limit("stride[0]", stride[0], 0, "gt", int),
+                    numeric_limit("stride[1]", stride[1], 0, "gt", int),
+                ),
+                ((0, 2), 3, 3),
             )
+            if e1:
+                raise e1
+            if e2:
+                raise e2
         except TypeError:
-            self.stride = (
-                numeric_limit("`stride`", stride, 0, "gt", int),
-                numeric_limit(int(stride)),
+            self.stride, e = regroup(
+                numeric_limit("stride", stride, 0, "gt", int), ((0, 0), 1)
             )
+            if e:
+                raise e
         except IndexError:
             raise ValueError(
-                "nonscalar `stride` must be of length 2, is of "
+                "nonscalar 'stride' must be of length 2, is of "
                 f"length {len(stride)}."
             )
 
         try:
-            self.padding = (
-                numeric_limit("`padding[0]`", padding[0], 0, "gte", int),
-                numeric_limit("`padding[1]`", padding[1], 0, "gte", int),
+            self.padding, e1, e2 = regroup(
+                (
+                    numeric_limit("padding[0]", padding[0], 0, "gte", int),
+                    numeric_limit("padding[1]", padding[1], 0, "gte", int),
+                ),
+                ((0, 2), 3, 3),
             )
+            if e1:
+                raise e1
+            if e2:
+                raise e2
         except TypeError:
-            self.padding = (
-                numeric_limit("`padding`", padding, 0, "gte", int),
-                numeric_limit(int(padding)),
+            self.padding, e = regroup(
+                numeric_limit("padding", padding, 0, "gte", int), ((0, 0), 1)
             )
+            if e:
+                raise e
         except IndexError:
             raise ValueError(
-                "nonscalar `padding` must be of length 2, is of "
+                "nonscalar 'padding' must be of length 2, is of "
                 f"length {len(padding)}."
             )
 
         try:
-            self.dilation = (
-                numeric_limit("`dilation[0]`", dilation[0], 0, "gt", int),
-                numeric_limit("`dilation[1]`", dilation[1], 0, "gt", int),
+            self.dilation, e1, e2 = regroup(
+                (
+                    numeric_limit("dilation[0]", dilation[0], 0, "gt", int),
+                    numeric_limit("dilation[1]", dilation[1], 0, "gt", int),
+                ),
+                ((0, 2), 3, 3),
             )
+            if e1:
+                raise e1
+            if e2:
+                raise e2
         except TypeError:
-            self.dilation = (
-                numeric_limit("`dilation`", dilation, 0, "gt", int),
-                numeric_limit(int(dilation)),
+            self.dilation, e = regroup(
+                numeric_limit("dilation", dilation, 0, "gt", int), ((0, 0), 1)
             )
+            if e:
+                raise e
         except IndexError:
             raise ValueError(
-                "nonscalar `dilation` must be of length 2, is of "
+                "nonscalar 'dilation' must be of length 2, is of "
                 f"length {len(dilation)}."
             )
 

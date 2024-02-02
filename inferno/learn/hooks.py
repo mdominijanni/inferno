@@ -73,8 +73,12 @@ class WeightNormalization(RemoteHook):
             dims (int | tuple[int] | None): dimensions along which to normalize,
                 all dimensions if None.
         """
-        _ = numeric_limit("`order`", order, 0, "neq", None)
-        _ = numeric_limit("`scale`", scale, 0, "neq", None)
+        _, e = numeric_limit("order", order, 0, "neq", None)
+        if e:
+            raise e
+        _, e = numeric_limit("scale", scale, 0, "neq", None)
+        if e:
+            raise e
         RemoteHook.add_inner(self, *layers, order=order, scale=scale, dims=dims)
 
 

@@ -1,6 +1,6 @@
 from functools import cached_property
 from inferno import DimensionalModule
-from inferno._internal import instance_of, numeric_limit
+from inferno._internal import instance_of, numeric_limit, multiple_numeric_limit
 import math
 
 
@@ -24,8 +24,12 @@ class BatchMixin:
         self,
         batch_size: int,
     ):
-        instance_of("`self`", self, DimensionalModule)
-        batch_size = numeric_limit("`batch_size`", batch_size, 0, "gt", int)
+        e = instance_of("self", self, DimensionalModule)
+        if e:
+            raise e
+        batch_size, e = numeric_limit("batch_size", batch_size, 0, "gt", int)
+        if e:
+            raise e
 
         # check that a conflicting constraint doesn't exist
         if 0 in self.constraints:
@@ -51,7 +55,9 @@ class BatchMixin:
 
     @bsize.setter
     def bsize(self, value: int) -> None:
-        value = numeric_limit("`bsize`", value, 0, "gt", int)
+        value, e = numeric_limit("bsize", value, 0, "gt", int)
+        if e:
+            raise e
         if value != self.bsize:
             self.reconstrain(0, value)
 
@@ -83,12 +89,14 @@ class ShapeMixin(BatchMixin):
 
         # validate and set shape
         try:
-            self._shape = (numeric_limit("`shape`", shape, 0, "gt", int),)
+            self._shape, e = numeric_limit("shape", shape, 0, "gt", int)
+            if e:
+                raise e
+            self._shape = (self._shape,)
         except TypeError:
-            self._shape = tuple(
-                numeric_limit(f"`shape[{idx}]`", s, 0, "gt", int)
-                for idx, s in enumerate(shape)
-            )
+            self._shape, e = multiple_numeric_limit("shape", shape, 0, "gt", int, False)
+            if e:
+                raise e
 
     @property
     def bsize(self) -> int:
@@ -105,7 +113,7 @@ class ShapeMixin(BatchMixin):
     @bsize.setter
     def bsize(self, value: int) -> None:
         BatchMixin.bsize.fset(self, value)
-        if hasattr(self, 'bshape'):
+        if hasattr(self, "bshape"):
             del self.bshape
 
     @property

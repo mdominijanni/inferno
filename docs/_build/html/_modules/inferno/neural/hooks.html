@@ -261,8 +261,12 @@
         <span class="n">always_call</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># sanity check arguments</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`order`&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`scale`&quot;</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
         <span class="c1"># inner hook function</span>
         <span class="k">def</span> <span class="nf">hook</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>

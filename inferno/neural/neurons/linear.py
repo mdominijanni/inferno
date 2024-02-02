@@ -1,7 +1,7 @@
 from .. import Neuron
 from .. import functional as nf
 from .mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
-from inferno._internal import numeric_limit
+from inferno._internal import numeric_limit, multiple_numeric_limit, regroup
 import math
 import torch
 
@@ -57,16 +57,24 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         Neuron.__init__(self, shape, batch_size)
 
         # dynamics attributes
-        self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
-        self.time_constant = numeric_limit(
-            "`time_constant`", time_constant, 0, "gt", float
+        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
+        if e:
+            raise e
+        self.time_constant, e = numeric_limit(
+            "time_constant", time_constant, 0, "gt", float
         )
+        if e:
+            raise e
         self.decay = math.exp(-self.step_time / self.time_constant)
         self.rest_v = float(rest_v)
         self.reset_v = float(reset_v)
         self.thresh_v = float(thresh_v)
-        self.refrac_t = numeric_limit("`refrac_t`", refrac_t, 0, "gte", float)
-        self.resistance = numeric_limit("`resistance`", resistance, 0, "neq", float)
+        self.refrac_t, e = numeric_limit("refrac_t", refrac_t, 0, "gte", float)
+        if e:
+            raise e
+        self.resistance, e = numeric_limit("resistance", resistance, 0, "neq", float)
+        if e:
+            raise
 
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
@@ -96,7 +104,9 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
 
     @dt.setter
     def dt(self, value: float):
-        self.step_time = numeric_limit("`dt`", value, 0, "gt", float)
+        self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
+        if e:
+            raise e
         self.decay = math.exp(-self.step_time / self.time_constant)
 
     def clear(self, **kwargs):
@@ -212,26 +222,28 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
                 # test that tc_adaptation and spike_adapt_incr are of equal length
                 if len(tc_adaptation) != len(spike_adapt_incr):
                     raise RuntimeError(
-                        "`tc_adaptation` and `spike_adapt_incr` must be of the same "
+                        "'tc_adaptation' and 'spike_adapt_incr' must be of the same "
                         f"length, received with lengths of {len(tc_adaptation)} and "
                         f"{len(spike_adapt_incr)} respectively."
                     )
 
                 # cast and test tc_adaptation values
-                tc_adaptation = tuple(
-                    numeric_limit(f"`tc_adaptation[{idx}]`", val, 0, "gt", float)
-                    for idx, val in enumerate(tc_adaptation)
+                tc_adaptation, e = multiple_numeric_limit(
+                    "tc_adaptation", tc_adaptation, 0, "gt", float, False
                 )
+                if e:
+                    raise e
 
                 # cast spike_adapt_incr values
                 spike_adapt_incr = tuple(float(val) for val in spike_adapt_incr)
 
             case (True, False):
                 # cast and test tc_adaptation values
-                tc_adaptation = tuple(
-                    numeric_limit(f"`tc_adaptation[{idx}]`", val, 0, "gt", float)
-                    for idx, val in enumerate(tc_adaptation)
+                tc_adaptation = multiple_numeric_limit(
+                    "tc_adaptation", tc_adaptation, 0, "gt", float, False
                 )
+                if e:
+                    raise e
 
                 # cast spike_adapt_incr and make it a tuple of matching length
                 spike_adapt_incr = float(spike_adapt_incr)
@@ -240,31 +252,48 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             case (False, True):
                 # cast spike_adapt_incr values
                 spike_adapt_incr = tuple(float(val) for val in spike_adapt_incr)
+                if len(spike_adapt_incr == 0):
+                    raise ValueError("'spike_adapt_incr' cannot be empty.")
 
                 # cast and test tc_adaptation and make it a tuple of matching length
-                tc_adaptation = numeric_limit(
-                    "`tc_adaptation`", tc_adaptation, 0, "gt", float
+                tc_adaptation, e = regroup(
+                    numeric_limit("tc_adaptation", tc_adaptation, 0, "gt", float),
+                    ((0 for _ in spike_adapt_incr), 1),
                 )
-                tc_adaptation = tuple(tc_adaptation for _ in spike_adapt_incr)
+                if e:
+                    raise e
 
             case (False, False):
                 # cast and test tc_adaptation and make it a 1-tuple
-                tc_adaptation = (
-                    numeric_limit("`tc_adaptation`", tc_adaptation, 0, "gt", float),
+                tc_adaptation, e = regroup(
+                    numeric_limit("tc_adaptation", tc_adaptation, 0, "gt", float),
+                    ((0,), 1),
                 )
+                if e:
+                    raise e
 
                 # cast spike_adapt_incr and make it a 1-tuple
                 spike_adapt_incr = (float(spike_adapt_incr),)
 
         # dynamics attributes
-        self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
-        self.tc_membrane = numeric_limit("`tc_membrane`", tc_membrane, 0, "gt", float)
+        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
+        if e:
+            raise e
+        self.tc_membrane, e = numeric_limit(
+            "tc_membrane", tc_membrane, 0, "gt", float
+        )
+        if e:
+            raise e
         self.decay = math.exp(-self.step_time / self.tc_membrane)
         self.rest_v = float(rest_v)
         self.reset_v = float(reset_v)
         self.thresh_eq_v = float(thresh_eq_v)
-        self.refrac_t = numeric_limit("`refrac_t`", refrac_t, 0, "gte", float)
-        self.resistance = numeric_limit("`resistance`", resistance, 0, "neq", float)
+        self.refrac_t, e = numeric_limit("refrac_t", refrac_t, 0, "gte", float)
+        if e:
+            raise e
+        self.resistance, e = numeric_limit("resistance", resistance, 0, "neq", float)
+        if e:
+            raise
         self.tc_adaptation = tc_adaptation
         self.spike_adapt_incr = spike_adapt_incr
 
@@ -309,7 +338,9 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
 
     @dt.setter
     def dt(self, value: float):
-        self.step_time = numeric_limit("`dt`", value, 0, "gt", float)
+        self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
+        if e:
+            raise e
         self.decay = math.exp(-self.step_time / self.time_constant)
         self.adapt_decay = torch.exp(
             -self.step_time
@@ -543,26 +574,28 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
                 # test that tc_adaptation and spike_adapt_incr are of equal length
                 if len(tc_adaptation) != len(spike_adapt_incr):
                     raise RuntimeError(
-                        "`tc_adaptation` and `spike_adapt_incr` must be of the same "
+                        "'tc_adaptation' and 'spike_adapt_incr' must be of the same "
                         f"length, received with lengths of {len(tc_adaptation)} and "
                         f"{len(spike_adapt_incr)} respectively."
                     )
 
                 # cast and test tc_adaptation values
-                tc_adaptation = tuple(
-                    numeric_limit(f"`tc_adaptation[{idx}]`", val, 0, "gt", float)
-                    for idx, val in enumerate(tc_adaptation)
+                tc_adaptation, e = multiple_numeric_limit(
+                    "tc_adaptation", tc_adaptation, 0, "gt", float, False
                 )
+                if e:
+                    raise e
 
                 # cast spike_adapt_incr values
                 spike_adapt_incr = tuple(float(val) for val in spike_adapt_incr)
 
             case (True, False):
                 # cast and test tc_adaptation values
-                tc_adaptation = tuple(
-                    numeric_limit(f"`tc_adaptation[{idx}]`", val, 0, "gt", float)
-                    for idx, val in enumerate(tc_adaptation)
+                tc_adaptation = multiple_numeric_limit(
+                    "tc_adaptation", tc_adaptation, 0, "gt", float, False
                 )
+                if e:
+                    raise e
 
                 # cast spike_adapt_incr and make it a tuple of matching length
                 spike_adapt_incr = float(spike_adapt_incr)
@@ -571,32 +604,49 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             case (False, True):
                 # cast spike_adapt_incr values
                 spike_adapt_incr = tuple(float(val) for val in spike_adapt_incr)
+                if len(spike_adapt_incr == 0):
+                    raise ValueError("'spike_adapt_incr' cannot be empty.")
 
                 # cast and test tc_adaptation and make it a tuple of matching length
-                tc_adaptation = numeric_limit(
-                    "`tc_adaptation`", tc_adaptation, 0, "gt", float
+                tc_adaptation, e = regroup(
+                    numeric_limit("tc_adaptation", tc_adaptation, 0, "gt", float),
+                    ((0 for _ in spike_adapt_incr), 1),
                 )
-                tc_adaptation = tuple(tc_adaptation for _ in spike_adapt_incr)
+                if e:
+                    raise e
 
             case (False, False):
                 # cast and test tc_adaptation and make it a 1-tuple
-                tc_adaptation = (
-                    numeric_limit("`tc_adaptation`", tc_adaptation, 0, "gt", float),
+                tc_adaptation, e = regroup(
+                    numeric_limit("tc_adaptation", tc_adaptation, 0, "gt", float),
+                    ((0,), 1),
                 )
+                if e:
+                    raise e
 
                 # cast spike_adapt_incr and make it a 1-tuple
                 spike_adapt_incr = (float(spike_adapt_incr),)
 
         # dynamics attributes
-        self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
-        self.tc_membrane = numeric_limit("`tc_membrane`", tc_membrane, 0, "gt", float)
+        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
+        if e:
+            raise e
+        self.tc_membrane, e = numeric_limit(
+            "tc_membrane", tc_membrane, 0, "gt", float
+        )
+        if e:
+            raise e
         self.decay = math.exp(-self.step_time / self.tc_membrane)
         self.rest_v = float(rest_v)
         self.reset_v_add = float(reset_v_add)
         self.reset_v_mul = float(reset_v_mul)
         self.thresh_eq_v = float(thresh_eq_v)
-        self.refrac_t = numeric_limit("`refrac_t`", refrac_t, 0, "gte", float)
-        self.resistance = numeric_limit("`resistance`", resistance, 0, "neq", float)
+        self.refrac_t, e = numeric_limit("refrac_t", refrac_t, 0, "gte", float)
+        if e:
+            raise e
+        self.resistance, e = numeric_limit("resistance", resistance, 0, "neq", float)
+        if e:
+            raise
         self.tc_adaptation = tc_adaptation
         self.spike_adapt_incr = spike_adapt_incr
 
@@ -641,7 +691,9 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
 
     @dt.setter
     def dt(self, value: float):
-        self.step_time = numeric_limit("`dt`", value, 0, "gt", float)
+        self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
+        if e:
+            raise e
         self.decay = math.exp(-self.step_time / self.time_constant)
         self.adapt_decay = torch.exp(
             -self.step_time

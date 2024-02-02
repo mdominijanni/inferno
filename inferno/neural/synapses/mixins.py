@@ -27,7 +27,9 @@ class CurrentMixin:
         currents: torch.Tensor,
         requires_grad=False,
     ):
-        instance_of("`self`", self, HistoryModule)
+        e = instance_of("self", self, HistoryModule)
+        if e:
+            raise e
         self.register_parameter("current_", nn.Parameter(currents, requires_grad))
         self.register_constrained("current_")
 
@@ -174,7 +176,9 @@ class DelayedSpikeCurrentMixin(SpikeCurrentMixin):
         self._spikeinterp = spike_interp
         self._currentobv = None if current_overval is None else float(current_overval)
         self._spikeobv = None if spike_overval is None else float(spike_overval)
-        self._interptol = numeric_limit("`tolerance`", tolerance, 0, "gte", float)
+        self._interptol, e = numeric_limit("tolerance", tolerance, 0, "gte", float)
+        if e:
+            raise e
 
     def _synparam_at(
         self,

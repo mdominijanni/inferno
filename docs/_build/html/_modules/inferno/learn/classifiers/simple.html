@@ -217,7 +217,7 @@
           <h1>Source code for inferno.learn.classifiers.simple</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">einops</span> <span class="k">as</span> <span class="nn">ein</span>
 <span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">Module</span>
-<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span>
+<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span><span class="p">,</span> <span class="n">multiple_numeric_limit</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
@@ -256,14 +256,17 @@
 
         <span class="c1"># validate parameters</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">shape</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`shape`&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+            <span class="n">shape</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-                <span class="n">numeric_limit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`shape[</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">]`&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">shape</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">multiple_numeric_limit</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="n">num_classes</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`num_classes`&quot;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="n">num_classes</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;num_classes&quot;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
         <span class="c1"># class attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_proportional</span> <span class="o">=</span> <span class="n">proportional</span>
@@ -285,7 +288,9 @@
         <span class="p">)</span>
 
         <span class="c1"># class attribute</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`decay`&quot;</span><span class="p">,</span> <span class="n">decay</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;decay&quot;</span><span class="p">,</span> <span class="n">decay</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
         <span class="c1"># run after loading state_dict to recompute non-persistent buffers</span>
         <span class="k">def</span> <span class="nf">sdhook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">incompatible_keys</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

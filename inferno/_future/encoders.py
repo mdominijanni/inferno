@@ -15,9 +15,15 @@ class IntervalPoisson(Module):
         Module.__init__(self)
 
         # encoder attributes
-        self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
-        self.num_steps = numeric_limit("`steps`", steps, 0, "gt", int)
-        self.maxfreq = numeric_limit("`maxfreq`", maxfreq, 0, "gte", float)
+        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
+        if e:
+            raise e
+        self.num_steps, e = numeric_limit("steps", steps, 0, "gt", int)
+        if e:
+            raise e
+        self.maxfreq, e = numeric_limit("maxfreq", maxfreq, 0, "gte", float)
+        if e:
+            raise e
         self.rng = generator
 
     @property
@@ -26,7 +32,9 @@ class IntervalPoisson(Module):
 
     @dt.setter
     def dt(self, value: float) -> None:
-        self.step_time = numeric_limit("`value`", value, 0, "gt", float)
+        self.step_time, e = numeric_limit("value", value, 0, "gt", float)
+        if e:
+            raise e
 
     @property
     def generator(self) -> torch.Generator | None:
@@ -42,7 +50,9 @@ class IntervalPoisson(Module):
 
     @steps.setter
     def steps(self, value: float) -> None:
-        self.num_steps = numeric_limit("`value`", value, 0, "gt", int)
+        self.num_steps, e = numeric_limit("value", value, 0, "gt", int)
+        if e:
+            raise e
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         # inputs as 0-1 range, multiplied by maxfreq

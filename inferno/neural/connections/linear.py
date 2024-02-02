@@ -2,7 +2,7 @@ from ..base import Connection, SynapseConstructor
 from ..base import Synapse  # noqa:F401, for docstrings
 from .mixins import WeightBiasDelayMixin
 import einops as ein
-from inferno._internal import numeric_limit
+from inferno._internal import numeric_limit, multiple_numeric_limit, regroup
 from inferno.typing import OneToOne
 import math
 import torch
@@ -80,32 +80,30 @@ class LinearDense(WeightBiasDelayMixin, Connection):
     ):
         # connection attributes
         try:
-            self.in_shape = tuple(
-                numeric_limit(f"`in_shape[{d}]`", n, 0, "gt", int)
-                for d, n in enumerate(in_shape)
+            self.in_shape, e = multiple_numeric_limit(
+                "in_shape", in_shape, 0, "gt", int, False
             )
+            if e:
+                raise e
         except TypeError:
-            self.in_shape = (numeric_limit("`in_shape`", in_shape, 0, "gt", int),)
-        finally:
-            if not self.in_shape:
-                raise ValueError(
-                    f"`in_shape` of `{in_shape}` must represent at least "
-                    "a 1-dimensional input."
-                )
+            self.in_shape, e = regroup(
+                numeric_limit("in_shape", in_shape, 0, "gt", int), ((0,), 1)
+            )
+            if e:
+                raise e
 
         try:
-            self.out_shape = tuple(
-                numeric_limit(f"`out_shape[{d}]`", n, 0, "gt", int)
-                for d, n in enumerate(out_shape)
+            self.out_shape, e = multiple_numeric_limit(
+                "out_shape", out_shape, 0, "gt", int, False
             )
+            if e:
+                raise e
         except TypeError:
-            self.out_shape = (numeric_limit("`out_shape`", out_shape, 0, "gt", int),)
-        finally:
-            if not self.out_shape:
-                raise ValueError(
-                    f"`in_shape` of `{out_shape}` must represent at least "
-                    "a 1-dimensional input."
-                )
+            self.out_shape, e = regroup(
+                numeric_limit("out_shape", out_shape, 0, "gt", int), ((0,), 1)
+            )
+            if e:
+                raise e
 
         # intermediate values
         in_size, out_size = math.prod(self.in_shape), math.prod(self.out_shape)
@@ -413,18 +411,15 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
     ):
         # connection attribute
         try:
-            self.shape = tuple(
-                numeric_limit(f"`shape[{d}]`", n, 0, "gt", int)
-                for d, n in enumerate(shape)
-            )
+            self.shape, e = multiple_numeric_limit("shape", shape, 0, "gt", int, False)
+            if e:
+                raise e
         except TypeError:
-            self.shape = (numeric_limit("`shape`", shape, 0, "gt", int),)
-        finally:
-            if not self.shape:
-                raise ValueError(
-                    f"`in_shape` of `{shape}` must represent at least "
-                    "a 1-dimensional input and output."
-                )
+            self.shape, e = regroup(
+                numeric_limit("shape", shape, 0, "gt", int), ((0,), 1)
+            )
+            if e:
+                raise e
 
         # intermediate value
         size = math.prod(self.shape)
@@ -714,18 +709,15 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
     ):
         # connection attribute
         try:
-            self.shape = tuple(
-                numeric_limit(f"`shape[{d}]`", n, 0, "gt", int)
-                for d, n in enumerate(shape)
-            )
+            self.shape, e = multiple_numeric_limit("shape", shape, 0, "gt", int, False)
+            if e:
+                raise e
         except TypeError:
-            self.shape = (numeric_limit("`shape`", shape, 0, "gt", int),)
-        finally:
-            if not self.shape:
-                raise ValueError(
-                    f"`in_shape` of `{shape}` must represent at least "
-                    "a 1-dimensional input and output."
-                )
+            self.shape, e = regroup(
+                numeric_limit("shape", shape, 0, "gt", int), ((0,), 1)
+            )
+            if e:
+                raise e
 
         # intermediate value
         size = math.prod(self.shape)

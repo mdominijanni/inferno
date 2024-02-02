@@ -97,11 +97,17 @@ class STDP(LayerwiseUpdater):
             )
 
         # updater hyperparameters
-        self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
+        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
+        if e:
+            raise e
         self.lr_post = float(lr_post)
         self.lr_pre = float(lr_pre)
-        self.tc_post = numeric_limit("`tc_post`", tc_post, 0, "gt", float)
-        self.tc_pre = numeric_limit("`tc_pre`", tc_pre, 0, "gt", float)
+        self.tc_post, e = numeric_limit("tc_post", tc_post, 0, "gt", float)
+        if e:
+            raise e
+        self.tc_pre, e = numeric_limit("tc_pre", tc_pre, 0, "gt", float)
+        if e:
+            raise e
         self.delayed = delayed
         self.tolerance = float(interp_tolerance)
         self.trace = trace_mode
@@ -123,7 +129,9 @@ class STDP(LayerwiseUpdater):
     @dt.setter
     def dt(self, value: float) -> None:
         # assign new step time
-        self.step_time = numeric_limit("`step_time`", value, 0, "gt", float)
+        self.step_time, e = numeric_limit("step_time", value, 0, "gt", float)
+        if e:
+            raise e
 
         # update monitors accordingly
         for monitor, _ in self.monitors:
@@ -276,9 +284,7 @@ class STDP(LayerwiseUpdater):
             # post and pre synaptic traces
             x_post = self.get_monitor(layer, "trace_post").peek()
             x_pre = (
-                self.get_monitor(layer, "trace_pre").view(
-                    conn.selector, self.tolerance
-                )
+                self.get_monitor(layer, "trace_pre").view(conn.selector, self.tolerance)
                 if self.delayed and conn.delayedby is not None
                 else self.get_monitor(layer, "trace_pre").peek()
             )

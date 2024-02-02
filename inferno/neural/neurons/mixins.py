@@ -22,7 +22,9 @@ class AdaptationMixin:
     """
 
     def __init__(self, data: torch.Tensor, requires_grad=False):
-        instance_of("`self`", self, Module)
+        e = instance_of("self", self, Module)
+        if e:
+            raise e
         self.register_parameter("adaptation_", nn.Parameter(data, requires_grad))
 
     @property
@@ -60,7 +62,9 @@ class CurrentMixin:
     """
 
     def __init__(self, data: torch.Tensor, requires_grad=False):
-        instance_of("`self`", self, DimensionalModule)
+        e = instance_of("self", self, DimensionalModule)
+        if e:
+            raise e
         self.register_parameter("current_", nn.Parameter(data, requires_grad))
         self.register_constrained("current_")
 
@@ -99,7 +103,9 @@ class VoltageMixin:
     """
 
     def __init__(self, data: torch.Tensor, requires_grad=False):
-        instance_of("`self`", self, DimensionalModule)
+        e = instance_of("self", self, DimensionalModule)
+        if e:
+            raise e
         self.register_parameter("voltage_", nn.Parameter(data, requires_grad))
         self.register_constrained("voltage_")
 
@@ -138,7 +144,9 @@ class RefractoryMixin:
     """
 
     def __init__(self, refrac, requires_grad=False):
-        instance_of("`self`", self, DimensionalModule)
+        e = instance_of("self", self, DimensionalModule)
+        if e:
+            raise e
         self.register_parameter("refrac_", nn.Parameter(refrac, requires_grad))
         self.register_constrained("refrac_")
 
@@ -181,7 +189,9 @@ class SpikeRefractoryMixin(RefractoryMixin):
     """
 
     def __init__(self, refrac, requires_grad=False):
-        attr_members("`self`", self, "refrac_t")
+        e = attr_members("self", self, "refrac_t")
+        if e:
+            raise e
         RefractoryMixin.__init__(self, refrac, requires_grad)
 
     @property

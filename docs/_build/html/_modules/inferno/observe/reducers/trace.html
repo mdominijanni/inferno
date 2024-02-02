@@ -265,17 +265,23 @@
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
 
         <span class="c1"># reducer attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
-            <span class="s2">&quot;`time_constant`&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
+            <span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`amplitude`&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">tolerance</span> <span class="ow">is</span> <span class="kc">None</span>
-            <span class="k">else</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`tolerance`&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -400,17 +406,23 @@
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
 
         <span class="c1"># reducer attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
-            <span class="s2">&quot;`time_constant`&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
+            <span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`amplitude`&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">tolerance</span> <span class="ow">is</span> <span class="kc">None</span>
-            <span class="k">else</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`tolerance`&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -539,11 +551,15 @@
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
 
         <span class="c1"># reducer attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
-            <span class="s2">&quot;`time_constant`&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
+            <span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`amplitude`&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
 
@@ -674,11 +690,15 @@
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
 
         <span class="c1"># register state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
-            <span class="s2">&quot;`time_constant`&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
+            <span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`amplitude`&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
 

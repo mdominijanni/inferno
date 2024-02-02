@@ -41,9 +41,9 @@ is controlled by $a$.
 :scale: 30 %
 :align: center
 ```
-Slope field of the membrane voltage showing the relation between it and the
-critical voltage $(V_C = V_\text{crit})$ and rest voltage $(V_R = V_\text{rest})$ parameters.
-Plotted with values $\tau_m=1$ and $a=1$.
+Slope field of the membrane voltage without any input current showing the relation between it
+and the critical voltage $(V_C = -50 \text{mV})$ and rest voltage $(V_R = -60 \text{mV})$
+parameters. Plotted with values $\tau_m=1 \text{ms}$ and $a=1$.
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (Chapter 5.3)](https://neuronaldynamics.epfl.ch/online/Ch5.S3.html)

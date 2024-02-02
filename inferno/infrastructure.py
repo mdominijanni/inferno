@@ -337,7 +337,9 @@ class Hook:
                 if already registered.
         """
         if not self.registered:
-            instance_of("`module`", module, nn.Module)
+            e = instance_of("module", module, nn.Module)
+            if e:
+                raise e
 
             if self._prefunc:
                 self._prehandle = module.register_forward_pre_hook(
@@ -1098,8 +1100,12 @@ class HistoryModule(DimensionalModule):
         history_len: float,
     ):
         # ensure valid step time and history length parameters
-        step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
-        history_len = numeric_limit("`history_len`", history_len, 0, "gte", float)
+        step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
+        if e:
+            raise e
+        history_len = numeric_limit("history_len", history_len, 0, "gte", float)
+        if e:
+            raise e
 
         # calculate size of time dimension
         history_size = math.ceil(history_len / step_time) + 1

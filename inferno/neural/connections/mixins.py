@@ -21,7 +21,9 @@ class WeightMixin:
     """
 
     def __init__(self, weight: torch.Tensor, requires_grad: bool = False):
-        instance_of("`self`", self, nn.Module)
+        e = instance_of("self", self, nn.Module)
+        if e:
+            raise e
         self.register_parameter("weight_", nn.Parameter(weight, requires_grad))
 
     @property
