@@ -12,6 +12,10 @@ from .neurons.linear import (
     GLIF2,
 )
 
+from .neurons.nonlinear import (
+    QIF,
+)
+
 from .synapses.linear import (
     PassthroughSynapse,
 )
@@ -44,6 +48,7 @@ __all__ = [
     "ALIF",
     "GLIF1",
     "GLIF2",
+    "QIF",
     "PassthroughSynapse",
     "LinearDense",
     "LinearDirect",

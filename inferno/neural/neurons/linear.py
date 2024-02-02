@@ -1,7 +1,8 @@
 from .. import Neuron
 from .. import functional as nf
 from .mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
-from inferno._internal import numeric_limit, multiple_numeric_limit, regroup
+from inferno._internal import numeric_limit, numeric_relative, multiple_numeric_limit
+from inferno._internal import regroup
 import math
 import torch
 
@@ -60,18 +61,31 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
         if e:
             raise e
+
         self.time_constant, e = numeric_limit(
             "time_constant", time_constant, 0, "gt", float
         )
         if e:
             raise e
+
         self.decay = math.exp(-self.step_time / self.time_constant)
-        self.rest_v = float(rest_v)
-        self.reset_v = float(reset_v)
-        self.thresh_v = float(thresh_v)
+
+        self.rest_v, self.thresh_v, e = numeric_relative(
+            "rest_v", rest_v, "thresh_v", thresh_v, "lt", float
+        )
+        if e:
+            raise e
+
+        self.reset_v, _, e = numeric_relative(
+            "reset_v", reset_v, "thresh_v", thresh_v, "lt", float
+        )
+        if e:
+            raise e
+
         self.refrac_t, e = numeric_limit("refrac_t", refrac_t, 0, "gte", float)
         if e:
             raise e
+
         self.resistance, e = numeric_limit("resistance", resistance, 0, "neq", float)
         if e:
             raise
@@ -81,7 +95,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
 
     def _integrate_v(self, masked_inputs):
-        """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
+        r"""Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
@@ -279,18 +293,29 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
         if e:
             raise e
-        self.tc_membrane, e = numeric_limit(
-            "tc_membrane", tc_membrane, 0, "gt", float
+
+        self.tc_membrane, e = numeric_limit("tc_membrane", tc_membrane, 0, "gt", float)
+        if e:
+            raise e
+
+        self.decay = math.exp(-self.step_time / self.tc_membrane)
+
+        self.rest_v, self.thresh_eq_v, e = numeric_relative(
+            "rest_v", rest_v, "thresh_eq_v", thresh_eq_v, "lt", float
         )
         if e:
             raise e
-        self.decay = math.exp(-self.step_time / self.tc_membrane)
-        self.rest_v = float(rest_v)
-        self.reset_v = float(reset_v)
-        self.thresh_eq_v = float(thresh_eq_v)
+
+        self.reset_v, _, e = numeric_relative(
+            "reset_v", reset_v, "thresh_eq_v", thresh_eq_v, "lt", float
+        )
+        if e:
+            raise e
+
         self.refrac_t, e = numeric_limit("refrac_t", refrac_t, 0, "gte", float)
         if e:
             raise e
+
         self.resistance, e = numeric_limit("resistance", resistance, 0, "neq", float)
         if e:
             raise
@@ -631,22 +656,30 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
         if e:
             raise e
-        self.tc_membrane, e = numeric_limit(
-            "tc_membrane", tc_membrane, 0, "gt", float
+
+        self.tc_membrane, e = numeric_limit("tc_membrane", tc_membrane, 0, "gt", float)
+        if e:
+            raise e
+
+        self.decay = math.exp(-self.step_time / self.tc_membrane)
+
+        self.rest_v, self.thresh_eq_v, e = numeric_relative(
+            "rest_v", rest_v, "thresh_eq_v", thresh_eq_v, "lt", float
         )
         if e:
             raise e
-        self.decay = math.exp(-self.step_time / self.tc_membrane)
-        self.rest_v = float(rest_v)
+
         self.reset_v_add = float(reset_v_add)
         self.reset_v_mul = float(reset_v_mul)
-        self.thresh_eq_v = float(thresh_eq_v)
+
         self.refrac_t, e = numeric_limit("refrac_t", refrac_t, 0, "gte", float)
         if e:
             raise e
+
         self.resistance, e = numeric_limit("resistance", resistance, 0, "neq", float)
         if e:
             raise
+
         self.tc_adaptation = tc_adaptation
         self.spike_adapt_incr = spike_adapt_incr
 
