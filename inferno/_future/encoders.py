@@ -8,7 +8,8 @@ class IntervalPoisson(Module):
         self,
         step_time: float,
         steps: int,
-        maxfreq: float,
+        intensity: float,
+        refrac: float,
         generator: torch.Generator | None = None,
     ):
         # call superclass constructor
@@ -64,7 +65,7 @@ class IntervalPoisson(Module):
         )
 
 
-def interval_poisson(
+def interval_poisson_v1(
     inputs: torch.Tensor,
     step_time: float,
     steps: int,
@@ -125,7 +126,7 @@ def interval_poisson(
     return res
 
 
-def interval_poisson_v2(
+def interval_poisson(
     inputs: torch.Tensor,
     step_time: float,
     duration: float,
@@ -133,6 +134,9 @@ def interval_poisson_v2(
     generator: torch.Generator | None = None,
 ):
     r"""Generates a tensor of spikes using a Poisson distribution.
+
+    This method samples randomly from an exponential distribution (the interval
+    between samples in a Poisson point process).
 
     Args:
         inputs (torch.Tensor): expected spike frequencies, :math:`f`,
@@ -168,39 +172,34 @@ def interval_poisson_v2(
     """
     # disable gradient computation
     with torch.no_grad():
-        # get number of steps, convert refrac from time to continuous steps
+        # get number of steps, convert refrac from ms to #dt, integer refrac for bounds
         steps, refrac = int(duration // step_time), refrac / step_time
 
-        # convert frequencies (in Hz) to expected time between spikes (in steps)
-        res = (1000 / inputs) / step_time
+        # convert frequencies (in Hz) to expected time between spikes in #dt
+        res = (1 / inputs) * (1000.0 / step_time)
 
-        # generate interspike intervals, compensate for refrac
+        # compensate scale parameter with refractory length
+        res = res - refrac
+
+        # maximum possible spikes would be one per (non-refrac) time step
         nbins = steps // int(refrac + 1)
+
+        # sample from exponential distribution
         res = (
-            inputs.new_empty(nbins, *inputs.shape).exponential_(
-                1.0, generator=generator
-            )
-            / (res - refrac)
+            res.new_empty(nbins, *inputs.shape).exponential_(1.0, generator=generator)
+            * res
             + refrac
         )
 
-        # convert rates into intervals via sampling
-        res = torch.poisson(res.expand(steps + 1, *res.shape), generator=generator)
+        # convert intervals into times through cumsum, shift by refrac back to start
+        res = res.cumsum(dim=0) - refrac
 
-        # increment zero-intervals at nonzero-rates to avoid collisions
-        mask = inputs != 0
-        res[:, mask] += res[:, mask] == 0
+        # round to int, clamp to range, and cast for index use
+        res = res.round_().clamp_max_(steps).long()
 
-        # convert intervals to steps via cumumlative summation
-        res = res.cumsum(dim=0)
-
-        # limit steps to the maximum given
-        res.clamp_max_(steps)
-
-        # convert steps to spikes via scattering
-        res = torch.zeros_like(res).scatter_(0, res.long(), 1.0)
-
-        # trim last "fake" step and cast to boolean (spike datatype)
-        res = res[:-1].bool()
+        # scatter into a zero tensor
+        res = res.new_zeros(steps + 1, *inputs.shape, dtype=torch.bool).scatter_(
+            0, res, 1
+        )[:-1]
 
     return res

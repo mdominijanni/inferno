@@ -734,7 +734,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
         )
 
         # register buffer
-        self.register_buffer("mask", 1 - torch.eye(size))
+        self.register_buffer("mask", 1 - torch.eye(size), persistent=False)
 
         # call mixin constructor
         WeightBiasDelayMixin.__init__(
