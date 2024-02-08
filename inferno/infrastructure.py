@@ -1103,7 +1103,7 @@ class HistoryModule(DimensionalModule):
         step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
         if e:
             raise e
-        history_len = numeric_limit("history_len", history_len, 0, "gte", float)
+        history_len, e = numeric_limit("history_len", history_len, 0, "gte", float)
         if e:
             raise e
 

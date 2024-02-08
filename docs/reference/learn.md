@@ -28,7 +28,7 @@
     :nosignatures:
     :toctree: generated
 
-    WeightBounding
+    WeightDependence
     SoftWeightDependence
     HardWeightDependence
 ```

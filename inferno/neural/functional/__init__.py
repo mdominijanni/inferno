@@ -1,3 +1,10 @@
+from .encoding import (
+    encode_interval_poisson,
+    encode_interval_poisson_online,
+    encode_poisson_spaced,
+    encode_poisson_spaced_online,
+)
+
 from .neuron_dynamics import (
     voltage_thresholding,
     voltage_thresholding_slope_intercept,
@@ -21,6 +28,10 @@ from .trace import (
 )
 
 __all__ = [
+    "encode_interval_poisson",
+    "encode_interval_poisson_online",
+    "encode_poisson_spaced",
+    "encode_poisson_spaced_online",
     "voltage_thresholding",
     "voltage_thresholding_slope_intercept",
     "voltage_integration_linear",

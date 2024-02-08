@@ -13,7 +13,7 @@ from .updaters.sstdp import (
 
 
 from .updaters.bounding import (
-    WeightBounding,
+    WeightDependence,
     HardWeightDependence,
     SoftWeightDependence,
 )
@@ -35,7 +35,7 @@ __all__ = [
     "MaxRateClassifier",
     "WeightNormalization",
     "WeightClamping",
-    "WeightBounding",
+    "WeightDependence",
     "HardWeightDependence",
     "SoftWeightDependence",
 ]

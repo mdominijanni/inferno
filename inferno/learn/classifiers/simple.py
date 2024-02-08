@@ -45,7 +45,7 @@ class MaxRateClassifier(Module):
             if e:
                 raise e
 
-        num_classes.e = numeric_limit("num_classes", num_classes, 0, "gt", int)
+        num_classes, e = numeric_limit("num_classes", num_classes, 0, "gt", int)
         if e:
             raise e
 

@@ -3,6 +3,7 @@ from .base import (
     Synapse,
     Connection,
     SynapseConstructor,
+    Encoder,
 )
 
 from .neurons.linear import (
@@ -30,6 +31,11 @@ from .connections.conv import (
     Conv2D,
 )
 
+from .encoders.poisson import (
+    HomogeneousPoissonEncoder,
+    PoissonIntervalEncoder,
+)
+
 from .modeling import (
     Layer,
 )
@@ -44,6 +50,9 @@ __all__ = [
     "Synapse",
     "Connection",
     "SynapseConstructor",
+    "Encoder",
+    "HomogeneousPoissonEncoder",
+    "PoissonIntervalEncoder",
     "LIF",
     "ALIF",
     "GLIF1",

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import torch
 
 
-class WeightBounding(ABC):
+class WeightDependence(ABC):
     r"""Modifies update magnitudes with LTP/LTD to bound weights.
 
     Args:
@@ -122,11 +122,11 @@ class WeightBounding(ABC):
             NotImplementedError: ``lower`` must be implemented by the subclass.
 
         Note:
-            This has the signature of :py:class:`~lf.BindWeights` and can be
+            This has the signature of :py:class:`~lf.UpdateBounding` and can be
             passed in where a parameter of that type is required.
         """
         raise NotImplementedError(
-            f"{type(self).__name__}(WeightBounding) must implement "
+            f"{type(self).__name__}(WeightDependence) must implement "
             "the method `lower`."
         )
 
@@ -148,16 +148,16 @@ class WeightBounding(ABC):
             NotImplementedError: ``upper`` must be implemented by the subclass.
 
         Note:
-            This has the signature of :py:class:`~lf.BindWeights` and can be
+            This has the signature of :py:class:`~lf.UpdateBounding` and can be
             passed in where a parameter of that type is required.
         """
         raise NotImplementedError(
-            f"{type(self).__name__}(WeightBounding) must implement "
+            f"{type(self).__name__}(WeightDependence) must implement "
             "the method `upper`."
         )
 
 
-class HardWeightDependence(WeightBounding):
+class HardWeightDependence(WeightDependence):
     r"""Modifies weight updates using hard weight dependence.
 
     Args:
@@ -167,7 +167,7 @@ class HardWeightDependence(WeightBounding):
 
     def __init__(self, wmin: float | None, wmax: float | None):
         # call superclass constructor
-        WeightBounding.__init__(self, wmin, wmax)
+        WeightDependence.__init__(self, wmin, wmax)
 
     def lower(
         self, weights: torch.Tensor, amplitude: float | torch.Tensor
@@ -200,11 +200,11 @@ class HardWeightDependence(WeightBounding):
             RuntimeError: cannot apply lower bounds if the lower bound was not given.
 
         Note:
-            This has the signature of :py:class:`~lf.BindWeights` and can be
+            This has the signature of :py:class:`~lf.UpdateBounding` and can be
             passed in where a parameter of that type is required.
         """
         if self.hasmin:
-            return lf.wdep_hard_lower_bounding(weights, amplitude, self.wmin)
+            return lf.hard_lower_bounding(weights, amplitude, self.wmin)
         else:
             raise RuntimeError("cannot apply `lower()` with no `wmin`.")
 
@@ -239,16 +239,16 @@ class HardWeightDependence(WeightBounding):
             RuntimeError: cannot apply upper bounds if the lower bound was not given.
 
         Note:
-            This has the signature of :py:class:`~lf.BindWeights` and can be
+            This has the signature of :py:class:`~lf.UpdateBounding` and can be
             passed in where a parameter of that type is required.
         """
         if self.hasmax:
-            return lf.wdep_hard_upper_bounding(weights, amplitude, self.wmax)
+            return lf.hard_upper_bounding(weights, amplitude, self.wmax)
         else:
             raise RuntimeError("cannot apply `upper()` with no `wmax`.")
 
 
-class SoftWeightDependence(WeightBounding):
+class SoftWeightDependence(WeightDependence):
     r"""Modifies weight updates using soft weight dependence.
 
     Args:
@@ -272,7 +272,7 @@ class SoftWeightDependence(WeightBounding):
         maxpow: float | None = 1.0,
     ):
         # call superclass constructor
-        WeightBounding.__init__(self, wmin, wmax)
+        WeightDependence.__init__(self, wmin, wmax)
 
         # convert powers to floating point and none if no bounding
         minpow = None if self.hasmin and minpow is None else float(minpow)
@@ -351,11 +351,11 @@ class SoftWeightDependence(WeightBounding):
             RuntimeError: cannot apply lower bounds if the lower bound was not given.
 
         Note:
-            This has the signature of :py:class:`~lf.BindWeights` and can be
+            This has the signature of :py:class:`~lf.UpdateBounding` and can be
             passed in where a parameter of that type is required.
         """
         if self.hasmin:
-            return lf.wdep_hard_lower_bounding(
+            return lf.hard_lower_bounding(
                 weights, amplitude, self.wmin, self.minpow
             )
         else:
@@ -382,11 +382,11 @@ class SoftWeightDependence(WeightBounding):
             RuntimeError: cannot apply upper bounds if the lower bound was not given.
 
         Note:
-            This has the signature of :py:class:`~lf.BindWeights` and can be
+            This has the signature of :py:class:`~lf.UpdateBounding` and can be
             passed in where a parameter of that type is required.
         """
         if self.hasmax:
-            return lf.wdep_soft_upper_bounding(
+            return lf.power_upper_bounding(
                 weights, amplitude, self.wmax, self.maxpow
             )
         else:
