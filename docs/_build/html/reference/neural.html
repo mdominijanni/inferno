@@ -265,7 +265,7 @@
 <td><p>Simulation of generalized leaky integrate-and-fire 2 (GLIF<sub>2</sub>) neuron dynamics.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.QIF.html#inferno.neural.QIF" title="inferno.neural.QIF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QIF</span></code></a></p></td>
-<td><p>Simulation of quadratic integrate-and-fire (LIF) neuron dynamics.</p></td>
+<td><p>Simulation of quadratic integrate-and-fire (QIF) neuron dynamics.</p></td>
 </tr>
 </tbody>
 </table>
@@ -307,6 +307,25 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.Conv2D.html#inferno.neural.Conv2D" title="inferno.neural.Conv2D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Conv2D</span></code></a></p></td>
 <td><p>Convolutional connection along two spatial dimensions with separate input planes.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="encoders">
+<h2>Encoders<a class="headerlink" href="#encoders" title="Link to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable colwidths-given docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.HomogeneousPoissonEncoder.html#inferno.neural.HomogeneousPoissonEncoder" title="inferno.neural.HomogeneousPoissonEncoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HomogeneousPoissonEncoder</span></code></a></p></td>
+<td><p>Encoder to generate spike trains sampled from a Poisson distribution.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.PoissonIntervalEncoder.html#inferno.neural.PoissonIntervalEncoder" title="inferno.neural.PoissonIntervalEncoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PoissonIntervalEncoder</span></code></a></p></td>
+<td><p>Encoder to generate spike trains with intervals sampled from a Poisson distribution.</p></td>
 </tr>
 </tbody>
 </table>
@@ -467,6 +486,9 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#connections">Connections</a><ul class="simple">
+</ul>
+</li>
+<li><a class="reference internal" href="#encoders">Encoders</a><ul class="simple">
 </ul>
 </li>
 <li><a class="reference internal" href="#hooks">Hooks</a><ul class="simple">

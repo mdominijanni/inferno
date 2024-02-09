@@ -1,8 +1,9 @@
 from .encoding import (
-    encode_interval_poisson,
-    encode_interval_poisson_online,
-    encode_poisson_spaced,
-    encode_poisson_spaced_online,
+    enc_homogeneous_poisson_exp_interval,
+    enc_homogeneous_poisson_exp_interval_online,
+    enc_inhomogenous_poisson_bernoulli_approx,
+    enc_poisson_interval,
+    enc_poisson_interval_online,
 )
 
 from .neuron_dynamics import (
@@ -28,10 +29,11 @@ from .trace import (
 )
 
 __all__ = [
-    "encode_interval_poisson",
-    "encode_interval_poisson_online",
-    "encode_poisson_spaced",
-    "encode_poisson_spaced_online",
+    "enc_homogeneous_poisson_exp_interval",
+    "enc_homogeneous_poisson_exp_interval_online",
+    "enc_inhomogenous_poisson_bernoulli_approx",
+    "enc_poisson_interval",
+    "enc_poisson_interval_online",
     "voltage_thresholding",
     "voltage_thresholding_slope_intercept",
     "voltage_integration_linear",

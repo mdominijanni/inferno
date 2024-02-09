@@ -22,7 +22,7 @@
     STDP
 ```
 
-## Weight Dependence
+## Parameter Update Bounding
 ```{eval-rst}
 .. autosummary::
     :nosignatures:

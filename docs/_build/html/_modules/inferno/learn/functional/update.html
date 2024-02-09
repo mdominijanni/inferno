@@ -221,29 +221,29 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Protocol</span>
 
 
-<div class="viewcode-block" id="BindWeights">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.BindWeights.html#inferno.learn.functional.BindWeights">[docs]</a>
-<span class="k">class</span> <span class="nc">BindWeights</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Callable used to apply weight bounding to amplitudes.</span>
+<div class="viewcode-block" id="UpdateBounding">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.UpdateBounding.html#inferno.learn.functional.UpdateBounding">[docs]</a>
+<span class="k">class</span> <span class="nc">UpdateBounding</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Callable used to apply bounding to amplitudes.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        weights (torch.Tensor): model weights.</span>
-<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update without weight</span>
-<span class="sd">            bounding (e.g. the learning rate).</span>
+<span class="sd">        parameter (torch.Tensor): parameter being bound.</span>
+<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update without bounding</span>
+<span class="sd">            (e.g. the learning rate).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: weight-bound update amplitudes.</span>
+<span class="sd">        torch.Tensor: bound update amplitudes.</span>
 
 <span class="sd">    See Also:</span>
-<span class="sd">        Provided weight bounding functions include</span>
-<span class="sd">        :py:func:`wdep_soft_upper_bounding`, :py:func:`wdep_soft_lower_bounding`,</span>
-<span class="sd">        :py:func:`wdep_hard_upper_bounding`, and :py:func:`wdep_hard_lower_bounding`.</span>
+<span class="sd">        Provided parameter bounding functions include</span>
+<span class="sd">        :py:func:`power_upper_bounding`, :py:func:`power_lower_bounding`,</span>
+<span class="sd">        :py:func:`hard_upper_bounding`, and :py:func:`hard_lower_bounding`.</span>
 <span class="sd">        Use a :py:func:`~functools.partial` function to fill in keyword arguments.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">weights</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">parameter</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="o">/</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -252,88 +252,88 @@
 
 
 
-<div class="viewcode-block" id="wdep_soft_upper_bounding">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.wdep_soft_upper_bounding.html#inferno.learn.functional.wdep_soft_upper_bounding">[docs]</a>
-<span class="k">def</span> <span class="nf">wdep_soft_upper_bounding</span><span class="p">(</span>
-    <span class="n">weights</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<div class="viewcode-block" id="power_upper_bounding">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.power_upper_bounding.html#inferno.learn.functional.power_upper_bounding">[docs]</a>
+<span class="k">def</span> <span class="nf">power_upper_bounding</span><span class="p">(</span>
+    <span class="n">parameter</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">/</span><span class="p">,</span>
-    <span class="n">wmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies soft weight bounding on potentiative update amplitude.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies soft parameter bounding on potentiative update amplitude.</span>
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        A_+ = (w_\text{max} - w)^{\mu_+} \eta_+</span>
+<span class="sd">        A_+ = (v_\text{max} - w)^{\mu_+} \eta_+</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        weights (torch.Tensor): model weights, :math:`w`.</span>
-<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update excluding weight</span>
+<span class="sd">        parameter (torch.Tensor): model parameter, :math:`v`.</span>
+<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update excluding parameter</span>
 <span class="sd">            dependence, :math:`\eta_+`.</span>
-<span class="sd">        wmax (float | torch.Tensor): upper bound of weights, :math:`w_\text{max}`.</span>
-<span class="sd">        power (float, optional): exponent of weight dependence, :math:`\mu_+`.</span>
+<span class="sd">        max (float | torch.Tensor): upper bound of parameter, :math:`v_\text{max}`.</span>
+<span class="sd">        power (float, optional): exponent of parameter dependence, :math:`\mu_+`.</span>
 <span class="sd">            Defaults to 1.0.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: amplitudes :math:`A_+` after applying weight bound.</span>
+<span class="sd">        torch.Tensor: amplitudes :math:`A_+` after applying parameter bound.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
 <span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">((</span><span class="n">wmax</span> <span class="o">-</span> <span class="n">weights</span><span class="p">)</span> <span class="o">**</span> <span class="n">power</span><span class="p">)</span> <span class="o">*</span> <span class="n">amplitude</span></div>
+    <span class="k">return</span> <span class="p">((</span><span class="nb">max</span> <span class="o">-</span> <span class="n">parameter</span><span class="p">)</span> <span class="o">**</span> <span class="n">power</span><span class="p">)</span> <span class="o">*</span> <span class="n">amplitude</span></div>
 
 
 
-<div class="viewcode-block" id="wdep_soft_lower_bounding">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.wdep_soft_lower_bounding.html#inferno.learn.functional.wdep_soft_lower_bounding">[docs]</a>
-<span class="k">def</span> <span class="nf">wdep_soft_lower_bounding</span><span class="p">(</span>
-    <span class="n">weights</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<div class="viewcode-block" id="power_lower_bounding">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.power_lower_bounding.html#inferno.learn.functional.power_lower_bounding">[docs]</a>
+<span class="k">def</span> <span class="nf">power_lower_bounding</span><span class="p">(</span>
+    <span class="n">parameter</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">/</span><span class="p">,</span>
-    <span class="n">wmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies soft weight bounding on depressive update amplitude.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies soft parameter bounding on depressive update amplitude.</span>
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        A_- = (w - w_\text{min})^{\mu_-} \eta_-</span>
+<span class="sd">        A_- = (w - v_\text{min})^{\mu_-} \eta_-</span>
 
 
 <span class="sd">    Args:</span>
-<span class="sd">        weights (torch.Tensor): model weights, :math:`w`.</span>
-<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update excluding weight</span>
+<span class="sd">        parameter (torch.Tensor): model parameter, :math:`v`.</span>
+<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update excluding parameter</span>
 <span class="sd">            dependence, :math:`\eta_-`.</span>
-<span class="sd">        wmin (float | torch.Tensor): lower bound of weights, :math:`w_\text{min}`.</span>
-<span class="sd">        power (float, optional): exponent of weight dependence, :math:`\mu_-`.</span>
+<span class="sd">        min (float | torch.Tensor): lower bound of parameter, :math:`v_\text{min}`.</span>
+<span class="sd">        power (float, optional): exponent of parameter dependence, :math:`\mu_-`.</span>
 <span class="sd">            Defaults to 1.0.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: amplitudes :math:`A_-` after applying weight bound.</span>
+<span class="sd">        torch.Tensor: amplitudes :math:`A_-` after applying parameter bound.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
 <span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">((</span><span class="n">weights</span> <span class="o">-</span> <span class="n">wmin</span><span class="p">)</span> <span class="o">**</span> <span class="n">power</span><span class="p">)</span> <span class="o">*</span> <span class="n">amplitude</span></div>
+    <span class="k">return</span> <span class="p">((</span><span class="n">parameter</span> <span class="o">-</span> <span class="nb">min</span><span class="p">)</span> <span class="o">**</span> <span class="n">power</span><span class="p">)</span> <span class="o">*</span> <span class="n">amplitude</span></div>
 
 
 
-<div class="viewcode-block" id="wdep_hard_upper_bounding">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.wdep_hard_upper_bounding.html#inferno.learn.functional.wdep_hard_upper_bounding">[docs]</a>
-<span class="k">def</span> <span class="nf">wdep_hard_upper_bounding</span><span class="p">(</span>
-    <span class="n">weights</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<div class="viewcode-block" id="hard_upper_bounding">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.hard_upper_bounding.html#inferno.learn.functional.hard_upper_bounding">[docs]</a>
+<span class="k">def</span> <span class="nf">hard_upper_bounding</span><span class="p">(</span>
+    <span class="n">parameter</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">/</span><span class="p">,</span>
-    <span class="n">wmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies hard weight bounding on potentiative update amplitude.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies hard parameter bounding on potentiative update amplitude.</span>
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        A_+ = \Theta(w_\text{max} - w) \eta_+</span>
+<span class="sd">        A_+ = \Theta(v_\text{max} - w) \eta_+</span>
 
 <span class="sd">    Where</span>
 
@@ -346,36 +346,36 @@
 <span class="sd">        \end{cases}</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        weights (torch.Tensor): model weights, :math:`w`.</span>
-<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update excluding weight</span>
+<span class="sd">        parameter (torch.Tensor): model parameter, :math:`v`.</span>
+<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update excluding parameter</span>
 <span class="sd">            dependence, :math:`\eta_+`.</span>
-<span class="sd">        wmax (float | torch.Tensor): upper bound of weights, :math:`w_\text{max}`.</span>
+<span class="sd">        max (float | torch.Tensor): upper bound of parameter, :math:`v_\text{max}`.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: amplitudes :math:`A_+` after applying weight bound.</span>
+<span class="sd">        torch.Tensor: amplitudes :math:`A_+` after applying parameter bound.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
 <span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">diff</span> <span class="o">=</span> <span class="n">wmax</span> <span class="o">-</span> <span class="n">weights</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="nb">max</span> <span class="o">-</span> <span class="n">parameter</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">heaviside</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">inferno</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">()))</span> <span class="o">*</span> <span class="n">amplitude</span></div>
 
 
 
-<div class="viewcode-block" id="wdep_hard_lower_bounding">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.wdep_hard_lower_bounding.html#inferno.learn.functional.wdep_hard_lower_bounding">[docs]</a>
-<span class="k">def</span> <span class="nf">wdep_hard_lower_bounding</span><span class="p">(</span>
-    <span class="n">weights</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<div class="viewcode-block" id="hard_lower_bounding">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.hard_lower_bounding.html#inferno.learn.functional.hard_lower_bounding">[docs]</a>
+<span class="k">def</span> <span class="nf">hard_lower_bounding</span><span class="p">(</span>
+    <span class="n">parameter</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">/</span><span class="p">,</span>
-    <span class="n">wmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies hard weight bounding on depressive update amplitude.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies hard parameter bounding on depressive update amplitude.</span>
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        A_- = \Theta(w - w_\text{min}) \eta_-</span>
+<span class="sd">        A_- = \Theta(w - v_\text{min}) \eta_-</span>
 
 <span class="sd">    .. math::</span>
 
@@ -386,19 +386,19 @@
 <span class="sd">        \end{cases}</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        weights (torch.Tensor): model weights, :math:`w`.</span>
-<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update excluding weight</span>
+<span class="sd">        parameter (torch.Tensor): model parameter, :math:`v`.</span>
+<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update excluding parameter</span>
 <span class="sd">            dependence, :math:`\eta_-`.</span>
-<span class="sd">        wmin (float | torch.Tensor): lower bound of weights, :math:`w_\text{min}`.</span>
+<span class="sd">        min (float | torch.Tensor): lower bound of parameter, :math:`v_\text{min}`.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: amplitudes :math:`A_-` after applying weight bound.</span>
+<span class="sd">        torch.Tensor: amplitudes :math:`A_-` after applying parameter bound.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
 <span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">diff</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">-</span> <span class="n">wmin</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">parameter</span> <span class="o">-</span> <span class="nb">min</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">heaviside</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">inferno</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">()))</span> <span class="o">*</span> <span class="n">amplitude</span></div>
 
 </pre></div>

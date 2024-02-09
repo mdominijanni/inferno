@@ -1,8 +1,8 @@
-﻿WeightBounding
-==============
+﻿WeightDependence
+================
 
 .. currentmodule:: inferno.learn
 
-.. autoclass:: WeightBounding
+.. autoclass:: WeightDependence
     :members:
     :show-inheritance:

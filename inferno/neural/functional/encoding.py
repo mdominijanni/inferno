@@ -2,7 +2,7 @@ import torch
 from typing import Iterator
 
 
-def encode_poisson_spaced(
+def enc_poisson_interval(
     inputs: torch.Tensor,
     step_time: float,
     steps: float,
@@ -88,7 +88,7 @@ def encode_poisson_spaced(
     return res
 
 
-def encode_poisson_spaced_online(
+def enc_poisson_interval_online(
     inputs: torch.Tensor,
     step_time: float,
     steps: float,
@@ -164,7 +164,7 @@ def encode_poisson_spaced_online(
             yield spikes
 
 
-def encode_interval_poisson(
+def enc_homogeneous_poisson_exp_interval(
     inputs: torch.Tensor,
     step_time: float,
     steps: float,
@@ -267,7 +267,7 @@ def encode_interval_poisson(
     return res
 
 
-def encode_interval_poisson_online(
+def enc_homogeneous_poisson_exp_interval_online(
     inputs: torch.Tensor,
     step_time: float,
     steps: float | None,
@@ -364,3 +364,53 @@ def encode_interval_poisson_online(
 
             # yields the current spikes
             yield spikes
+
+
+def enc_inhomogenous_poisson_bernoulli_approx(
+    inputs: torch.Tensor,
+    step_time: float,
+    *,
+    generator: torch.Generator | None = None,
+) -> torch.Tensor:
+    r"""Generates a tensor of spikes approximating an inhomogeneous Poisson distribution.
+
+    This method takes in a tensor of frequencies
+
+    Args:
+        inputs (torch.Tensor): expected spike frequencies, :math:`f`,
+            in :math:`\text{Hz}`.
+        step_time (float): length of time between outputs, :math:`\Delta t`,
+            in :math:`\text{ms}`.
+        generator (torch.Generator | None, optional): _description_. Defaults to None.
+
+    Returns:
+        torch.Tensor: the generated spike train, time first.
+
+    .. admonition:: Shape
+        :class: tensorshape
+
+        ``inputs``:
+
+        :math:`S \times B \times N_0 \times \cdots`
+
+        ``return``:
+
+        :math:`S \times B \times N_0 \times \cdots`
+
+        Where:
+            * :math:`S` is the number of steps for which to generate spikes.
+            * :math:`B` is the batch size.
+            * :math:`N_0, \ldots` are the dimensions of the spikes being generated.
+
+    Important:
+        All elements of ``inputs`` must be nonnegative. Inputs will also be clamped if
+        they exceed the maximum (i.e. if the expected value for the number of spikes
+        in a time step is greater than 1).
+    """
+    # disable gradient computation
+    with torch.no_grad():
+        # convert frequencies (in Hz) to expected spike probabilities (EV spikes per dt)
+        res = (inputs / 1000.0) * step_time
+
+        # sample directly from Bernoulli distribution. clamping max probability
+        return torch.bernoulli(res.clamp_max_(1.0), generator=generator).bool()

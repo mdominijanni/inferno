@@ -22,13 +22,13 @@
     STDP
 ```
 
-## Weight Dependence
+## Parameter Update Bounding
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
     :toctree: generated
 
-    WeightBounding
+    WeightDependence
     SoftWeightDependence
     HardWeightDependence
 ```

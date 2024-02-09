@@ -3,7 +3,6 @@ from .base import (
     Synapse,
     Connection,
     SynapseConstructor,
-    Encoder,
 )
 
 from .neurons.linear import (
@@ -50,7 +49,6 @@ __all__ = [
     "Synapse",
     "Connection",
     "SynapseConstructor",
-    "Encoder",
     "HomogeneousPoissonEncoder",
     "PoissonIntervalEncoder",
     "LIF",

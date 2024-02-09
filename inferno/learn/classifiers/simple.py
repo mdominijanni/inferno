@@ -9,9 +9,9 @@ import torch.nn.functional as F
 class MaxRateClassifier(Module):
     r"""Classifies spikes by maximum per-class rates.
 
-    The classifier uses an internal parameter :py:attr:`rates` internally for other
+    The classifier uses an internal parameter :py:attr:`rates` for other
     calculations. When learning, the existing rates are decayed, multiplying them by
-    :math:`\exp{-\lambda b_k}` where :math:`b_k` is number of elements of class
+    :math:`\exp (-\lambda b_k)` where :math:`b_k` is the number of elements of class
     :math:`k` in the batch.
 
     Args:

@@ -1,0 +1,6 @@
+﻿enc\_homogeneous\_poisson\_exp\_interval\_online
+================================================
+
+.. currentmodule:: inferno.neural.functional
+
+.. autofunction:: enc_homogeneous_poisson_exp_interval_online

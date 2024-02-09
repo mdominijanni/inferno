@@ -1,12 +1,12 @@
-from ..base import Encoder
 from .. import functional as nf
-from .mixins import GeneratorMixin, RefractoryMixin
+from .mixins import GeneratorMixin, StepMixin, RefractoryStepMixin
+from inferno import Module
 from inferno._internal import numeric_limit
 import torch
 from typing import Iterator
 
 
-class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryMixin, Encoder):
+class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
     r"""Encoder to generate spike trains sampled from a Poisson distribution.
 
     This method samples randomly from an exponential distribution (the interval
@@ -44,23 +44,20 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryMixin, Encoder):
         generator: torch.Generator | None = None,
     ):
         # call superclass constructor
-        Encoder.__init__(self, step_time=step_time, steps=steps)
+        Module.__init__(self)
 
         # set encoder attributes
         self.freqscale, e = numeric_limit("frequency", frequency, 0, "gte", float)
         if e:
             raise e
 
-        self.refrac_compensated = compensate
+        self.refrac_compensated = bool(compensate)
 
         # call mixin constructors
-        RefractoryMixin.__init__(self, refrac)
+        RefractoryStepMixin.__init__(
+            self, step_time=step_time, steps=steps, refrac=refrac
+        )
         GeneratorMixin.__init__(self, generator=generator)
-
-        # check for invalid configuration
-        e = self.valid
-        if e:
-            raise e
 
     @property
     def compensated(self) -> bool:
@@ -76,12 +73,15 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryMixin, Encoder):
 
     @compensated.setter
     def compensated(self, value: bool) -> None:
-        self.refrac_compensated = value
+        # refrac-frequency compatibility test
+        if value:
+            _, e = numeric_limit(
+                "frequency * refrac", self.frequency * self.refrac, 1000, "lt", float
+            )
+            if e:
+                raise e
 
-        # test that the state is still valid
-        e = self.valid
-        if e:
-            raise e
+        self.refrac_compensated = bool(value)
 
     @property
     def frequency(self) -> float:
@@ -93,38 +93,47 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryMixin, Encoder):
         Returns:
             float: present frequency scale for inputs.
         """
-        return self.frequency
+        return self.freqscale
 
     @frequency.setter
     def frequency(self, value: float) -> None:
-        self.frequency, e = numeric_limit("value", value, 0, "gte", float)
-        if e:
-            raise e
+        # refrac-frequency compatibility test
+        if self.compensated:
+            _, e = numeric_limit(
+                "frequency * refrac", value * self.refrac, 1000, "lt", float
+            )
+            if e:
+                raise e
 
-        # test that the state is still valid
-        e = self.valid
+        self.freqscale, e = numeric_limit("frequency", value, 0, "gte", float)
         if e:
             raise e
 
     @property
-    def refracvalid(self) -> None | Exception:
-        r"""If the current refractory period is valid.
+    def refrac(self) -> float:
+        r"""Length of the refractory period, in milliseconds.
 
-        An exception will be returned if the refractory period is greater than
-        or equal to the maximum expected time between spikes, and refractory periods
-        are compensated for.
+        Args:
+            value (float | None): new refractory period length,
+                pins to the step time if None.
 
         Returns:
-            None | Exception: None if the refractory period is valid, otherwise an
-            exception to raise.
+            float: present refractory period length.
         """
+        return RefractoryStepMixin.refrac.fget(self)
+
+    @refrac.setter
+    def refrac(self, value: float | None) -> None:
+        # refrac-frequency compatibility test
         if self.compensated:
-            if self.refrac >= 1000 / self.frequency:
-                raise RuntimeError(
-                    f"in {type(self).__name__}, if the refrac period is compensated, "
-                    "refractory period must be strictly less than the "
-                    f"expected interspike interval of {1000 / self.frequency}."
-                )
+            newrefrac = self.dt if value is None else value
+            _, e = numeric_limit(
+                "refrac * frequency ", newrefrac * self.frequency, 1000, "lt", float
+            )
+            if e:
+                raise e
+
+        return RefractoryStepMixin.refrac.fset(self, value)
 
     def forward(
         self, inputs: torch.Tensor, online: bool = False
@@ -172,7 +181,7 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryMixin, Encoder):
                 * :math:`S` is the number of steps for which to generate spikes, ``steps``.
         """
         if online:
-            return nf.encode_interval_poisson_online(
+            return nf.enc_homogeneous_poisson_exp_interval_online(
                 self.frequency * inputs,
                 step_time=self.dt,
                 steps=self.steps,
@@ -181,7 +190,7 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryMixin, Encoder):
                 generator=self.generator,
             )
         else:
-            return nf.encode_interval_poisson(
+            return nf.enc_homogeneous_poisson_exp_interval(
                 self.frequency * inputs,
                 step_time=self.dt,
                 steps=self.steps,
@@ -191,7 +200,7 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryMixin, Encoder):
             )
 
 
-class PoissonIntervalEncoder(GeneratorMixin, Encoder):
+class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
     r"""Encoder to generate spike trains with intervals sampled from a Poisson distribution.
 
     This is included to replicate BindsNET's Poisson spike generation. The intervals
@@ -217,14 +226,15 @@ class PoissonIntervalEncoder(GeneratorMixin, Encoder):
         generator: torch.Generator | None = None,
     ):
         # call superclass constructor
-        Encoder.__init__(self, step_time=step_time, steps=steps)
+        Module.__init__(self)
 
         # set encoder attributes
         self.freqscale, e = numeric_limit("frequency", frequency, 0, "gte", float)
         if e:
             raise e
 
-        # call mixin constructor
+        # call mixin constructors
+        StepMixin.__init__(self, step_time=step_time, steps=steps)
         GeneratorMixin.__init__(self, generator=generator)
 
     @property
@@ -296,14 +306,14 @@ class PoissonIntervalEncoder(GeneratorMixin, Encoder):
                 * :math:`S` is the number of steps for which to generate spikes, ``steps``.
         """
         if online:
-            return nf.encode_poisson_spaced_online(
+            return nf.enc_poisson_interval_online(
                 self.frequency * inputs,
                 step_time=self.dt,
                 steps=self.steps,
                 generator=self.generator,
             )
         else:
-            return nf.encode_poisson_spaced(
+            return nf.enc_poisson_interval(
                 self.frequency * inputs,
                 step_time=self.dt,
                 steps=self.steps,

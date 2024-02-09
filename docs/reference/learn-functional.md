@@ -5,7 +5,7 @@
 .. currentmodule:: inferno.learn.functional
 ```
 
-## Weight Dependence
+## Parameter Dependence
 ```{eval-rst}
 .. autosummary::
     :nosignatures:

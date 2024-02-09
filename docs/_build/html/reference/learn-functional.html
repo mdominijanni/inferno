@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="BindWeights" href="generated/inferno.learn.functional.BindWeights.html" /><link rel="prev" title="MaxRateClassifier" href="generated/inferno.learn.MaxRateClassifier.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="UpdateBounding" href="generated/inferno.learn.functional.UpdateBounding.html" /><link rel="prev" title="MaxRateClassifier" href="generated/inferno.learn.MaxRateClassifier.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>inferno.learn.functional - Inferno</title>
@@ -218,8 +218,8 @@
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="module-inferno.learn.functional">
 <span id="inferno-learn-functional"></span><h1>inferno.learn.functional<a class="headerlink" href="#module-inferno.learn.functional" title="Link to this heading">#</a></h1>
-<section id="weight-dependence">
-<h2>Weight Dependence<a class="headerlink" href="#weight-dependence" title="Link to this heading">#</a></h2>
+<section id="parameter-dependence">
+<h2>Parameter Dependence<a class="headerlink" href="#parameter-dependence" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -227,20 +227,20 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.functional.BindWeights.html#inferno.learn.functional.BindWeights" title="inferno.learn.functional.BindWeights"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BindWeights</span></code></a></p></td>
-<td><p>Callable used to apply weight bounding to amplitudes.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.functional.UpdateBounding.html#inferno.learn.functional.UpdateBounding" title="inferno.learn.functional.UpdateBounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpdateBounding</span></code></a></p></td>
+<td><p>Callable used to apply bounding to amplitudes.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.learn.functional.wdep_hard_upper_bounding.html#inferno.learn.functional.wdep_hard_upper_bounding" title="inferno.learn.functional.wdep_hard_upper_bounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wdep_hard_upper_bounding</span></code></a></p></td>
-<td><p>Applies hard weight bounding on potentiative update amplitude.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.learn.functional.hard_upper_bounding.html#inferno.learn.functional.hard_upper_bounding" title="inferno.learn.functional.hard_upper_bounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hard_upper_bounding</span></code></a></p></td>
+<td><p>Applies hard parameter bounding on potentiative update amplitude.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.functional.wdep_hard_lower_bounding.html#inferno.learn.functional.wdep_hard_lower_bounding" title="inferno.learn.functional.wdep_hard_lower_bounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wdep_hard_lower_bounding</span></code></a></p></td>
-<td><p>Applies hard weight bounding on depressive update amplitude.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.functional.hard_lower_bounding.html#inferno.learn.functional.hard_lower_bounding" title="inferno.learn.functional.hard_lower_bounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hard_lower_bounding</span></code></a></p></td>
+<td><p>Applies hard parameter bounding on depressive update amplitude.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.learn.functional.wdep_soft_upper_bounding.html#inferno.learn.functional.wdep_soft_upper_bounding" title="inferno.learn.functional.wdep_soft_upper_bounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wdep_soft_upper_bounding</span></code></a></p></td>
-<td><p>Applies soft weight bounding on potentiative update amplitude.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.learn.functional.power_upper_bounding.html#inferno.learn.functional.power_upper_bounding" title="inferno.learn.functional.power_upper_bounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">power_upper_bounding</span></code></a></p></td>
+<td><p>Applies soft parameter bounding on potentiative update amplitude.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.functional.wdep_soft_lower_bounding.html#inferno.learn.functional.wdep_soft_lower_bounding" title="inferno.learn.functional.wdep_soft_lower_bounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wdep_soft_lower_bounding</span></code></a></p></td>
-<td><p>Applies soft weight bounding on depressive update amplitude.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.functional.power_lower_bounding.html#inferno.learn.functional.power_lower_bounding" title="inferno.learn.functional.power_lower_bounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">power_lower_bounding</span></code></a></p></td>
+<td><p>Applies soft parameter bounding on depressive update amplitude.</p></td>
 </tr>
 </tbody>
 </table>
@@ -253,12 +253,12 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="generated/inferno.learn.functional.BindWeights.html">
+          <a class="next-page" href="generated/inferno.learn.functional.UpdateBounding.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">BindWeights</div>
+                <div class="title">UpdateBounding</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -304,7 +304,7 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">inferno.learn.functional</a><ul>
-<li><a class="reference internal" href="#weight-dependence">Weight Dependence</a><ul class="simple">
+<li><a class="reference internal" href="#parameter-dependence">Parameter Dependence</a><ul class="simple">
 </ul>
 </li>
 </ul>

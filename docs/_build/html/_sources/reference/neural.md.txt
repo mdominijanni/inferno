@@ -50,6 +50,16 @@
     Conv2D
 ```
 
+## Encoders
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    HomogeneousPoissonEncoder
+    PoissonIntervalEncoder
+```
+
 ## Hooks
 ```{eval-rst}
 .. autosummary::

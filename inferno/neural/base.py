@@ -1,7 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from inferno import DimensionalModule, HistoryModule, Module
-from inferno._internal import numeric_limit
 import math
 from functools import cached_property
 import torch
@@ -840,69 +839,3 @@ class Connection(Module, ABC):
         raise NotImplementedError(
             f"{type(self).__name__}(Connection) must implement the method `forward`."
         )
-
-
-class Encoder(Module):
-    r"""Base class for representing the conversion of raw inputs to spike trains.
-
-    Args:
-        step_time (float): length of a simulation time step, in :math:`ms`.
-        steps (int): number of steps over which to generate a spike train.
-    """
-
-    def __init__(self, step_time: float, steps: int):
-        # superclass constructor
-        Module.__init__(self)
-        # encoder attributes
-        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
-        if e:
-            raise e
-
-        self.num_steps, e = numeric_limit("steps", steps, 0, "gt", int)
-        if e:
-            raise e
-
-    @property
-    def dt(self) -> float:
-        r"""Length of the simulation time step, in milliseconds.
-
-        Args:
-            value (float): new simulation time step length.
-
-        Returns:
-            float: present simulation time step length.
-        """
-        return self.step_time
-
-    @dt.setter
-    def dt(self, value: float) -> None:
-        self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
-        if e:
-            raise e
-
-    @property
-    def steps(self) -> int:
-        r"""Number of steps for which a spike train should be generated.
-
-        Args:
-            value (int): new number of steps over which to generate.
-
-        Returns:
-            int: present number of steps over which to generate.
-        """
-        return self.num_steps
-
-    @steps.setter
-    def steps(self, value: int) -> None:
-        self.num_steps, e = numeric_limit("value", value, 0, "gt", int)
-        if e:
-            raise e
-
-    @property
-    def duration(self) -> float:
-        r"""Length of simulated time for which to generate a spike train, in milliseconds.
-
-        Returns:
-            float: length of simulation time for which to generate a spike train.
-        """
-        return self.steps * self.dt

@@ -228,9 +228,9 @@
 <span class="k">class</span> <span class="nc">MaxRateClassifier</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Classifies spikes by maximum per-class rates.</span>
 
-<span class="sd">    The classifier uses an internal parameter :py:attr:`rates` internally for other</span>
+<span class="sd">    The classifier uses an internal parameter :py:attr:`rates` for other</span>
 <span class="sd">    calculations. When learning, the existing rates are decayed, multiplying them by</span>
-<span class="sd">    :math:`\exp{-\lambda b_k}` where :math:`b_k` is number of elements of class</span>
+<span class="sd">    :math:`\exp (-\lambda b_k)` where :math:`b_k` is the number of elements of class</span>
 <span class="sd">    :math:`k` in the batch.</span>
 
 <span class="sd">    Args:</span>
@@ -264,7 +264,7 @@
             <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="n">num_classes</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;num_classes&quot;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="n">num_classes</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;num_classes&quot;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 

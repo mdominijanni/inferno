@@ -1,0 +1,8 @@
+﻿PoissonIntervalEncoder
+======================
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: PoissonIntervalEncoder
+    :members:
+    :show-inheritance:

@@ -1,8 +1,8 @@
-﻿BindWeights
-===========
+﻿UpdateBounding
+==============
 
 .. currentmodule:: inferno.learn.functional
 
-.. autoclass:: BindWeights
+.. autoclass:: UpdateBounding
     :members:
     :show-inheritance:

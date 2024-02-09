@@ -1,6 +1,0 @@
-﻿wdep\_soft\_lower\_bounding
-===========================
-
-.. currentmodule:: inferno.learn.functional
-
-.. autofunction:: wdep_soft_lower_bounding
