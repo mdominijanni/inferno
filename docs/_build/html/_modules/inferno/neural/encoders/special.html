@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
-        <title>inferno.neural.encoders.poisson - Inferno</title>
+        <title>inferno.neural.encoders.special - Inferno</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
@@ -214,23 +214,23 @@
           </label>
         </div>
         <article role="main">
-          <h1>Source code for inferno.neural.encoders.poisson</h1><div class="highlight"><pre>
+          <h1>Source code for inferno.neural.encoders.special</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">nf</span>
-<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">GeneratorMixin</span><span class="p">,</span> <span class="n">RefractoryStepMixin</span>
+<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">GeneratorMixin</span><span class="p">,</span> <span class="n">StepMixin</span>
 <span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">Module</span>
 <span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span>
 
 
-<div class="viewcode-block" id="HomogeneousPoissonEncoder">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.HomogeneousPoissonEncoder.html#inferno.neural.HomogeneousPoissonEncoder">[docs]</a>
-<span class="k">class</span> <span class="nc">HomogeneousPoissonEncoder</span><span class="p">(</span><span class="n">GeneratorMixin</span><span class="p">,</span> <span class="n">RefractoryStepMixin</span><span class="p">,</span> <span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Encoder to generate spike trains sampled from a Poisson distribution.</span>
+<div class="viewcode-block" id="PoissonIntervalEncoder">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.PoissonIntervalEncoder.html#inferno.neural.PoissonIntervalEncoder">[docs]</a>
+<span class="k">class</span> <span class="nc">PoissonIntervalEncoder</span><span class="p">(</span><span class="n">GeneratorMixin</span><span class="p">,</span> <span class="n">StepMixin</span><span class="p">,</span> <span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Encoder to generate spike trains with intervals sampled from a Poisson distribution.</span>
 
-<span class="sd">    This method samples randomly from an exponential distribution (the interval</span>
-<span class="sd">    between samples in a Poisson point process), adding an additional refractory</span>
-<span class="sd">    period and compensating the rate.</span>
+<span class="sd">    This is included to replicate BindsNET&#39;s Poisson spike generation. The intervals</span>
+<span class="sd">    between spikes follow the Poisson distribution parameterized with the inverse of</span>
+<span class="sd">    the expected rate (i.e. the scale is given as the rate).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        step_time (float): length of time between outputs, :math:`\Delta t`,</span>
@@ -238,18 +238,8 @@
 <span class="sd">        steps (int): number of steps for which to generate spikes, :math:`S`.</span>
 <span class="sd">        frequency (float): maximum spike frequency (associated with an input of 1),</span>
 <span class="sd">            :math:`f`, in :math:`\text{Hz}`.</span>
-<span class="sd">        refrac (float | None, optional): minimum interal between spikes set to the step</span>
-<span class="sd">            time if None, in :math:`\text{ms}`. Defaults to None.</span>
-<span class="sd">        compensate (bool, optional): if the spike generation rate should be compensate</span>
-<span class="sd">            for the refractory period. Defaults to True.</span>
 <span class="sd">        generator (torch.Generator | None, optional): pseudorandom number generator</span>
 <span class="sd">            for sampling. Defaults to None.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        ``refrac`` at its default still allows for a spike to be generated at every</span>
-<span class="sd">        step (since the distance between is :math:`\Delta t`). To get behavior where</span>
-<span class="sd">        at most every :math:`n^\text{th}` step is a spike, the refractory period needs</span>
-<span class="sd">        to be set to :math:`n \Delta t`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -258,8 +248,6 @@
         <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">refrac</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">compensate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
@@ -270,37 +258,9 @@
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_compensated</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">compensate</span><span class="p">)</span>
-
         <span class="c1"># call mixin constructors</span>
-        <span class="n">RefractoryStepMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="o">=</span><span class="n">step_time</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">refrac</span><span class="o">=</span><span class="n">refrac</span>
-        <span class="p">)</span>
+        <span class="n">StepMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="o">=</span><span class="n">step_time</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">)</span>
         <span class="n">GeneratorMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">compensated</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;If the spike frequency compensates for the refractory period.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (bool): if the spike frequency compensates for the refractory period.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            bool: if the spike frequency compensates for the refractory period.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">refrac_compensated</span>
-
-    <span class="nd">@compensated</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">compensated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># refrac-frequency compatibility test</span>
-        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
-                <span class="s2">&quot;frequency * refrac&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_compensated</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -316,46 +276,17 @@
 
     <span class="nd">@frequency</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># refrac-frequency compatibility test</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">compensated</span><span class="p">:</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
-                <span class="s2">&quot;frequency * refrac&quot;</span><span class="p">,</span> <span class="n">value</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">freqscale</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;frequency&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freqscale</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">refrac</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the refractory period, in milliseconds.</span>
+        <span class="c1"># test that the state is still valid</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            value (float | None): new refractory period length,</span>
-<span class="sd">                pins to the step time if None.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            float: present refractory period length.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">RefractoryStepMixin</span><span class="o">.</span><span class="n">refrac</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-
-    <span class="nd">@refrac</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">refrac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># refrac-frequency compatibility test</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">compensated</span><span class="p">:</span>
-            <span class="n">newrefrac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">value</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
-                <span class="s2">&quot;refrac * frequency &quot;</span><span class="p">,</span> <span class="n">newrefrac</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="k">return</span> <span class="n">RefractoryStepMixin</span><span class="o">.</span><span class="n">refrac</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-
-<div class="viewcode-block" id="HomogeneousPoissonEncoder.forward">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.HomogeneousPoissonEncoder.html#inferno.neural.HomogeneousPoissonEncoder.forward">[docs]</a>
+<div class="viewcode-block" id="PoissonIntervalEncoder.forward">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.PoissonIntervalEncoder.html#inferno.neural.PoissonIntervalEncoder.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">online</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
@@ -402,21 +333,17 @@
 <span class="sd">                * :math:`S` is the number of steps for which to generate spikes, ``steps``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">online</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">enc_homogeneous_poisson_exp_interval_online</span><span class="p">(</span>
+            <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">enc_poisson_interval_online</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">*</span> <span class="n">inputs</span><span class="p">,</span>
                 <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
                 <span class="n">steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">,</span>
-                <span class="n">refrac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
-                <span class="n">compensate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compensated</span><span class="p">,</span>
                 <span class="n">generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">enc_homogeneous_poisson_exp_interval</span><span class="p">(</span>
+            <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">enc_poisson_interval</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">*</span> <span class="n">inputs</span><span class="p">,</span>
                 <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
                 <span class="n">steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">,</span>
-                <span class="n">refrac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
-                <span class="n">compensate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compensated</span><span class="p">,</span>
                 <span class="n">generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">,</span>
             <span class="p">)</span></div>
 </div>

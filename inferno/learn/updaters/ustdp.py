@@ -9,7 +9,7 @@ from inferno.observe import (
     PassthroughReducer,
 )
 import torch
-from typing import Literal
+from typing import Callable, Literal
 
 
 class STDP(LayerwiseUpdater):
@@ -62,6 +62,15 @@ class STDP(LayerwiseUpdater):
         wd_upper (~inferno.learn.functional.UpdateBounding | None, optional):
             callable for applying weight dependence on an bound, no dependence if
             None. Defaults to None.
+        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+            function to reduce updates over the batch dimension, :py:func:`torch.mean`
+            when None. Defaults to None.
+
+    Note:
+        ``batch_reduction`` can be one of the functions in PyTorch including but not
+        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        A custom function with similar behavior can also be passed in. Like with the
+        included function, it should not keep the original dimensions by default.
 
     See Also:
         For more details and references, visit
@@ -83,6 +92,9 @@ class STDP(LayerwiseUpdater):
         trace_mode: Literal["cumulative", "nearest"] = "cumulative",
         wd_lower: lf.UpdateBounding | None = None,
         wd_upper: lf.UpdateBounding | None = None,
+        batch_reduction: (
+            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+        ) = None,
         **kwargs,
     ):
         # call superclass constructor, registers monitors
@@ -113,6 +125,7 @@ class STDP(LayerwiseUpdater):
         self.trace = trace_mode
         self.wdlower = wd_lower
         self.wdupper = wd_upper
+        self.batchreduce = batch_reduction if batch_reduction else torch.mean
 
     @property
     def dt(self) -> float:
@@ -314,8 +327,8 @@ class STDP(LayerwiseUpdater):
             a_pos, a_neg = a_pos * self.lrpost, a_neg * self.lrpre
 
             # mask traces with spikes, reduce dimensionally, apply amplitudes
-            dw_pos = torch.mean(torch.sum(i_post * x_pre, dim=-1), dim=0) * a_pos
-            dw_neg = torch.mean(torch.sum(i_pre * x_post, dim=-1), dim=0) * a_neg
+            dw_pos = self.batchreduce(torch.sum(i_post * x_pre, dim=-1), 0) * a_pos
+            dw_neg = self.batchreduce(torch.sum(i_pre * x_post, dim=-1), 0) * a_neg
 
             # update weights
             conn.weight = conn.weight + dw_pos - dw_neg

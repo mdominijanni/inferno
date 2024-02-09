@@ -226,7 +226,7 @@
     <span class="n">PassthroughReducer</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Literal</span>
 
 
 <div class="viewcode-block" id="STDP">
@@ -281,6 +281,15 @@
 <span class="sd">        wd_upper (~inferno.learn.functional.UpdateBounding | None, optional):</span>
 <span class="sd">            callable for applying weight dependence on an bound, no dependence if</span>
 <span class="sd">            None. Defaults to None.</span>
+<span class="sd">        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):</span>
+<span class="sd">            function to reduce updates over the batch dimension, :py:func:`torch.mean`</span>
+<span class="sd">            when None. Defaults to None.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        ``batch_reduction`` can be one of the functions in PyTorch including but not</span>
+<span class="sd">        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.</span>
+<span class="sd">        A custom function with similar behavior can also be passed in. Like with the</span>
+<span class="sd">        included function, it should not keep the original dimensions by default.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
@@ -302,6 +311,9 @@
         <span class="n">trace_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;cumulative&quot;</span><span class="p">,</span> <span class="s2">&quot;nearest&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cumulative&quot;</span><span class="p">,</span>
         <span class="n">wd_lower</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">UpdateBounding</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">wd_upper</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">UpdateBounding</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_reduction</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor, registers monitors</span>
@@ -332,6 +344,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">=</span> <span class="n">trace_mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wdlower</span> <span class="o">=</span> <span class="n">wd_lower</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wdupper</span> <span class="o">=</span> <span class="n">wd_upper</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batchreduce</span> <span class="o">=</span> <span class="n">batch_reduction</span> <span class="k">if</span> <span class="n">batch_reduction</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -538,8 +551,8 @@
             <span class="n">a_pos</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">=</span> <span class="n">a_pos</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lrpost</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lrpre</span>
 
             <span class="c1"># mask traces with spikes, reduce dimensionally, apply amplitudes</span>
-            <span class="n">dw_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_post</span> <span class="o">*</span> <span class="n">x_pre</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_pos</span>
-            <span class="n">dw_neg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_pre</span> <span class="o">*</span> <span class="n">x_post</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_neg</span>
+            <span class="n">dw_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_post</span> <span class="o">*</span> <span class="n">x_pre</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_pos</span>
+            <span class="n">dw_neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_pre</span> <span class="o">*</span> <span class="n">x_post</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_neg</span>
 
             <span class="c1"># update weights</span>
             <span class="n">conn</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">weight</span> <span class="o">+</span> <span class="n">dw_pos</span> <span class="o">-</span> <span class="n">dw_neg</span></div>

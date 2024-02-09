@@ -222,6 +222,7 @@
 <span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">regroup</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 
 <div class="viewcode-block" id="LIF">
@@ -431,6 +432,15 @@
 <span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
 <span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.</span>
 <span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
+<span class="sd">        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):</span>
+<span class="sd">            function to reduce adaptation updates over the batch dimension,</span>
+<span class="sd">            :py:func:`torch.mean` when None. Defaults to None.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        ``batch_reduction`` can be one of the functions in PyTorch including but not</span>
+<span class="sd">        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.</span>
+<span class="sd">        A custom function with similar behavior can also be passed in. Like with the</span>
+<span class="sd">        included function, it should not keep the original dimensions by default.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
@@ -451,6 +461,9 @@
         <span class="n">spike_adapt_incr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
         <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_reduction</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
         <span class="n">Neuron</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
@@ -564,7 +577,10 @@
         <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">AdaptationMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">)),</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">)),</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="n">batch_reduction</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_integrate_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masked_inputs</span><span class="p">):</span>
@@ -675,7 +691,7 @@
                 <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="c1"># update parameter</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">adaptations</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span> <span class="o">=</span> <span class="n">adaptations</span>
 
         <span class="c1"># return spiking output</span>
         <span class="k">return</span> <span class="n">spikes</span></div>
@@ -811,6 +827,15 @@
 <span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
 <span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.</span>
 <span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
+<span class="sd">        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):</span>
+<span class="sd">            function to reduce adaptation updates over the batch dimension,</span>
+<span class="sd">            :py:func:`torch.mean` when None. Defaults to None.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        ``batch_reduction`` can be one of the functions in PyTorch including but not</span>
+<span class="sd">        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.</span>
+<span class="sd">        A custom function with similar behavior can also be passed in. Like with the</span>
+<span class="sd">        included function, it should not keep the original dimensions by default.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
@@ -832,6 +857,9 @@
         <span class="n">spike_adapt_incr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
         <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_reduction</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
         <span class="n">Neuron</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
@@ -943,7 +971,10 @@
         <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">AdaptationMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">)),</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">)),</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="n">batch_reduction</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_integrate_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masked_inputs</span><span class="p">):</span>
@@ -1056,7 +1087,7 @@
                 <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="c1"># update parameter</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">adaptations</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span> <span class="o">=</span> <span class="n">adaptations</span>
 
         <span class="c1"># return spiking output</span>
         <span class="k">return</span> <span class="n">spikes</span></div>

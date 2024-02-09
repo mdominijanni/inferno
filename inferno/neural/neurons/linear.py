@@ -5,6 +5,7 @@ from inferno._internal import numeric_limit, numeric_relative, multiple_numeric_
 from inferno._internal import regroup
 import math
 import torch
+from typing import Callable
 
 
 class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
@@ -203,6 +204,15 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         resistance (float, optional): resistance across the cell membrane,
             :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+            function to reduce adaptation updates over the batch dimension,
+            :py:func:`torch.mean` when None. Defaults to None.
+
+    Note:
+        ``batch_reduction`` can be one of the functions in PyTorch including but not
+        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        A custom function with similar behavior can also be passed in. Like with the
+        included function, it should not keep the original dimensions by default.
 
     See Also:
         For more details and references, visit
@@ -223,6 +233,9 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         spike_adapt_incr: float | tuple[float, ...],
         resistance: float = 1.0,
         batch_size: int = 1,
+        batch_reduction: (
+            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+        ) = None,
     ):
         # call superclass constructor
         Neuron.__init__(self, shape, batch_size)
@@ -336,7 +349,10 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
         AdaptationMixin.__init__(
-            self, torch.zeros(*self.shape, len(self.tc_adaptation)), False
+            self,
+            torch.zeros(*self.shape, len(self.tc_adaptation)),
+            False,
+            batch_reduction,
         )
 
     def _integrate_v(self, masked_inputs):
@@ -442,7 +458,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
                 refracs=(self.refrac if refrac_lock else None),
             )
             # update parameter
-            self.adaptation = torch.mean(adaptations, dim=0)
+            self.adaptation = adaptations
 
         # return spiking output
         return spikes
@@ -565,6 +581,15 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         resistance (float, optional): resistance across the cell membrane,
             :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+            function to reduce adaptation updates over the batch dimension,
+            :py:func:`torch.mean` when None. Defaults to None.
+
+    Note:
+        ``batch_reduction`` can be one of the functions in PyTorch including but not
+        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        A custom function with similar behavior can also be passed in. Like with the
+        included function, it should not keep the original dimensions by default.
 
     See Also:
         For more details and references, visit
@@ -586,6 +611,9 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         spike_adapt_incr: float | tuple[float],
         resistance: float = 1.0,
         batch_size: int = 1,
+        batch_reduction: (
+            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+        ) = None,
     ):
         # call superclass constructor
         Neuron.__init__(self, shape, batch_size)
@@ -697,7 +725,10 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
         AdaptationMixin.__init__(
-            self, torch.zeros(*self.shape, len(self.tc_adaptation)), False
+            self,
+            torch.zeros(*self.shape, len(self.tc_adaptation)),
+            False,
+            batch_reduction,
         )
 
     def _integrate_v(self, masked_inputs):
@@ -805,7 +836,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
                 refracs=(self.refrac if refrac_lock else None),
             )
             # update parameter
-            self.adaptation = torch.mean(adaptations, dim=0)
+            self.adaptation = adaptations
 
         # return spiking output
         return spikes

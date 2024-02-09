@@ -32,6 +32,9 @@ from .connections.conv import (
 
 from .encoders.poisson import (
     HomogeneousPoissonEncoder,
+)
+
+from .encoders.special import (
     PoissonIntervalEncoder,
 )
 
