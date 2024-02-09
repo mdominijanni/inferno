@@ -1,3 +1,4 @@
+import inferno
 import torch
 
 
@@ -231,7 +232,8 @@ def adaptive_thresholds_linear_spike(
     adaptations: torch.Tensor,
     spikes: torch.Tensor,
     *,
-    decay: float | torch.Tensor,
+    step_time: float | torch.Tensor,
+    time_constant: float | torch.Tensor,
     spike_increment: float | torch.Tensor,
     refracs: torch.Tensor | None = None
 ) -> torch.Tensor:
@@ -255,8 +257,10 @@ def adaptive_thresholds_linear_spike(
             threshold, :math:`\theta_k`, in :math:`\text{mV}`.
         spikes (torch.Tensor): if the corresponding neuron generated an
             action potential.
-        decay (float | torch.Tensor): exponential decay factor for adaptations,
-            :math:`\alpha_k`, unitless.
+        step_time (float | torch.Tensor): length of a simulation time step,
+            :math:`\Delta t`, in :math:`\text{ms}`.
+        time_constant (float | torch.Tensor): time constant of exponential decay for
+            the adaptations, :math:`\tau_k`, in :math:`\text{ms}`.
         spike_increment (torch.Tensor): amount by which the adaptive threshold is
             increased after a spike, :math:`a_k`, in :math:`\text{mV}`.
         refracs (torch.Tensor | None): remaining absolute refractory periods,
@@ -278,7 +282,7 @@ def adaptive_thresholds_linear_spike(
 
         :math:`[B] \times N_0 \times \cdots`
 
-        ``decay``, ``spike_increment``:
+        ``step_time``, ``time_constant``, ``spike_increment``:
 
         `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
         ``adaptations``.
@@ -302,10 +306,11 @@ def adaptive_thresholds_linear_spike(
         :ref:`zoo/neurons-adaptation:Adaptive Threshold, Linear Spike-Dependent` in the zoo.
     """
     # decay adaptations over time
+    decayed = adaptations * inferno.exp(-step_time / time_constant)
     if refracs is None:
-        adaptations = adaptations * decay
+        adaptations = decayed
     else:
-        adaptations = adaptations.where(refracs.unsqueeze(-1) > 0, adaptations * decay)
+        adaptations = adaptations.where(refracs.unsqueeze(-1) > 0, decayed)
 
     # increment adaptations after spiking
     adaptations = adaptations + (spike_increment * spikes.unsqueeze(-1))

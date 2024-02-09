@@ -3,7 +3,6 @@ from .. import functional as nf
 from .mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
 from inferno._internal import numeric_limit, numeric_relative, multiple_numeric_limit
 from inferno._internal import regroup
-import math
 import torch
 from typing import Callable
 
@@ -69,8 +68,6 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         if e:
             raise e
 
-        self.decay = math.exp(-self.step_time / self.time_constant)
-
         self.rest_v, self.thresh_v, e = numeric_relative(
             "rest_v", rest_v, "thresh_v", thresh_v, "lt", float
         )
@@ -100,7 +97,8 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
-            decay=self.decay,
+            step_time=self.dt,
+            time_constant=self.time_constant,
             rest_v=self.rest_v,
             resistance=self.resistance,
         )
@@ -122,7 +120,6 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
         if e:
             raise e
-        self.decay = math.exp(-self.step_time / self.time_constant)
 
     def clear(self, **kwargs):
         r"""Resets neurons to their resting state."""
@@ -311,8 +308,6 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         if e:
             raise e
 
-        self.decay = math.exp(-self.step_time / self.tc_membrane)
-
         self.rest_v, self.thresh_eq_v, e = numeric_relative(
             "rest_v", rest_v, "thresh_eq_v", thresh_eq_v, "lt", float
         )
@@ -332,17 +327,13 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.resistance, e = numeric_limit("resistance", resistance, 0, "neq", float)
         if e:
             raise
-        self.tc_adaptation = tc_adaptation
-        self.spike_adapt_incr = spike_adapt_incr
 
         # register adaptation attributes as buffers (for tensor ops and compatibility)
         self.register_buffer(
-            "adapt_decay",
-            torch.exp(-self.step_time / torch.tensor(self.tc_adaptation)),
-            persistent=False,
+            "tc_adaptation", torch.tensor(tc_adaptation), persistent=False
         )
         self.register_buffer(
-            "adapt_increment", torch.tensor(self.spike_adapt_incr), persistent=False
+            "adapt_increment", torch.tensor(spike_adapt_incr), persistent=False
         )
 
         # call mixin constructors
@@ -350,7 +341,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
         AdaptationMixin.__init__(
             self,
-            torch.zeros(*self.shape, len(self.tc_adaptation)),
+            torch.zeros(*self.shape, self.tc_adaptation.numel()),
             False,
             batch_reduction,
         )
@@ -360,7 +351,8 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
-            decay=self.decay,
+            step_time=self.dt,
+            time_constant=self.tc_membrane,
             rest_v=self.rest_v,
             resistance=self.resistance,
         )
@@ -382,16 +374,6 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
         if e:
             raise e
-        self.decay = math.exp(-self.step_time / self.time_constant)
-        self.adapt_decay = torch.exp(
-            -self.step_time
-            / torch.tensor(
-                self.tc_adaptation,
-                dtype=self.adapt_decay.dtype,
-                device=self.adapt_decay.device,
-                requires_grad=self.adapt_decay.requires_grad,
-            )
-        )
 
     def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
@@ -453,7 +435,8 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             adaptations = nf.adaptive_thresholds_linear_spike(
                 adaptations=self.adaptation,
                 spikes=spikes,
-                decay=self.adapt_decay,
+                step_time=self.dt,
+                time_constant=self.tc_adaptation,
                 spike_increment=self.adapt_increment,
                 refracs=(self.refrac if refrac_lock else None),
             )
@@ -689,8 +672,6 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         if e:
             raise e
 
-        self.decay = math.exp(-self.step_time / self.tc_membrane)
-
         self.rest_v, self.thresh_eq_v, e = numeric_relative(
             "rest_v", rest_v, "thresh_eq_v", thresh_eq_v, "lt", float
         )
@@ -708,17 +689,12 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         if e:
             raise
 
-        self.tc_adaptation = tc_adaptation
-        self.spike_adapt_incr = spike_adapt_incr
-
         # register adaptation attributes as buffers (for tensor ops and compatibility)
         self.register_buffer(
-            "adapt_decay",
-            torch.exp(-self.step_time / torch.tensor(self.tc_adaptation)),
-            persistent=False,
+            "tc_adaptation", torch.tensor(tc_adaptation), persistent=False
         )
         self.register_buffer(
-            "adapt_increment", torch.tensor(self.spike_adapt_incr), persistent=False
+            "adapt_increment", torch.tensor(spike_adapt_incr), persistent=False
         )
 
         # call mixin constructors
@@ -726,7 +702,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
         AdaptationMixin.__init__(
             self,
-            torch.zeros(*self.shape, len(self.tc_adaptation)),
+            torch.zeros(*self.shape, self.tc_adaptation.numel()),
             False,
             batch_reduction,
         )
@@ -736,7 +712,8 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
-            decay=self.decay,
+            step_time=self.dt,
+            time_constant=self.tc_membrane,
             rest_v=self.rest_v,
             resistance=self.resistance,
         )
@@ -758,16 +735,6 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
         if e:
             raise e
-        self.decay = math.exp(-self.step_time / self.time_constant)
-        self.adapt_decay = torch.exp(
-            -self.step_time
-            / torch.tensor(
-                self.tc_adaptation,
-                dtype=self.adapt_decay.dtype,
-                device=self.adapt_decay.device,
-                requires_grad=self.adapt_decay.requires_grad,
-            )
-        )
 
     def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
@@ -831,7 +798,8 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             adaptations = nf.adaptive_thresholds_linear_spike(
                 adaptations=self.adaptation,
                 spikes=spikes,
-                decay=self.adapt_decay,
+                step_time=self.dt,
+                time_constant=self.tc_adaptation,
                 spike_increment=self.adapt_increment,
                 refracs=(self.refrac if refrac_lock else None),
             )
