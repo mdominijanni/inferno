@@ -215,7 +215,8 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.neural.functional.neuron_adaptation</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span></span><span class="kn">import</span> <span class="nn">inferno</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 
 
 <div class="viewcode-block" id="adaptive_currents_linear">
@@ -456,7 +457,8 @@
     <span class="n">adaptations</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">spike_increment</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">refracs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -480,8 +482,10 @@
 <span class="sd">            threshold, :math:`\theta_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        spikes (torch.Tensor): if the corresponding neuron generated an</span>
 <span class="sd">            action potential.</span>
-<span class="sd">        decay (float | torch.Tensor): exponential decay factor for adaptations,</span>
-<span class="sd">            :math:`\alpha_k`, unitless.</span>
+<span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
+<span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay for</span>
+<span class="sd">            the adaptations, :math:`\tau_k`, in :math:`\text{ms}`.</span>
 <span class="sd">        spike_increment (torch.Tensor): amount by which the adaptive threshold is</span>
 <span class="sd">            increased after a spike, :math:`a_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
@@ -503,7 +507,7 @@
 
 <span class="sd">        :math:`[B] \times N_0 \times \cdots`</span>
 
-<span class="sd">        ``decay``, ``spike_increment``:</span>
+<span class="sd">        ``step_time``, ``time_constant``, ``spike_increment``:</span>
 
 <span class="sd">        `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
 <span class="sd">        ``adaptations``.</span>
@@ -527,10 +531,11 @@
 <span class="sd">        :ref:`zoo/neurons-adaptation:Adaptive Threshold, Linear Spike-Dependent` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># decay adaptations over time</span>
+    <span class="n">decayed</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">*</span> <span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">refracs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">*</span> <span class="n">decay</span>
+        <span class="n">adaptations</span> <span class="o">=</span> <span class="n">decayed</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">refracs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">adaptations</span> <span class="o">*</span> <span class="n">decay</span><span class="p">)</span>
+        <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">refracs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">decayed</span><span class="p">)</span>
 
     <span class="c1"># increment adaptations after spiking</span>
     <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">+</span> <span class="p">(</span><span class="n">spike_increment</span> <span class="o">*</span> <span class="n">spikes</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>

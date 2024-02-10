@@ -9,7 +9,7 @@ $$
 *With solution:*
 
 $$
-V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
+V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
 $$
 
 *After an action potential is generated:*
@@ -26,7 +26,18 @@ $$V_m(t) \leftarrow V_\text{reset}$$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$
 
 ### Description
-This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or "biologically defined reset rules". This is equivalent to the [GLIF{sub}`1`](https://www.nature.com/articles/s41467-017-02717-4) (generalized leaky integrate-and-fire) model.
+This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or "biologically defined reset rules". This is equivalent to the [GLIF{sub}`1`](https://www.nature.com/articles/s41467-017-02717-4) (generalized leaky integrate-and-fire) model. Without presynaptic current, the membrane
+voltage decays back towards the rest voltage with rate in inverse proportion to the membrane time constant.
+
+```{image} ../images/plots/lif_slope_field.png
+:alt: Linear Integrate-and-Fire Slope Field of Memrane Voltage
+:class: bg-primary
+:scale: 30 %
+:align: center
+```
+Slope field of the membrane voltage without any input current showing the decay towards
+the rest voltage $(V_R = -60 \text{ mV})$ over time. Plotted with value $\tau_m=1 \text{ ms}$
+over a time of $2 \text{ ms}$.
 
 ### Alternative Formulations
 $$
@@ -68,7 +79,7 @@ $$
 
 $$
 \begin{align*}
-    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
+    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
     \theta_k(t + \Delta t) &= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 \end{align*}
 $$
@@ -122,7 +133,7 @@ $$
 
 $$
 \begin{align*}
-    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
+    V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
     \theta_k(t + \Delta t) &= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 \end{align*}
 $$

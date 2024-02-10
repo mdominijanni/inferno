@@ -220,7 +220,6 @@
 <span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span>
 <span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span><span class="p">,</span> <span class="n">numeric_relative</span><span class="p">,</span> <span class="n">multiple_numeric_limit</span>
 <span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">regroup</span>
-<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
@@ -288,8 +287,6 @@
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
             <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
@@ -319,7 +316,8 @@
         <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_integration_linear</span><span class="p">(</span>
             <span class="n">masked_inputs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span>
-            <span class="n">decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+            <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span>
             <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
             <span class="n">resistance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span>
         <span class="p">)</span>
@@ -341,7 +339,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LIF.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LIF.html#inferno.neural.LIF.clear">[docs]</a>
@@ -539,8 +536,6 @@
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresh_eq_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
             <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_eq_v&quot;</span><span class="p">,</span> <span class="n">thresh_eq_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
@@ -560,17 +555,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span> <span class="o">=</span> <span class="n">tc_adaptation</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">spike_adapt_incr</span> <span class="o">=</span> <span class="n">spike_adapt_incr</span>
 
         <span class="c1"># register adaptation attributes as buffers (for tensor ops and compatibility)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;adapt_decay&quot;</span><span class="p">,</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">)),</span>
-            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;tc_adaptation&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">tc_adaptation</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;adapt_increment&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spike_adapt_incr</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+            <span class="s2">&quot;adapt_increment&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">spike_adapt_incr</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
 
         <span class="c1"># call mixin constructors</span>
@@ -578,7 +569,7 @@
         <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">AdaptationMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">)),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="o">.</span><span class="n">numel</span><span class="p">()),</span>
             <span class="kc">False</span><span class="p">,</span>
             <span class="n">batch_reduction</span><span class="p">,</span>
         <span class="p">)</span>
@@ -588,7 +579,8 @@
         <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_integration_linear</span><span class="p">(</span>
             <span class="n">masked_inputs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span>
-            <span class="n">decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+            <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span><span class="p">,</span>
             <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
             <span class="n">resistance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span>
         <span class="p">)</span>
@@ -610,16 +602,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
-            <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
-            <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">,</span>
-                <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
-                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-                <span class="n">requires_grad</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
 
 <div class="viewcode-block" id="ALIF.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.ALIF.html#inferno.neural.ALIF.clear">[docs]</a>
@@ -686,7 +668,8 @@
             <span class="n">adaptations</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">adaptive_thresholds_linear_spike</span><span class="p">(</span>
                 <span class="n">adaptations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
                 <span class="n">spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
-                <span class="n">decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span><span class="p">,</span>
+                <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">,</span>
                 <span class="n">spike_increment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_increment</span><span class="p">,</span>
                 <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
             <span class="p">)</span>
@@ -935,8 +918,6 @@
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresh_eq_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
             <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_eq_v&quot;</span><span class="p">,</span> <span class="n">thresh_eq_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
         <span class="p">)</span>
@@ -954,17 +935,12 @@
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span> <span class="o">=</span> <span class="n">tc_adaptation</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">spike_adapt_incr</span> <span class="o">=</span> <span class="n">spike_adapt_incr</span>
-
         <span class="c1"># register adaptation attributes as buffers (for tensor ops and compatibility)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;adapt_decay&quot;</span><span class="p">,</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">)),</span>
-            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;tc_adaptation&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">tc_adaptation</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;adapt_increment&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spike_adapt_incr</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+            <span class="s2">&quot;adapt_increment&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">spike_adapt_incr</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
 
         <span class="c1"># call mixin constructors</span>
@@ -972,7 +948,7 @@
         <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">AdaptationMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">)),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="o">.</span><span class="n">numel</span><span class="p">()),</span>
             <span class="kc">False</span><span class="p">,</span>
             <span class="n">batch_reduction</span><span class="p">,</span>
         <span class="p">)</span>
@@ -982,7 +958,8 @@
         <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_integration_linear</span><span class="p">(</span>
             <span class="n">masked_inputs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span>
-            <span class="n">decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+            <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span><span class="p">,</span>
             <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
             <span class="n">resistance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span>
         <span class="p">)</span>
@@ -1004,16 +981,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
-            <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
-            <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">,</span>
-                <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
-                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-                <span class="n">requires_grad</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
 
 <div class="viewcode-block" id="GLIF2.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.GLIF2.html#inferno.neural.GLIF2.clear">[docs]</a>
@@ -1082,7 +1049,8 @@
             <span class="n">adaptations</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">adaptive_thresholds_linear_spike</span><span class="p">(</span>
                 <span class="n">adaptations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
                 <span class="n">spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
-                <span class="n">decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_decay</span><span class="p">,</span>
+                <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">,</span>
                 <span class="n">spike_increment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_increment</span><span class="p">,</span>
                 <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
             <span class="p">)</span>

@@ -232,7 +232,7 @@
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
-V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
+V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
 \]</div>
 </div>
 <p><em>After an action potential is generated:</em></p>
@@ -253,7 +253,12 @@ V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau
 </section>
 <section id="description">
 <h3>Description<a class="headerlink" href="#description" title="Link to this heading">#</a></h3>
-<p>This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or “biologically defined reset rules”. This is equivalent to the <a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">GLIF<sub>1</sub></a> (generalized leaky integrate-and-fire) model.</p>
+<p>This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or “biologically defined reset rules”. This is equivalent to the <a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">GLIF<sub>1</sub></a> (generalized leaky integrate-and-fire) model. Without presynaptic current, the membrane
+voltage decays back towards the rest voltage with rate in inverse proportion to the membrane time constant.</p>
+<a class="bg-primary reference internal image-reference" href="../_images/lif_slope_field.png"><img alt="Linear Integrate-and-Fire Slope Field of Memrane Voltage" class="bg-primary align-center" src="../_images/lif_slope_field.png" style="width: 565.5px; height: 422.4px;" /></a>
+<p>Slope field of the membrane voltage without any input current showing the decay towards
+the rest voltage <span class="math notranslate nohighlight">\((V_R = -60 \text{ mV})\)</span> over time. Plotted with value <span class="math notranslate nohighlight">\(\tau_m=1 \text{ ms}\)</span>
+over a time of <span class="math notranslate nohighlight">\(2 \text{ ms}\)</span>.</p>
 </section>
 <section id="alternative-formulations">
 <h3>Alternative Formulations<a class="headerlink" href="#alternative-formulations" title="Link to this heading">#</a></h3>
@@ -307,7 +312,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
-    V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
+    V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
     \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 \end{align*}
 \end{split}\]</div>
@@ -374,7 +379,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
-    V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
+    V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest}\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
     \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 \end{align*}
 \end{split}\]</div>
