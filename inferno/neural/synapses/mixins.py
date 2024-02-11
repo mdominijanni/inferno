@@ -327,9 +327,9 @@ class DelayedSpikeCurrentAccessorMixin:
 
     Important:
         * This must be added to a class which has either a method named ``_to_current``,
-        or a constrained parameter/buffer ``current_``.
+          or a constrained parameter/buffer ``current_``.
         * This must be added to a class which has either a method named ``_to_spike``,
-        or a constrained parameter/buffer ``spike_``.
+          or a constrained parameter/buffer ``spike_``.
 
     Note:
         This always sets the following interally managed attributes:
@@ -353,7 +353,7 @@ class DelayedSpikeCurrentAccessorMixin:
                 "at least one of 'primitive_currents' or "
                 "'primitive_spikes' must be true."
             )
-        if not primitive_currents and hasattr(self, "_to_current"):
+        if not primitive_currents and not hasattr(self, "_to_current"):
             raise RuntimeError(
                 "if 'primitive_currents' is false, '_to_current' must be an attribute."
             )
@@ -361,7 +361,7 @@ class DelayedSpikeCurrentAccessorMixin:
             raise RuntimeError(
                 "if 'primitive_currents' is true, 'current_' must be an attribute."
             )
-        if not primitive_spikes and hasattr(self, "_to_spike"):
+        if not primitive_spikes and not hasattr(self, "_to_spike"):
             raise RuntimeError(
                 "if 'primitive_spikes' is false, '_to_spike' must be an attribute."
             )

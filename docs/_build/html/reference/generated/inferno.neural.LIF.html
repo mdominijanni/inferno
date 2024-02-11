@@ -178,6 +178,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -225,7 +227,7 @@
 <p>Simulation of leaky integrate-and-fire (LIF) neuron dynamics.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right]
+\[V_m(t + \Delta t) = \left[ V_m(t) - V_\text{rest} - R_mI(t) \right]
 \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)\]</div>
 </div>
 <p>If a spike was generated at time <span class="math notranslate nohighlight">\(t\)</span>, then.</p>

@@ -1,8 +1,8 @@
-﻿DelayedSpikeCurrentMixin
+﻿CurrentDerivedSpikeMixin
 ========================
 
 .. currentmodule:: inferno.neural.synapses.mixins
 
-.. autoclass:: DelayedSpikeCurrentMixin
+.. autoclass:: CurrentDerivedSpikeMixin
     :members:
     :show-inheritance:

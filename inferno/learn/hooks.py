@@ -10,8 +10,7 @@ class WeightNormalization(RemoteHook):
 
     Args:
 
-        module (~torch.nn.Module | None, optional): module to which the hook
-            should be registered. Defaults to None.
+        module (~torch.nn.Module): module to which the hook should be registered.
         layer_train_update (bool, optional): if weights should be normalized for layers
             in train mode. Defaults to True.
         layer_eval_update (bool, optional): if weights should be normalized for layers
@@ -87,8 +86,7 @@ class WeightClamping(RemoteHook):
 
     Args:
 
-        module (~torch.nn.Module | None, optional): module to which the hook
-            should be registered. Defaults to None.
+        module (~torch.nn.Module): module to which the hook should be registered.
         layer_train_update (bool, optional): if weights should be normalized for layers
             in train mode. Defaults to True.
         layer_eval_update (bool, optional): if weights should be normalized for layers

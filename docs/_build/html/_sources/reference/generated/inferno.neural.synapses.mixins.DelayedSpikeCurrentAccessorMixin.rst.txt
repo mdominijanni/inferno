@@ -1,0 +1,8 @@
+﻿DelayedSpikeCurrentAccessorMixin
+================================
+
+.. currentmodule:: inferno.neural.synapses.mixins
+
+.. autoclass:: DelayedSpikeCurrentAccessorMixin
+    :members:
+    :show-inheritance:

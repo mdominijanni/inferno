@@ -1,0 +1,8 @@
+﻿DeltaCurrent
+============
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: DeltaCurrent
+    :members:
+    :show-inheritance:

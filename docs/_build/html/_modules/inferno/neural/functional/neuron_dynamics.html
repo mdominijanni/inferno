@@ -177,6 +177,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -392,7 +394,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Integrates input currents into membrane voltages using linear dynamics.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right]</span>
+<span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]</span>
 <span class="sd">        \exp(-\Delta t / \tau_m) + V_\text{rest} + R_mI(t)</span>
 
 <span class="sd">    Args:</span>
@@ -413,7 +415,8 @@
 <span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">decay</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">rest_v</span> <span class="o">+</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span> <span class="o">*</span> <span class="n">decay</span> <span class="o">+</span> <span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span></div>
+    <span class="n">extvoltage</span> <span class="o">=</span> <span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span>
+    <span class="k">return</span> <span class="n">rest_v</span> <span class="o">+</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span> <span class="o">-</span> <span class="n">extvoltage</span><span class="p">)</span> <span class="o">*</span> <span class="n">decay</span> <span class="o">+</span> <span class="n">extvoltage</span></div>
 
 
 
@@ -436,8 +439,8 @@
 
 <span class="sd">    .. math::</span>
 <span class="sd">        V_m(t + \Delta t) = \frac{\Delta t}{\tau_m}</span>
-<span class="sd">        \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) \right]</span>
-<span class="sd">        + R_mI(t)</span>
+<span class="sd">        \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) + R_mI(t) \right]</span>
+<span class="sd">        + V_m(t)</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        masked_inputs (torch.Tensor): presynaptic currents masked by neurons in their</span>
@@ -461,13 +464,9 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="n">voltages</span>
-        <span class="o">+</span> <span class="p">(</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
-        <span class="o">*</span> <span class="n">attraction</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">crit_v</span><span class="p">)</span>
-        <span class="o">+</span> <span class="p">(</span><span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span><span class="p">)</span>
+    <span class="n">dyn_v</span> <span class="o">=</span> <span class="n">attraction</span> <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">crit_v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">voltages</span> <span class="o">+</span> <span class="p">(</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">dyn_v</span> <span class="o">+</span> <span class="p">(</span><span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span><span class="p">)</span>
     <span class="p">)</span></div>
 
 </pre></div>

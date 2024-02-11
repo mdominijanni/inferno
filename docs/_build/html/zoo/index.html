@@ -178,6 +178,8 @@
 <li class="toctree-l2"><a class="reference internal" href="neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neurons-linear.html">Neuron Models, Linear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -222,8 +224,8 @@
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
 <p>Here, the neuron models as well as the training methods implemented in Inferno are described in-depth and references to academic works relating to them are included. Planned for the future are more detailed descriptions of how the given hyperparameters affect their behavior.</p>
 </section>
-<section id="neuronal-dynamics">
-<h2>Neuronal Dynamics<a class="headerlink" href="#neuronal-dynamics" title="Link to this heading">#</a></h2>
+<section id="neurons">
+<h2>Neurons<a class="headerlink" href="#neurons" title="Link to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="neurons-adaptation.html">Neuronal Adaptation</a><ul>
@@ -246,8 +248,24 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="neurons-nonlinear.html">Neuron Models, Nonlinear</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html#quadratic-integrate-and-fire-qif">Quadratic Integrate-and-Fire (QIF)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html#izhikevich-adaptive-quadratic-integrate-and-fire">Izhikevich (Adaptive Quadratic Integrate-and-Fire)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html#exponential-integrate-and-fire-eif">Exponential Integrate-and-Fire (EIF)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html#adaptive-exponential-integrate-and-fire-adex">Adaptive Exponential Integrate-and-Fire (AdEx)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="synapses">
+<h2>Synapses<a class="headerlink" href="#synapses" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="synapses-current.html">Synapse Models, Current-Based</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="synapses-current.html#delta-cuba-variant">Delta (CUBA Variant)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="synapses-conductance.html">Synapse Models, Conductance-Based</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="synapses-conductance.html#delta-coba-variant">Delta (COBA Variant)</a></li>
 </ul>
 </li>
 </ul>
@@ -334,7 +352,8 @@
             <ul>
 <li><a class="reference internal" href="#">Model and Method Zoo</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#neuronal-dynamics">Neuronal Dynamics</a></li>
+<li><a class="reference internal" href="#neurons">Neurons</a></li>
+<li><a class="reference internal" href="#synapses">Synapses</a></li>
 <li><a class="reference internal" href="#learning-methods">Learning Methods</a></li>
 </ul>
 </li>

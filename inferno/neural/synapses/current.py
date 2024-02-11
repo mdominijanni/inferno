@@ -27,8 +27,6 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
             for selectors between observations. Defaults to "nearest".
         interp_tol (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
-        derive_spikes (bool, optional): if spikes should be computed from internal
-            currents. Defaults to True.
         current_overbound (float | None, optional): value to replace currents out of
             bounds, uses values at observation limits if None. Defaults to 0.0.
         spike_overbound (bool | None, optional): value to replace spikes out of bounds,
@@ -93,7 +91,6 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
         spike_q: float,
         interp_mode: Literal["nearest", "previous"] = "previous",
         interp_tol: float = 0.0,
-        derive_spikes: bool = True,
         current_overbound: float | None = 0.0,
         spike_overbound: bool | None = False,
     ) -> SynapseConstructor:
@@ -106,8 +103,6 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
                 for selectors between observations. Defaults to "nearest".
             interp_tol (float, optional): maximum difference in time from an observation
                 to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
-            derive_spikes (bool, optional): if inputs will represent currents and
-                spikes, with spikes derived therefrom. Defaults to True.
             current_overbound (float | None, optional): value to replace currents out of
                 bounds, uses values at observation limits if None. Defaults to 0.0.
             spike_overbound (bool | None, optional): value to replace spikes out of
@@ -130,7 +125,6 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
                 delay=delay,
                 interp_mode=interp_mode,
                 interp_tol=interp_tol,
-                derive_spikes=derive_spikes,
                 current_overbound=current_overbound,
                 spike_overbound=spike_overbound,
                 batch_size=batch_size,
@@ -165,7 +159,7 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
         Important:
             Only the first tensor of ``*inputs`` will be used.
         """
-        self.spikes = inputs[0].bool()
+        self.spike = inputs[0]
         return self.current
 
 
@@ -188,8 +182,6 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
             for selectors between observations. Defaults to "nearest".
         interp_tol (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
-        derive_spikes (bool, optional): if spikes should be computed from internal
-            currents. Defaults to True.
         current_overbound (float | None, optional): value to replace currents out of
             bounds, uses values at observation limits if None. Defaults to 0.0.
         spike_overbound (bool | None, optional): value to replace spikes out of bounds,
@@ -242,7 +234,7 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
         )
         DelayedSpikeCurrentAccessorMixin.__init__(
             self,
-            False,
+            True,
             True,
             current_interp=interp,
             spike_interp=interp,
@@ -257,7 +249,6 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
         spike_q: float,
         interp_mode: Literal["nearest", "previous"] = "previous",
         interp_tol: float = 0.0,
-        derive_spikes: bool = True,
         current_overbound: float | None = 0.0,
         spike_overbound: bool | None = False,
     ) -> SynapseConstructor:
@@ -270,8 +261,6 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
                 for selectors between observations. Defaults to "nearest".
             interp_tol (float, optional): maximum difference in time from an observation
                 to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
-            derive_spikes (bool, optional): if inputs will represent currents and
-                spikes, with spikes derived therefrom. Defaults to True.
             current_overbound (float | None, optional): value to replace currents out of
                 bounds, uses values at observation limits if None. Defaults to 0.0.
             spike_overbound (bool | None, optional): value to replace spikes out of
@@ -294,7 +283,6 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
                 delay=delay,
                 interp_mode=interp_mode,
                 interp_tol=interp_tol,
-                derive_spikes=derive_spikes,
                 current_overbound=current_overbound,
                 spike_overbound=spike_overbound,
                 batch_size=batch_size,
@@ -320,8 +308,8 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
             subsequent tensors will be treated as injected current. These must be
             broadcastable with :py:attr:`current`.
         """
-        self.spikes = inputs[0].bool()
+        self.spike = inputs[0].bool()
         self.current = functools.reduce(
             lambda a, b: a + b,
-            (self.current, self.inputs[0] * self.spike_q) + inputs[1:],
+            (self.current, inputs[0] * self.spike_q) + inputs[1:],
         )

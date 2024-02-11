@@ -10,8 +10,7 @@ class QIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
 
     .. math::
         V_m(t + \Delta t) = \frac{\Delta t}{\tau_m}
-        \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) \right]
-        + R_mI(t)
+        \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) + R_mI(t) \right]
 
     If a spike was generated at time :math:`t`, then.
 

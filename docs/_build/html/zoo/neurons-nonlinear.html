@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="STDP-Like Learning Methods" href="learning-stdp.html" /><link rel="prev" title="Neuron Models, Linear" href="neurons-linear.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Synapse Models, Current-Based" href="synapses-current.html" /><link rel="prev" title="Neuron Models, Linear" href="neurons-linear.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>Neuron Models, Nonlinear - Inferno</title>
@@ -178,6 +178,8 @@
 <li class="toctree-l2"><a class="reference internal" href="neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neurons-linear.html">Neuron Models, Linear</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -232,7 +234,7 @@
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
-V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) \right] + R_mI(t) + V_m(t)
+V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) + R_mI(t) \right] + V_m(t)
 \]</div>
 </div>
 <p><em>After an action potential is generated:</em></p>
@@ -272,10 +274,42 @@ parameters. Plotted with values <span class="math notranslate nohighlight">\(\ta
 </ol>
 </section>
 </section>
+<section id="izhikevich-adaptive-quadratic-integrate-and-fire">
+<h2>Izhikevich (Adaptive Quadratic Integrate-and-Fire)<a class="headerlink" href="#izhikevich-adaptive-quadratic-integrate-and-fire" title="Link to this heading">#</a></h2>
+<p><em>(To Be Completed)</em></p>
+</section>
 <section id="exponential-integrate-and-fire-eif">
 <h2>Exponential Integrate-and-Fire (EIF)<a class="headerlink" href="#exponential-integrate-and-fire-eif" title="Link to this heading">#</a></h2>
 <section id="id1">
-<h3>Description<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\tau_m \frac{dV_m(t)}{dt} =
+- \left[V_m(t) - V_\text{rest}\right] +
+\Delta_T \exp \left(\frac{V_m(t) - V_T}{\Delta_T}\right)
++ R_mI(t)
+\]</div>
+</div>
+<p><em>With approximation:</em></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[
+- \left[V_m(t) - V_\text{rest}\right] +
+\Delta_T \exp \left(\frac{V_m(t) - V_T}{\Delta_T}\right) + R_mI(t)
+\right]+ V_m(t)
+\]</div>
+</div>
+<p><em>After an action potential is generated:</em></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[V_m(t) \leftarrow V_\text{reset}\]</div>
+</div>
+<p><em>(To Be Completed)</em></p>
+</section>
+<section id="id2">
+<h3>Description<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <p>This model uses exponential dynamics to model the rapid increase in membrane voltage before
 (and at the start of) the generation of an action potential. This upswing occurs at a voltage
 above <span class="math notranslate nohighlight">\(V_T\)</span>, specifically, as <span class="math notranslate nohighlight">\(\Delta_T \rightarrow 0\)</span>, the voltage at which this upswing occurs
@@ -304,8 +338,8 @@ are used to illustrate its effect.</p>
 <p>Membrane voltage with no input current. Plotted with values <span class="math notranslate nohighlight">\(V_R = -60\text{ mV}\)</span>,
 <span class="math notranslate nohighlight">\(V_T = -50\)</span>, <span class="math notranslate nohighlight">\(\Delta_T = 2\)</span>, and <span class="math notranslate nohighlight">\(\tau_m=1 \text{ ms}\)</span> over a time of <span class="math notranslate nohighlight">\(1 \text{ ms}\)</span>.</p>
 </section>
-<section id="id2">
-<h3>References<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<section id="id3">
+<h3>References<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (Chapter 6.1)</a></p></li>
 <li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083 (Section 1.2)</a></p></li>
@@ -314,8 +348,14 @@ are used to illustrate its effect.</p>
 </section>
 <section id="adaptive-exponential-integrate-and-fire-adex">
 <h2>Adaptive Exponential Integrate-and-Fire (AdEx)<a class="headerlink" href="#adaptive-exponential-integrate-and-fire-adex" title="Link to this heading">#</a></h2>
-<section id="id3">
-<h3>References<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<p><em>(To Be Completed)</em></p>
+<section id="id4">
+<h3>Description<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<p>This model uses the underlying dynamics of the exponential integrate-and-fire neuron, but
+it incorporates a linear adaptive current depeendent upon spikes and the membrane voltage.</p>
+</section>
+<section id="id5">
+<h3>References<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (Chapter 6.1)</a></p></li>
 <li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083 (Section 1.2)</a></p></li>
@@ -331,12 +371,12 @@ are used to illustrate its effect.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="learning-stdp.html">
+          <a class="next-page" href="synapses-current.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">STDP-Like Learning Methods</div>
+                <div class="title">Synapse Models, Current-Based</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -388,13 +428,16 @@ are used to illustrate its effect.</p>
 <li><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#izhikevich-adaptive-quadratic-integrate-and-fire">Izhikevich (Adaptive Quadratic Integrate-and-Fire)</a></li>
 <li><a class="reference internal" href="#exponential-integrate-and-fire-eif">Exponential Integrate-and-Fire (EIF)</a><ul>
-<li><a class="reference internal" href="#id1">Description</a></li>
-<li><a class="reference internal" href="#id2">References</a></li>
+<li><a class="reference internal" href="#id1">Formulation</a></li>
+<li><a class="reference internal" href="#id2">Description</a></li>
+<li><a class="reference internal" href="#id3">References</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#adaptive-exponential-integrate-and-fire-adex">Adaptive Exponential Integrate-and-Fire (AdEx)</a><ul>
-<li><a class="reference internal" href="#id3">References</a></li>
+<li><a class="reference internal" href="#id4">Description</a></li>
+<li><a class="reference internal" href="#id5">References</a></li>
 </ul>
 </li>
 </ul>

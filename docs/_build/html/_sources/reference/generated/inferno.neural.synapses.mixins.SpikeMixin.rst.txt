@@ -1,0 +1,8 @@
+﻿SpikeMixin
+==========
+
+.. currentmodule:: inferno.neural.synapses.mixins
+
+.. autoclass:: SpikeMixin
+    :members:
+    :show-inheritance:

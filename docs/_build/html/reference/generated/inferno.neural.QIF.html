@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="PassthroughSynapse" href="inferno.neural.PassthroughSynapse.html" /><link rel="prev" title="GLIF2" href="inferno.neural.GLIF2.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="DeltaCurrent" href="inferno.neural.DeltaCurrent.html" /><link rel="prev" title="GLIF2" href="inferno.neural.GLIF2.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>QIF - Inferno</title>
@@ -178,6 +178,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -226,8 +228,7 @@
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[V_m(t + \Delta t) = \frac{\Delta t}{\tau_m}
-\left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) \right]
-+ R_mI(t)\]</div>
+\left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) + R_mI(t) \right]\]</div>
 </div>
 <p>If a spike was generated at time <span class="math notranslate nohighlight">\(t\)</span>, then.</p>
 <div class="math-wrapper docutils container">
@@ -319,12 +320,12 @@ in the refractory period. Defaults to True.</p></li>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.neural.PassthroughSynapse.html">
+          <a class="next-page" href="inferno.neural.DeltaCurrent.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">PassthroughSynapse</div>
+                <div class="title">DeltaCurrent</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
