@@ -167,7 +167,7 @@ def voltage_integration_linear(
     r"""Integrates input currents into membrane voltages using linear dynamics.
 
     .. math::
-        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest}\right]
+        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]
         \exp(-\Delta t / \tau_m) + V_\text{rest} + R_mI(t)
 
     Args:
@@ -188,7 +188,8 @@ def voltage_integration_linear(
         torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.
     """
     decay = inferno.exp(-step_time / time_constant)
-    return rest_v + (voltages - rest_v) * decay + resistance * masked_inputs
+    extvoltage = resistance * masked_inputs
+    return rest_v + (voltages - rest_v - extvoltage) * decay + extvoltage
 
 
 def voltage_integration_quadratic(
@@ -208,8 +209,8 @@ def voltage_integration_quadratic(
 
     .. math::
         V_m(t + \Delta t) = \frac{\Delta t}{\tau_m}
-        \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) \right]
-        + R_mI(t)
+        \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) + R_mI(t) \right]
+        + V_m(t)
 
     Args:
         masked_inputs (torch.Tensor): presynaptic currents masked by neurons in their
@@ -233,11 +234,7 @@ def voltage_integration_quadratic(
     Returns:
         torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.
     """
-    return (
-        voltages
-        + (step_time / time_constant)
-        * attraction
-        * (voltages - rest_v)
-        * (voltages - crit_v)
-        + (resistance * masked_inputs)
+    dyn_v = attraction * (voltages - rest_v) * (voltages - crit_v)
+    return voltages + (step_time / time_constant) * (
+        dyn_v + (resistance * masked_inputs)
     )

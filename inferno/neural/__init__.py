@@ -16,8 +16,9 @@ from .neurons.nonlinear import (
     QIF,
 )
 
-from .synapses.linear import (
-    PassthroughSynapse,
+from .synapses.current import (
+    DeltaCurrent,
+    DeltaPlusCurrent,
 )
 
 from .connections.linear import (
@@ -59,7 +60,8 @@ __all__ = [
     "GLIF1",
     "GLIF2",
     "QIF",
-    "PassthroughSynapse",
+    "DeltaCurrent",
+    "DeltaPlusCurrent",
     "LinearDense",
     "LinearDirect",
     "LinearLateral",

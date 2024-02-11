@@ -9,7 +9,7 @@ $$
 *With approximation:*
 
 $$
-V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) \right] + R_mI(t) + V_m(t)
+V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) + R_mI(t) \right] + V_m(t)
 $$
 
 *After an action potential is generated:*
@@ -48,6 +48,9 @@ parameters. Plotted with values $\tau_m=1 \text{ ms}$ and $a=1$ over a time of $
 ### References
 1. [DOI:10.1017/CBO9781107447615 (Chapter 5.3)](https://neuronaldynamics.epfl.ch/online/Ch5.S3.html)
 
+## Izhikevich (Adaptive Quadratic Integrate-and-Fire)
+*(To Be Completed)*
+
 ## Exponential Integrate-and-Fire (EIF)
 ### Formulation
 $$
@@ -62,13 +65,15 @@ $$
 $$
 V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[
 - \left[V_m(t) - V_\text{rest}\right] +
-\Delta_T \exp \left(\frac{V_m(t) - V_T}{\Delta_T}\right)
-\right] + R_mI(t) + V_m(t)
+\Delta_T \exp \left(\frac{V_m(t) - V_T}{\Delta_T}\right) + R_mI(t)
+\right]+ V_m(t)
 $$
 
 *After an action potential is generated:*
 
 $$V_m(t) \leftarrow V_\text{reset}$$
+
+*(To Be Completed)*
 
 ### Description
 This model uses exponential dynamics to model the rapid increase in membrane voltage before
@@ -116,6 +121,7 @@ $V_T = -50$, $\Delta_T = 2$, and $\tau_m=1 \text{ ms}$ over a time of $1 \text{ 
 2. [ISBN:9780262548083 (Section 1.2)](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)
 
 ## Adaptive Exponential Integrate-and-Fire (AdEx)
+*(To Be Completed)*
 ### Description
 This model uses the underlying dynamics of the exponential integrate-and-fire neuron, but
 it incorporates a linear adaptive current depeendent upon spikes and the membrane voltage.

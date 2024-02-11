@@ -35,7 +35,8 @@
     :nosignatures:
     :toctree: generated
 
-    PassthroughSynapse
+    DeltaCurrent
+    DeltaPlusCurrent
 ```
 
 ## Connections
@@ -93,8 +94,11 @@
     neurons.mixins.SpikeRefractoryMixin
     neurons.mixins.VoltageMixin
     synapses.mixins.CurrentMixin
+    synapses.mixins.SpikeMixin
+    synapses.mixins.CurrentDerivedSpikeMixin
+    synapses.mixins.SpikeDerivedCurrentMixin
     synapses.mixins.SpikeCurrentMixin
-    synapses.mixins.DelayedSpikeCurrentMixin
+    synapses.mixins.DelayedSpikeCurrentAccessorMixin
     connections.mixins.WeightMixin
     connections.mixins.WeightBiasMixin
     connections.mixins.WeightBiasDelayMixin
