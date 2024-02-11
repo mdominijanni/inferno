@@ -264,6 +264,7 @@
 <span class="sd">        For more details and references, visit</span>
 <span class="sd">        :ref:`zoo/neurons-nonlinear:Quadratic Integrate-and-Fire (QIF)` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
@@ -293,15 +294,11 @@
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
-            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-        <span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
-            <span class="s2">&quot;crit_v&quot;</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-        <span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span><span class="s2">&quot;crit_v&quot;</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
@@ -406,6 +403,181 @@
         <span class="k">return</span> <span class="n">spikes</span></div>
 </div>
 
+
+
+<span class="k">class</span> <span class="nc">EIF</span><span class="p">(</span><span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of exponential integrate-and-fire (EIF) neuron dynamics.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[</span>
+<span class="sd">        - \left[V_m(t) - V_\text{rest}\right] +</span>
+<span class="sd">        \Delta_T \exp \left(\frac{V_m(t) - V_T}{\Delta_T}\right) + R_mI(t)</span>
+<span class="sd">        \right]+ V_m(t)</span>
+
+<span class="sd">    If a spike was generated at time :math:`t`, then.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        V_m(t) \leftarrow V_\text{reset}</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shape (tuple[int, ...] | int): shape of the group of neurons being simulated.</span>
+<span class="sd">        step_time (float): length of a simulation time step,</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
+<span class="sd">        rest_v (float): membrane potential difference at equilibrium,</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
+<span class="sd">        rheobase_v (float): membrane potential difference approaching the potential at</span>
+<span class="sd">            which potential rapidly increases, :math:`V_T`, in :math:`\text{mV}`.</span>
+<span class="sd">        sharpness (float): steepness of the natural increase in membrane potential</span>
+<span class="sd">            above the rheobase voltage, :math:`\Delta_T`, in :math:`\text{mV}`.</span>
+<span class="sd">        reset_v (float): membrane voltage after an action potential is generated,</span>
+<span class="sd">            :math:`V_\text{reset}`, in :math:`\text{mV}`.</span>
+<span class="sd">        thresh_v (float): membrane voltage at which action potentials are generated,</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
+<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.</span>
+<span class="sd">        time_constant (float): time constant of exponential decay for membrane voltage,</span>
+<span class="sd">            :math:`\tau_m`, in :math:`\text{ms}`.</span>
+<span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.</span>
+<span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        For more details and references, visit</span>
+<span class="sd">        :ref:`zoo/neurons-nonlinear:Exponential Integrate-and-Fire (EIF)` in the zoo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">rheobase_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">sharpness</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">reset_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">thresh_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">refrac_t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># call superclass constructor</span>
+        <span class="n">Neuron</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+
+        <span class="c1"># dynamics attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rheobase_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
+            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;rheobase_v&quot;</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
+            <span class="s2">&quot;rheobase_v&quot;</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sharpness</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;sharpness&quot;</span><span class="p">,</span> <span class="n">sharpness</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
+            <span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
+            <span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># call mixin constructors</span>
+        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_integrate_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masked_inputs</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_integration_exponential</span><span class="p">(</span>
+            <span class="n">masked_inputs</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
+            <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
+            <span class="n">rheobase_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rheobase_v</span><span class="p">,</span>
+            <span class="n">sharpness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sharpness</span><span class="p">,</span>
+            <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span>
+            <span class="n">resistance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new simulation time step length.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: present simulation time step length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
+
+    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets neurons to their resting state.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">refrac_lock</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the neuronal dynamics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (torch.Tensor): presynaptic currents,</span>
+<span class="sd">                :math:`I(t)`, in :math:`\text{nA}`.</span>
+<span class="sd">            refrac_lock (bool, optional): if membrane voltages should be fixed while</span>
+<span class="sd">                in the refractory period. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># use voltage thresholding function</span>
+        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+            <span class="n">refracs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
+            <span class="n">dynamics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
+            <span class="n">reset_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span>
+            <span class="n">thresh_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span><span class="p">,</span>
+            <span class="n">refrac_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span>
+            <span class="n">voltages</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># update parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="o">=</span> <span class="n">voltages</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">=</span> <span class="n">refracs</span>
+
+        <span class="c1"># return spiking output</span>
+        <span class="k">return</span> <span class="n">spikes</span>
 </pre></div>
         </article>
       </div>

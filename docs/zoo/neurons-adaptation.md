@@ -11,7 +11,7 @@ Additionally, two different parameters of a neuron are typically monitored to in
 ### Formulation
 $$
 \begin{align*}
-    I(t) &= I_+(t) - \sum_k w_k(t) \\
+    I(t) &= I_x(t) - \sum_k w_k(t) \\
     \tau_k \frac{dw_k(t)}{dt} &= a_k \left[ V_m(t) - V_\text{rest} \right] - w_k(t) \\
 \end{align*}
 $$
@@ -26,7 +26,7 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 
 *Where:*
 - $I$, total input current applied to the neuron $(\text{nA})$
-- $I_+$, input current before adaptation $(\text{nA})$
+- $I_x$, input current before adaptation $(\text{nA})$
 - $V_m$, electric potential difference across the cell membrane $(\text{mV})$
 - $V_\text{rest}$, equilibrium of the membrane potential $(\text{mV})$
 - $a_k$, subthreshold adaptation, voltage-current coupling $(\mu\text{S})$
@@ -44,7 +44,7 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 ### Formulation
 $$
 \begin{align*}
-    I(t) &= I_+(t) - \sum_k w_k(t) \\
+    I(t) &= I_x(t) - \sum_k w_k(t) \\
     \tau_k \frac{dw_k(t)}{dt} &= - w_k(t)
 \end{align*}
 $$
@@ -59,7 +59,7 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 
 *Where:*
 - $I$, total input current applied to the neuron $(\text{nA})$
-- $I_+$, input current before adaptation $(\text{nA})$
+- $I_x$, input current before adaptation $(\text{nA})$
 - $b_k$, spike-triggered current adaptation $(\text{nA})$
 - $\tau_k$, adaptation time constant $(\text{ms})$
 - $t$, current time of the simulation $(\text{ms})$
