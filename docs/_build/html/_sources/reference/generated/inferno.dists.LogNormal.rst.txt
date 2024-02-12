@@ -1,0 +1,8 @@
+﻿LogNormal
+=========
+
+.. currentmodule:: inferno.dists
+
+.. autoclass:: LogNormal
+    :members:
+    :show-inheritance:

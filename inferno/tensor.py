@@ -169,7 +169,7 @@ def full(
         dtype=dtype,
         layout=layout,
         device=device,
-        requires_grad=requires_grad
+        requires_grad=requires_grad,
     )
 
 
@@ -222,7 +222,7 @@ def uniform(
         dtype=dtype,
         layout=layout,
         device=device,
-        requires_grad=requires_grad
+        requires_grad=requires_grad,
     )
 
 
@@ -275,5 +275,45 @@ def normal(
         dtype=dtype,
         layout=layout,
         device=device,
-        requires_grad=requires_grad
+        requires_grad=requires_grad,
+    )
+
+
+def scalar(
+    value: bool | int | float | complex,
+    tensor: torch.Tensor,
+    *,
+    dtype: torch.dtype | None = None,
+    layout: torch.layout | None = None,
+    device: torch.device | None = None,
+    requires_grad: bool | None = None
+) -> torch.Tensor:
+    r"""Returns a scalar tensor based on input with specified value.
+
+    Shortcut for :py:func:`full` with ``shape=()``.
+
+    Args:
+        value (bool | int | float | complex): value with to fill the output.
+        tensor (torch.Tensor): determines default output properties.
+        dtype (torch.dtype | None, optional): overrides data type from ``tensor``
+            if specified. Defaults to None.
+        layout (torch.layout | None, optional): overrides layout from ``tensor``
+            if specified. Defaults to None.
+        device (torch.device | None, optional): overrides device from ``tensor``
+            if specified. Defaults to None.
+        requires_grad (bool | None, optional): overrides gradient requirement from
+            ``tensor`` if specified. Defaults to None.
+
+    Returns:
+        torch.Tensor: scalar tensor like ``tensor``, modified by parameters, filled
+        with ``value``.
+    """
+    return full(
+        tensor,
+        value,
+        shape=(),
+        dtype=dtype,
+        layout=layout,
+        device=device,
+        requires_grad=requires_grad,
     )

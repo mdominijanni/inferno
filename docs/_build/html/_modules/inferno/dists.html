@@ -218,7 +218,9 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.dists</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span></span><span class="kn">import</span> <span class="nn">inferno</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 
 
 <div class="viewcode-block" id="Poisson">
@@ -232,7 +234,7 @@
 
 <span class="sd">    .. admonition:: Parameters</span>
 
-<span class="sd">        :math:`\lambda \in (0, \infty)`, rate</span>
+<span class="sd">        :math:`\lambda \in \mathbb{R}_+^*`, rate</span>
 
 <span class="sd">    .. admonition:: Support</span>
 
@@ -243,7 +245,7 @@
 <a class="viewcode-back" href="../../reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.sample">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
-        <span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Samples random variates from a Poisson distribution.</span>
 
@@ -251,62 +253,76 @@
 <span class="sd">            K \sim \text{Poisson}(\lambda)</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            rate (torch.Tensor): expected rate of occurances :math:`\lambda`.</span>
+<span class="sd">            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.</span>
 <span class="sd">            generator (torch.Generator | None, optional): pseudorandom number generator</span>
 <span class="sd">                to use for sampling. Defaults to None.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: resulting random variates :math:`K`.</span>
+<span class="sd">            torch.Tensor: resulting random variates, :math:`K`.</span>
 
 <span class="sd">        Caution:</span>
 <span class="sd">            This calls :py:func:`torch.poisson` which as of PyTorch 2.1 does not support</span>
 <span class="sd">            computation on Metal Performance Shaders. Compensate accordingly.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Poisson.pmf">
 <a class="viewcode-back" href="../../reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.pmf">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">pmf</span><span class="p">(</span><span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">pmf</span><span class="p">(</span><span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the probability mass function.</span>
 
 <span class="sd">        .. math::</span>
-<span class="sd">            P(K=k; \lambda) =\frac{\lambda^k e^{-k}}{k!}</span>
+<span class="sd">            P(K=k; \lambda) = \frac{\lambda^k e^{-k}}{k!}</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            support (torch.Tensor): number of occurances :math:`k`.</span>
-<span class="sd">            rate (torch.Tensor): expected rate of occurances :math:`\lambda`.</span>
+<span class="sd">            support (torch.Tensor | float): number of occurances, :math:`k`.</span>
+<span class="sd">            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: resulting point probabilities.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">Poisson</span><span class="o">.</span><span class="n">pmf</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">Poisson</span><span class="o">.</span><span class="n">logpmf</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="Poisson.logpmf">
 <a class="viewcode-back" href="../../reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.logpmf">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">logpmf</span><span class="p">(</span><span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">logpmf</span><span class="p">(</span>
+        <span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the natural logarithm of the probability mass function.</span>
 
 <span class="sd">        .. math::</span>
 <span class="sd">            \log P(K=k; \lambda) = k \log \lambda - \lambda - \log(k!)</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            support (torch.Tensor): number of occurances :math:`k`.</span>
-<span class="sd">            rate (torch.Tensor): expected rate of occurances :math:`\lambda`.</span>
+<span class="sd">            support (torch.Tensor | float): number of occurances, :math:`k`.</span>
+<span class="sd">            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: log of the resulting point probabilities.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">match</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)):</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">support</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">rate</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">xlogy</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span> <span class="o">-</span> <span class="n">rate</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">lgamma</span><span class="p">(</span><span class="n">rate</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Poisson.cdf">
 <a class="viewcode-back" href="../../reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.cdf">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the cumulative distribution function.</span>
 
 <span class="sd">        .. math::</span>
@@ -314,19 +330,30 @@
 <span class="sd">            \frac{\lambda^j}{j!}</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            support (torch.Tensor): number of occurances :math:`k`.</span>
-<span class="sd">            rate (torch.Tensor): expected rate of occurances :math:`\lambda`.</span>
+<span class="sd">            support (torch.Tensor | float): number of occurances, :math:`k`.</span>
+<span class="sd">            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: resulting cumulative probabilities.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">match</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)):</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">support</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">rate</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaincc</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">support</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">rate</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Poisson.logcdf">
 <a class="viewcode-back" href="../../reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.logcdf">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">logcdf</span><span class="p">(</span><span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">logcdf</span><span class="p">(</span>
+        <span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the natural logarithm of the cumulative distribution function.</span>
 
 <span class="sd">        .. math::</span>
@@ -334,13 +361,393 @@
 <span class="sd">            \frac{\Gamma (\lfloor k + 1 \rfloor, \lambda)}{\Gamma (\lambda)}</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            support (torch.Tensor): number of occurances :math:`k`.</span>
-<span class="sd">            rate (torch.Tensor): expected rate of occurances :math:`\lambda`.</span>
+<span class="sd">            support (torch.Tensor | float): number of occurances, :math:`k`.</span>
+<span class="sd">            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: log of the resulting cumulative probabilities.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            At least one of ``support`` and ``rate`` must be a</span>
+<span class="sd">            :py:class:`~torch.Tensor`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Poisson</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Poisson.mean">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.mean">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the expected value of the distribution.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \text{E}[K \mid K \sim \text{Poisson}(\lambda)] = \lambda</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: mean of the distribution with given parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">rate</span></div>
+
+
+<div class="viewcode-block" id="Poisson.variance">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.variance">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">variance</span><span class="p">(</span><span class="n">rate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the variance of the distribution.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \text{Var}[K \mid K \sim \text{Poisson}(\lambda)] = \lambda</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: variance of the distribution with given parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">rate</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Normal">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.Normal.html#inferno.dists.Normal">[docs]</a>
+<span class="k">class</span> <span class="nc">Normal</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sampling from and properties of the normal distribution.</span>
+
+<span class="sd">    .. admonition:: Parameters</span>
+
+<span class="sd">        :math:`\mu \in \mathbb{R}`, mean</span>
+
+<span class="sd">        :math:`\sigma^2 \in \mathbb{R}_+^*`, variance</span>
+
+<span class="sd">    .. admonition:: Support</span>
+
+<span class="sd">        :math:`x \in \mathbb{R}`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Normal.sample">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.sample">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+        <span class="n">loc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Samples random variates from a normal distribution.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            X \sim \mathcal{N}(\mu, \sigma^2)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.</span>
+<span class="sd">            scale (torch.Tensor | float): variance of the distribution, :math:`\sigma^2`.</span>
+<span class="sd">            generator (torch.Generator | None, optional): pseudorandom number generator</span>
+<span class="sd">                to use for sampling. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: resulting random variates :math:`X`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">match</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)):</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">scale</span><span class="p">),</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Normal.pdf">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.pdf">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">pdf</span><span class="p">(</span>
+        <span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">loc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the probability density function.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            P(X=x; \mu, \sigma^2) = \frac{1}{\sigma \sqrt{2 \pi}} \exp</span>
+<span class="sd">            \left( - \frac{1}{2} \left( \frac{x - \mu}{\sigma} \right)^2 \right)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            support (torch.Tensor | float): location of observation, :math:`x`.</span>
+<span class="sd">            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.</span>
+<span class="sd">            scale (torch.Tensor | float): variance of the distribution, :math:`\sigma^2`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: resulting relative likelihoods.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">match</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">support</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+
+        <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">std</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">tau</span><span class="p">)))</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+            <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">support</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Normal.logpdf">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.logpdf">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">logpdf</span><span class="p">(</span>
+        <span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">loc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the natural logarithm of the probability density function.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \log P(X=x; \mu, \sigma^2) = - \log \sigma - \frac{1}{2} \left[ \log \pi</span>
+<span class="sd">            - \left(\frac{\mu - x}{\sigma}\right)^2 \right]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            support (torch.Tensor | float): location of observation, :math:`x`.</span>
+<span class="sd">            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.</span>
+<span class="sd">            scale (torch.Tensor | float): variance of the distribution, :math:`\sigma^2`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: log of the resulting relative likelihoods.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Normal.cdf">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.cdf">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span>
+        <span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">loc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the cumulative distribution function.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            P(X \leq x; \mu, \sigma^2) = \frac{1}{2} \left[ 1 +</span>
+<span class="sd">            \text{erf} \left( \frac{x - \mu}{\sigma \sqrt{2}} \right) \right]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            support (torch.Tensor | float): location of observation, :math:`x`.</span>
+<span class="sd">            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.</span>
+<span class="sd">            scale (torch.Tensor | float): variance of the distribution, :math:`\sigma^2`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: resulting cumulative probabilities.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">match</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">support</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">support</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="mi">1</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">erf</span><span class="p">((</span><span class="n">support</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Normal.logcdf">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.logcdf">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">logcdf</span><span class="p">(</span>
+        <span class="n">support</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">loc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the natural logarithm of the cumulative distribution function.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \log P(X \leq x; \mu, \sigma^2) = \log \frac{1}{2} \left[ 1 +</span>
+<span class="sd">            \text{erf} \left( \frac{x - \mu}{\sigma \sqrt{2}} \right) \right]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            support (torch.Tensor | float): location of observation, :math:`x`.</span>
+<span class="sd">            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.</span>
+<span class="sd">            scale (torch.Tensor | float): variance of the distribution, :math:`\sigma^2`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: log of the resulting cumulative probabilities.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaincc</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">support</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">rate</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Normal</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Normal.mean">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.mean">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="n">loc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the expected value of the distribution.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \text{E}[X \mid X \sim \mathcal{N}(\mu, \sigma^2)] = \mu</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: mean of the distribution with given parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">loc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">loc</span></div>
+
+
+<div class="viewcode-block" id="Normal.variance">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.variance">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">variance</span><span class="p">(</span><span class="n">scale</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the variance of the distribution.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \text{Var}[X \mid X \sim \mathcal{N}(\mu, \sigma^2)] = \sigma^2</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            scale (torch.Tensor | float): variance of the distribution, :math:`\sigma^2`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: variance of the distribution with given parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">scale</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="LogNormal">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.LogNormal.html#inferno.dists.LogNormal">[docs]</a>
+<span class="k">class</span> <span class="nc">LogNormal</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sampling from and properties of the log-normal distribution.</span>
+
+<span class="sd">    The log-normal distribution is a continuous probability distribution derived</span>
+<span class="sd">    from the normal distribution, specifically the log of the normal distribution.</span>
+
+<span class="sd">    .. admonition:: Parameters</span>
+
+<span class="sd">        :math:`\mu \in \mathbb{R}`, location</span>
+
+<span class="sd">        :math:`\sigma \in \mathbb{R}_+^*`, scale</span>
+
+<span class="sd">    .. admonition:: Support</span>
+
+<span class="sd">        :math:`x \in \mathbb{R}_+^*`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LogNormal.sample">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.LogNormal.html#inferno.dists.LogNormal.sample">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+        <span class="n">loc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Samples random variates from a log-normal distribution.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \log X \sim \mathcal{N}(\mu, \sigma)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            loc (torch.Tensor): distribution location :math:`\mu`.</span>
+<span class="sd">            scale (torch.Tensor): distribution scale :math:`\sigma`.</span>
+<span class="sd">            generator (torch.Generator | None, optional): pseudorandom number generator</span>
+<span class="sd">                to use for sampling. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: resulting random variates :math:`X`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">Normal</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="LogNormal.sample_mv">
+<a class="viewcode-back" href="../../reference/generated/inferno.dists.LogNormal.html#inferno.dists.LogNormal.sample_mv">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sample_mv</span><span class="p">(</span>
+        <span class="n">mean</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">variance</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Samples random variates with desired mean and stdev from a log-normal distribution.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \log X \sim \mathcal{N}(\mu, \sigma)</span>
+
+<span class="sd">        Where the parameters :math:`\mu` and :math:`\sigma^2` are computed as.</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \mu = \log \left[ \frac{\mu_X^2}{\sqrt{\mu_X^2 + \sigma_X^2}} \right]</span>
+<span class="sd">            \qquad</span>
+<span class="sd">            \sigma^2 = \log \left[ 1 + \frac{\sigma_X^2}{\mu_X^2} \right]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mean (torch.Tensor | float): desired sample mean, :math:`\mu_X`.</span>
+<span class="sd">            variance (torch.Tensor | float): desired sample variance, :math:`\sigma_X^2`.</span>
+<span class="sd">            generator (torch.Generator | None, optional): pseudorandom number generator</span>
+<span class="sd">                to use for sampling. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: resulting random variates :math:`X`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">match</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variance</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)):</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">mean</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">variance</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">variance</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">mean</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">variance</span><span class="p">)</span>
+            <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">variance</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">variance</span><span class="p">,</span> <span class="n">mean</span><span class="p">)</span>
+
+        <span class="n">meansq</span> <span class="o">=</span> <span class="n">mean</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">locsq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">meansq</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">meansq</span> <span class="o">+</span> <span class="n">variance</span><span class="p">))</span></div>
 </div>
 
 </pre></div>

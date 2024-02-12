@@ -55,6 +55,52 @@ def _(x: np.number) -> np.number:
     return np.exp(x)
 
 
+@functools.singledispatch
+def sqrt(
+    x: int | float | complex | torch.Tensor | np.ndarray | np.number,
+) -> float | complex | torch.Tensor | np.ndarray | np.number:
+    r"""Type agnostic square root function.
+
+    .. math::
+        y = \sqrt{x}
+
+    Args:
+        x (int | float | complex | torch.Tensor | numpy.ndarray | numpy.number): value
+            of which to take the square root.
+
+    Returns:
+        float | complex | torch.Tensor | numpy.ndarray | numpy.number: square root of
+        the input.
+    """
+    raise NotImplementedError
+
+
+@sqrt.register(int)
+@sqrt.register(float)
+def _(x: int | float) -> float:
+    return math.sqrt(x)
+
+
+@sqrt.register(complex)
+def _(x: complex) -> complex:
+    return cmath.sqrt(x)
+
+
+@sqrt.register(torch.Tensor)
+def _(x: torch.Tensor) -> torch.Tensor:
+    return torch.sqrt(x)
+
+
+@sqrt.register(np.ndarray)
+def _(x: np.ndarray) -> np.ndarray:
+    return np.sqrt(x)
+
+
+@sqrt.register(np.number)
+def _(x: np.number) -> np.number:
+    return np.sqrt(x)
+
+
 def normalize(
     data: torch.Tensor,
     order: int | float,

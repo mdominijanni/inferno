@@ -26,6 +26,7 @@
     :toctree: generated
 
     exp
+    sqrt
     normalize
     rescale
     simple_exponential_smoothing
@@ -44,6 +45,7 @@
     full
     uniform
     normal
+    scalar
 ```
 
 ## Interpolation

@@ -10,6 +10,7 @@ from .infrastructure import (
 
 from .math import (
     exp,
+    sqrt,
     normalize,
     rescale,
     isi,
@@ -28,7 +29,8 @@ from .tensor import (
     empty,
     full,
     uniform,
-    normal
+    normal,
+    scalar,
 )
 
 __all__ = [
@@ -40,6 +42,7 @@ __all__ = [
     "DimensionalModule",
     "HistoryModule",
     "exp",
+    "sqrt",
     "normalize",
     "rescale",
     "isi",
@@ -56,4 +59,5 @@ __all__ = [
     "full",
     "uniform",
     "normal",
+    "scalar",
 ]

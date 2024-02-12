@@ -11,5 +11,7 @@
     :nosignatures:
     :toctree: generated
 
+    LogNormal
+    Normal
     Poisson
 ```
