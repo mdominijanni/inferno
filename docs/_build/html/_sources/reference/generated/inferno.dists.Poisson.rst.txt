@@ -1,0 +1,8 @@
+﻿Poisson
+=======
+
+.. currentmodule:: inferno.dists
+
+.. autoclass:: Poisson
+    :members:
+    :show-inheritance:

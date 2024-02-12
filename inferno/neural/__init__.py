@@ -14,6 +14,9 @@ from .neurons.linear import (
 
 from .neurons.nonlinear import (
     QIF,
+    Izhikevich,
+    EIF,
+    AdEx,
 )
 
 from .synapses.current import (
@@ -60,6 +63,9 @@ __all__ = [
     "GLIF1",
     "GLIF2",
     "QIF",
+    "Izhikevich",
+    "EIF",
+    "AdEx",
     "DeltaCurrent",
     "DeltaPlusCurrent",
     "LinearDense",

@@ -36,7 +36,7 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$
 
 ### References
-1. [DOI:10.1017/CBO9781107447615 (Chapter 6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
+1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
 2. [DOI:10.1152/jn.00686.2005](https://journals.physiology.org/doi/full/10.1152/jn.00686.2005)
 
 ## Adaptive Current, Linear Spike-Dependent
@@ -119,14 +119,14 @@ $$\theta_k(t + \Delta t) = \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 
 *After an action potential is generated:*
 
-$$\theta_k(t) \leftarrow \theta_k(t) + a_k$$
+$$\theta_k(t) \leftarrow \theta_k(t) + d_k$$
 
 *Where:*
 - $\Theta$, membrane potential at which an action potential is generated $(\text{mV})$
 - $\Theta_\infty$, equilibrium of the firing threshold $(\text{mV})$
 - $\theta_k$, adaptive component of the firing threshold $(\text{mV})$
 - $\theta_\text{reset}$, reset value of the adaptive component of the firing threshold $(\text{mV})$
-- $a_k$, spike-triggered voltage threshold adaptation $(\text{mV})$
+- $d_k$, spike-triggered voltage threshold adaptation $(\text{mV})$
 - $\tau_k$, adaptation time constant $(\text{ms})$
 - $t$, current time of the simulation $(\text{ms})$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$

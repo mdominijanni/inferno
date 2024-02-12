@@ -61,7 +61,7 @@ $$
 $$
 
 ### References
-1. [DOI:10.1017/CBO9781107447615 (Chapter 1.3)](https://neuronaldynamics.epfl.ch/online/Ch1.S3.html)
+1. [DOI:10.1017/CBO9781107447615 (§1.3)](https://neuronaldynamics.epfl.ch/online/Ch1.S3.html)
 2. [ISBN:9780262548083](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)
 3. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
 
@@ -89,7 +89,7 @@ $$
 $$
 \begin{align*}
     V_m(t) &\leftarrow V_\text{reset} \\
-    \theta_k(t) &\leftarrow \theta_k(t) + a_k
+    \theta_k(t) &\leftarrow \theta_k(t) + d_k
 \end{align*}
 $$
 
@@ -102,7 +102,7 @@ $$
 - $\Theta_\infty$, equilibrium of the firing threshold $(\text{mV})$
 - $\theta_k$, adaptive component of the firing threshold $(\text{mV})$
 - $\theta_\text{reset}$, reset value of the adaptive component of the firing threshold $(\text{mV})$
-- $a_k$, spike-triggered voltage threshold adaptation $(\text{mV})$
+- $d_k$, spike-triggered voltage threshold adaptation $(\text{mV})$
 - $\tau_k$, adaptation time constant $(\text{ms})$
 - $t$, current time of the simulation $(\text{ms})$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$
@@ -125,7 +125,7 @@ $$
 \begin{align*}
     \tau_m \frac{dV_m(t)}{dt} &= - \left[V_m(t) - V_\text{rest}\right] + R_mI(t) \\
     \Theta(t) &= \Theta_\infty + \sum_k \theta_k(t) \\
-    \tau_k \frac{d\theta_k(t)}{dt} &= -\theta_k(t) \\
+    \frac{d\theta_k(t)}{dt} &= -\lambda \theta_k(t) \\
 \end{align*}
 $$
 
@@ -134,7 +134,7 @@ $$
 $$
 \begin{align*}
     V_m(t + \Delta t) &= \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
-    \theta_k(t + \Delta t) &= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
+    \theta_k(t + \Delta t) &= \theta_k(t) \exp\left(-\lambda_k \Delta t\right)
 \end{align*}
 $$
 
@@ -143,7 +143,7 @@ $$
 $$
 \begin{align*}
     V_m(t) &\leftarrow V_\text{rest} + m_v \left[ V_m(t) - V_\text{rest} \right] - b_v \\
-    \theta_k(t) &\leftarrow \theta_k(t) + a_k
+    \theta_k(t) &\leftarrow \theta_k(t) + d_k
 \end{align*}
 $$
 
@@ -158,13 +158,13 @@ $$
 - $\Theta_\infty$, equilibrium of the firing threshold $(\text{mV})$
 - $\theta_k$, adaptive component of the firing threshold $(\text{mV})$
 - $\theta_\text{reset}$, reset value of the adaptive component of the firing threshold $(\text{mV})$
-- $a_k$, spike-triggered voltage threshold adaptation $(\text{mV})$
-- $\tau_k$, adaptation time constant $(\text{ms})$
+- $d_k$, spike-triggered voltage threshold adaptation $(\text{mV})$
+- $\lambda_k$, adaptation rate constant $(\text{ms}^{-1})$
 - $t$, current time of the simulation $(\text{ms})$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$
 
 ### Description
-Also called "leaky integrate-and-fire with biologically defined reset rules (LIF-R)", this model uses conventional LIF dynamics, with a linear spike-dependent adaptive threshold and a reset voltage which is contingent on the membrane voltage reached when spiking.
+Also called "leaky integrate-and-fire with biologically defined reset rules (LIF-R)", this model uses conventional LIF dynamics, with a linear spike-dependent adaptive threshold and a reset voltage which is contingent on the membrane voltage reached when spiking. Note that the adaptation decay is defined in terms of a rate constant $\lambda_k$ rather than a time constant $\tau_k$.
 
 ### References
 1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)

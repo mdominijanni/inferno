@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../distributions.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -226,12 +227,8 @@
 <dd><p>Update adaptive thresholds based on postsynaptic spikes.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\theta_k(t + \Delta t) = \theta_k(t) \alpha_k\]</div>
+\[\theta_k(t + \Delta t) = \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)\]</div>
 </div>
-<p>Where <span class="math notranslate nohighlight">\(\alpha_k\)</span> is the multiple for exponential decay, typically expressed
-as <span class="math notranslate nohighlight">\(\alpha_k = \exp(-\Delta t / \tau_k)\)</span>, where <span class="math notranslate nohighlight">\(\Delta t\)</span> is the
-step time and <span class="math notranslate nohighlight">\(\tau_k\)</span> is the time constant for the <span class="math notranslate nohighlight">\(k^\text{th}\)</span>
-adaptation, in like units of time.</p>
 <p>If a spike was generated at time <span class="math notranslate nohighlight">\(t\)</span>, then.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">

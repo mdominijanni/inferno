@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/distributions.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -429,7 +430,7 @@
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">crit_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">attraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">affinity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -453,7 +454,7 @@
 <span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
 <span class="sd">        crit_v (float | torch.Tensor): membrane potential difference at which potential</span>
 <span class="sd">            naturally increases, :math:`V_\text{crit}`, in :math:`\text{mV}`.</span>
-<span class="sd">        attraction (float | torch.Tensor): controls the strength of the membrane</span>
+<span class="sd">        affinity (float | torch.Tensor): controls the strength of the membrane</span>
 <span class="sd">            potential&#39;s drift towards :math:`V_\text{rest}` and away from</span>
 <span class="sd">            :math:`V_\text{crit}`, :math:`a`, unitless.</span>
 <span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay,</span>
@@ -464,7 +465,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">dyn_v</span> <span class="o">=</span> <span class="n">attraction</span> <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">crit_v</span><span class="p">)</span>
+    <span class="n">dyn_v</span> <span class="o">=</span> <span class="n">affinity</span> <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">crit_v</span><span class="p">)</span>
     <span class="n">decay</span> <span class="o">=</span> <span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span>
     <span class="k">return</span> <span class="n">voltages</span> <span class="o">+</span> <span class="n">decay</span> <span class="o">*</span> <span class="p">(</span><span class="n">dyn_v</span> <span class="o">+</span> <span class="p">(</span><span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span><span class="p">))</span></div>
 

@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/distributions.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -265,7 +266,7 @@
 <section id="references">
 <h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (Chapter 6.1)</a></p></li>
+<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (§6.1)</a></p></li>
 <li><p><a class="reference external" href="https://journals.physiology.org/doi/full/10.1152/jn.00686.2005">DOI:10.1152/jn.00686.2005</a></p></li>
 </ol>
 </section>
@@ -380,7 +381,7 @@
 <p><em>After an action potential is generated:</em></p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\theta_k(t) \leftarrow \theta_k(t) + a_k\]</div>
+\[\theta_k(t) \leftarrow \theta_k(t) + d_k\]</div>
 </div>
 <p><em>Where:</em></p>
 <ul class="simple">
@@ -388,7 +389,7 @@
 <li><p><span class="math notranslate nohighlight">\(\Theta_\infty\)</span>, equilibrium of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\theta_k\)</span>, adaptive component of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\theta_\text{reset}\)</span>, reset value of the adaptive component of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(a_k\)</span>, spike-triggered voltage threshold adaptation <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(d_k\)</span>, spike-triggered voltage threshold adaptation <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\tau_k\)</span>, adaptation time constant <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span>, current time of the simulation <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\Delta t\)</span>, length of time over which each simulation step occurs <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>

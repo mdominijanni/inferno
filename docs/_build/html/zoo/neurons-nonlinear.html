@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/distributions.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -248,7 +249,7 @@ V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[ a \left(V_m(t) - V_\tex
 <li><p><span class="math notranslate nohighlight">\(V_m\)</span>, electric potential difference across the cell membrane <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(V_\text{rest}\)</span>, equilibrium of the membrane potential <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(V_\text{crit}\)</span>, critical value of the membrane potential <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(a\)</span>, tendency for the membrane potential to go towards <span class="math notranslate nohighlight">\(V_\text{rest}\)</span> and away from <span class="math notranslate nohighlight">\(V_\text{crit}\)</span> (unitless).</p></li>
+<li><p><span class="math notranslate nohighlight">\(a\)</span>, membrane potential tendency towards <span class="math notranslate nohighlight">\(V_\text{rest}\)</span> and away from <span class="math notranslate nohighlight">\(V_\text{crit}\)</span> (unitless)</p></li>
 <li><p><span class="math notranslate nohighlight">\(V_\text{reset}\)</span>, membrane potential difference set after spiking <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\tau_m\)</span>, membrane time constant <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span>, current time of the simulation <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
@@ -270,25 +271,85 @@ parameters. Plotted with values <span class="math notranslate nohighlight">\(\ta
 <section id="references">
 <h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch5.S3.html">DOI:10.1017/CBO9781107447615 (Chapter 5.3)</a></p></li>
+<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch5.S3.html">DOI:10.1017/CBO9781107447615 (§5.3)</a></p></li>
 </ol>
 </section>
 </section>
-<section id="izhikevich">
-<h2>Izhikevich<a class="headerlink" href="#izhikevich" title="Link to this heading">#</a></h2>
-<p><em>(To Be Completed)</em></p>
+<section id="izhikevich-adaptive-quadratic">
+<h2>Izhikevich (Adaptive Quadratic)<a class="headerlink" href="#izhikevich-adaptive-quadratic" title="Link to this heading">#</a></h2>
 <section id="id1">
-<h3>References<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+    \tau_m \frac{dV_m(t)}{dt} &amp;= a \left(V_m(t)
+    - V_\text{rest}\right)\left(V_m(t)
+    - V_\text{crit}\right) + R_mI(t) \\
+    I(t) &amp;= I_x(t) - \sum_k w_k(t) \\
+    \tau_k \frac{dw_k(t)}{dt} &amp;= b_k \left[ V_m(t) - V_\text{rest} \right] - w_k(t) \\
+\end{align*}
+\end{split}\]</div>
+</div>
+<p><em>With approximations:</em></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+    V_m(t + \Delta t) &amp;\approx \frac{\Delta t}{\tau_m} \left[ a \left(V_m(t)
+    - V_\text{rest}\right)\left(V_m(t)
+    - V_\text{crit}\right) + R_mI(t) \right] + V_m(t) \\
+    w_k(t + \Delta t) &amp;\approx \frac{\Delta t}{\tau_k}\left[ b_k
+    \left[ V_m(t) - V_\text{rest} \right] - w_k(t) \right] + w_k(t)
+\end{align*}
+\end{split}\]</div>
+</div>
+<p><em>After an action potential is generated:</em></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+    V_m(t) &amp;\leftarrow V_\text{reset} \\
+    w_k(t) &amp;\leftarrow w_k(t) + d_k
+\end{align*}
+\end{split}\]</div>
+</div>
+<p><em>Where:</em></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(I\)</span>, total input current applied to the neuron <span class="math notranslate nohighlight">\((\text{nA})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(I_x\)</span>, input current before adaptation <span class="math notranslate nohighlight">\((\text{nA})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(V_m\)</span>, electric potential difference across the cell membrane <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(V_\text{rest}\)</span>, equilibrium of the membrane potential <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(V_\text{crit}\)</span>, critical value of the membrane potential <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(a\)</span>, membrane potential tendency towards <span class="math notranslate nohighlight">\(V_\text{rest}\)</span> and away from <span class="math notranslate nohighlight">\(V_\text{crit}\)</span> (unitless)</p></li>
+<li><p><span class="math notranslate nohighlight">\(V_\text{reset}\)</span>, membrane potential difference set after spiking <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\tau_m\)</span>, membrane time constant <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(b_k\)</span>, subthreshold adaptation, voltage-current coupling <span class="math notranslate nohighlight">\((\mu\text{S})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(d_k\)</span>, spike-triggered current adaptation <span class="math notranslate nohighlight">\((\text{nA})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\tau_k\)</span>, adaptation time constant <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(t\)</span>, current time of the simulation <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\Delta t\)</span>, length of time over which each simulation step occurs <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+</ul>
+<p>Under the conditions <span class="math notranslate nohighlight">\(a &gt; 0\)</span> and <span class="math notranslate nohighlight">\(V_\text{crit} &gt; V_\text{rest}\)</span>.</p>
+</section>
+<section id="id2">
+<h3>Description<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<p>This model uses the same underlying dynamics of the quadratic integrate-and-fire neuron, but
+incorporates a linear adaptive current depeendent upon output spikes and the membrane voltage.</p>
+</section>
+<section id="id3">
+<h3>References<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (Chapter 6.1)</a></p></li>
+<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (§6.1)</a></p></li>
 <li><p><a class="reference external" href="https://www.mdpi.com/2076-3425/12/7/863/pdf">DOI:10.3390/brainsci12070863</a></p></li>
+<li><p><a class="reference external" href="https://www.izhikevich.org/publications/dsn.pdf">DOI:10.7551/mitpress/2526.001.0001 (See §8.1.4)</a></p></li>
 </ol>
 </section>
 </section>
 <section id="exponential-integrate-and-fire-eif">
 <h2>Exponential Integrate-and-Fire (EIF)<a class="headerlink" href="#exponential-integrate-and-fire-eif" title="Link to this heading">#</a></h2>
-<section id="id2">
-<h3>Formulation<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<section id="id4">
+<h3>Formulation<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
@@ -327,8 +388,8 @@ V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[
 </ul>
 <p>Under the conditions <span class="math notranslate nohighlight">\(\Delta_T &gt; 0\)</span> and <span class="math notranslate nohighlight">\(V_T &gt; V_\text{rest}\)</span>.</p>
 </section>
-<section id="id3">
-<h3>Description<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<section id="id5">
+<h3>Description<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
 <p>This model uses exponential dynamics to model the rapid increase in membrane voltage before
 (and at the start of) the generation of an action potential. This upswing occurs at a voltage
 above <span class="math notranslate nohighlight">\(V_T\)</span>, specifically, as <span class="math notranslate nohighlight">\(\Delta_T \rightarrow 0\)</span>, the voltage at which this upswing occurs
@@ -359,18 +420,18 @@ are used to illustrate its effect.</p>
 <p>Membrane voltage with no input current. Plotted with values <span class="math notranslate nohighlight">\(V_R = -60\text{ mV}\)</span>,
 <span class="math notranslate nohighlight">\(V_T = -50\)</span>, <span class="math notranslate nohighlight">\(\Delta_T = 2\)</span>, and <span class="math notranslate nohighlight">\(\tau_m=1 \text{ ms}\)</span> over a time of <span class="math notranslate nohighlight">\(1 \text{ ms}\)</span>.</p>
 </section>
-<section id="id4">
-<h3>References<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<section id="id6">
+<h3>References<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (Chapter 6.1)</a></p></li>
-<li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083 (Section 1.2)</a></p></li>
+<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (§6.1)</a></p></li>
+<li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083</a></p></li>
 </ol>
 </section>
 </section>
 <section id="adaptive-exponential-integrate-and-fire-adex">
 <h2>Adaptive Exponential Integrate-and-Fire (AdEx)<a class="headerlink" href="#adaptive-exponential-integrate-and-fire-adex" title="Link to this heading">#</a></h2>
-<section id="id5">
-<h3>Formulation<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<section id="id7">
+<h3>Formulation<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -415,21 +476,22 @@ are used to illustrate its effect.</p>
 <li><p><span class="math notranslate nohighlight">\(\tau_m\)</span>, membrane time constant <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(a_k\)</span>, subthreshold adaptation, voltage-current coupling <span class="math notranslate nohighlight">\((\mu\text{S})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(b_k\)</span>, spike-triggered current adaptation <span class="math notranslate nohighlight">\((\text{nA})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\tau_k\)</span>, adaptation time constant <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span>, current time of the simulation <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\Delta t\)</span>, length of time over which each simulation step occurs <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 </ul>
 <p>Under the conditions <span class="math notranslate nohighlight">\(\Delta_T &gt; 0\)</span> and <span class="math notranslate nohighlight">\(V_T &gt; V_\text{rest}\)</span>.</p>
 </section>
-<section id="id6">
-<h3>Description<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<section id="id8">
+<h3>Description<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
 <p>This model uses the same underlying dynamics of the exponential integrate-and-fire neuron, but
 incorporates a linear adaptive current depeendent upon output spikes and the membrane voltage.</p>
 </section>
-<section id="id7">
-<h3>References<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<section id="id9">
+<h3>References<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (Chapter 6.1)</a></p></li>
-<li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083 (Section 1.2)</a></p></li>
+<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (§6.1)</a></p></li>
+<li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083</a></p></li>
 <li><p><a class="reference external" href="http://www.scholarpedia.org/article/Adaptive_exponential_integrate-and-fire_model">DOI:10.4249/scholarpedia.8427</a></p></li>
 <li><p><a class="reference external" href="https://www.jneurosci.org/content/23/37/11628.long">DOI:10.1523/JNEUROSCI.23-37-11628.2003</a></p></li>
 </ol>
@@ -499,20 +561,22 @@ incorporates a linear adaptive current depeendent upon output spikes and the mem
 <li><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#izhikevich">Izhikevich</a><ul>
-<li><a class="reference internal" href="#id1">References</a></li>
+<li><a class="reference internal" href="#izhikevich-adaptive-quadratic">Izhikevich (Adaptive Quadratic)</a><ul>
+<li><a class="reference internal" href="#id1">Formulation</a></li>
+<li><a class="reference internal" href="#id2">Description</a></li>
+<li><a class="reference internal" href="#id3">References</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#exponential-integrate-and-fire-eif">Exponential Integrate-and-Fire (EIF)</a><ul>
-<li><a class="reference internal" href="#id2">Formulation</a></li>
-<li><a class="reference internal" href="#id3">Description</a></li>
-<li><a class="reference internal" href="#id4">References</a></li>
+<li><a class="reference internal" href="#id4">Formulation</a></li>
+<li><a class="reference internal" href="#id5">Description</a></li>
+<li><a class="reference internal" href="#id6">References</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#adaptive-exponential-integrate-and-fire-adex">Adaptive Exponential Integrate-and-Fire (AdEx)</a><ul>
-<li><a class="reference internal" href="#id5">Formulation</a></li>
-<li><a class="reference internal" href="#id6">Description</a></li>
-<li><a class="reference internal" href="#id7">References</a></li>
+<li><a class="reference internal" href="#id7">Formulation</a></li>
+<li><a class="reference internal" href="#id8">Description</a></li>
+<li><a class="reference internal" href="#id9">References</a></li>
 </ul>
 </li>
 </ul>

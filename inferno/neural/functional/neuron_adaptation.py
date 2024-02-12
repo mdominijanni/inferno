@@ -117,7 +117,7 @@ def adaptive_thresholds_linear_voltage(
     rest_v: float | torch.Tensor,
     adapt_rate: float | torch.Tensor,
     rebound_rate: float | torch.Tensor,
-    adapt_reset_lb: float | torch.Tensor | None = None,
+    adapt_reset_min: float | torch.Tensor | None = None,
     spikes: torch.Tensor | None = None,
     refracs: torch.Tensor | None = None
 ) -> torch.Tensor:
@@ -148,7 +148,7 @@ def adaptive_thresholds_linear_voltage(
             membrane voltage term, :math:`a_k`, in :math:`\text{ms}^{-1}`.
         rebound_rate (float | torch.Tensor): rate constant of exponential decay for
             threshold voltage term, :math:`b_k`, in :math:`\text{ms}^{-1}`.
-        adapt_reset_lb (float | torch.Tensor | None, optional): lower bound for
+        adapt_reset_min (float | torch.Tensor | None, optional): lower bound for
             the threshold adaptation permitted after a postsynaptic potential,
             :math:`\theta_\text{reset}`, in :math:`\text{mV}`. Defaults to None.
         spikes (torch.Tensor | None, optional): if the corresponding neuron generated an
@@ -177,7 +177,7 @@ def adaptive_thresholds_linear_voltage(
         `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
         ``voltages``, ``spikes``, and ``refracs``.
 
-        ``step_time``, ``adapt_rate``, ``rebound_rate``, ``adapt_reset_lb``:
+        ``step_time``, ``adapt_rate``, ``rebound_rate``, ``adapt_reset_min``:
 
         `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
         ``adaptations``.
@@ -192,7 +192,7 @@ def adaptive_thresholds_linear_voltage(
             * :math:`K` is the number of sets of adaptation parameters.
 
     Note:
-        If either ``adapt_reset_lb`` or ``spikes`` is None, then no lower bound
+        If either ``adapt_reset_min`` or ``spikes`` is None, then no lower bound
         will be applied to threshold adaptations.
 
     Tip:
@@ -218,10 +218,10 @@ def adaptive_thresholds_linear_voltage(
         )
 
     # post-spike adaptation step
-    if adapt_reset_lb is not None and spikes is not None:
+    if adapt_reset_min is not None and spikes is not None:
         adaptations = adaptations.where(
             spikes.unsqueeze(-1) == 0,
-            adaptations.clamp_min(adapt_reset_lb),
+            adaptations.clamp_min(adapt_reset_min),
         )
 
     # return updated adaptation state
@@ -240,12 +240,7 @@ def adaptive_thresholds_linear_spike(
     r"""Update adaptive thresholds based on postsynaptic spikes.
 
     .. math::
-        \theta_k(t + \Delta t) = \theta_k(t) \alpha_k
-
-    Where :math:`\alpha_k` is the multiple for exponential decay, typically expressed
-    as :math:`\alpha_k = \exp(-\Delta t / \tau_k)`, where :math:`\Delta t` is the
-    step time and :math:`\tau_k` is the time constant for the :math:`k^\text{th}`
-    adaptation, in like units of time.
+        \theta_k(t + \Delta t) = \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 
     If a spike was generated at time :math:`t`, then.
 

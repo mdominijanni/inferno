@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/distributions.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -289,7 +290,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 <section id="references">
 <h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch1.S3.html">DOI:10.1017/CBO9781107447615 (Chapter 1.3)</a></p></li>
+<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch1.S3.html">DOI:10.1017/CBO9781107447615 (§1.3)</a></p></li>
 <li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083</a></p></li>
 <li><p><a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">DOI:10.1038/s41467-017-02717-4</a></p></li>
 </ol>
@@ -325,7 +326,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 \[\begin{split}
 \begin{align*}
     V_m(t) &amp;\leftarrow V_\text{reset} \\
-    \theta_k(t) &amp;\leftarrow \theta_k(t) + a_k
+    \theta_k(t) &amp;\leftarrow \theta_k(t) + d_k
 \end{align*}
 \end{split}\]</div>
 </div>
@@ -339,7 +340,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 <li><p><span class="math notranslate nohighlight">\(\Theta_\infty\)</span>, equilibrium of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\theta_k\)</span>, adaptive component of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\theta_\text{reset}\)</span>, reset value of the adaptive component of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(a_k\)</span>, spike-triggered voltage threshold adaptation <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(d_k\)</span>, spike-triggered voltage threshold adaptation <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\tau_k\)</span>, adaptation time constant <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span>, current time of the simulation <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\Delta t\)</span>, length of time over which each simulation step occurs <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
@@ -372,7 +373,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 \begin{align*}
     \tau_m \frac{dV_m(t)}{dt} &amp;= - \left[V_m(t) - V_\text{rest}\right] + R_mI(t) \\
     \Theta(t) &amp;= \Theta_\infty + \sum_k \theta_k(t) \\
-    \tau_k \frac{d\theta_k(t)}{dt} &amp;= -\theta_k(t) \\
+    \frac{d\theta_k(t)}{dt} &amp;= -\lambda \theta_k(t) \\
 \end{align*}
 \end{split}\]</div>
 </div>
@@ -382,7 +383,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 \[\begin{split}
 \begin{align*}
     V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
-    \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
+    \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\lambda_k \Delta t\right)
 \end{align*}
 \end{split}\]</div>
 </div>
@@ -392,7 +393,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 \[\begin{split}
 \begin{align*}
     V_m(t) &amp;\leftarrow V_\text{rest} + m_v \left[ V_m(t) - V_\text{rest} \right] - b_v \\
-    \theta_k(t) &amp;\leftarrow \theta_k(t) + a_k
+    \theta_k(t) &amp;\leftarrow \theta_k(t) + d_k
 \end{align*}
 \end{split}\]</div>
 </div>
@@ -408,15 +409,15 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 <li><p><span class="math notranslate nohighlight">\(\Theta_\infty\)</span>, equilibrium of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\theta_k\)</span>, adaptive component of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\theta_\text{reset}\)</span>, reset value of the adaptive component of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(a_k\)</span>, spike-triggered voltage threshold adaptation <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(\tau_k\)</span>, adaptation time constant <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(d_k\)</span>, spike-triggered voltage threshold adaptation <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\lambda_k\)</span>, adaptation rate constant <span class="math notranslate nohighlight">\((\text{ms}^{-1})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span>, current time of the simulation <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\Delta t\)</span>, length of time over which each simulation step occurs <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 </ul>
 </section>
 <section id="id5">
 <h3>Description<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
-<p>Also called “leaky integrate-and-fire with biologically defined reset rules (LIF-R)”, this model uses conventional LIF dynamics, with a linear spike-dependent adaptive threshold and a reset voltage which is contingent on the membrane voltage reached when spiking.</p>
+<p>Also called “leaky integrate-and-fire with biologically defined reset rules (LIF-R)”, this model uses conventional LIF dynamics, with a linear spike-dependent adaptive threshold and a reset voltage which is contingent on the membrane voltage reached when spiking. Note that the adaptation decay is defined in terms of a rate constant <span class="math notranslate nohighlight">\(\lambda_k\)</span> rather than a time constant <span class="math notranslate nohighlight">\(\tau_k\)</span>.</p>
 </section>
 <section id="id6">
 <h3>References<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>

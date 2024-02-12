@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/distributions.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -219,15 +220,19 @@
           <h1>Source code for inferno.neural.neurons.nonlinear</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Neuron</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">nf</span>
-<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span>
+<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span>
 <span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span><span class="p">,</span> <span class="n">numeric_relative</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">zip_longest</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 
 <div class="viewcode-block" id="QIF">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.QIF.html#inferno.neural.QIF">[docs]</a>
 <span class="k">class</span> <span class="nc">QIF</span><span class="p">(</span><span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of quadratic integrate-and-fire (QIF) neuron dynamics.</span>
+
+<span class="sd">    Implemented as an approximation using Euler&#39;s method.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        V_m(t + \Delta t) = \frac{\Delta t}{\tau_m}</span>
@@ -246,7 +251,7 @@
 <span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
 <span class="sd">        crit_v (float): membrane potential difference at which potential</span>
 <span class="sd">            naturally increases, :math:`V_\text{crit}`, in :math:`\text{mV}`.</span>
-<span class="sd">        attraction (float): controls the strength of the membrane</span>
+<span class="sd">        affinity (float): controls the strength of the membrane</span>
 <span class="sd">            potential&#39;s drift towards :math:`V_\text{rest}` and away from</span>
 <span class="sd">            :math:`V_\text{crit}`, :math:`a`, unitless.</span>
 <span class="sd">        reset_v (float): membrane voltage after an action potential is generated,</span>
@@ -272,7 +277,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">crit_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">attraction</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">affinity</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">reset_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">thresh_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">refrac_t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -302,7 +307,7 @@
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;attraction&quot;</span><span class="p">,</span> <span class="n">attraction</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">affinity</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;affinity&quot;</span><span class="p">,</span> <span class="n">affinity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
@@ -338,7 +343,7 @@
             <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
             <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
             <span class="n">crit_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crit_v</span><span class="p">,</span>
-            <span class="n">attraction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attraction</span><span class="p">,</span>
+            <span class="n">affinity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">affinity</span><span class="p">,</span>
             <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span>
             <span class="n">resistance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span>
         <span class="p">)</span>
@@ -405,11 +410,317 @@
 
 
 
+<div class="viewcode-block" id="Izhikevich">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.Izhikevich.html#inferno.neural.Izhikevich">[docs]</a>
+<span class="k">class</span> <span class="nc">Izhikevich</span><span class="p">(</span><span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of Izhikevich (adaptive quadratic) neuron dynamics.</span>
+
+<span class="sd">    Implemented as an approximation using Euler&#39;s method.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{align*}</span>
+<span class="sd">            V_m(t + \Delta t) &amp;= \frac{\Delta t}{\tau_m} \left[ a \left(V_m(t)</span>
+<span class="sd">            - V_\text{rest}\right)\left(V_m(t)</span>
+<span class="sd">            - V_\text{crit}\right) + R_mI(t) \right] + V_m(t) \\</span>
+<span class="sd">            I(t) &amp;= I_x(t) - \sum_k w_k(t) \\</span>
+<span class="sd">            w_k(t + \Delta t) &amp;= \frac{\Delta t}{\tau_k}\left[ b_k</span>
+<span class="sd">            \left[ V_m(t) - V_\text{rest} \right] - w_k(t) \right] + w_k(t)</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    If a spike was generated at time :math:`t`, then.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{align*}</span>
+<span class="sd">            V_m(t) &amp;\leftarrow V_\text{reset} \\</span>
+<span class="sd">            w_k(t) &amp;\leftarrow w_k(t) + d_k</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shape (tuple[int, ...] | int): shape of the group of neurons being simulated.</span>
+<span class="sd">        step_time (float): length of a simulation time step,</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
+<span class="sd">        rest_v (float): membrane potential difference at equilibrium,</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
+<span class="sd">        crit_v (float): membrane potential difference at which potential</span>
+<span class="sd">            naturally increases, :math:`V_\text{crit}`, in :math:`\text{mV}`.</span>
+<span class="sd">        affinity (float): controls the strength of the membrane</span>
+<span class="sd">            potential&#39;s drift towards :math:`V_\text{rest}` and away from</span>
+<span class="sd">            :math:`V_\text{crit}`, :math:`a`, unitless.</span>
+<span class="sd">        reset_v (float): membrane voltage after an action potential is generated,</span>
+<span class="sd">            :math:`V_\text{reset}`, in :math:`\text{mV}`.</span>
+<span class="sd">        thresh_v (float): membrane voltage at which action potentials are generated,</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
+<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.</span>
+<span class="sd">        tc_membrane (float): time constant of exponential decay for membrane voltage,</span>
+<span class="sd">            :math:`\tau_m`, in :math:`\text{ms}`.</span>
+<span class="sd">        tc_adaptation (float | tuple[float, ...]): time constant of exponential decay</span>
+<span class="sd">            for threshold adaptations, :math:`\tau_k`, in :math:`\text{ms}`.</span>
+<span class="sd">        voltage_coupling (float | tuple[float, ...]): strength of coupling to membrane</span>
+<span class="sd">            voltage, :math:`b_k`, in :math:`\mu\text{S}`.</span>
+<span class="sd">        spike_increment (float | tuple[float, ...]): amount by which the adaptive</span>
+<span class="sd">            current is increased after a spike, :math:`d_k`, in :math:`\text{nA}`.</span>
+<span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.</span>
+<span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        ``batch_reduction`` can be one of the functions in PyTorch including but not</span>
+<span class="sd">        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.</span>
+<span class="sd">        A custom function with similar behavior can also be passed in. Like with the</span>
+<span class="sd">        included function, it should not keep the original dimensions by default.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        For more details and references, visit</span>
+<span class="sd">        :ref:`zoo/neurons-nonlinear:Izhikevich (Adaptive Quadratic)`</span>
+<span class="sd">        in the zoo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">crit_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">affinity</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">reset_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">thresh_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">refrac_t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">tc_membrane</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">tc_adaptation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">voltage_coupling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">spike_increment</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_reduction</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># call superclass constructor</span>
+        <span class="n">Neuron</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+
+        <span class="c1"># process adapation attributes</span>
+        <span class="c1"># tuple-wrap if singleton</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tc_adaptation</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+            <span class="n">tc_adaptation</span> <span class="o">=</span> <span class="p">(</span><span class="n">tc_adaptation</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">voltage_coupling</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+            <span class="n">voltage_coupling</span> <span class="o">=</span> <span class="p">(</span><span class="n">voltage_coupling</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">spike_increment</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+            <span class="n">spike_increment</span> <span class="o">=</span> <span class="p">(</span><span class="n">spike_increment</span><span class="p">,)</span>
+
+        <span class="c1"># prepare converted lists</span>
+        <span class="n">tcL</span><span class="p">,</span> <span class="n">vcL</span><span class="p">,</span> <span class="n">siL</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="c1"># test values</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">tcA</span><span class="p">,</span> <span class="n">vcA</span><span class="p">,</span> <span class="n">siA</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="n">zip_longest</span><span class="p">(</span><span class="n">tc_adaptation</span><span class="p">,</span> <span class="n">voltage_coupling</span><span class="p">,</span> <span class="n">spike_increment</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="c1"># time constant of adaptation</span>
+            <span class="k">if</span> <span class="n">tcA</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tcL</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tc_adaptation[</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">tcA</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+                <span class="n">tcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+            <span class="c1"># voltage-current coupling</span>
+            <span class="k">if</span> <span class="n">vcL</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">vcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vcL</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">vcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">vcA</span><span class="p">))</span>
+
+            <span class="c1"># current spike increment</span>
+            <span class="k">if</span> <span class="n">siL</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">siL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">siL</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">siL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">siA</span><span class="p">))</span>
+
+        <span class="c1"># reassign</span>
+        <span class="n">tc_adaptation</span><span class="p">,</span> <span class="n">voltage_coupling</span><span class="p">,</span> <span class="n">spike_increment</span> <span class="o">=</span> <span class="n">tcL</span><span class="p">,</span> <span class="n">vcL</span><span class="p">,</span> <span class="n">siL</span>
+
+        <span class="c1"># dynamics attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">crit_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
+            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;crit_v&quot;</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span><span class="s2">&quot;crit_v&quot;</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">affinity</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;affinity&quot;</span><span class="p">,</span> <span class="n">affinity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
+            <span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span> <span class="n">tc_membrane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># register adaptation attributes as buffers (for tensor ops and compatibility)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;tc_adaptation&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">tc_adaptation</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;adapt_vc_coupling&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">voltage_coupling</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;adapt_increment&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">spike_increment</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="c1"># call mixin constructors</span>
+        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">AdaptationMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="o">.</span><span class="n">numel</span><span class="p">()),</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="n">batch_reduction</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_integrate_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masked_inputs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_integration_quadratic</span><span class="p">(</span>
+            <span class="n">masked_inputs</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
+            <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
+            <span class="n">crit_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crit_v</span><span class="p">,</span>
+            <span class="n">affinity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">affinity</span><span class="p">,</span>
+            <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span>
+            <span class="n">resistance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new simulation time step length.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: present simulation time step length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
+
+    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+<div class="viewcode-block" id="Izhikevich.clear">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.Izhikevich.html#inferno.neural.Izhikevich.clear">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keep_adaptations</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets neurons to their resting state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keep_adaptations (bool, optional): if learned adaptations should be</span>
+<span class="sd">                preserved. Defaults to True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_adaptations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Izhikevich.forward">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.Izhikevich.html#inferno.neural.Izhikevich.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">adapt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">refrac_lock</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the neuronal dynamics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (torch.Tensor): presynaptic currents,</span>
+<span class="sd">                :math:`I-x(t)`, in :math:`\text{nA}`.</span>
+<span class="sd">            adapt (bool | None, optional): if adaptations should be updated</span>
+<span class="sd">                based on this step. Defaults to None.</span>
+<span class="sd">            refrac_lock (bool, optional): if membrane voltages should be fixed</span>
+<span class="sd">                while in the refractory period. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            When ``adapt`` is set to None, adaptations will be updated when the neuron</span>
+<span class="sd">            is in training mode but not when it is in evaluation mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># use voltage thresholding function</span>
+        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">nf</span><span class="o">.</span><span class="n">apply_adaptive_currents</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">),</span>
+            <span class="n">refracs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
+            <span class="n">dynamics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
+            <span class="n">reset_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span>
+            <span class="n">thresh_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
+            <span class="n">refrac_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span>
+            <span class="n">voltages</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># update parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="o">=</span> <span class="n">voltages</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">=</span> <span class="n">refracs</span>
+
+        <span class="c1"># conditionally update adaptive thresholds</span>
+        <span class="k">if</span> <span class="n">adapt</span> <span class="ow">or</span> <span class="p">(</span><span class="n">adapt</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">):</span>
+            <span class="c1"># use adaptive thresholds update function</span>
+            <span class="n">adaptations</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">adaptive_currents_linear</span><span class="p">(</span>
+                <span class="n">adaptations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
+                <span class="n">voltages</span><span class="o">=</span><span class="n">voltages</span><span class="p">,</span>
+                <span class="n">spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
+                <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
+                <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">,</span>
+                <span class="n">voltage_coupling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_vc_coupling</span><span class="p">,</span>
+                <span class="n">spike_increment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_increment</span><span class="p">,</span>
+                <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="c1"># update parameter</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span> <span class="o">=</span> <span class="n">adaptations</span>
+
+        <span class="c1"># return spiking output</span>
+        <span class="k">return</span> <span class="n">spikes</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="EIF">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.EIF.html#inferno.neural.EIF">[docs]</a>
 <span class="k">class</span> <span class="nc">EIF</span><span class="p">(</span><span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of exponential integrate-and-fire (EIF) neuron dynamics.</span>
 
+<span class="sd">    Implemented as an approximation using Euler&#39;s method.</span>
+
 <span class="sd">    .. math::</span>
-<span class="sd">        V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[</span>
+<span class="sd">        V_m(t + \Delta t) = \frac{\Delta t}{\tau_m} \left[</span>
 <span class="sd">        - \left[V_m(t) - V_\text{rest}\right] +</span>
 <span class="sd">        \Delta_T \exp \left(\frac{V_m(t) - V_T}{\Delta_T}\right) + R_mI(t)</span>
 <span class="sd">        \right]+ V_m(t)</span>
@@ -543,11 +854,16 @@
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span>
 
+<div class="viewcode-block" id="EIF.clear">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.EIF.html#inferno.neural.EIF.clear">[docs]</a>
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets neurons to their resting state.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="EIF.forward">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.EIF.html#inferno.neural.EIF.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">refrac_lock</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the neuronal dynamics.</span>
 
@@ -577,7 +893,314 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">=</span> <span class="n">refracs</span>
 
         <span class="c1"># return spiking output</span>
-        <span class="k">return</span> <span class="n">spikes</span>
+        <span class="k">return</span> <span class="n">spikes</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AdEx">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.AdEx.html#inferno.neural.AdEx">[docs]</a>
+<span class="k">class</span> <span class="nc">AdEx</span><span class="p">(</span><span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulation of adaptive exponential integrate-and-fire (AdEx) neuron dynamics.</span>
+
+<span class="sd">    Implemented as an approximation using Euler&#39;s method.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{align*}</span>
+<span class="sd">            V_m(t + \Delta t) &amp;= \frac{\Delta t}{\tau_m} \left[- \left[V_m(t) - V_\text{rest}\right] +</span>
+<span class="sd">            \Delta_T \exp \left(\frac{V_m(t) - V_T}{\Delta_T}\right) + R_mI(t) \right]+ V_m(t) \\</span>
+<span class="sd">            I(t) &amp;= I_x(t) - \sum_k w_k(t) \\</span>
+<span class="sd">            w_k(t + \Delta t) &amp;= \frac{\Delta t}{\tau_k}\left[ a_k \left[ V_m(t) - V_\text{rest} \right]</span>
+<span class="sd">            - w_k(t) \right] + w_k(t) \\</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    If a spike was generated at time :math:`t`, then.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{align*}</span>
+<span class="sd">            V_m(t) &amp;\leftarrow V_\text{reset} \\</span>
+<span class="sd">            w_k(t) &amp;\leftarrow w_k(t) + b_k</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shape (tuple[int, ...] | int): shape of the group of neurons being simulated.</span>
+<span class="sd">        step_time (float): length of a simulation time step,</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
+<span class="sd">        rest_v (float): membrane potential difference at equilibrium,</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
+<span class="sd">        rheobase_v (float): membrane potential difference approaching the potential at</span>
+<span class="sd">            which potential rapidly increases, :math:`V_T`, in :math:`\text{mV}`.</span>
+<span class="sd">        sharpness (float): steepness of the natural increase in membrane potential</span>
+<span class="sd">            above the rheobase voltage, :math:`\Delta_T`, in :math:`\text{mV}`.</span>
+<span class="sd">        reset_v (float): membrane voltage after an action potential is generated,</span>
+<span class="sd">            :math:`V_\text{reset}`, in :math:`\text{mV}`.</span>
+<span class="sd">        thresh_v (float): membrane voltage at which action potentials are generated,</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
+<span class="sd">        refrac_t (float): length the absolute refractory period, in :math:`\text{ms}`.</span>
+<span class="sd">        tc_membrane (float): time constant of exponential decay for membrane voltage,</span>
+<span class="sd">            :math:`\tau_m`, in :math:`\text{ms}`.</span>
+<span class="sd">        tc_adaptation (float | tuple[float, ...]): time constant of exponential decay</span>
+<span class="sd">            for threshold adaptations, :math:`\tau_k`, in :math:`\text{ms}`.</span>
+<span class="sd">        voltage_coupling (float | tuple[float, ...]): strength of coupling to membrane</span>
+<span class="sd">            voltage, :math:`a_k`, in :math:`\mu\text{S}`.</span>
+<span class="sd">        spike_increment (float | tuple[float, ...]): amount by which the adaptive</span>
+<span class="sd">            current is increased after a spike, :math:`b_k`, in :math:`\text{nA}`.</span>
+<span class="sd">        resistance (float, optional): resistance across the cell membrane,</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.</span>
+<span class="sd">        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.</span>
+<span class="sd">        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):</span>
+<span class="sd">            function to reduce adaptation updates over the batch dimension,</span>
+<span class="sd">            :py:func:`torch.mean` when None. Defaults to None.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        ``batch_reduction`` can be one of the functions in PyTorch including but not</span>
+<span class="sd">        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.</span>
+<span class="sd">        A custom function with similar behavior can also be passed in. Like with the</span>
+<span class="sd">        included function, it should not keep the original dimensions by default.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        For more details and references, visit</span>
+<span class="sd">        :ref:`zoo/neurons-nonlinear:Adaptive Exponential Integrate-and-Fire (AdEx)`</span>
+<span class="sd">        in the zoo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">rheobase_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">sharpness</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">reset_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">thresh_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">refrac_t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">tc_membrane</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">tc_adaptation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">voltage_coupling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">spike_increment</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_reduction</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># call superclass constructor</span>
+        <span class="n">Neuron</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+
+        <span class="c1"># process adapation attributes</span>
+        <span class="c1"># tuple-wrap if singleton</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tc_adaptation</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+            <span class="n">tc_adaptation</span> <span class="o">=</span> <span class="p">(</span><span class="n">tc_adaptation</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">voltage_coupling</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+            <span class="n">voltage_coupling</span> <span class="o">=</span> <span class="p">(</span><span class="n">voltage_coupling</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">spike_increment</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+            <span class="n">spike_increment</span> <span class="o">=</span> <span class="p">(</span><span class="n">spike_increment</span><span class="p">,)</span>
+
+        <span class="c1"># prepare converted lists</span>
+        <span class="n">tcL</span><span class="p">,</span> <span class="n">vcL</span><span class="p">,</span> <span class="n">siL</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="c1"># test values</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">tcA</span><span class="p">,</span> <span class="n">vcA</span><span class="p">,</span> <span class="n">siA</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="n">zip_longest</span><span class="p">(</span><span class="n">tc_adaptation</span><span class="p">,</span> <span class="n">voltage_coupling</span><span class="p">,</span> <span class="n">spike_increment</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="c1"># time constant of adaptation</span>
+            <span class="k">if</span> <span class="n">tcA</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tcL</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tc_adaptation[</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">tcA</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+                <span class="n">tcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+            <span class="c1"># voltage-current coupling</span>
+            <span class="k">if</span> <span class="n">vcL</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">vcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vcL</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">vcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">vcA</span><span class="p">))</span>
+
+            <span class="c1"># current spike increment</span>
+            <span class="k">if</span> <span class="n">siL</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">siL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">siL</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">siL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">siA</span><span class="p">))</span>
+
+        <span class="c1"># reassign</span>
+        <span class="n">tc_adaptation</span><span class="p">,</span> <span class="n">voltage_coupling</span><span class="p">,</span> <span class="n">spike_increment</span> <span class="o">=</span> <span class="n">tcL</span><span class="p">,</span> <span class="n">vcL</span><span class="p">,</span> <span class="n">siL</span>
+
+        <span class="c1"># dynamics attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rheobase_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
+            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;rheobase_v&quot;</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
+            <span class="s2">&quot;rheobase_v&quot;</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sharpness</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;sharpness&quot;</span><span class="p">,</span> <span class="n">sharpness</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
+            <span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span> <span class="n">tc_membrane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># register adaptation attributes as buffers (for tensor ops and compatibility)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;tc_adaptation&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">tc_adaptation</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;adapt_vc_coupling&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">voltage_coupling</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;adapt_increment&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">spike_increment</span><span class="p">),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="c1"># call mixin constructors</span>
+        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">AdaptationMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="o">.</span><span class="n">numel</span><span class="p">()),</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="n">batch_reduction</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_integrate_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masked_inputs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_integration_exponential</span><span class="p">(</span>
+            <span class="n">masked_inputs</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
+            <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
+            <span class="n">rheobase_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rheobase_v</span><span class="p">,</span>
+            <span class="n">sharpness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sharpness</span><span class="p">,</span>
+            <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span>
+            <span class="n">resistance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new simulation time step length.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: present simulation time step length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
+
+    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+<div class="viewcode-block" id="AdEx.clear">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.AdEx.html#inferno.neural.AdEx.clear">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keep_adaptations</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets neurons to their resting state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keep_adaptations (bool, optional): if learned adaptations should be</span>
+<span class="sd">                preserved. Defaults to True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_adaptations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AdEx.forward">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.AdEx.html#inferno.neural.AdEx.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">adapt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">refrac_lock</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the neuronal dynamics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (torch.Tensor): presynaptic currents,</span>
+<span class="sd">                :math:`I_x(t)`, in :math:`\text{nA}`.</span>
+<span class="sd">            adapt (bool | None, optional): if adaptations should be updated</span>
+<span class="sd">                based on this step. Defaults to None.</span>
+<span class="sd">            refrac_lock (bool, optional): if membrane voltages should be fixed</span>
+<span class="sd">                while in the refractory period. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            When ``adapt`` is set to None, adaptations will be updated when the neuron</span>
+<span class="sd">            is in training mode but not when it is in evaluation mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># use voltage thresholding function</span>
+        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">nf</span><span class="o">.</span><span class="n">apply_adaptive_currents</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">),</span>
+            <span class="n">refracs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
+            <span class="n">dynamics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
+            <span class="n">reset_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span>
+            <span class="n">thresh_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
+            <span class="n">refrac_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span>
+            <span class="n">voltages</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># update parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="o">=</span> <span class="n">voltages</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">=</span> <span class="n">refracs</span>
+
+        <span class="c1"># conditionally update adaptive thresholds</span>
+        <span class="k">if</span> <span class="n">adapt</span> <span class="ow">or</span> <span class="p">(</span><span class="n">adapt</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">):</span>
+            <span class="c1"># use adaptive thresholds update function</span>
+            <span class="n">adaptations</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">adaptive_currents_linear</span><span class="p">(</span>
+                <span class="n">adaptations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
+                <span class="n">voltages</span><span class="o">=</span><span class="n">voltages</span><span class="p">,</span>
+                <span class="n">spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
+                <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
+                <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">,</span>
+                <span class="n">voltage_coupling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_vc_coupling</span><span class="p">,</span>
+                <span class="n">spike_increment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_increment</span><span class="p">,</span>
+                <span class="n">refracs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="c1"># update parameter</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span> <span class="o">=</span> <span class="n">adaptations</span>
+
+        <span class="c1"># return spiking output</span>
+        <span class="k">return</span> <span class="n">spikes</span></div>
+</div>
+
 </pre></div>
         </article>
       </div>

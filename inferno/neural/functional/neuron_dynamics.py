@@ -199,7 +199,7 @@ def voltage_integration_quadratic(
     step_time: float | torch.Tensor,
     rest_v: float | torch.Tensor,
     crit_v: float | torch.Tensor,
-    attraction: float | torch.Tensor,
+    affinity: float | torch.Tensor,
     time_constant: float | torch.Tensor,
     resistance: float | torch.Tensor,
 ) -> torch.Tensor:
@@ -223,7 +223,7 @@ def voltage_integration_quadratic(
             :math:`V_\text{rest}`, in :math:`\text{mV}`.
         crit_v (float | torch.Tensor): membrane potential difference at which potential
             naturally increases, :math:`V_\text{crit}`, in :math:`\text{mV}`.
-        attraction (float | torch.Tensor): controls the strength of the membrane
+        affinity (float | torch.Tensor): controls the strength of the membrane
             potential's drift towards :math:`V_\text{rest}` and away from
             :math:`V_\text{crit}`, :math:`a`, unitless.
         time_constant (float | torch.Tensor): time constant of exponential decay,
@@ -234,7 +234,7 @@ def voltage_integration_quadratic(
     Returns:
         torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.
     """
-    dyn_v = attraction * (voltages - rest_v) * (voltages - crit_v)
+    dyn_v = affinity * (voltages - rest_v) * (voltages - crit_v)
     decay = step_time / time_constant
     return voltages + decay * (dyn_v + (resistance * masked_inputs))
 

@@ -27,6 +27,9 @@
     GLIF1
     GLIF2
     QIF
+    Izhikevich
+    EIF
+    AdEx
 ```
 
 ## Synapses

@@ -21,7 +21,7 @@ $$V_m(t) \leftarrow V_\text{reset}$$
 - $V_m$, electric potential difference across the cell membrane $(\text{mV})$
 - $V_\text{rest}$, equilibrium of the membrane potential $(\text{mV})$
 - $V_\text{crit}$, critical value of the membrane potential $(\text{mV})$
-- $a$, tendency for the membrane potential to go towards $V_\text{rest}$ and away from $V_\text{crit}$ (unitless).
+- $a$, membrane potential tendency towards $V_\text{rest}$ and away from $V_\text{crit}$ (unitless)
 - $V_\text{reset}$, membrane potential difference set after spiking $(\text{mV})$
 - $\tau_m$, membrane time constant $(\text{ms})$
 - $t$, current time of the simulation $(\text{ms})$
@@ -46,14 +46,66 @@ and the critical voltage $(V_C = -50 \text{ mV})$ and rest voltage $(V_R = -60 \
 parameters. Plotted with values $\tau_m=1 \text{ ms}$ and $a=1$ over a time of $1 \text{ ms}$.
 
 ### References
-1. [DOI:10.1017/CBO9781107447615 (Chapter 5.3)](https://neuronaldynamics.epfl.ch/online/Ch5.S3.html)
+1. [DOI:10.1017/CBO9781107447615 (§5.3)](https://neuronaldynamics.epfl.ch/online/Ch5.S3.html)
 
-## Izhikevich
-*(To Be Completed)*
+## Izhikevich (Adaptive Quadratic)
+### Formulation
+$$
+\begin{align*}
+    \tau_m \frac{dV_m(t)}{dt} &= a \left(V_m(t)
+    - V_\text{rest}\right)\left(V_m(t)
+    - V_\text{crit}\right) + R_mI(t) \\
+    I(t) &= I_x(t) - \sum_k w_k(t) \\
+    \tau_k \frac{dw_k(t)}{dt} &= b_k \left[ V_m(t) - V_\text{rest} \right] - w_k(t) \\
+\end{align*}
+$$
+
+*With approximations:*
+
+$$
+\begin{align*}
+    V_m(t + \Delta t) &\approx \frac{\Delta t}{\tau_m} \left[ a \left(V_m(t)
+    - V_\text{rest}\right)\left(V_m(t)
+    - V_\text{crit}\right) + R_mI(t) \right] + V_m(t) \\
+    w_k(t + \Delta t) &\approx \frac{\Delta t}{\tau_k}\left[ b_k
+    \left[ V_m(t) - V_\text{rest} \right] - w_k(t) \right] + w_k(t)
+\end{align*}
+$$
+
+*After an action potential is generated:*
+
+$$
+\begin{align*}
+    V_m(t) &\leftarrow V_\text{reset} \\
+    w_k(t) &\leftarrow w_k(t) + d_k
+\end{align*}
+$$
+
+*Where:*
+- $I$, total input current applied to the neuron $(\text{nA})$
+- $I_x$, input current before adaptation $(\text{nA})$
+- $V_m$, electric potential difference across the cell membrane $(\text{mV})$
+- $V_\text{rest}$, equilibrium of the membrane potential $(\text{mV})$
+- $V_\text{crit}$, critical value of the membrane potential $(\text{mV})$
+- $a$, membrane potential tendency towards $V_\text{rest}$ and away from $V_\text{crit}$ (unitless)
+- $V_\text{reset}$, membrane potential difference set after spiking $(\text{mV})$
+- $\tau_m$, membrane time constant $(\text{ms})$
+- $b_k$, subthreshold adaptation, voltage-current coupling $(\mu\text{S})$
+- $d_k$, spike-triggered current adaptation $(\text{nA})$
+- $\tau_k$, adaptation time constant $(\text{ms})$
+- $t$, current time of the simulation $(\text{ms})$
+- $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$
+
+Under the conditions $a > 0$ and $V_\text{crit} > V_\text{rest}$.
+
+### Description
+This model uses the same underlying dynamics of the quadratic integrate-and-fire neuron, but
+incorporates a linear adaptive current depeendent upon output spikes and the membrane voltage.
 
 ### References
-1. [DOI:10.1017/CBO9781107447615 (Chapter 6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
+1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
 2. [DOI:10.3390/brainsci12070863](https://www.mdpi.com/2076-3425/12/7/863/pdf)
+3. [DOI:10.7551/mitpress/2526.001.0001 (See §8.1.4)](https://www.izhikevich.org/publications/dsn.pdf)
 
 ## Exponential Integrate-and-Fire (EIF)
 ### Formulation
@@ -134,8 +186,8 @@ Membrane voltage with no input current. Plotted with values $V_R = -60\text{ mV}
 $V_T = -50$, $\Delta_T = 2$, and $\tau_m=1 \text{ ms}$ over a time of $1 \text{ ms}$.
 
 ### References
-1. [DOI:10.1017/CBO9781107447615 (Chapter 6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
-2. [ISBN:9780262548083 (Section 1.2)](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)
+1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
+2. [ISBN:9780262548083](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)
 
 ## Adaptive Exponential Integrate-and-Fire (AdEx)
 ### Formulation
@@ -178,6 +230,7 @@ $$
 - $\tau_m$, membrane time constant $(\text{ms})$
 - $a_k$, subthreshold adaptation, voltage-current coupling $(\mu\text{S})$
 - $b_k$, spike-triggered current adaptation $(\text{nA})$
+- $\tau_k$, adaptation time constant $(\text{ms})$
 - $t$, current time of the simulation $(\text{ms})$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$
 
@@ -188,7 +241,7 @@ This model uses the same underlying dynamics of the exponential integrate-and-fi
 incorporates a linear adaptive current depeendent upon output spikes and the membrane voltage.
 
 ### References
-1. [DOI:10.1017/CBO9781107447615 (Chapter 6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
-2. [ISBN:9780262548083 (Section 1.2)](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)
+1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
+2. [ISBN:9780262548083](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)
 3. [DOI:10.4249/scholarpedia.8427](http://www.scholarpedia.org/article/Adaptive_exponential_integrate-and-fire_model)
 4. [DOI:10.1523/JNEUROSCI.23-37-11628.2003](https://www.jneurosci.org/content/23/37/11628.long)
