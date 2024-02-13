@@ -1,7 +1,7 @@
 ﻿Normal
 ======
 
-.. currentmodule:: inferno.dists
+.. currentmodule:: inferno.stats
 
 .. autoclass:: Normal
     :members:

@@ -1,7 +1,7 @@
 ﻿Poisson
 =======
 
-.. currentmodule:: inferno.dists
+.. currentmodule:: inferno.stats
 
 .. autoclass:: Poisson
     :members:

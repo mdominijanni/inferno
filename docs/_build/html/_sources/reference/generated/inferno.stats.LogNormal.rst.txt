@@ -1,7 +1,7 @@
 ﻿LogNormal
 =========
 
-.. currentmodule:: inferno.dists
+.. currentmodule:: inferno.stats
 
 .. autoclass:: LogNormal
     :members:

@@ -10,5 +10,5 @@ learn
 learn-functional
 observe
 typing
-distributions
+stats
 ```

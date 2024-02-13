@@ -1,8 +1,14 @@
 from . import constraints
 from .base import DiscreteDistribution, ContinuousDistribution
+from functools import partial
 import inferno
 import math
 import torch
+
+
+_tensorizefloat = partial(
+    inferno.tensorize, conversion=lambda x: torch.tensor(x).float()
+)
 
 
 class Poisson(DiscreteDistribution):
@@ -71,7 +77,7 @@ class Poisson(DiscreteDistribution):
             This calls :py:func:`torch.poisson` which as of PyTorch 2.1 does not support
             computation on Metal Performance Shaders. Compensate accordingly.
         """
-        rate = inferno.tensorize(rate, conversion=lambda x: torch.tensor(x).float())
+        rate = _tensorizefloat(rate)
         return torch.poisson(rate, generator=generator)
 
     @classmethod
@@ -108,9 +114,7 @@ class Poisson(DiscreteDistribution):
         Returns:
             torch.Tensor: log of the resulting point probabilities.
         """
-        support, rate = inferno.tensorize(
-            support, rate, conversion=lambda x: torch.tensor(x).float()
-        )
+        support, rate = _tensorizefloat(support, rate)
         return torch.special.xlogy(support, rate) - rate - torch.lgamma(rate + 1)
 
     @classmethod
@@ -120,8 +124,8 @@ class Poisson(DiscreteDistribution):
         r"""Computes the cumulative distribution function.
 
         .. math::
-            P(K \leq k; \lambda) = e^{-\lambda} \sum_{j=0}^{\lfloor k \rfloor}
-            \frac{\lambda^j}{j!}
+            P(K \leq k; \lambda) =
+            \frac{\Gamma (\lfloor k + 1 \rfloor, \lambda)}{\Gamma (\lambda)}
 
         Args:
             support (torch.Tensor | float): number of occurances, :math:`k`.
@@ -130,9 +134,7 @@ class Poisson(DiscreteDistribution):
         Returns:
             torch.Tensor: resulting cumulative probabilities.
         """
-        support, rate = inferno.tensorize(
-            support, rate, conversion=lambda x: torch.tensor(x).float()
-        )
+        support, rate = _tensorizefloat(support, rate)
         return torch.special.gammaincc(torch.floor(support + 1), rate)
 
     @classmethod
@@ -167,7 +169,7 @@ class Poisson(DiscreteDistribution):
         Returns:
             torch.Tensor: mean of the distribution with given parameters.
         """
-        rate = inferno.tensorize(rate, conversion=lambda x: torch.tensor(x).float())
+        rate = _tensorizefloat(rate)
         return rate
 
     @classmethod
@@ -183,7 +185,7 @@ class Poisson(DiscreteDistribution):
         Returns:
             torch.Tensor: variance of the distribution with given parameters.
         """
-        rate = inferno.tensorize(rate, conversion=lambda x: torch.tensor(x).float())
+        rate = _tensorizefloat(rate)
         return rate
 
 
@@ -228,6 +230,30 @@ class Normal(ContinuousDistribution):
         }
 
     @classmethod
+    def params_mv(
+        cls, mean: torch.Tensor | float, variance: torch.Tensor | float
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        r"""Computes parameters of the lnormal distribution targeting a given mean and variance.
+
+        Computes the location :math:`\mu` and scale :math:`\sigma` as follows.
+
+        .. math::
+
+            \mu = \mu_X
+            \qquad
+            \sigma = \sqrt{\sigma_X^2}
+
+        Args:
+            mean (torch.Tensor | float): desired mean, :math:`\mu_X`.
+            variance (torch.Tensor | float): desired variance, :math:`\sigma_X^2`.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor]: tuple of the corresponding ``loc`` and ``scale``.
+        """
+        mean, variance = _tensorizefloat(mean, variance)
+        return mean, torch.sqrt(variance)
+
+    @classmethod
     def sample(
         cls,
         loc: torch.Tensor | float,
@@ -249,10 +275,31 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: resulting random variates :math:`X`.
         """
-        loc, scale = inferno.tensorize(
-            loc, scale, conversion=lambda x: torch.tensor(x).float()
-        )
+        loc, scale = _tensorizefloat(loc, scale)
         return torch.normal(loc, scale, generator=generator)
+
+    @classmethod
+    def sample_mv(
+        cls,
+        mean: torch.Tensor | float,
+        variance: torch.Tensor | float,
+        generator: torch.Generator | None = None,
+    ) -> torch.Tensor:
+        r"""Samples random variates with desired mean and variance from a normal distribution.
+
+        .. math::
+            \log X \sim \mathcal{N}\left(\mu, \sqrt{\sigma_X^2}\right)
+
+        Args:
+            mean (torch.Tensor | float): target sample mean, :math:`\mu_X`.
+            variance (torch.Tensor | float): target sample variance, :math:`\sigma_X^2`.
+            generator (torch.Generator | None, optional): pseudorandom number generator
+                to use for sampling. Defaults to None.
+
+        Returns:
+            torch.Tensor: resulting random variates :math:`X`.
+        """
+        return cls.sample(*cls.params_mv(mean, variance), generator=generator)
 
     @classmethod
     def pdf(
@@ -276,10 +323,7 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: resulting relative likelihoods.
         """
-        support, loc, scale = inferno.tensorize(
-            support, loc, scale, conversion=lambda x: torch.tensor(x).float()
-        )
-
+        support, loc, scale = _tensorizefloat(support, loc, scale)
         return (1 / (scale * math.sqrt(math.tau))) * torch.exp(
             -0.5 * ((support - loc) / scale) ** 2
         )
@@ -294,8 +338,8 @@ class Normal(ContinuousDistribution):
         r"""Computes the natural logarithm of the probability density function.
 
         .. math::
-            \log P(X=x; \mu, \sigma) = - \log \sigma - \frac{1}{2} \left[ \log \pi
-            - \left(\frac{\mu - x}{\sigma}\right)^2 \right]
+            \log P(X=x; \mu, \sigma) = - \log \sigma - \frac{1}{2} \left[ \log 2 \pi
+            + \left(\frac{\mu - x}{\sigma}\right)^2 \right]
 
         Args:
             support (torch.Tensor | float): location of observation, :math:`x`.
@@ -306,7 +350,7 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: log of the resulting relative likelihoods.
         """
-        return torch.log(Normal.pdf(support, loc, scale))
+        return torch.log(cls.pdf(support, loc, scale))
 
     @classmethod
     def cdf(
@@ -330,10 +374,7 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: resulting cumulative probabilities.
         """
-        support, loc, scale = inferno.tensorize(
-            support, loc, scale, conversion=lambda x: torch.tensor(x).float()
-        )
-
+        support, loc, scale = _tensorizefloat(support, loc, scale)
         return 0.5 * (1 + torch.special.erf((support - loc) / (scale * math.sqrt(2))))
 
     @classmethod
@@ -358,13 +399,10 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: log of the resulting cumulative probabilities.
         """
-        support, loc, scale = inferno.tensorize(
-            support, loc, scale, conversion=lambda x: torch.tensor(x).float()
-        )
-        return torch.log(Normal.cdf(support, loc, scale))
+        return torch.log(cls.cdf(support, loc, scale))
 
     @classmethod
-    def mean(loc: torch.Tensor | float) -> torch.Tensor:
+    def mean(cls, loc: torch.Tensor | float) -> torch.Tensor:
         r"""Computes the expected value of the distribution.
 
         .. math::
@@ -376,11 +414,11 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: mean of the distribution with given parameters.
         """
-        loc = inferno.tensorize(loc, conversion=lambda x: torch.tensor(x).float())
+        loc = _tensorizefloat(loc)
         return loc
 
     @classmethod
-    def variance(scale: torch.Tensor | float) -> torch.Tensor:
+    def variance(cls, scale: torch.Tensor | float) -> torch.Tensor:
         r"""Computes the variance of the distribution.
 
         .. math::
@@ -393,11 +431,11 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: variance of the distribution with given parameters.
         """
-        scale = inferno.tensorize(scale, conversion=lambda x: torch.tensor(x).float())
+        scale = _tensorizefloat(scale)
         return scale**2
 
 
-class LogNormal:
+class LogNormal(ContinuousDistribution):
     r"""Sampling from and properties of the log-normal distribution.
 
     The log-normal distribution is a continuous probability distribution derived
@@ -440,6 +478,35 @@ class LogNormal:
         }
 
     @classmethod
+    def params_mv(
+        cls, mean: torch.Tensor | float, variance: torch.Tensor | float
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        r"""Computes parameters of the log-normal distribution targeting a given mean and variance.
+
+        Computes the location :math:`\mu` and scale :math:`\sigma` as follows.
+
+        .. math::
+
+            \mu = \log \left[ \frac{\mu_X^2}{\sqrt{\mu_X^2 + \sigma_X^2}} \right]
+            \qquad
+            \sigma = \sqrt{\log \left[ 1 + \frac{\sigma_X^2}{\mu_X^2} \right]}
+
+        Args:
+            mean (torch.Tensor | float): desired mean, :math:`\mu_X`.
+            variance (torch.Tensor | float): desired variance, :math:`\sigma_X^2`.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor]: tuple of the corresponding ``loc`` and ``scale``.
+        """
+        mean, variance = _tensorizefloat(mean, variance)
+
+        meansq = mean**2
+        loc = torch.log(meansq / torch.sqrt(meansq + variance))
+        scale = torch.sqrt(torch.log(1 + variance / meansq))
+
+        return loc, scale
+
+    @classmethod
     def sample(
         cls,
         loc: torch.Tensor | float,
@@ -469,46 +536,139 @@ class LogNormal:
         variance: torch.Tensor | float,
         generator: torch.Generator | None = None,
     ) -> torch.Tensor:
-        r"""Samples random variates with desired mean and stdev from a log-normal distribution.
+        r"""Samples random variates with desired mean and variance from a log-normal distribution.
 
         .. math::
-            \log X \sim \mathcal{N}(\mu, \sigma)
-
-        Where the parameters :math:`\mu` and :math:`\sigma` are computed as.
-
-        .. math::
-
-            \mu = \log \left[ \frac{\mu_X^2}{\sqrt{\mu_X^2 + \sigma_X^2}} \right]
-            \qquad
-            \sigma = \sqrt{\log \left[ 1 + \frac{\sigma_X^2}{\mu_X^2} \right]}
+            \log X \sim \mathcal{N}
+            \left(
+            \log \left[ \frac{\mu_X^2}{\sqrt{\mu_X^2 + \sigma_X^2}} \right],
+            \sqrt{\log \left[ 1 + \frac{\sigma_X^2}{\mu_X^2} \right]}
+            \right)
 
         Args:
-            mean (torch.Tensor | float): desired sample mean, :math:`\mu_X`.
-            variance (torch.Tensor | float): desired sample variance, :math:`\sigma_X^2`.
+            mean (torch.Tensor | float): target sample mean, :math:`\mu_X`.
+            variance (torch.Tensor | float): target sample variance, :math:`\sigma_X^2`.
             generator (torch.Generator | None, optional): pseudorandom number generator
                 to use for sampling. Defaults to None.
 
         Returns:
             torch.Tensor: resulting random variates :math:`X`.
         """
-        mean, variance = inferno.tensorize(
-            mean, variance, conversion=lambda x: torch.tensor(x).float()
-        )
-
-        # compute log-normal parameters
-        meansq = mean**2
-        loc = torch.log(meansq / torch.sqrt(meansq + variance))
-        scale = torch.sqrt(torch.log(1 + variance / meansq))
-
-        # sample with computed parameters
-        return LogNormal.sample(loc, scale, generator=generator)
+        return cls.sample(*cls.params_mv(mean, variance), generator=generator)
 
     @classmethod
-    def mean(loc: torch.Tensor | float, scale: torch.Tensor | float) -> torch.Tensor:
+    def pdf(
+        cls,
+        support: torch.Tensor | float,
+        loc: torch.Tensor | float,
+        scale: torch.Tensor | float,
+    ) -> torch.Tensor:
+        r"""Computes the probability density function.
+
+        .. math::
+            P(X=x; \mu, \sigma) = \frac{1}{x \sigma \sqrt{2 \pi}} \exp
+            \left( - \left( \frac{\log x - \mu}{\sigma\sqrt{2}} \right)^2 \right)
+
+        Args:
+            support (torch.Tensor | float): location of observation, :math:`x`.
+            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.
+            scale (torch.Tensor | float): standard deviation of the distribution,
+                :math:`\sigma`.
+
+        Returns:
+            torch.Tensor: resulting relative likelihoods.
+        """
+        return torch.exp(cls.logpdf(support, loc, scale))
+
+    @classmethod
+    def logpdf(
+        cls,
+        support: torch.Tensor | float,
+        loc: torch.Tensor | float,
+        scale: torch.Tensor | float,
+    ) -> torch.Tensor:
+        r"""Computes the natural logarithm of the probability density function.
+
+        .. math::
+            \log P(X=x; \mu, \sigma) = - \log \sigma - \log x - \frac{1}{2}
+            \left[ \log 2 \pi
+            + \left(\frac{\mu - \log x}{\sigma}\right)^2 \right]
+
+        Args:
+            support (torch.Tensor | float): location of observation, :math:`x`.
+            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.
+            scale (torch.Tensor | float): standard deviation of the distribution,
+                :math:`\sigma`.
+
+        Returns:
+            torch.Tensor: log of the resulting relative likelihoods.
+        """
+        support, loc, scale = _tensorizefloat(support, loc, scale)
+
+        logsupport = torch.log(support)
+        return (
+            -torch.log(scale)
+            - logsupport
+            - 0.5 * (math.log(math.tau) + ((loc - logsupport) / scale) ** 2)
+        )
+
+    @classmethod
+    def cdf(
+        cls,
+        support: torch.Tensor | float,
+        loc: torch.Tensor | float,
+        scale: torch.Tensor | float,
+    ) -> torch.Tensor:
+        r"""Computes the cumulative distribution function.
+
+        .. math::
+            P(X \leq x; \mu, \sigma) = \frac{1}{2} \left[ 1 +
+            \text{erf} \left( \frac{\log x - \mu}{\sigma \sqrt{2}} \right) \right]
+
+        Args:
+            support (torch.Tensor | float): location of observation, :math:`x`.
+            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.
+            scale (torch.Tensor | float): standard deviation of the distribution,
+                :math:`\sigma`.
+
+        Returns:
+            torch.Tensor: resulting cumulative probabilities.
+        """
+        support, loc, scale = _tensorizefloat(support, loc, scale)
+        return Normal.cdf(torch.log(support), loc, scale)
+
+    @classmethod
+    def logcdf(
+        cls,
+        support: torch.Tensor | float,
+        loc: torch.Tensor | float,
+        scale: torch.Tensor | float,
+    ) -> torch.Tensor:
+        r"""Computes the natural logarithm of the cumulative distribution function.
+
+        .. math::
+            \log P(X \leq x; \mu, \sigma) = \log \frac{1}{2} \left[ 1 +
+            \text{erf} \left( \frac{\log x - \mu}{\sigma \sqrt{2}} \right) \right]
+
+        Args:
+            support (torch.Tensor | float): location of observation, :math:`x`.
+            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.
+            scale (torch.Tensor | float): standard deviation of the distribution,
+                :math:`\sigma`.
+
+        Returns:
+            torch.Tensor: resulting cumulative probabilities.
+        """
+        return torch.log(cls.logcdf(support, loc, scale))
+
+    @classmethod
+    def mean(
+        cls, loc: torch.Tensor | float, scale: torch.Tensor | float
+    ) -> torch.Tensor:
         r"""Computes the expected value of the distribution.
 
         .. math::
-            \text{E}[\log X \mid \log X \sim \mathcal{N}(\mu, \sigma)] =
+            \text{E}[X \mid X \sim \text{LogNormal}(\mu, \sigma)] =
             \exp\left( \mu + \frac{\sigma^2}{2} \right)
 
         Args:
@@ -518,19 +678,17 @@ class LogNormal:
         Returns:
             torch.Tensor: mean of the distribution with given parameters.
         """
-        loc, scale = inferno.tensorize(
-            loc, scale, conversion=lambda x: torch.tensor(x).float()
-        )
+        loc, scale = _tensorizefloat(loc, scale)
         return torch.exp(loc + scale**2 / 2)
 
     @classmethod
     def variance(
-        loc: torch.Tensor | float, scale: torch.Tensor | float
+        cls, loc: torch.Tensor | float, scale: torch.Tensor | float
     ) -> torch.Tensor:
         r"""Computes the variance of the distribution.
 
         .. math::
-            \text{Var}[\log X \mid \log X \sim \mathcal{N}(\mu, \sigma)] =
+            \text{Var}[X \mid X \sim \text{LogNormal}(\mu, \sigma)] =
             \left( \exp\left( \sigma^2 \right) - 1 \right)
             \exp\left( 2 \mu + \sigma^2 \right)
 

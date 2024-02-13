@@ -35,11 +35,11 @@ from .tensor import (
 )
 
 from . import (
-    dists,
+    stats,
 )
 
 __all__ = [
-    "dists"
+    "stats",
     "Module",
     "Configuration",
     "Hook",

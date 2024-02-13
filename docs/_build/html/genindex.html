@@ -164,7 +164,7 @@
 <li class="toctree-l2"><a class="reference internal" href="reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/typing.html">inferno.typing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/distributions.html">inferno.dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -375,10 +375,12 @@
   <h2>C</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.cdf">cdf() (Normal class method)</a>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.cdf">cdf() (LogNormal class method)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.cdf">(Poisson class method)</a>
+          <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal.cdf">(Normal class method)</a>
+</li>
+          <li><a href="reference/generated/inferno.stats.Poisson.html#inferno.stats.Poisson.cdf">(Poisson class method)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.neural.Clamping.html#inferno.neural.Clamping">Clamping (class in inferno.neural)</a>
@@ -792,13 +794,6 @@
         <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.infer">infer() (MaxRateClassifier method)</a>
 </li>
         <li>
-    inferno.dists
-
-        <ul>
-          <li><a href="reference/distributions.html#module-inferno.dists">module</a>
-</li>
-        </ul></li>
-        <li>
     inferno.learn
 
         <ul>
@@ -824,6 +819,13 @@
 
         <ul>
           <li><a href="reference/neural-functional.html#module-inferno.neural.functional">module</a>
+</li>
+        </ul></li>
+        <li>
+    inferno.stats
+
+        <ul>
+          <li><a href="reference/stats.html#module-inferno.stats">module</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.observe.CumulativeTraceReducer.html#inferno.observe.CumulativeTraceReducer.initialize">initialize() (CumulativeTraceReducer method)</a>
@@ -954,17 +956,23 @@
 </li>
         <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral">LinearLateral (class in inferno.neural)</a>
 </li>
-        <li><a href="reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.logcdf">logcdf() (Normal class method)</a>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.logcdf">logcdf() (LogNormal class method)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.logcdf">(Poisson class method)</a>
+          <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal.logcdf">(Normal class method)</a>
+</li>
+          <li><a href="reference/generated/inferno.stats.Poisson.html#inferno.stats.Poisson.logcdf">(Poisson class method)</a>
 </li>
         </ul></li>
-        <li><a href="reference/generated/inferno.dists.LogNormal.html#inferno.dists.LogNormal">LogNormal (class in inferno.dists)</a>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal">LogNormal (class in inferno.stats)</a>
 </li>
-        <li><a href="reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.logpdf">logpdf() (Normal class method)</a>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.logpdf">logpdf() (LogNormal class method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal.logpdf">(Normal class method)</a>
 </li>
-        <li><a href="reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.logpmf">logpmf() (Poisson class method)</a>
+        </ul></li>
+        <li><a href="reference/generated/inferno.stats.Poisson.html#inferno.stats.Poisson.logpmf">logpmf() (Poisson class method)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.HardWeightDependence.html#inferno.learn.HardWeightDependence.lower">lower() (HardWeightDependence method)</a>
 
@@ -998,12 +1006,12 @@
 </li>
         <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier">MaxRateClassifier (class in inferno.learn)</a>
 </li>
-        <li><a href="reference/generated/inferno.dists.LogNormal.html#inferno.dists.LogNormal.mean">mean() (LogNormal class method)</a>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.mean">mean() (LogNormal class method)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.mean">(Normal class method)</a>
+          <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal.mean">(Normal class method)</a>
 </li>
-          <li><a href="reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.mean">(Poisson class method)</a>
+          <li><a href="reference/generated/inferno.stats.Poisson.html#inferno.stats.Poisson.mean">(Poisson class method)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.mindims">mindims (DimensionalModule property)</a>
@@ -1018,8 +1026,6 @@
     module
 
         <ul>
-          <li><a href="reference/distributions.html#module-inferno.dists">inferno.dists</a>
-</li>
           <li><a href="reference/learn.html#module-inferno.learn">inferno.learn</a>
 </li>
           <li><a href="reference/learn-functional.html#module-inferno.learn.functional">inferno.learn.functional</a>
@@ -1027,6 +1033,8 @@
           <li><a href="reference/neural.html#module-inferno.neural">inferno.neural</a>
 </li>
           <li><a href="reference/neural-functional.html#module-inferno.neural.functional">inferno.neural.functional</a>
+</li>
+          <li><a href="reference/stats.html#module-inferno.stats">inferno.stats</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.Module.html#inferno.Module">Module (class in inferno)</a>
@@ -1057,7 +1065,7 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.neuron">neuron (Layer property)</a>
 </li>
-        <li><a href="reference/generated/inferno.dists.Normal.html#inferno.dists.Normal">Normal (class in inferno.dists)</a>
+        <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal">Normal (class in inferno.stats)</a>
 </li>
         <li><a href="reference/generated/inferno.normal.html#inferno.normal">normal() (in module inferno)</a>
 </li>
@@ -1129,6 +1137,12 @@
   <h2>P</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.params_mv">params_mv() (LogNormal class method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal.params_mv">(Normal class method)</a>
+</li>
+        </ul></li>
         <li><a href="reference/generated/inferno.neural.DeltaCurrent.html#inferno.neural.DeltaCurrent.partialconstructor">partialconstructor() (DeltaCurrent class method)</a>
 
         <ul>
@@ -1139,8 +1153,12 @@
         </ul></li>
         <li><a href="reference/generated/inferno.observe.PassthroughReducer.html#inferno.observe.PassthroughReducer">PassthroughReducer (class in inferno.observe)</a>
 </li>
-        <li><a href="reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.pdf">pdf() (Normal class method)</a>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.pdf">pdf() (LogNormal class method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal.pdf">(Normal class method)</a>
 </li>
+        </ul></li>
         <li><a href="reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.peek">peek() (FoldReducer method)</a>
 
         <ul>
@@ -1149,9 +1167,9 @@
           <li><a href="reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.peek">(Reducer method)</a>
 </li>
         </ul></li>
-        <li><a href="reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.pmf">pmf() (Poisson class method)</a>
+        <li><a href="reference/generated/inferno.stats.Poisson.html#inferno.stats.Poisson.pmf">pmf() (Poisson class method)</a>
 </li>
-        <li><a href="reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson">Poisson (class in inferno.dists)</a>
+        <li><a href="reference/generated/inferno.stats.Poisson.html#inferno.stats.Poisson">Poisson (class in inferno.stats)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.PoissonIntervalEncoder.html#inferno.neural.PoissonIntervalEncoder">PoissonIntervalEncoder (class in inferno.neural)</a>
 </li>
@@ -1283,16 +1301,20 @@
   <h2>S</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.dists.LogNormal.html#inferno.dists.LogNormal.sample">sample() (LogNormal class method)</a>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.sample">sample() (LogNormal class method)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.sample">(Normal class method)</a>
+          <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal.sample">(Normal class method)</a>
 </li>
-          <li><a href="reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.sample">(Poisson class method)</a>
+          <li><a href="reference/generated/inferno.stats.Poisson.html#inferno.stats.Poisson.sample">(Poisson class method)</a>
 </li>
         </ul></li>
-        <li><a href="reference/generated/inferno.dists.LogNormal.html#inferno.dists.LogNormal.sample_mv">sample_mv() (LogNormal class method)</a>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.sample_mv">sample_mv() (LogNormal class method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal.sample_mv">(Normal class method)</a>
 </li>
+        </ul></li>
         <li><a href="reference/generated/inferno.scalar.html#inferno.scalar">scalar() (in module inferno)</a>
 </li>
         <li><a href="reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer">ScaledCumulativeTraceReducer (class in inferno.observe)</a>
@@ -1461,20 +1483,20 @@
   <h2>V</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.dists.LogNormal.html#inferno.dists.LogNormal.validate">validate() (LogNormal class method)</a>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.validate">validate() (LogNormal class method)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.validate">(Normal class method)</a>
+          <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal.validate">(Normal class method)</a>
 </li>
-          <li><a href="reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.validate">(Poisson class method)</a>
+          <li><a href="reference/generated/inferno.stats.Poisson.html#inferno.stats.Poisson.validate">(Poisson class method)</a>
 </li>
         </ul></li>
-        <li><a href="reference/generated/inferno.dists.LogNormal.html#inferno.dists.LogNormal.variance">variance() (LogNormal class method)</a>
+        <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.variance">variance() (LogNormal class method)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.dists.Normal.html#inferno.dists.Normal.variance">(Normal class method)</a>
+          <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal.variance">(Normal class method)</a>
 </li>
-          <li><a href="reference/generated/inferno.dists.Poisson.html#inferno.dists.Poisson.variance">(Poisson class method)</a>
+          <li><a href="reference/generated/inferno.stats.Poisson.html#inferno.stats.Poisson.variance">(Poisson class method)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.view">view() (FoldReducer method)</a>

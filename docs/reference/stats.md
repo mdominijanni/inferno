@@ -1,8 +1,8 @@
 # inferno.dists
 
 ```{eval-rst}
-.. automodule:: inferno.dists
-.. currentmodule:: inferno.dists
+.. automodule:: inferno.stats
+.. currentmodule:: inferno.stats
 ```
 
 ## Distributions
