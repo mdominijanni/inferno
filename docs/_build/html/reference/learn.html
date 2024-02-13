@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -177,6 +178,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -249,8 +253,8 @@
 </table>
 </div>
 </section>
-<section id="weight-dependence">
-<h2>Weight Dependence<a class="headerlink" href="#weight-dependence" title="Link to this heading">#</a></h2>
+<section id="parameter-update-bounding">
+<h2>Parameter Update Bounding<a class="headerlink" href="#parameter-update-bounding" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -258,7 +262,7 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.WeightBounding.html#inferno.learn.WeightBounding" title="inferno.learn.WeightBounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WeightBounding</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.WeightDependence.html#inferno.learn.WeightDependence" title="inferno.learn.WeightDependence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WeightDependence</span></code></a></p></td>
 <td><p>Modifies update magnitudes with LTP/LTD to bound weights.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.learn.SoftWeightDependence.html#inferno.learn.SoftWeightDependence" title="inferno.learn.SoftWeightDependence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SoftWeightDependence</span></code></a></p></td>
@@ -280,8 +284,8 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier" title="inferno.learn.RateClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RateClassifier</span></code></a></p></td>
-<td><p>Classifies spikes by per-class rates.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier" title="inferno.learn.MaxRateClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaxRateClassifier</span></code></a></p></td>
+<td><p>Classifies spikes by maximum per-class rates.</p></td>
 </tr>
 </tbody>
 </table>
@@ -351,7 +355,7 @@
 <li><a class="reference internal" href="#updaters-spike-timing-dependent-plasticity">Updaters, Spike-Timing Dependent Plasticity</a><ul class="simple">
 </ul>
 </li>
-<li><a class="reference internal" href="#weight-dependence">Weight Dependence</a><ul class="simple">
+<li><a class="reference internal" href="#parameter-update-bounding">Parameter Update Bounding</a><ul class="simple">
 </ul>
 </li>
 <li><a class="reference internal" href="#classifiers">Classifiers</a><ul class="simple">

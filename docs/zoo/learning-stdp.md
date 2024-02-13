@@ -111,7 +111,7 @@ Where:
 - $\mu_-$, order for lower weight bound
 
 ### Description
-This method penalizes weights that are out of specified bounds by applying a penalty proportional to the amount by which the current weight is over/under the bound. The order parameters $\mu_+$ and $\mu_-$ control the rate of this penalty. When $\mu_+$ and $\mu_-$ are set to $1$, this is referred to as "multiplicative weight dependence", and when not set to one is often referred to as "power law weight dependence".
+This method penalizes weights that are out of specified bounds by applying a penalty proportional to the amount by which the current weight is over/under the bound. The order parameters $\mu_+$ and $\mu_-$ control the rate of this penalty. When $\mu_+$ and $\mu_-$ are set to $1$, this is referred to as "multiplicative weight dependence", and when not set to $1$ is often referred to as "power law weight dependence".
 
 ## Weight Dependence, Hard Bounding
 ### Formulation

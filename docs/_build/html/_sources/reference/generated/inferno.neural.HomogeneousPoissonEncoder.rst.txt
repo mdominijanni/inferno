@@ -1,0 +1,8 @@
+﻿HomogeneousPoissonEncoder
+=========================
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: HomogeneousPoissonEncoder
+    :members:
+    :show-inheritance:

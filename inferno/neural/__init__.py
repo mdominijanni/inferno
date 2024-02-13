@@ -12,8 +12,16 @@ from .neurons.linear import (
     GLIF2,
 )
 
-from .synapses.linear import (
-    PassthroughSynapse,
+from .neurons.nonlinear import (
+    QIF,
+    Izhikevich,
+    EIF,
+    AdEx,
+)
+
+from .synapses.current import (
+    DeltaCurrent,
+    DeltaPlusCurrent,
 )
 
 from .connections.linear import (
@@ -24,6 +32,14 @@ from .connections.linear import (
 
 from .connections.conv import (
     Conv2D,
+)
+
+from .encoders.poisson import (
+    HomogeneousPoissonEncoder,
+)
+
+from .encoders.special import (
+    PoissonIntervalEncoder,
 )
 
 from .modeling import (
@@ -40,11 +56,18 @@ __all__ = [
     "Synapse",
     "Connection",
     "SynapseConstructor",
+    "HomogeneousPoissonEncoder",
+    "PoissonIntervalEncoder",
     "LIF",
     "ALIF",
     "GLIF1",
     "GLIF2",
-    "PassthroughSynapse",
+    "QIF",
+    "Izhikevich",
+    "EIF",
+    "AdEx",
+    "DeltaCurrent",
+    "DeltaPlusCurrent",
     "LinearDense",
     "LinearDirect",
     "LinearLateral",

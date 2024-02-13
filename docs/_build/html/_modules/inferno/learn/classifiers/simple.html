@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -176,6 +177,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -216,28 +220,30 @@
           <h1>Source code for inferno.learn.classifiers.simple</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">einops</span> <span class="k">as</span> <span class="nn">ein</span>
 <span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">Module</span>
-<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span><span class="p">,</span> <span class="n">numeric_interval</span>
+<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span><span class="p">,</span> <span class="n">multiple_numeric_limit</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
 
 
-<div class="viewcode-block" id="RateClassifier">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier">[docs]</a>
-<span class="k">class</span> <span class="nc">RateClassifier</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Classifies spikes by per-class rates.</span>
+<div class="viewcode-block" id="MaxRateClassifier">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier">[docs]</a>
+<span class="k">class</span> <span class="nc">MaxRateClassifier</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Classifies spikes by maximum per-class rates.</span>
+
+<span class="sd">    The classifier uses an internal parameter :py:attr:`rates` for other</span>
+<span class="sd">    calculations. When learning, the existing rates are decayed, multiplying them by</span>
+<span class="sd">    :math:`\exp (-\lambda b_k)` where :math:`b_k` is the number of elements of class</span>
+<span class="sd">    :math:`k` in the batch.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of neurons with</span>
 <span class="sd">            their output being classified.</span>
 <span class="sd">        num_classes (int): total number of possible classes.</span>
-<span class="sd">        decay (float, optional): per-update amount by which previous results</span>
-<span class="sd">            are scaled. Defaults to 1.0.</span>
+<span class="sd">        decay_rate (float): per-update amount by which previous results</span>
+<span class="sd">            are scaled, :math:`\lambda`.</span>
 <span class="sd">        proportional (float, optional): if logits should be computed with</span>
 <span class="sd">            class-proportional rates. Defaults to True.</span>
-<span class="sd">        reduction (Literal[&quot;sum&quot;, &quot;mean&quot;], optional): method by which non-reduced</span>
-<span class="sd">            spikes should be reduced. Defaults to &quot;sum&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -247,31 +253,26 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">proportional</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">reduction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
         <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># validate parameters</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">shape</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`shape`&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+            <span class="n">shape</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-                <span class="n">numeric_limit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`shape[</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">]`&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">shape</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">multiple_numeric_limit</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span><span class="p">(</span><span class="s2">&quot;`num_classes`&quot;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">reduction</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;`reduction` must be one of &#39;sum&#39; or &#39;mean&#39;, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;received &#39;</span><span class="si">{</span><span class="n">reduction</span><span class="si">}</span><span class="s2">.&#39;&quot;</span>
-            <span class="p">)</span>
+        <span class="n">num_classes</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;num_classes&quot;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
         <span class="c1"># class attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">proportional</span> <span class="o">=</span> <span class="n">proportional</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_proportional</span> <span class="o">=</span> <span class="n">proportional</span>
 
         <span class="c1"># register parameter</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span>
@@ -279,24 +280,36 @@
         <span class="p">)</span>
 
         <span class="c1"># register derived buffers</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;assigns&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;counts&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;props&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;assignments_&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">(),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;occurances_&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">(),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;proportions_&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">numeric_interval</span><span class="p">(</span><span class="s2">&quot;`decay`&quot;</span><span class="p">,</span> <span class="n">decay</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;closed&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="c1"># class attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;decay&quot;</span><span class="p">,</span> <span class="n">decay</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="c1"># run after loading state_dict to recompute non-persistent buffers</span>
+        <span class="k">def</span> <span class="nf">sdhook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">incompatible_keys</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">rates</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_load_state_dict_post_hook</span><span class="p">(</span><span class="n">sdhook</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">assignments</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Class assignments per-neuron.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new class assignments per-neuron.</span>
+<span class="sd">        The label, computed as the argument of the maximum of normalized rates</span>
+<span class="sd">        (proportions), per neuron.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: present class assignments per-neuron.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            :py:attr:`occurances` is automatically recalculated on assignment.</span>
 
 <span class="sd">        .. admonition:: Shape</span>
 <span class="sd">            :class: tensorshape</span>
@@ -306,19 +319,13 @@
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`N_0, \ldots` are the dimensions of the spikes being classified.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">assigns</span>
-
-    <span class="nd">@assignments</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">assignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assigns</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">counts</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assignments</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclass</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">assignments_</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">occurances</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of assigned neurons per-class.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new number of assigned neurons per-class.</span>
+<span class="sd">        The number of neurons which are assigned to each label.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: present number of assigned neurons per-class.</span>
@@ -331,24 +338,17 @@
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`K` is the number of possible classes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">counts</span>
-
-    <span class="nd">@occurances</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">occurances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">counts</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">occurances_</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">proportions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Class-normalized spike rates.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new class-normalized spike rates.</span>
+<span class="sd">        The rates :math:`L_1`-normalized such that for a given neuron, such that the</span>
+<span class="sd">        normalized rates for it over the different classes sum to 1.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: present class-normalized spike rates.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            :py:attr:`assignments` is automatically recalculated on assignment.</span>
 
 <span class="sd">        .. admonition:: Shape</span>
 <span class="sd">            :class: tensorshape</span>
@@ -359,16 +359,15 @@
 <span class="sd">                * :math:`N_0, \ldots` are the dimensions of the spikes being classified.</span>
 <span class="sd">                * :math:`K` is the number of possible classes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span>
-
-    <span class="nd">@proportions</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">proportions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">props</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assignments</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proportions</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proportions_</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">rates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computed per-class, per-neuron spike rates.</span>
+
+<span class="sd">        These are the raw rates</span>
+<span class="sd">        :math:`\left(\frac{\text{# spikes}}{\text{# steps}}\right)`</span>
+<span class="sd">        for each neuron, per class.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new computed per-class, per-neuron spike rates.</span>
@@ -377,7 +376,8 @@
 <span class="sd">            torch.Tensor: present computed per-class, per-neuron spike rates.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            :py:attr:`proportions` is automatically recalculated on assignment.</span>
+<span class="sd">            The attributes :py:attr:`proportions`, :py:attr:`assignments`, and</span>
+<span class="sd">            :py:attr:`occurances` are automatically recalculated on assignment.</span>
 
 <span class="sd">        .. admonition:: Shape</span>
 <span class="sd">            :class: tensorshape</span>
@@ -392,17 +392,27 @@
 
     <span class="nd">@rates</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># rates are assigned directly</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rates_</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">proportions</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proportions_</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assignments_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proportions</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">occurances_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assignments</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclass</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">isprop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">proportional</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;If inference is weighted by class-average rates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (bool): if inference should be computed using class-average rates.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if inference is weighted by class-average rates.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proportional</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proportional</span>
+
+    <span class="nd">@proportional</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">proportional</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proportional</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -431,18 +441,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assignments</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
-<div class="viewcode-block" id="RateClassifier.infer">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.infer">[docs]</a>
+<div class="viewcode-block" id="MaxRateClassifier.infer">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.infer">[docs]</a>
     <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">proportional</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">logits</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Infers classes from reduced spikes</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            spikes (torch.Tensor): reduced spikes to classify.</span>
+<span class="sd">            inputs (torch.Tensor): batch spike rates to classify.</span>
 <span class="sd">            proportional (bool): if inference is weighted by class-average rates.</span>
 <span class="sd">            logits (bool): if logits rather than class predictions should be returned.</span>
 
@@ -452,9 +461,9 @@
 <span class="sd">        .. admonition:: Shape</span>
 <span class="sd">            :class: tensorshape</span>
 
-<span class="sd">            ``spikes``:</span>
+<span class="sd">            ``inputs``:</span>
 
-<span class="sd">            :math:`B \times N_0 \times \cdots \times [T]`</span>
+<span class="sd">            :math:`B \times N_0 \times \cdots`</span>
 
 <span class="sd">            ``return (logits=False)``:</span>
 
@@ -470,46 +479,47 @@
 <span class="sd">                * :math:`K` is the number of possible classes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># associations between neurons and classes</span>
-        <span class="n">assocs</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span>
-            <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assignments</span><span class="p">,</span> <span class="s2">&quot;... -&gt; (...)&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclass</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">proportional</span><span class="p">:</span>
-            <span class="n">assocs</span> <span class="o">=</span> <span class="n">assocs</span> <span class="o">*</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proportions</span><span class="p">,</span> <span class="s2">&quot;... k -&gt; (...) k&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proportional</span><span class="p">:</span>
+            <span class="n">assocs</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assignments</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclass</span><span class="p">)</span> <span class="o">*</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">proportions</span><span class="p">,</span> <span class="s2">&quot;... k -&gt; (...) k&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">assocs</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assignments</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclass</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
 
         <span class="c1"># compute logits</span>
-        <span class="n">logits</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ylogits</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span>
-                <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">),</span>
+                <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">),</span>
                 <span class="n">assocs</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">occurances</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">nan</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">posinf</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="c1"># return logits or predictions</span>
         <span class="k">if</span> <span class="n">logits</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">logits</span>
+            <span class="k">return</span> <span class="n">ylogits</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">ylogits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="RateClassifier.learn">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.learn">[docs]</a>
+<div class="viewcode-block" id="MaxRateClassifier.learn">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.learn">[docs]</a>
     <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Updates stored rates from reduced spikes and labels</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            spikes (torch.Tensor): reduced spikes from which to update state.</span>
+<span class="sd">            inputs (torch.Tensor): batch spike rates from which to update state.</span>
 <span class="sd">            labels (torch.Tensor): ground-truth sample labels.</span>
 
 <span class="sd">        .. admonition:: Shape</span>
 <span class="sd">            :class: tensorshape</span>
 
-<span class="sd">            ``spikes``:</span>
+<span class="sd">            ``inputs``:</span>
 
 <span class="sd">            :math:`B \times N_0 \times \cdots`</span>
 
@@ -522,41 +532,41 @@
 <span class="sd">                * :math:`N_0, \ldots` are the dimensions of the spikes being classified.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># number of instances per-class</span>
-        <span class="n">batchcls</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclass</span><span class="p">)</span>
+        <span class="n">clscounts</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclass</span><span class="p">)</span>
 
         <span class="c1"># compute per-class scaled spike rates</span>
-        <span class="n">batchrates</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">rates</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">scatter_add</span><span class="p">(</span>
+            <span class="o">.</span><span class="n">scatter_add_</span><span class="p">(</span>
                 <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">index</span><span class="o">=</span><span class="n">labels</span><span class="o">.</span><span class="n">expand_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">),</span>
-                <span class="n">src</span><span class="o">=</span><span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; ... b&quot;</span><span class="p">),</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">labels</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">src</span><span class="o">=</span><span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; ... b&quot;</span><span class="p">),</span>
             <span class="p">)</span>
-            <span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">batchcls</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">div_</span><span class="p">(</span><span class="n">clscounts</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">nan</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">posinf</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="c1"># update rates, other properties update automatically</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-            <span class="n">batchcls</span><span class="o">.</span><span class="n">bool</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">+</span> <span class="n">batchrates</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span>
-        <span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">*</span> <span class="n">clscounts</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">+</span> <span class="n">rates</span></div>
 
 
-<div class="viewcode-block" id="RateClassifier.forward">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.RateClassifier.html#inferno.learn.RateClassifier.forward">[docs]</a>
+<div class="viewcode-block" id="MaxRateClassifier.forward">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">logits</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Performs inference and if labels are specified, updates state.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            spikes (torch.Tensor): reduced spikes to classify.</span>
+<span class="sd">            spikes (torch.Tensor): spikes or spike rates to classify.</span>
 <span class="sd">            labels (torch.Tensor | None): ground-truth sample labels.</span>
 <span class="sd">            logits (bool, optional): if logits rather than class predictions</span>
 <span class="sd">                should be returned.. Defaults to False.</span>
+<span class="sd">            proportional (bool | None, optional): if not None, then it overrides the</span>
+<span class="sd">                class inference behavior. Defaults to None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: inferences, either logits or predictions.</span>
@@ -588,10 +598,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># reduce along input time dimension, if present, to generate spike counts</span>
         <span class="k">if</span> <span class="n">spikes</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ndim</span> <span class="o">+</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">spikes</span> <span class="o">=</span> <span class="n">ein</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="s2">&quot;b ... t -&gt; b ...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span>
+            <span class="n">spikes</span> <span class="o">=</span> <span class="n">ein</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+                <span class="n">spikes</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="s2">&quot;b ... t -&gt; b ...&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span>
+            <span class="p">)</span>
 
-        <span class="c1"># infer</span>
-        <span class="n">inferred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="n">proportional</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">isprop</span><span class="p">,</span> <span class="n">logits</span><span class="o">=</span><span class="n">logits</span><span class="p">)</span>
+        <span class="c1"># inference</span>
+        <span class="n">inferred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="n">logits</span><span class="o">=</span><span class="n">logits</span><span class="p">)</span>
 
         <span class="c1"># update state</span>
         <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

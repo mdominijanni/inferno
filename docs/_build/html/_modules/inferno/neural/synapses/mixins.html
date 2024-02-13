@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -176,6 +177,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -215,16 +219,17 @@
         <article role="main">
           <h1>Source code for inferno.neural.synapses.mixins</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">HistoryModule</span><span class="p">,</span> <span class="n">Interpolation</span>
-<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">instance_of</span><span class="p">,</span> <span class="n">numeric_limit</span>
+<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">instance_of</span><span class="p">,</span> <span class="n">numeric_limit</span><span class="p">,</span> <span class="n">attr_members</span>
 <span class="kn">from</span> <span class="nn">inferno.typing</span> <span class="kn">import</span> <span class="n">OneToOne</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 
 
 <div class="viewcode-block" id="CurrentMixin">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.CurrentMixin.html#inferno.neural.synapses.mixins.CurrentMixin">[docs]</a>
 <span class="k">class</span> <span class="nc">CurrentMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current primitive.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.</span>
@@ -245,7 +250,9 @@
         <span class="n">currents</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;`self`&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">HistoryModule</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">HistoryModule</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">currents</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">)</span>
 
@@ -262,20 +269,18 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">)</span>
 
     <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pushto</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
 
 
-<div class="viewcode-block" id="SpikeCurrentMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.SpikeCurrentMixin.html#inferno.neural.synapses.mixins.SpikeCurrentMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">SpikeCurrentMixin</span><span class="p">(</span><span class="n">CurrentMixin</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current and managed spikes.</span>
+<div class="viewcode-block" id="SpikeMixin">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.SpikeMixin.html#inferno.neural.synapses.mixins.SpikeMixin">[docs]</a>
+<span class="k">class</span> <span class="nc">SpikeMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with spike primitive.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.</span>
-<span class="sd">        spikes (torch.Tensor | OneToOne[torch.Tensor]): initial input spikes,</span>
-<span class="sd">            or a function to derive them from synaptic current.</span>
+<span class="sd">        spikes (torch.Tensor): initial input spikes.</span>
 <span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
 <span class="sd">            Defaults to False.</span>
 
@@ -285,35 +290,75 @@
 <span class="sd">        mixin must be called after the module constructor.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        This registers a parameter ``current_`` and sets it as constrained.</span>
-<span class="sd">        If ``spikes`` is a :py:class:`~torch.Tensor`, this also registers</span>
-<span class="sd">        a parameter ``spike_`` and sets it as constrained.</span>
+<span class="sd">        This registers a parameter ``spike_`` and sets it as constrained.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">HistoryModule</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span>
+            <span class="s2">&quot;spike_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">spikes</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span> <span class="n">requires_grad</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;spike_&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike input to the synapses at present.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new spike input.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: present spike input.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s2">&quot;spike_&quot;</span><span class="p">)</span>
+
+    <span class="nd">@spike</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pushto</span><span class="p">(</span><span class="s2">&quot;spike_&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="CurrentDerivedSpikeMixin">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin.html#inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin">[docs]</a>
+<span class="k">class</span> <span class="nc">CurrentDerivedSpikeMixin</span><span class="p">(</span><span class="n">CurrentMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current and spikes derived therefrom.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.</span>
+<span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
+<span class="sd">            Defaults to False.</span>
+
+<span class="sd">    Caution:</span>
+<span class="sd">        This must be added to a class which inherits from</span>
+<span class="sd">        :py:class:`HistoryModule`, and the constructor for this</span>
+<span class="sd">        mixin must be called after the module constructor.</span>
+
+<span class="sd">    Important:</span>
+<span class="sd">        This must be added to a class which has a method named ``_to_spike``, which</span>
+<span class="sd">        takes a tensor of currents and returns a tensor of spikes.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        If ``spikes`` is not a :py:class:`~torch.Tensor`, this sets an attribute</span>
-<span class="sd">        ``_tospike`` which is managed internally.</span>
+<span class="sd">        This registers a parameter ``current_`` and sets it as constrained.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">currents</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">OneToOne</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="c1"># call superclass constructor</span>
-        <span class="n">CurrentMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">currents</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">)</span>
+        <span class="c1"># test for members</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">attr_members</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_to_spike&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
-        <span class="c1"># register synaptic spikes or add conversion method attribute</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;spike_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;spike_&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tospike</span> <span class="o">=</span> <span class="n">spikes</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">spikesderived</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;If input spikes are derived from synaptic currents.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;spike_&quot;</span><span class="p">)</span>
+        <span class="c1"># call superclass mixin constructor</span>
+        <span class="n">CurrentMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">currents</span><span class="o">=</span><span class="n">currents</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -326,29 +371,181 @@
 <span class="sd">            torch.Tensor: present spike input.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            If :py:attr:`spikesderived` is True, then the setter does not alter state.</span>
+<span class="sd">            The setter does nothing as spikes are derived from currents.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spikesderived</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tospike_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s2">&quot;spike_&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_spike</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current</span><span class="p">)</span>
 
     <span class="nd">@spike</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">spikesderived</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pushto</span><span class="p">(</span><span class="s2">&quot;spike_&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
 
 
 
-<div class="viewcode-block" id="DelayedSpikeCurrentMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">DelayedSpikeCurrentMixin</span><span class="p">(</span><span class="n">SpikeCurrentMixin</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current and managed spikes with selector methods.</span>
+<div class="viewcode-block" id="SpikeDerivedCurrentMixin">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin.html#inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin">[docs]</a>
+<span class="k">class</span> <span class="nc">SpikeDerivedCurrentMixin</span><span class="p">(</span><span class="n">SpikeMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with spikes and currents derived therefrom.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        spikes (torch.Tensor): initial input spikes.</span>
+<span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
+<span class="sd">            Defaults to False.</span>
+
+<span class="sd">    Caution:</span>
+<span class="sd">        This must be added to a class which inherits from</span>
+<span class="sd">        :py:class:`HistoryModule`, and the constructor for this</span>
+<span class="sd">        mixin must be called after the module constructor.</span>
+
+<span class="sd">    Important:</span>
+<span class="sd">        This must be added to a class which has a method named ``_to_current``, which</span>
+<span class="sd">        takes a tensor of spikes and returns a tensor of currents.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        This registers a parameter ``spike_`` and sets it as constrained.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># test for members</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">attr_members</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_to_current&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="c1"># call superclass mixin constructor</span>
+        <span class="n">SpikeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses at present, in nanoamperes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new synapse currents.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: present synaptic currents.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The setter does nothing as currents are derived from spikes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_current</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spike</span><span class="p">)</span>
+
+    <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="SpikeCurrentMixin">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.SpikeCurrentMixin.html#inferno.neural.synapses.mixins.SpikeCurrentMixin">[docs]</a>
+<span class="k">class</span> <span class="nc">SpikeCurrentMixin</span><span class="p">(</span><span class="n">CurrentMixin</span><span class="p">,</span> <span class="n">SpikeMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with primitive current and spikes.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.</span>
-<span class="sd">        spikes (torch.Tensor | OneToOne[torch.Tensor]): initial input spikes,</span>
-<span class="sd">            or a function to derive them from synaptic current.</span>
+<span class="sd">        spikes (torch.Tensor): initial input spikes.</span>
+<span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
+<span class="sd">            Defaults to False.</span>
+
+<span class="sd">    Caution:</span>
+<span class="sd">        This must be added to a class which inherits from</span>
+<span class="sd">        :py:class:`HistoryModule`, and the constructor for this</span>
+<span class="sd">        mixin must be called after the module constructor.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        * This registers a parameter ``current_`` and sets it as constrained.</span>
+<span class="sd">        * This registers a parameter ``spike_`` and sets it as constrained.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">currents</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># call superclass mixin constructors</span>
+        <span class="n">CurrentMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">currents</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">)</span>
+        <span class="n">SpikeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spikes</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_synparam_at</span><span class="p">(</span>
+    <span class="n">module</span><span class="p">:</span> <span class="n">HistoryModule</span><span class="p">,</span>
+    <span class="n">dataloc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">interpolation</span><span class="p">:</span> <span class="n">Interpolation</span><span class="p">,</span>
+    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">overbound</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">transform</span><span class="p">:</span> <span class="n">OneToOne</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Internal, generalized selector function for synaptic parameters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        module (HistoryModule): module from which to access parameters.</span>
+<span class="sd">        dataloc (str): attribute name of the underlying data from which to select.</span>
+<span class="sd">        selector (torch.Tensor): time before present for which synaptic parameters</span>
+<span class="sd">            should be retrieved, in :math:`\text{ms}`.</span>
+<span class="sd">        interpolation (Interpolation): interpolation function used when selecting</span>
+<span class="sd">            prior values.</span>
+<span class="sd">        tolerance (float): maximum difference in time from an observation</span>
+<span class="sd">            to treat as co-occurring, in :math:`\text{ms}`.</span>
+<span class="sd">        overbound (Any | None): value to replace parameter values out of bounds,</span>
+<span class="sd">            uses values at observation limits if None.</span>
+<span class="sd">        transform (OneToOne[torch.Tensor] | None, optional): function applied to</span>
+<span class="sd">            retrieved values before returning, identity if None. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: selected synaptic parameter values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># identity transform if none is specified</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">transform</span><span class="p">:</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>  <span class="c1"># noqa: E731</span>
+
+    <span class="c1"># undelayed access</span>
+    <span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">hsize</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># bounded selector for overbounding</span>
+        <span class="n">bounded_selector</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># retrieve most recent value</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">latest_</span><span class="p">(</span><span class="n">dataloc</span><span class="p">))</span>
+
+    <span class="c1"># delayed access</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># bound the selector</span>
+        <span class="n">bounded_selector</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">module</span><span class="o">.</span><span class="n">hlen</span><span class="p">)</span>
+
+        <span class="c1"># select values using HistoryModule</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">dataloc</span><span class="p">,</span>
+                <span class="n">time</span><span class="o">=</span><span class="n">bounded_selector</span><span class="p">,</span>
+                <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># apply overbound if specified</span>
+    <span class="k">if</span> <span class="n">overbound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">selector</span> <span class="o">-</span> <span class="n">bounded_selector</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">overbound</span>
+        <span class="p">)</span>
+
+    <span class="c1"># return parameter values at delayed indices</span>
+    <span class="k">return</span> <span class="n">res</span>
+
+
+<div class="viewcode-block" id="DelayedSpikeCurrentAccessorMixin">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin">[docs]</a>
+<span class="k">class</span> <span class="nc">DelayedSpikeCurrentAccessorMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with delayed current and spike selector methods.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        primitive_currents (bool): if the synaptic currents are not derived from</span>
+<span class="sd">            another synaptic parameter.</span>
+<span class="sd">        primitive_spikes (bool): if the input spikes are not derived from</span>
+<span class="sd">            another synaptic parameter.</span>
 <span class="sd">        current_interp (Interpolation): interpolation function used when selecting</span>
 <span class="sd">            prior currents.</span>
 <span class="sd">        spike_interp (Interpolation): interpolation function used when selecting</span>
@@ -359,102 +556,72 @@
 <span class="sd">            uses values at observation limits if None.</span>
 <span class="sd">        tolerance (float): maximum difference in time from an observation</span>
 <span class="sd">            to treat as co-occurring, in :math:`\text{ms}`.</span>
-<span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
-<span class="sd">            Defaults to False.</span>
 
 <span class="sd">    Caution:</span>
 <span class="sd">        This must be added to a class which inherits from</span>
 <span class="sd">        :py:class:`HistoryModule`, and the constructor for this</span>
 <span class="sd">        mixin must be called after the module constructor.</span>
 
-<span class="sd">    Note:</span>
-<span class="sd">        This registers a parameter ``current_`` and sets it as constrained.</span>
-<span class="sd">        If ``spikes`` is a :py:class:`~torch.Tensor`, this also registers</span>
-<span class="sd">        a parameter ``spike_`` and sets it as constrained.</span>
+<span class="sd">    Important:</span>
+<span class="sd">        * This must be added to a class which has either a method named ``_to_current``,</span>
+<span class="sd">          or a constrained parameter/buffer ``current_``.</span>
+<span class="sd">        * This must be added to a class which has either a method named ``_to_spike``,</span>
+<span class="sd">          or a constrained parameter/buffer ``spike_``.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        This always sets the following interally managed attributes: ``_currentinterp``,</span>
-<span class="sd">        ``_spikeinterp``, ``_currentobv``, ``_spikeobv``, ``_interptol``, and</span>
-<span class="sd">        ``_synparam_at``. If ``spikes`` is not a :py:class:`~torch.Tensor`, this</span>
-<span class="sd">        additionally sets an attribute ``_tospike`` which is managed internally.</span>
+<span class="sd">        This always sets the following interally managed attributes:</span>
+<span class="sd">        ``_current_interp``, ``_spike_interp``, ``_current_ob_val``, ``_spike_ob_val``,</span>
+<span class="sd">        ``_primitive_currents``, ``_primitive_spikes``, and ``_interp_tol``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">currents</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">OneToOne</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">primitive_currents</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">primitive_spikes</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">current_interp</span><span class="p">:</span> <span class="n">Interpolation</span><span class="p">,</span>
         <span class="n">spike_interp</span><span class="p">:</span> <span class="n">Interpolation</span><span class="p">,</span>
         <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">current_overval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">spike_overval</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="c1"># call superclass constructor</span>
-        <span class="n">SpikeCurrentMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">currents</span><span class="p">,</span> <span class="n">spikes</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">)</span>
-
-        <span class="c1"># set managed internal attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_currentinterp</span> <span class="o">=</span> <span class="n">current_interp</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_spikeinterp</span> <span class="o">=</span> <span class="n">spike_interp</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_currentobv</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">current_overval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">current_overval</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_spikeobv</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">spike_overval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">spike_overval</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`tolerance`&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_synparam_at</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">target_current</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-        <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">interpolation</span><span class="p">:</span> <span class="n">Interpolation</span><span class="p">,</span>
-        <span class="n">overbound</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal, generalized selector function for spikes and currents.&quot;&quot;&quot;</span>
-        <span class="c1"># undelayed case</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hsize</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="c1"># most recent current</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="k">if</span> <span class="n">target_current</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">spike</span>
-
-            <span class="c1"># apply overbound value if specified</span>
-            <span class="k">if</span> <span class="n">overbound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># nonzero tolerance</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span><span class="p">:</span>
-                    <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">selector</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">overbound</span><span class="p">)</span>
-
-                <span class="c1"># zero tolerance</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">selector</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">overbound</span><span class="p">)</span>
-
-        <span class="c1"># delayed case</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># bound the selector</span>
-            <span class="n">bounded_selector</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hlen</span><span class="p">)</span>
-
-            <span class="c1"># currents selected using HistoryModule</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span> <span class="k">if</span> <span class="n">target_current</span> <span class="k">else</span> <span class="s2">&quot;spike_&quot;</span><span class="p">),</span>
-                <span class="n">time</span><span class="o">=</span><span class="n">bounded_selector</span><span class="p">,</span>
-                <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span><span class="p">,</span>
-                <span class="n">tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span><span class="p">,</span>
+        <span class="c1"># check for valid attributes</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">primitive_currents</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">primitive_spikes</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;at least one of &#39;primitive_currents&#39; or &quot;</span>
+                <span class="s2">&quot;&#39;primitive_spikes&#39; must be true.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">primitive_currents</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_to_current&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;if &#39;primitive_currents&#39; is false, &#39;_to_current&#39; must be an attribute.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">primitive_currents</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;current_&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;if &#39;primitive_currents&#39; is true, &#39;current_&#39; must be an attribute.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">primitive_spikes</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_to_spike&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;if &#39;primitive_spikes&#39; is false, &#39;_to_spike&#39; must be an attribute.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">primitive_spikes</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;spike_&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;if &#39;primitive_spikes&#39; is true, &#39;spike_&#39; must be an attribute.&quot;</span>
             <span class="p">)</span>
 
-            <span class="c1"># apply overbound value if specified</span>
-            <span class="k">if</span> <span class="n">overbound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># nonzero tolerance</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span><span class="p">:</span>
-                    <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                        <span class="p">(</span><span class="n">selector</span> <span class="o">-</span> <span class="n">bounded_selector</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span><span class="p">,</span>
-                        <span class="n">res</span><span class="p">,</span>
-                        <span class="n">overbound</span><span class="p">,</span>
-                    <span class="p">)</span>
+        <span class="c1"># set managed internal attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_primitive_currents</span> <span class="o">=</span> <span class="n">primitive_currents</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_primitive_spikes</span> <span class="o">=</span> <span class="n">primitive_spikes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_interp</span> <span class="o">=</span> <span class="n">current_interp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spike_interp</span> <span class="o">=</span> <span class="n">spike_interp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_ob_val</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span> <span class="k">if</span> <span class="n">current_overval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">current_overval</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spike_ob_val</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">spike_overval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">bool</span><span class="p">(</span><span class="n">spike_overval</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interp_tol</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
-                <span class="c1"># zero tolerance</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">selector</span> <span class="o">==</span> <span class="n">bounded_selector</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">overbound</span><span class="p">)</span>
-
-        <span class="c1"># return currents</span>
-        <span class="k">return</span> <span class="n">res</span>
-
-<div class="viewcode-block" id="DelayedSpikeCurrentMixin.current_at">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.current_at">[docs]</a>
+<div class="viewcode-block" id="DelayedSpikeCurrentAccessorMixin.current_at">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.current_at">[docs]</a>
     <span class="k">def</span> <span class="nf">current_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves previous synaptic currents, in nanoamperes.</span>
 
@@ -481,11 +648,30 @@
 <span class="sd">                * :math:`N_0 \times \cdots` is the shape of the synapse.</span>
 <span class="sd">                * :math:`D` is the number of selectors per synapse.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_synparam_at</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">selector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentinterp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentobv</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_primitive_currents</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_synparam_at</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="s2">&quot;current_&quot;</span><span class="p">,</span>
+                <span class="n">selector</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_interp</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_interp_tol</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_ob_val</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_synparam_at</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="s2">&quot;spike_&quot;</span><span class="p">,</span>
+                <span class="n">selector</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_interp</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_interp_tol</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_ob_val</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_to_current</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="DelayedSpikeCurrentMixin.spike_at">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.spike_at">[docs]</a>
+<div class="viewcode-block" id="DelayedSpikeCurrentAccessorMixin.spike_at">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.spike_at">[docs]</a>
     <span class="k">def</span> <span class="nf">spike_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves previous spike inputs.</span>
 
@@ -512,49 +698,26 @@
 <span class="sd">                * :math:`N_0 \times \cdots` is the shape of the synapse.</span>
 <span class="sd">                * :math:`D` is the number of selectors per synapse.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># derived case</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spikesderived</span><span class="p">:</span>
-            <span class="c1"># undelayed case</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hsize</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="c1"># most recent current</span>
-                <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spike</span>
-
-                <span class="c1"># apply overbound value if specified</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spikeobv</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="c1"># nonzero tolerance</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span><span class="p">:</span>
-                        <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                            <span class="n">selector</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spikeobv</span>
-                        <span class="p">)</span>
-
-                    <span class="c1"># zero tolerance</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">selector</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spikeobv</span><span class="p">)</span>
-
-            <span class="c1"># delayed case</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># delayed currents without overbound value</span>
-                <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tospike_</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_synparam_at</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">selector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spikeinterp</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="p">)</span>
-
-                <span class="c1"># apply overbound value if specified</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spikeobv</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                        <span class="n">torch</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
-                            <span class="n">selector</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span><span class="p">,</span>
-                            <span class="n">selector</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hlen</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interptol</span><span class="p">,</span>
-                        <span class="p">),</span>
-                        <span class="n">res</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_spikeobv</span><span class="p">,</span>
-                    <span class="p">)</span>
-
-        <span class="c1"># stored case</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_primitive_spikes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_synparam_at</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="s2">&quot;spike_&quot;</span><span class="p">,</span>
+                <span class="n">selector</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_spike_interp</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_interp_tol</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_spike_ob_val</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_synparam_at</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">selector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spikeinterp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spikeobv</span><span class="p">)</span>
-
-        <span class="c1"># return spikes</span>
-        <span class="k">return</span> <span class="n">res</span></div>
+            <span class="k">return</span> <span class="n">_synparam_at</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="s2">&quot;current_&quot;</span><span class="p">,</span>
+                <span class="n">selector</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_spike_interp</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_interp_tol</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_spike_ob_val</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_to_spike</span><span class="p">,</span>
+            <span class="p">)</span></div>
 </div>
 
 </pre></div>

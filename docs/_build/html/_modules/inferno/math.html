@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -176,6 +177,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -215,10 +219,12 @@
         <article role="main">
           <h1>Source code for inferno.math</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">cmath</span>
+<span class="kn">import</span> <span class="nn">einops</span> <span class="k">as</span> <span class="nn">ein</span>
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Protocol</span>
 
@@ -270,6 +276,55 @@
 <span class="nd">@exp</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="sqrt">
+<a class="viewcode-back" href="../../reference/generated/inferno.sqrt.html#inferno.sqrt">[docs]</a>
+<span class="nd">@functools</span><span class="o">.</span><span class="n">singledispatch</span>
+<span class="k">def</span> <span class="nf">sqrt</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Type agnostic square root function.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        y = \sqrt{x}</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (int | float | complex | torch.Tensor | numpy.ndarray | numpy.number): value</span>
+<span class="sd">            of which to take the square root.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float | complex | torch.Tensor | numpy.ndarray | numpy.number: square root of</span>
+<span class="sd">        the input.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+
+<span class="nd">@sqrt</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="nd">@sqrt</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="nd">@sqrt</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">cmath</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="nd">@sqrt</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="nd">@sqrt</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="nd">@sqrt</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="normalize">
@@ -434,6 +489,77 @@
 
     <span class="k">return</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span></div>
 
+
+
+<span class="k">def</span> <span class="nf">isi</span><span class="p">(</span>
+    <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">time_first</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Transforms spike trains into inter-spike intervals.</span>
+
+<span class="sd">    The returned tensor will be padded with ``NaN``s where an interval could not</span>
+<span class="sd">    be computed but the position existed (e.g. padded to the end of) spike trains</span>
+<span class="sd">    with fewer spikes. If no intervals could be generated at all, a tensor with a</span>
+<span class="sd">    final dimension of zero will be returned.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        spikes (torch.Tensor): spike trains for which to calculate intervals.</span>
+<span class="sd">        step_time (float | None, optional): length of the simulation step,</span>
+<span class="sd">            in :math:`\text{ms}`, if None returned intervals will be as a multiple</span>
+<span class="sd">            of simulation steps. Defaults to None.</span>
+<span class="sd">        time_first (bool, optional): if the time dimension is given first rather than</span>
+<span class="sd">            last. Defaults to False.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: interspike intervals for the given spike trains.</span>
+
+<span class="sd">    .. admonition:: Shape</span>
+<span class="sd">        :class: tensorshape</span>
+
+<span class="sd">        ``spikes``:</span>
+
+<span class="sd">        :math:`N_0 \times \cdots \times T` or :math:`T \times N_0 \times \cdots`</span>
+
+<span class="sd">        ``return``:</span>
+
+<span class="sd">        :math:`N_0 \times \cdots \times (C - 1)` or :math:`(C - 1) \times N_0 \times \cdots`</span>
+
+<span class="sd">        Where:</span>
+<span class="sd">            * :math:`N_0, \ldots` shape of the generating population (batch, neuron shape, etc).</span>
+<span class="sd">            * :math:`T` the length of the spike trains.</span>
+<span class="sd">            * :math:`C` the maximum number of spikes amongst the spike trains.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># bring time dimension to the end if it is not</span>
+    <span class="k">if</span> <span class="n">time_first</span><span class="p">:</span>
+        <span class="n">spikes</span> <span class="o">=</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="s2">&quot;t ... -&gt; ... t&quot;</span><span class="p">)</span>
+
+    <span class="c1"># set dummy step time if required</span>
+    <span class="n">step_time</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">step_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">step_time</span><span class="p">)</span>
+
+    <span class="c1"># pad spikes with true to ensure at least one (req. for split)</span>
+    <span class="n">padded</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># compute nonzero values</span>
+    <span class="n">nz</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">padded</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># compute split indices (at the added pads)</span>
+    <span class="n">splits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">nz</span><span class="p">))</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="c1"># split the tensor into various length subtensors (subtract 1 to unshift)</span>
+    <span class="n">intervals</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor_split</span><span class="p">((</span><span class="n">nz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">splits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># stack, pad trailing with nan, trim leading pad</span>
+    <span class="n">intervals</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">rnn</span><span class="o">.</span><span class="n">pad_sequence</span><span class="p">(</span>
+        <span class="n">intervals</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
+    <span class="p">)[:,</span> <span class="mi">1</span><span class="p">:]</span>
+
+    <span class="c1"># compute intervals</span>
+    <span class="n">intervals</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># reshape and return</span>
+    <span class="k">if</span> <span class="n">time_first</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">spikes</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;... t -&gt; t ...&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">intervals</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">spikes</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Interpolation">

@@ -3,6 +3,14 @@ import torch
 from typing import Any
 
 
+def regroup(
+    flatseq: tuple[Any, ...], groups: tuple[int | tuple, ...]
+) -> tuple[Any, ...]:
+    return tuple(
+        flatseq[g] if isinstance(g, int) else regroup(flatseq, g) for g in groups
+    )
+
+
 def newtensor(obj: Any) -> torch.Tensor:
     r"""Creates a new tensor from an existing object, tensor or otherwise.
 

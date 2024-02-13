@@ -11,7 +11,7 @@ Additionally, two different parameters of a neuron are typically monitored to in
 ### Formulation
 $$
 \begin{align*}
-    I(t) &= I_+(t) - \sum_k w_k(t) \\
+    I(t) &= I_x(t) - \sum_k w_k(t) \\
     \tau_k \frac{dw_k(t)}{dt} &= a_k \left[ V_m(t) - V_\text{rest} \right] - w_k(t) \\
 \end{align*}
 $$
@@ -26,17 +26,17 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 
 *Where:*
 - $I$, total input current applied to the neuron $(\text{nA})$
-- $I_+$, input current before adaptation $(\text{nA})$
+- $I_x$, input current before adaptation $(\text{nA})$
 - $V_m$, electric potential difference across the cell membrane $(\text{mV})$
 - $V_\text{rest}$, equilibrium of the membrane potential $(\text{mV})$
-- $a_k$, subthreshold adaptation, voltage-current coupling $(\text{\mu S})$
+- $a_k$, subthreshold adaptation, voltage-current coupling $(\mu\text{S})$
 - $b_k$, spike-triggered current adaptation $(\text{nA})$
 - $\tau_k$, adaptation time constant $(\text{ms})$
 - $t$, current time of the simulation $(\text{ms})$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$
 
 ### References
-1. [DOI:10.1017/CBO9781107447615 (Chapter 6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
+1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
 2. [DOI:10.1152/jn.00686.2005](https://journals.physiology.org/doi/full/10.1152/jn.00686.2005)
 
 ## Adaptive Current, Linear Spike-Dependent
@@ -44,7 +44,7 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 ### Formulation
 $$
 \begin{align*}
-    I(t) &= I_+(t) - \sum_k w_k(t) \\
+    I(t) &= I_x(t) - \sum_k w_k(t) \\
     \tau_k \frac{dw_k(t)}{dt} &= - w_k(t)
 \end{align*}
 $$
@@ -59,7 +59,7 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 
 *Where:*
 - $I$, total input current applied to the neuron $(\text{nA})$
-- $I_+$, input current before adaptation $(\text{nA})$
+- $I_x$, input current before adaptation $(\text{nA})$
 - $b_k$, spike-triggered current adaptation $(\text{nA})$
 - $\tau_k$, adaptation time constant $(\text{ms})$
 - $t$, current time of the simulation $(\text{ms})$
@@ -80,7 +80,9 @@ $$
 
 *With approximation:*
 
-$$\theta_k(t + \Delta t) \approx \Delta t \left[a_k \left[ V_m(t) - V_\text{rest} \right] - b_k \theta_k(t)\right] + \theta_k(t)$$
+$$
+\theta_k(t + \Delta t) \approx \Delta t \left[a_k \left[ V_m(t) - V_\text{rest} \right] - b_k \theta_k(t)\right] + \theta_k(t)
+$$
 
 *After an action potential is generated:*
 
@@ -117,14 +119,14 @@ $$\theta_k(t + \Delta t) = \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 
 *After an action potential is generated:*
 
-$$\theta_k(t) \leftarrow \theta_k(t) + a_k$$
+$$\theta_k(t) \leftarrow \theta_k(t) + d_k$$
 
 *Where:*
 - $\Theta$, membrane potential at which an action potential is generated $(\text{mV})$
 - $\Theta_\infty$, equilibrium of the firing threshold $(\text{mV})$
 - $\theta_k$, adaptive component of the firing threshold $(\text{mV})$
 - $\theta_\text{reset}$, reset value of the adaptive component of the firing threshold $(\text{mV})$
-- $a_k$, spike-triggered voltage threshold adaptation $(\text{mV})$
+- $d_k$, spike-triggered voltage threshold adaptation $(\text{mV})$
 - $\tau_k$, adaptation time constant $(\text{ms})$
 - $t$, current time of the simulation $(\text{ms})$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$

@@ -1,0 +1,8 @@
+﻿EIF
+===
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: EIF
+    :members:
+    :show-inheritance:

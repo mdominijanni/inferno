@@ -43,7 +43,9 @@ class EMAReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, history_len)
 
         # set state
-        self.alpha = numeric_interval("`alpha`", alpha, 0, 1, "closed", float)
+        self.alpha, e = numeric_interval("alpha", alpha, 0, 1, "closed", float)
+        if e:
+            raise e
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of exponential smoothing.

@@ -1,0 +1,8 @@
+﻿Izhikevich
+==========
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: Izhikevich
+    :members:
+    :show-inheritance:

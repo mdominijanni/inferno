@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="STDP-Like Learning Methods" href="learning-stdp.html" /><link rel="prev" title="Neuronal Adaptation" href="neurons-adaptation.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Neuron Models, Nonlinear" href="neurons-nonlinear.html" /><link rel="prev" title="Neuronal Adaptation" href="neurons-adaptation.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>Neuron Models, Linear - Inferno</title>
@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -177,6 +178,9 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Model and Method Zoo</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -223,12 +227,16 @@
 <h3>Formulation<a class="headerlink" href="#formulation" title="Link to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}
-\begin{align*}
-    \tau_m \frac{dV_m(t)}{dt} &amp;= - \left[V_m(t) - V_\text{rest}\right] + R_mI(t) \\
-    V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
-\end{align*}
-\end{split}\]</div>
+\[
+\tau_m \frac{dV_m(t)}{dt} = - \left[V_m(t) - V_\text{rest}\right] + R_mI(t)
+\]</div>
+</div>
+<p><em>With solution:</em></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t)
+\]</div>
 </div>
 <p><em>After an action potential is generated:</em></p>
 <div class="math-wrapper docutils container">
@@ -248,7 +256,12 @@
 </section>
 <section id="description">
 <h3>Description<a class="headerlink" href="#description" title="Link to this heading">#</a></h3>
-<p>This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or “biologically defined reset rules”. This is equivalent to the <a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">GLIF<sub>1</sub></a> (generalized leaky integrate-and-fire) model.</p>
+<p>This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or “biologically defined reset rules”. This is equivalent to the <a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">GLIF<sub>1</sub></a> (generalized leaky integrate-and-fire) model. Without presynaptic current, the membrane
+voltage decays back towards the rest voltage with rate in inverse proportion to the membrane time constant.</p>
+<a class="bg-primary reference internal image-reference" href="../_images/lif_slope_field.png"><img alt="Linear Integrate-and-Fire Slope Field of Memrane Voltage" class="bg-primary align-center" src="../_images/lif_slope_field.png" style="width: 565.5px; height: 422.4px;" /></a>
+<p>Slope field of the membrane voltage without any input current showing the decay towards
+the rest voltage <span class="math notranslate nohighlight">\((V_R = -60 \text{ mV})\)</span> over time. Plotted with value <span class="math notranslate nohighlight">\(\tau_m=1 \text{ ms}\)</span>
+over a time of <span class="math notranslate nohighlight">\(2 \text{ ms}\)</span>.</p>
 </section>
 <section id="alternative-formulations">
 <h3>Alternative Formulations<a class="headerlink" href="#alternative-formulations" title="Link to this heading">#</a></h3>
@@ -261,8 +274,8 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 \end{align*}
 \end{split}\]</div>
 </div>
-<p>In the first alternative formulation, the membrane resistance <span class="math notranslate nohighlight">\(R_m\)</span>, given in <span class="math notranslate nohighlight">\(\text{M\Omega}\)</span>, is not multiplied into each side, leaving the membrane capacitance <span class="math notranslate nohighlight">\(C_m\)</span>, given in <span class="math notranslate nohighlight">\(\text{nF}\)</span>.</p>
-<p>In the second alternative formulation, rather than considering the resistance of the membrane, it is instead phrased in terms of the membrane’s leak conductance <span class="math notranslate nohighlight">\(g_L\)</span>, given in <span class="math notranslate nohighlight">\(\text{\mu S}\)</span>.</p>
+<p>In the first alternative formulation, the membrane resistance <span class="math notranslate nohighlight">\(R_m\)</span>, given in <span class="math notranslate nohighlight">\(\text{M}\Omega\)</span>, is not multiplied into each side, leaving the membrane capacitance <span class="math notranslate nohighlight">\(C_m\)</span>, given in <span class="math notranslate nohighlight">\(\text{nF}\)</span>.</p>
+<p>In the second alternative formulation, rather than considering the resistance of the membrane, it is instead phrased in terms of the membrane’s leak conductance <span class="math notranslate nohighlight">\(g_L\)</span>, given in <span class="math notranslate nohighlight">\(\mu\text{S}\)</span>.</p>
 <p>These formulations are all equivalent, but expose different underlying properties of the neuron. Given the formulation used in Inferno, the other values can be calculated as follows.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -277,7 +290,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 <section id="references">
 <h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch1.S3.html">DOI:10.1017/CBO9781107447615 (Chapter 1.3)</a></p></li>
+<li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch1.S3.html">DOI:10.1017/CBO9781107447615 (§1.3)</a></p></li>
 <li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083</a></p></li>
 <li><p><a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">DOI:10.1038/s41467-017-02717-4</a></p></li>
 </ol>
@@ -302,7 +315,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
-    V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
+    V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
     \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 \end{align*}
 \end{split}\]</div>
@@ -313,7 +326,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 \[\begin{split}
 \begin{align*}
     V_m(t) &amp;\leftarrow V_\text{reset} \\
-    \theta_k(t) &amp;\leftarrow \theta_k(t) + a_k
+    \theta_k(t) &amp;\leftarrow \theta_k(t) + d_k
 \end{align*}
 \end{split}\]</div>
 </div>
@@ -327,7 +340,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 <li><p><span class="math notranslate nohighlight">\(\Theta_\infty\)</span>, equilibrium of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\theta_k\)</span>, adaptive component of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\theta_\text{reset}\)</span>, reset value of the adaptive component of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(a_k\)</span>, spike-triggered voltage threshold adaptation <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(d_k\)</span>, spike-triggered voltage threshold adaptation <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\tau_k\)</span>, adaptation time constant <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span>, current time of the simulation <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\Delta t\)</span>, length of time over which each simulation step occurs <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
@@ -360,7 +373,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 \begin{align*}
     \tau_m \frac{dV_m(t)}{dt} &amp;= - \left[V_m(t) - V_\text{rest}\right] + R_mI(t) \\
     \Theta(t) &amp;= \Theta_\infty + \sum_k \theta_k(t) \\
-    \tau_k \frac{d\theta_k(t)}{dt} &amp;= -\theta_k(t) \\
+    \frac{d\theta_k(t)}{dt} &amp;= -\lambda \theta_k(t) \\
 \end{align*}
 \end{split}\]</div>
 </div>
@@ -369,8 +382,8 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
-    V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
-    \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
+    V_m(t + \Delta t) &amp;= \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\frac{\Delta t}{\tau_m}\right) + V_\text{rest} + R_mI(t) \\
+    \theta_k(t + \Delta t) &amp;= \theta_k(t) \exp\left(-\lambda_k \Delta t\right)
 \end{align*}
 \end{split}\]</div>
 </div>
@@ -380,7 +393,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 \[\begin{split}
 \begin{align*}
     V_m(t) &amp;\leftarrow V_\text{rest} + m_v \left[ V_m(t) - V_\text{rest} \right] - b_v \\
-    \theta_k(t) &amp;\leftarrow \theta_k(t) + a_k
+    \theta_k(t) &amp;\leftarrow \theta_k(t) + d_k
 \end{align*}
 \end{split}\]</div>
 </div>
@@ -396,15 +409,15 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 <li><p><span class="math notranslate nohighlight">\(\Theta_\infty\)</span>, equilibrium of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\theta_k\)</span>, adaptive component of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\theta_\text{reset}\)</span>, reset value of the adaptive component of the firing threshold <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(a_k\)</span>, spike-triggered voltage threshold adaptation <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(\tau_k\)</span>, adaptation time constant <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(d_k\)</span>, spike-triggered voltage threshold adaptation <span class="math notranslate nohighlight">\((\text{mV})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\lambda_k\)</span>, adaptation rate constant <span class="math notranslate nohighlight">\((\text{ms}^{-1})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span>, current time of the simulation <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(\Delta t\)</span>, length of time over which each simulation step occurs <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
 </ul>
 </section>
 <section id="id5">
 <h3>Description<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
-<p>Also called “leaky integrate-and-fire with biologically defined reset rules (LIF-R)”, this model uses conventional LIF dynamics, with a linear spike-dependent adaptive threshold and a reset voltage which is contingent on the membrane voltage reached when spiking.</p>
+<p>Also called “leaky integrate-and-fire with biologically defined reset rules (LIF-R)”, this model uses conventional LIF dynamics, with a linear spike-dependent adaptive threshold and a reset voltage which is contingent on the membrane voltage reached when spiking. Note that the adaptation decay is defined in terms of a rate constant <span class="math notranslate nohighlight">\(\lambda_k\)</span> rather than a time constant <span class="math notranslate nohighlight">\(\tau_k\)</span>.</p>
 </section>
 <section id="id6">
 <h3>References<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
@@ -433,12 +446,12 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="learning-stdp.html">
+          <a class="next-page" href="neurons-nonlinear.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">STDP-Like Learning Methods</div>
+                <div class="title">Neuron Models, Nonlinear</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>

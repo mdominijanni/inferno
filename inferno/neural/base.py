@@ -142,32 +142,6 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             "the getter for property `spike`."
         )
 
-    @property
-    @abstractmethod
-    def current(self) -> torch.Tensor:
-        r"""Postsynaptic current in nanoamperes.
-
-        Args:
-            value (torch.Tensor): new postsynaptic currents.
-
-        Returns:
-            torch.Tensor: present postsynaptic currents.
-
-        Raises:
-            NotImplementedError: ``current`` must be implemented by the subclass.
-        """
-        raise NotImplementedError(
-            f"{type(self).__name__}(Neuron) must implement "
-            "the getter for property `current`."
-        )
-
-    @current.setter
-    def current(self, value: torch.Tensor):
-        raise NotImplementedError(
-            f"{type(self).__name__}(Neuron) must implement "
-            "the setter for property `current`."
-        )
-
     @abstractmethod
     def clear(self, **kwargs):
         r"""Resets neurons to their resting state.

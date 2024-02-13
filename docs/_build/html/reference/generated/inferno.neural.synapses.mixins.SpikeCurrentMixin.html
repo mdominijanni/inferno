@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="DelayedSpikeCurrentMixin" href="inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.html" /><link rel="prev" title="CurrentMixin" href="inferno.neural.synapses.mixins.CurrentMixin.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="DelayedSpikeCurrentAccessorMixin" href="inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html" /><link rel="prev" title="SpikeDerivedCurrentMixin" href="inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>SpikeCurrentMixin - Inferno</title>
@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -177,6 +178,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -219,15 +223,14 @@
 <h1>SpikeCurrentMixin<a class="headerlink" href="#spikecurrentmixin" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.neural.synapses.mixins.SpikeCurrentMixin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SpikeCurrentMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spikes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="inferno.typing.OneToOne.html#inferno.typing.OneToOne" title="inferno.typing.functional.OneToOne"><span class="pre">OneToOne</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requires_grad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/synapses/mixins.html#SpikeCurrentMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.synapses.mixins.SpikeCurrentMixin" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="inferno.neural.synapses.mixins.CurrentMixin.html#inferno.neural.synapses.mixins.CurrentMixin" title="inferno.neural.synapses.mixins.CurrentMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">CurrentMixin</span></code></a></p>
-<p>Mixin for synapses with current and managed spikes.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SpikeCurrentMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spikes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">requires_grad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/synapses/mixins.html#SpikeCurrentMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.synapses.mixins.SpikeCurrentMixin" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="inferno.neural.synapses.mixins.CurrentMixin.html#inferno.neural.synapses.mixins.CurrentMixin" title="inferno.neural.synapses.mixins.CurrentMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">CurrentMixin</span></code></a>, <a class="reference internal" href="inferno.neural.synapses.mixins.SpikeMixin.html#inferno.neural.synapses.mixins.SpikeMixin" title="inferno.neural.synapses.mixins.SpikeMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpikeMixin</span></code></a></p>
+<p>Mixin for synapses with primitive current and spikes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>currents</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – initial synaptic currents, in <span class="math notranslate nohighlight">\(\text{nA}\)</span>.</p></li>
-<li><p><strong>spikes</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><a class="reference internal" href="inferno.typing.OneToOne.html#inferno.typing.OneToOne" title="inferno.typing.OneToOne"><em>OneToOne</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – initial input spikes,
-or a function to derive them from synaptic current.</p></li>
+<li><p><strong>spikes</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – initial input spikes.</p></li>
 <li><p><strong>requires_grad</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the parameters created require gradients.
 Defaults to False.</p></li>
 </ul>
@@ -241,42 +244,11 @@ mixin must be called after the module constructor.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This registers a parameter <code class="docutils literal notranslate"><span class="pre">current_</span></code> and sets it as constrained.
-If <code class="docutils literal notranslate"><span class="pre">spikes</span></code> is a <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a>, this also registers
-a parameter <code class="docutils literal notranslate"><span class="pre">spike_</span></code> and sets it as constrained.</p>
+<ul class="simple">
+<li><p>This registers a parameter <code class="docutils literal notranslate"><span class="pre">current_</span></code> and sets it as constrained.</p></li>
+<li><p>This registers a parameter <code class="docutils literal notranslate"><span class="pre">spike_</span></code> and sets it as constrained.</p></li>
+</ul>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">spikes</span></code> is not a <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a>, this sets an attribute
-<code class="docutils literal notranslate"><span class="pre">_tospike</span></code> which is managed internally.</p>
-</div>
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.synapses.mixins.SpikeCurrentMixin.spike">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spike</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.synapses.mixins.SpikeCurrentMixin.spike" title="Link to this definition">#</a></dt>
-<dd><p>Spike input to the synapses at present.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – new spike input.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present spike input.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If <a class="reference internal" href="#inferno.neural.synapses.mixins.SpikeCurrentMixin.spikesderived" title="inferno.neural.synapses.mixins.SpikeCurrentMixin.spikesderived"><code class="xref py py-attr docutils literal notranslate"><span class="pre">spikesderived</span></code></a> is True, then the setter does not alter state.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.synapses.mixins.SpikeCurrentMixin.spikesderived">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spikesderived</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#inferno.neural.synapses.mixins.SpikeCurrentMixin.spikesderived" title="Link to this definition">#</a></dt>
-<dd><p>If input spikes are derived from synaptic currents.</p>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -286,23 +258,23 @@ a parameter <code class="docutils literal notranslate"><span class="pre">spike_<
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.neural.synapses.mixins.DelayedSpikeCurrentMixin.html">
+          <a class="next-page" href="inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">DelayedSpikeCurrentMixin</div>
+                <div class="title">DelayedSpikeCurrentAccessorMixin</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.neural.synapses.mixins.CurrentMixin.html">
+          <a class="prev-page" href="inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">CurrentMixin</div>
+                <div class="title">SpikeDerivedCurrentMixin</div>
                 
               </div>
             </a>
@@ -337,11 +309,7 @@ a parameter <code class="docutils literal notranslate"><span class="pre">spike_<
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">SpikeCurrentMixin</a><ul>
-<li><a class="reference internal" href="#inferno.neural.synapses.mixins.SpikeCurrentMixin"><code class="docutils literal notranslate"><span class="pre">SpikeCurrentMixin</span></code></a><ul>
-<li><a class="reference internal" href="#inferno.neural.synapses.mixins.SpikeCurrentMixin.spike"><code class="docutils literal notranslate"><span class="pre">SpikeCurrentMixin.spike</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.synapses.mixins.SpikeCurrentMixin.spikesderived"><code class="docutils literal notranslate"><span class="pre">SpikeCurrentMixin.spikesderived</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#inferno.neural.synapses.mixins.SpikeCurrentMixin"><code class="docutils literal notranslate"><span class="pre">SpikeCurrentMixin</span></code></a></li>
 </ul>
 </li>
 </ul>

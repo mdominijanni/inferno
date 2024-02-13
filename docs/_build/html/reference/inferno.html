@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -177,6 +178,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -244,6 +248,9 @@
 <tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.StateHook.html#inferno.StateHook" title="inferno.StateHook"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StateHook</span></code></a></p></td>
 <td><p>Interactable hook which only acts on module state.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.RemoteHook.html#inferno.RemoteHook" title="inferno.RemoteHook"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RemoteHook</span></code></a></p></td>
+<td><p>A state hook which acts on modules other than the registered module.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -260,16 +267,19 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.exp.html#inferno.exp" title="inferno.exp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exp</span></code></a></p></td>
 <td><p>Type agnostic exponential function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.normalize.html#inferno.normalize" title="inferno.normalize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.sqrt.html#inferno.sqrt" title="inferno.sqrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sqrt</span></code></a></p></td>
+<td><p>Type agnostic square root function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.normalize.html#inferno.normalize" title="inferno.normalize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize</span></code></a></p></td>
 <td><p>Normalizes a tensor.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.rescale.html#inferno.rescale" title="inferno.rescale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rescale</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.rescale.html#inferno.rescale" title="inferno.rescale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rescale</span></code></a></p></td>
 <td><p>Rescales a tensor (min-max normalization).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.simple_exponential_smoothing.html#inferno.simple_exponential_smoothing" title="inferno.simple_exponential_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_exponential_smoothing</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.simple_exponential_smoothing.html#inferno.simple_exponential_smoothing" title="inferno.simple_exponential_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_exponential_smoothing</span></code></a></p></td>
 <td><p>Performs simple exponential smoothing for a time step.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.holt_linear_smoothing.html#inferno.holt_linear_smoothing" title="inferno.holt_linear_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">holt_linear_smoothing</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.holt_linear_smoothing.html#inferno.holt_linear_smoothing" title="inferno.holt_linear_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">holt_linear_smoothing</span></code></a></p></td>
 <td><p>Performs Holt linear smoothing for a time step.</p></td>
 </tr>
 </tbody>
@@ -302,6 +312,12 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.normal.html#inferno.normal" title="inferno.normal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normal</span></code></a></p></td>
 <td><p>Returns a tensor based on input filled with random values sampled normally.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.scalar.html#inferno.scalar" title="inferno.scalar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scalar</span></code></a></p></td>
+<td><p>Returns a scalar tensor based on input with specified value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.tensorize.html#inferno.tensorize" title="inferno.tensorize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tensorize</span></code></a></p></td>
+<td><p>Converts inputs into tensors.</p></td>
 </tr>
 </tbody>
 </table>

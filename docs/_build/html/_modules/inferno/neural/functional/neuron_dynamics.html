@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -176,6 +177,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -214,7 +218,8 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.neural.functional.neuron_dynamics</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">inferno.typing</span> <span class="kn">import</span> <span class="n">OneToOne</span>
+<span></span><span class="kn">import</span> <span class="nn">inferno</span>
+<span class="kn">from</span> <span class="nn">inferno.typing</span> <span class="kn">import</span> <span class="n">OneToOne</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
@@ -382,7 +387,8 @@
     <span class="n">masked_inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">voltages</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -390,31 +396,128 @@
 
 <span class="sd">    .. math::</span>
 <span class="sd">        V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right]</span>
-<span class="sd">        \alpha + V_\text{rest} + R_mI(t)</span>
-
-<span class="sd">    Where :math:`\alpha` is the multiple for exponential decay, typically expressed</span>
-<span class="sd">    as :math:`\alpha = \exp(-\Delta t / \tau)`, where :math:`\Delta t` is the step time</span>
-<span class="sd">    and :math:`\tau` is the time constant, in like units of time.</span>
+<span class="sd">        \exp(-\Delta t / \tau_m) + V_\text{rest} + R_mI(t)</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        masked_inputs (torch.Tensor): presynaptic currents masked by neurons in their</span>
 <span class="sd">            absolute refractory period, :math:`I(t)`, in :math:`\text{nA}`.</span>
 <span class="sd">        voltages (torch.Tensor): membrane voltages :math:`V_m(t)`,</span>
 <span class="sd">            in :math:`\text{mV}`.</span>
-<span class="sd">        decay (float | torch.Tensor): exponential decay factor for membrane voltage,</span>
-<span class="sd">            :math:`\alpha`, unitless.</span>
+<span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
+<span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay for</span>
+<span class="sd">            membrane voltage, :math:`\tau_m`, in :math:`\text{ms}`.</span>
 <span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
 <span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
 <span class="sd">        resistance (float | torch.Tensor): resistance across the cell membrane,</span>
-<span class="sd">            :math:`R_m`, in :math:`\text{M\Omega}`.</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">v_in</span> <span class="o">=</span> <span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span>
-    <span class="n">v_delta</span> <span class="o">=</span> <span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span>
-    <span class="k">return</span> <span class="n">v_in</span> <span class="o">+</span> <span class="p">(</span><span class="n">v_delta</span> <span class="o">-</span> <span class="n">v_in</span><span class="p">)</span> <span class="o">*</span> <span class="n">decay</span> <span class="o">+</span> <span class="n">rest_v</span></div>
+    <span class="n">decay</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
+    <span class="n">extvoltage</span> <span class="o">=</span> <span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span>
+    <span class="k">return</span> <span class="n">rest_v</span> <span class="o">+</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span> <span class="o">-</span> <span class="n">extvoltage</span><span class="p">)</span> <span class="o">*</span> <span class="n">decay</span> <span class="o">+</span> <span class="n">extvoltage</span></div>
 
+
+
+<div class="viewcode-block" id="voltage_integration_quadratic">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.voltage_integration_quadratic.html#inferno.neural.functional.voltage_integration_quadratic">[docs]</a>
+<span class="k">def</span> <span class="nf">voltage_integration_quadratic</span><span class="p">(</span>
+    <span class="n">masked_inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">voltages</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">crit_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">affinity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Integrates input currents into membrane voltages using quadratic dynamics.</span>
+
+<span class="sd">    Implemented as an approximation using Euler&#39;s method.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        V_m(t + \Delta t) = \frac{\Delta t}{\tau_m}</span>
+<span class="sd">        \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) + R_mI(t) \right]</span>
+<span class="sd">        + V_m(t)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        masked_inputs (torch.Tensor): presynaptic currents masked by neurons in their</span>
+<span class="sd">            absolute refractory period, :math:`I(t)`, in :math:`\text{nA}`.</span>
+<span class="sd">        voltages (torch.Tensor): membrane voltages :math:`V_m(t)`,</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
+<span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
+<span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
+<span class="sd">        crit_v (float | torch.Tensor): membrane potential difference at which potential</span>
+<span class="sd">            naturally increases, :math:`V_\text{crit}`, in :math:`\text{mV}`.</span>
+<span class="sd">        affinity (float | torch.Tensor): controls the strength of the membrane</span>
+<span class="sd">            potential&#39;s drift towards :math:`V_\text{rest}` and away from</span>
+<span class="sd">            :math:`V_\text{crit}`, :math:`a`, unitless.</span>
+<span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay,</span>
+<span class="sd">            :math:`\tau_m`, in :math:`\text{ms}`.</span>
+<span class="sd">        resistance (float | torch.Tensor): resistance across the cell membrane,</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dyn_v</span> <span class="o">=</span> <span class="n">affinity</span> <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">crit_v</span><span class="p">)</span>
+    <span class="n">decay</span> <span class="o">=</span> <span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span>
+    <span class="k">return</span> <span class="n">voltages</span> <span class="o">+</span> <span class="n">decay</span> <span class="o">*</span> <span class="p">(</span><span class="n">dyn_v</span> <span class="o">+</span> <span class="p">(</span><span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span><span class="p">))</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">voltage_integration_exponential</span><span class="p">(</span>
+    <span class="n">masked_inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">voltages</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">rheobase_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">sharpness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">resistance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Integrates input currents into membrane voltages using exponential dynamics.</span>
+
+<span class="sd">    Implemented as an approximation using Euler&#39;s method.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        V_m(t + \Delta t) = \frac{\Delta t}{\tau_m}</span>
+<span class="sd">        \left[ a \left(V_m(t) - V_\text{rest}\right)\left(V_m(t) - V_\text{crit}\right) + R_mI(t) \right]</span>
+<span class="sd">        + V_m(t)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        masked_inputs (torch.Tensor): presynaptic currents masked by neurons in their</span>
+<span class="sd">            absolute refractory period, :math:`I(t)`, in :math:`\text{nA}`.</span>
+<span class="sd">        voltages (torch.Tensor): membrane voltages :math:`V_m(t)`,</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
+<span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
+<span class="sd">        rest_v (float | torch.Tensor): membrane potential difference at equilibrium,</span>
+<span class="sd">            :math:`V_\text{rest}`, in :math:`\text{mV}`.</span>
+<span class="sd">        rheobase_v (float | torch.Tensor): membrane potential difference at which</span>
+<span class="sd">            potential naturally increases, :math:`V_\text{crit}`, in :math:`\text{mV}`.</span>
+<span class="sd">        sharpness (float | torch.Tensor): steepness of the natural increase in membrane</span>
+<span class="sd">            potential above the rheobase voltage, :math:`\Delta_T`,</span>
+<span class="sd">            in :math:`\text{mV}`.</span>
+<span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay,</span>
+<span class="sd">            :math:`\tau_m`, in :math:`\text{ms}`.</span>
+<span class="sd">        resistance (float | torch.Tensor): resistance across the cell membrane,</span>
+<span class="sd">            :math:`R_m`, in :math:`\text{M}\Omega`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">expdyn_v</span> <span class="o">=</span> <span class="n">rheobase_v</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rheobase_v</span><span class="p">)</span> <span class="o">/</span> <span class="n">sharpness</span><span class="p">)</span>
+    <span class="n">decay</span> <span class="o">=</span> <span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span>
+    <span class="k">return</span> <span class="n">voltages</span> <span class="o">+</span> <span class="n">decay</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="o">-</span><span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span> <span class="o">+</span> <span class="n">expdyn_v</span> <span class="o">+</span> <span class="p">(</span><span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span><span class="p">)</span>
+    <span class="p">)</span>
 </pre></div>
         </article>
       </div>

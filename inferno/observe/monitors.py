@@ -12,7 +12,7 @@ class Monitor(Module, Hook):
     Args:
         reducer (Reducer): underlying means for reducing samples over time
             and storing them.
-        module (Module, optional): module to register as the target for monitoring,
+        module (Module | None, optional): module to register as the target for monitoring,
             can be modified after construction. Defaults to None.
         prehook (Callable | None, optional): function to call before hooked's
             :py:meth:`~torch.nn.Module.forward`. Defaults to None.
@@ -36,7 +36,7 @@ class Monitor(Module, Hook):
     def __init__(
         self,
         reducer: Reducer,
-        module: Module = None,
+        module: Module | None = None,
         prehook: Callable | None = None,
         posthook: Callable | None = None,
         prehook_kwargs: dict[str, Any] | None = None,
@@ -54,8 +54,11 @@ class Monitor(Module, Hook):
             posthook_kwargs=posthook_kwargs,
             train_update=train_update,
             eval_update=eval_update,
-            module=module,
         )
+
+        # register if as module is provided
+        if module is not None:
+            self.register(module)
 
         # register submodule
         self.reducer_ = reducer

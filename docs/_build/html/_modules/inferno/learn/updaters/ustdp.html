@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -176,6 +177,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -225,7 +229,7 @@
     <span class="n">PassthroughReducer</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Literal</span>
 
 
 <div class="viewcode-block" id="STDP">
@@ -274,12 +278,21 @@
 <span class="sd">            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.</span>
 <span class="sd">        trace_mode (Literal[&quot;cumulative&quot;, &quot;nearest&quot;], optional): method to use for</span>
 <span class="sd">            calculating spike traces. Defaults to &quot;cumulative&quot;.</span>
-<span class="sd">        wd_lower (~inferno.learn.functional.WeightBoundingCall | None, optional):</span>
+<span class="sd">        wd_lower (~inferno.learn.functional.UpdateBounding | None, optional):</span>
 <span class="sd">            callable for applying weight dependence on a lower bound, no dependence if</span>
 <span class="sd">            None. Defaults to None.</span>
-<span class="sd">        wd_upper (~inferno.learn.functional.WeightBoundingCall | None, optional):</span>
+<span class="sd">        wd_upper (~inferno.learn.functional.UpdateBounding | None, optional):</span>
 <span class="sd">            callable for applying weight dependence on an bound, no dependence if</span>
 <span class="sd">            None. Defaults to None.</span>
+<span class="sd">        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):</span>
+<span class="sd">            function to reduce updates over the batch dimension, :py:func:`torch.mean`</span>
+<span class="sd">            when None. Defaults to None.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        ``batch_reduction`` can be one of the functions in PyTorch including but not</span>
+<span class="sd">        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.</span>
+<span class="sd">        A custom function with similar behavior can also be passed in. Like with the</span>
+<span class="sd">        included function, it should not keep the original dimensions by default.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
@@ -299,8 +312,11 @@
         <span class="n">delayed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">interp_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">trace_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;cumulative&quot;</span><span class="p">,</span> <span class="s2">&quot;nearest&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cumulative&quot;</span><span class="p">,</span>
-        <span class="n">wd_lower</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">WeightBoundingCall</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">wd_upper</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">WeightBoundingCall</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wd_lower</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">UpdateBounding</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wd_upper</span><span class="p">:</span> <span class="n">lf</span><span class="o">.</span><span class="n">UpdateBounding</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_reduction</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor, registers monitors</span>
@@ -315,16 +331,23 @@
             <span class="p">)</span>
 
         <span class="c1"># updater hyperparameters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`step_time`&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_post</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_pre</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tc_post</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`tc_post`&quot;</span><span class="p">,</span> <span class="n">tc_post</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tc_pre</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`tc_pre`&quot;</span><span class="p">,</span> <span class="n">tc_pre</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tc_post</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;tc_post&quot;</span><span class="p">,</span> <span class="n">tc_post</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tc_pre</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;tc_pre&quot;</span><span class="p">,</span> <span class="n">tc_pre</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span> <span class="o">=</span> <span class="n">delayed</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">interp_tolerance</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">=</span> <span class="n">trace_mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wdlower</span> <span class="o">=</span> <span class="n">wd_lower</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wdupper</span> <span class="o">=</span> <span class="n">wd_upper</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batchreduce</span> <span class="o">=</span> <span class="n">batch_reduction</span> <span class="k">if</span> <span class="n">batch_reduction</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -341,7 +364,9 @@
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># assign new step time</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`step_time`&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
         <span class="c1"># update monitors accordingly</span>
         <span class="k">for</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span><span class="p">:</span>
@@ -499,9 +524,7 @@
             <span class="c1"># post and pre synaptic traces</span>
             <span class="n">x_post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;trace_post&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
             <span class="n">x_pre</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;trace_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
-                    <span class="n">conn</span><span class="o">.</span><span class="n">selector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span>
-                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;trace_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">selector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayed</span> <span class="ow">and</span> <span class="n">conn</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                 <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;trace_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
             <span class="p">)</span>
@@ -511,12 +534,12 @@
             <span class="n">i_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;spike_pre&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
 
             <span class="c1"># reshape postsynaptic</span>
-            <span class="n">x_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">x_post</span><span class="p">)</span>
-            <span class="n">i_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">i_post</span><span class="p">)</span>
+            <span class="n">x_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">x_post</span><span class="p">)</span>
+            <span class="n">i_post</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">i_post</span><span class="p">)</span>
 
             <span class="c1"># reshape presynaptic</span>
-            <span class="n">x_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">x_pre</span><span class="p">)</span>
-            <span class="n">i_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">i_pre</span><span class="p">)</span>
+            <span class="n">x_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">x_pre</span><span class="p">)</span>
+            <span class="n">i_pre</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">i_pre</span><span class="p">)</span>
 
             <span class="c1"># update amplitudes</span>
             <span class="n">a_pos</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
@@ -531,8 +554,8 @@
             <span class="n">a_pos</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">=</span> <span class="n">a_pos</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lrpost</span><span class="p">,</span> <span class="n">a_neg</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lrpre</span>
 
             <span class="c1"># mask traces with spikes, reduce dimensionally, apply amplitudes</span>
-            <span class="n">dw_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_post</span> <span class="o">*</span> <span class="n">x_pre</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_pos</span>
-            <span class="n">dw_neg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_pre</span> <span class="o">*</span> <span class="n">x_post</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_neg</span>
+            <span class="n">dw_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_post</span> <span class="o">*</span> <span class="n">x_pre</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_pos</span>
+            <span class="n">dw_neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_pre</span> <span class="o">*</span> <span class="n">x_post</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_neg</span>
 
             <span class="c1"># update weights</span>
             <span class="n">conn</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">weight</span> <span class="o">+</span> <span class="n">dw_pos</span> <span class="o">-</span> <span class="n">dw_neg</span></div>

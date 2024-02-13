@@ -1,4 +1,5 @@
 import torch
+from typing import Any, Callable
 
 
 def zeros(
@@ -8,7 +9,7 @@ def zeros(
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
-    requires_grad: bool | None = None
+    requires_grad: bool | None = None,
 ) -> torch.Tensor:
     r"""Returns a tensor based on input filled with zeros.
 
@@ -49,7 +50,7 @@ def ones(
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
-    requires_grad: bool | None = None
+    requires_grad: bool | None = None,
 ) -> torch.Tensor:
     r"""Returns a tensor based on input filled with ones.
 
@@ -90,7 +91,7 @@ def empty(
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
-    requires_grad: bool | None = None
+    requires_grad: bool | None = None,
 ) -> torch.Tensor:
     r"""Returns an uninitialized tensor based on input.
 
@@ -132,7 +133,7 @@ def full(
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
-    requires_grad: bool | None = None
+    requires_grad: bool | None = None,
 ) -> torch.Tensor:
     r"""Returns a tensor based on input filled with specified value.
 
@@ -169,7 +170,7 @@ def full(
         dtype=dtype,
         layout=layout,
         device=device,
-        requires_grad=requires_grad
+        requires_grad=requires_grad,
     )
 
 
@@ -181,7 +182,7 @@ def uniform(
     layout: torch.layout | None = None,
     device: torch.device | None = None,
     requires_grad: bool | None = None,
-    generator: torch.Generator | None = None
+    generator: torch.Generator | None = None,
 ) -> torch.Tensor:
     r"""Returns a tensor based on input filled with random values sampled uniformly.
 
@@ -222,7 +223,7 @@ def uniform(
         dtype=dtype,
         layout=layout,
         device=device,
-        requires_grad=requires_grad
+        requires_grad=requires_grad,
     )
 
 
@@ -234,7 +235,7 @@ def normal(
     layout: torch.layout | None = None,
     device: torch.device | None = None,
     requires_grad: bool | None = None,
-    generator: torch.Generator | None = None
+    generator: torch.Generator | None = None,
 ) -> torch.Tensor:
     r"""Returns a tensor based on input filled with random values sampled normally.
 
@@ -275,5 +276,86 @@ def normal(
         dtype=dtype,
         layout=layout,
         device=device,
-        requires_grad=requires_grad
+        requires_grad=requires_grad,
     )
+
+
+def scalar(
+    value: bool | int | float | complex,
+    tensor: torch.Tensor,
+    *,
+    dtype: torch.dtype | None = None,
+    layout: torch.layout | None = None,
+    device: torch.device | None = None,
+    requires_grad: bool | None = None,
+) -> torch.Tensor:
+    r"""Returns a scalar tensor based on input with specified value.
+
+    Shortcut for :py:func:`full` with ``shape=()``.
+
+    Args:
+        value (bool | int | float | complex): value with to fill the output.
+        tensor (torch.Tensor): determines default output properties.
+        dtype (torch.dtype | None, optional): overrides data type from ``tensor``
+            if specified. Defaults to None.
+        layout (torch.layout | None, optional): overrides layout from ``tensor``
+            if specified. Defaults to None.
+        device (torch.device | None, optional): overrides device from ``tensor``
+            if specified. Defaults to None.
+        requires_grad (bool | None, optional): overrides gradient requirement from
+            ``tensor`` if specified. Defaults to None.
+
+    Returns:
+        torch.Tensor: scalar tensor like ``tensor``, modified by parameters, filled
+        with ``value``.
+    """
+    return full(
+        tensor,
+        value,
+        shape=(),
+        dtype=dtype,
+        layout=layout,
+        device=device,
+        requires_grad=requires_grad,
+    )
+
+
+def tensorize(
+    *values: Any, conversion: Callable[[Any], torch.Tensor] | None = None
+) -> tuple[torch.Tensor, ...] | torch.Tensor:
+    r"""Converts inputs into tensors.
+
+    If any value is a tensor, it will be used as a reference and non-tensor
+    inputs will be converted using :py:func:`scalar`. If there are no tensors,
+    then all elements will be converted into tensors using ``conversion``. When
+    determining a reference, the leftmost tensor will be used.
+
+    Args:
+        *values (Any): values to convert into tensors
+        conversion (Callable[[Any], torch.Tensor] | None): method to convert values if
+            none are tensors, default if unspecified. Defaults to None.
+
+    Returns:
+        tuple[torch.Tensor, ...] | torch.Tensor: converted values.
+    """
+    # get the first tensor to use as a reference point
+    ref = None
+    for val in values:
+        if isinstance(val, torch.Tensor):
+            ref = val
+            break
+
+    # configure the conversion to use
+    if ref is None:
+        if conversion is None:
+            conversion = lambda x: torch.tensor(x)  # noqa:E731;
+        cf = conversion
+    else:
+        conversion = lambda x: scalar(x, ref)  # noqa:E731;
+        cf = lambda x: x if isinstance(x, torch.Tensor) else conversion(x)  # noqa:E731;
+
+    # return tensor values
+    if len(values) == 1:
+        return cf(values[0])
+    else:
+        return tuple(map(cf, values))

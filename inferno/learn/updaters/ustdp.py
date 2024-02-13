@@ -9,7 +9,7 @@ from inferno.observe import (
     PassthroughReducer,
 )
 import torch
-from typing import Literal
+from typing import Callable, Literal
 
 
 class STDP(LayerwiseUpdater):
@@ -56,12 +56,21 @@ class STDP(LayerwiseUpdater):
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to "cumulative".
-        wd_lower (~inferno.learn.functional.BindWeights | None, optional):
+        wd_lower (~inferno.learn.functional.UpdateBounding | None, optional):
             callable for applying weight dependence on a lower bound, no dependence if
             None. Defaults to None.
-        wd_upper (~inferno.learn.functional.BindWeights | None, optional):
+        wd_upper (~inferno.learn.functional.UpdateBounding | None, optional):
             callable for applying weight dependence on an bound, no dependence if
             None. Defaults to None.
+        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+            function to reduce updates over the batch dimension, :py:func:`torch.mean`
+            when None. Defaults to None.
+
+    Note:
+        ``batch_reduction`` can be one of the functions in PyTorch including but not
+        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        A custom function with similar behavior can also be passed in. Like with the
+        included function, it should not keep the original dimensions by default.
 
     See Also:
         For more details and references, visit
@@ -81,8 +90,11 @@ class STDP(LayerwiseUpdater):
         delayed: bool = False,
         interp_tolerance: float = 0.0,
         trace_mode: Literal["cumulative", "nearest"] = "cumulative",
-        wd_lower: lf.BindWeights | None = None,
-        wd_upper: lf.BindWeights | None = None,
+        wd_lower: lf.UpdateBounding | None = None,
+        wd_upper: lf.UpdateBounding | None = None,
+        batch_reduction: (
+            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+        ) = None,
         **kwargs,
     ):
         # call superclass constructor, registers monitors
@@ -97,16 +109,23 @@ class STDP(LayerwiseUpdater):
             )
 
         # updater hyperparameters
-        self.step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
+        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
+        if e:
+            raise e
         self.lr_post = float(lr_post)
         self.lr_pre = float(lr_pre)
-        self.tc_post = numeric_limit("`tc_post`", tc_post, 0, "gt", float)
-        self.tc_pre = numeric_limit("`tc_pre`", tc_pre, 0, "gt", float)
+        self.tc_post, e = numeric_limit("tc_post", tc_post, 0, "gt", float)
+        if e:
+            raise e
+        self.tc_pre, e = numeric_limit("tc_pre", tc_pre, 0, "gt", float)
+        if e:
+            raise e
         self.delayed = delayed
         self.tolerance = float(interp_tolerance)
         self.trace = trace_mode
         self.wdlower = wd_lower
         self.wdupper = wd_upper
+        self.batchreduce = batch_reduction if batch_reduction else torch.mean
 
     @property
     def dt(self) -> float:
@@ -123,7 +142,9 @@ class STDP(LayerwiseUpdater):
     @dt.setter
     def dt(self, value: float) -> None:
         # assign new step time
-        self.step_time = numeric_limit("`step_time`", value, 0, "gt", float)
+        self.step_time, e = numeric_limit("step_time", value, 0, "gt", float)
+        if e:
+            raise e
 
         # update monitors accordingly
         for monitor, _ in self.monitors:
@@ -276,9 +297,7 @@ class STDP(LayerwiseUpdater):
             # post and pre synaptic traces
             x_post = self.get_monitor(layer, "trace_post").peek()
             x_pre = (
-                self.get_monitor(layer, "trace_pre").view(
-                    conn.selector, self.tolerance
-                )
+                self.get_monitor(layer, "trace_pre").view(conn.selector, self.tolerance)
                 if self.delayed and conn.delayedby is not None
                 else self.get_monitor(layer, "trace_pre").peek()
             )
@@ -308,8 +327,8 @@ class STDP(LayerwiseUpdater):
             a_pos, a_neg = a_pos * self.lrpost, a_neg * self.lrpre
 
             # mask traces with spikes, reduce dimensionally, apply amplitudes
-            dw_pos = torch.mean(torch.sum(i_post * x_pre, dim=-1), dim=0) * a_pos
-            dw_neg = torch.mean(torch.sum(i_pre * x_post, dim=-1), dim=0) * a_neg
+            dw_pos = self.batchreduce(torch.sum(i_post * x_pre, dim=-1), 0) * a_pos
+            dw_neg = self.batchreduce(torch.sum(i_pre * x_post, dim=-1), 0) * a_neg
 
             # update weights
             conn.weight = conn.weight + dw_pos - dw_neg

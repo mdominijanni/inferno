@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -177,6 +178,9 @@
 <li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">Model and Method Zoo</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -221,8 +225,8 @@
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
 <p>Here, the neuron models as well as the training methods implemented in Inferno are described in-depth and references to academic works relating to them are included. Planned for the future are more detailed descriptions of how the given hyperparameters affect their behavior.</p>
 </section>
-<section id="neuronal-dynamics">
-<h2>Neuronal Dynamics<a class="headerlink" href="#neuronal-dynamics" title="Link to this heading">#</a></h2>
+<section id="neurons">
+<h2>Neurons<a class="headerlink" href="#neurons" title="Link to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="neurons-adaptation.html">Neuronal Adaptation</a><ul>
@@ -241,6 +245,28 @@
 <li class="toctree-l2"><a class="reference internal" href="neurons-linear.html#generalized-leaky-integrate-and-fire-3-glif3">Generalized Leaky Integrate-and-Fire 3 (GLIF<sub>3</sub>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neurons-linear.html#generalized-leaky-integrate-and-fire-4-glif4">Generalized Leaky Integrate-and-Fire 4 (GLIF<sub>4</sub>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neurons-linear.html#generalized-leaky-integrate-and-fire-5-glif5">Generalized Leaky Integrate-and-Fire 5 (GLIF<sub>5</sub>)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="neurons-nonlinear.html">Neuron Models, Nonlinear</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html#quadratic-integrate-and-fire-qif">Quadratic Integrate-and-Fire (QIF)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html#izhikevich-adaptive-quadratic">Izhikevich (Adaptive Quadratic)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html#exponential-integrate-and-fire-eif">Exponential Integrate-and-Fire (EIF)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neurons-nonlinear.html#adaptive-exponential-integrate-and-fire-adex">Adaptive Exponential Integrate-and-Fire (AdEx)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="synapses">
+<h2>Synapses<a class="headerlink" href="#synapses" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="synapses-current.html">Synapse Models, Current-Based</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="synapses-current.html#delta-cuba-variant">Delta (CUBA Variant)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="synapses-conductance.html">Synapse Models, Conductance-Based</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="synapses-conductance.html#delta-coba-variant">Delta (COBA Variant)</a></li>
 </ul>
 </li>
 </ul>
@@ -327,7 +353,8 @@
             <ul>
 <li><a class="reference internal" href="#">Model and Method Zoo</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#neuronal-dynamics">Neuronal Dynamics</a></li>
+<li><a class="reference internal" href="#neurons">Neurons</a></li>
+<li><a class="reference internal" href="#synapses">Synapses</a></li>
 <li><a class="reference internal" href="#learning-methods">Learning Methods</a></li>
 </ul>
 </li>

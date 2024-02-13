@@ -26,6 +26,10 @@
     ALIF
     GLIF1
     GLIF2
+    QIF
+    Izhikevich
+    EIF
+    AdEx
 ```
 
 ## Synapses
@@ -34,7 +38,8 @@
     :nosignatures:
     :toctree: generated
 
-    PassthroughSynapse
+    DeltaCurrent
+    DeltaPlusCurrent
 ```
 
 ## Connections
@@ -47,6 +52,16 @@
     LinearDirect
     LinearLateral
     Conv2D
+```
+
+## Encoders
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    HomogeneousPoissonEncoder
+    PoissonIntervalEncoder
 ```
 
 ## Hooks
@@ -78,13 +93,15 @@
     mixins.ShapeMixin
     neurons.mixins.AdaptationMixin
     neurons.mixins.CurrentMixin
-    neurons.mixins.CurrentSpikeRefractoryMixin
     neurons.mixins.RefractoryMixin
     neurons.mixins.SpikeRefractoryMixin
     neurons.mixins.VoltageMixin
     synapses.mixins.CurrentMixin
+    synapses.mixins.SpikeMixin
+    synapses.mixins.CurrentDerivedSpikeMixin
+    synapses.mixins.SpikeDerivedCurrentMixin
     synapses.mixins.SpikeCurrentMixin
-    synapses.mixins.DelayedSpikeCurrentMixin
+    synapses.mixins.DelayedSpikeCurrentAccessorMixin
     connections.mixins.WeightMixin
     connections.mixins.WeightBiasMixin
     connections.mixins.WeightBiasDelayMixin

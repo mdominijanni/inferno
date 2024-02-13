@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -176,6 +177,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -214,7 +218,8 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.neural.functional.neuron_adaptation</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span></span><span class="kn">import</span> <span class="nn">inferno</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 
 
 <div class="viewcode-block" id="adaptive_currents_linear">
@@ -258,7 +263,7 @@
 <span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay,</span>
 <span class="sd">            :math:`\tau_k`, in :math:`\text{ms}`.</span>
 <span class="sd">        voltage_coupling (float | torch.Tensor): strength of coupling to membrane</span>
-<span class="sd">            voltage, :math:`a_k`, in :math:`\text{\mu S}`.</span>
+<span class="sd">            voltage, :math:`a_k`, in :math:`\mu\text{S}`.</span>
 <span class="sd">        spike_increment (float | torch.Tensor): amount by which the adaptive current is</span>
 <span class="sd">            increased after a spike, :math:`b_k`, in :math:`\text{nA}`.</span>
 <span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
@@ -337,7 +342,7 @@
     <span class="n">rest_v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">adapt_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">rebound_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">adapt_reset_lb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">adapt_reset_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">refracs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -353,7 +358,7 @@
 <span class="sd">    If a spike was generated at time :math:`t`, then.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \theta_k(t) \leftarrow \max(\theta_k(t), {\theta_\text{reset}}_k)</span>
+<span class="sd">        \theta_k(t) \leftarrow \max(\theta_k(t), \theta_\text{reset})</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        adaptations (torch.Tensor): last adaptations applied to membrane voltage</span>
@@ -368,9 +373,9 @@
 <span class="sd">            membrane voltage term, :math:`a_k`, in :math:`\text{ms}^{-1}`.</span>
 <span class="sd">        rebound_rate (float | torch.Tensor): rate constant of exponential decay for</span>
 <span class="sd">            threshold voltage term, :math:`b_k`, in :math:`\text{ms}^{-1}`.</span>
-<span class="sd">        adapt_reset_lb (float | torch.Tensor | None, optional): lower bound for</span>
+<span class="sd">        adapt_reset_min (float | torch.Tensor | None, optional): lower bound for</span>
 <span class="sd">            the threshold adaptation permitted after a postsynaptic potential,</span>
-<span class="sd">            :math:`{\theta_\text{reset}}_k`, in :math:`\text{mV}`. Defaults to None.</span>
+<span class="sd">            :math:`\theta_\text{reset}`, in :math:`\text{mV}`. Defaults to None.</span>
 <span class="sd">        spikes (torch.Tensor | None, optional): if the corresponding neuron generated an</span>
 <span class="sd">            action potential. Defaults to None.</span>
 <span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
@@ -397,7 +402,7 @@
 <span class="sd">        `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
 <span class="sd">        ``voltages``, ``spikes``, and ``refracs``.</span>
 
-<span class="sd">        ``step_time``, ``adapt_rate``, ``rebound_rate``, ``adapt_reset_lb``:</span>
+<span class="sd">        ``step_time``, ``adapt_rate``, ``rebound_rate``, ``adapt_reset_min``:</span>
 
 <span class="sd">        `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
 <span class="sd">        ``adaptations``.</span>
@@ -412,7 +417,7 @@
 <span class="sd">            * :math:`K` is the number of sets of adaptation parameters.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        If either ``adapt_reset_lb`` or ``spikes`` is None, then no lower bound</span>
+<span class="sd">        If either ``adapt_reset_min`` or ``spikes`` is None, then no lower bound</span>
 <span class="sd">        will be applied to threshold adaptations.</span>
 
 <span class="sd">    Tip:</span>
@@ -438,10 +443,10 @@
         <span class="p">)</span>
 
     <span class="c1"># post-spike adaptation step</span>
-    <span class="k">if</span> <span class="n">adapt_reset_lb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">spikes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">adapt_reset_min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">spikes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
             <span class="n">spikes</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">adaptations</span><span class="o">.</span><span class="n">clamp_min</span><span class="p">(</span><span class="n">adapt_reset_lb</span><span class="p">),</span>
+            <span class="n">adaptations</span><span class="o">.</span><span class="n">clamp_min</span><span class="p">(</span><span class="n">adapt_reset_min</span><span class="p">),</span>
         <span class="p">)</span>
 
     <span class="c1"># return updated adaptation state</span>
@@ -455,19 +460,15 @@
     <span class="n">adaptations</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">spike_increment</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">refracs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update adaptive thresholds based on postsynaptic spikes.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \theta_k(t + \Delta t) = \theta_k(t) \alpha_k\right)</span>
-
-<span class="sd">    Where :math:`\alpha_k` is the multiple for exponential decay, typically expressed</span>
-<span class="sd">    as :math:`\alpha_k = \exp(-\Delta t / \tau_k)`, where :math:`\Delta t` is the</span>
-<span class="sd">    step time and :math:`\tau_k` is the time constant for the :math:`k^\text{th}`</span>
-<span class="sd">    adaptation, in like units of time.</span>
+<span class="sd">        \theta_k(t + \Delta t) = \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)</span>
 
 <span class="sd">    If a spike was generated at time :math:`t`, then.</span>
 
@@ -479,8 +480,10 @@
 <span class="sd">            threshold, :math:`\theta_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        spikes (torch.Tensor): if the corresponding neuron generated an</span>
 <span class="sd">            action potential.</span>
-<span class="sd">        decay (float | torch.Tensor): exponential decay factor for adaptations,</span>
-<span class="sd">            :math:`\alpha_k`, unitless.</span>
+<span class="sd">        step_time (float | torch.Tensor): length of a simulation time step,</span>
+<span class="sd">            :math:`\Delta t`, in :math:`\text{ms}`.</span>
+<span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay for</span>
+<span class="sd">            the adaptations, :math:`\tau_k`, in :math:`\text{ms}`.</span>
 <span class="sd">        spike_increment (torch.Tensor): amount by which the adaptive threshold is</span>
 <span class="sd">            increased after a spike, :math:`a_k`, in :math:`\text{mV}`.</span>
 <span class="sd">        refracs (torch.Tensor | None): remaining absolute refractory periods,</span>
@@ -502,7 +505,7 @@
 
 <span class="sd">        :math:`[B] \times N_0 \times \cdots`</span>
 
-<span class="sd">        ``decay``, ``spike_increment``:</span>
+<span class="sd">        ``step_time``, ``time_constant``, ``spike_increment``:</span>
 
 <span class="sd">        `Broadcastable &lt;https://pytorch.org/docs/stable/notes/broadcasting.html&gt;`_ with</span>
 <span class="sd">        ``adaptations``.</span>
@@ -526,10 +529,11 @@
 <span class="sd">        :ref:`zoo/neurons-adaptation:Adaptive Threshold, Linear Spike-Dependent` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># decay adaptations over time</span>
+    <span class="n">decayed</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">*</span> <span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">refracs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">*</span> <span class="n">decay</span>
+        <span class="n">adaptations</span> <span class="o">=</span> <span class="n">decayed</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">refracs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">adaptations</span> <span class="o">*</span> <span class="n">decay</span><span class="p">)</span>
+        <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">refracs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">decayed</span><span class="p">)</span>
 
     <span class="c1"># increment adaptations after spiking</span>
     <span class="n">adaptations</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">+</span> <span class="p">(</span><span class="n">spike_increment</span> <span class="o">*</span> <span class="n">spikes</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
@@ -578,7 +582,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        threshold (float | torch.Tensor): equilibrium of the firing threshold,</span>
-<span class="sd">            :math:`\Theta_\infty$`, in :math:`\text{mV}`.</span>
+<span class="sd">            :math:`\Theta_\infty`, in :math:`\text{mV}`.</span>
 <span class="sd">        adaptations (torch.Tensor): :math:`k` threshold adaptations, :math:`\theta_k`,</span>
 <span class="sd">            in :math:`\text{mV}`.</span>
 

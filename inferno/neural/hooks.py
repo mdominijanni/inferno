@@ -42,8 +42,12 @@ class Normalization(StateHook):
         always_call: bool = False,
     ):
         # sanity check arguments
-        _ = numeric_limit("`order`", order, 0, "neq", None)
-        _ = numeric_limit("`scale`", scale, 0, "neq", None)
+        _, e = numeric_limit("order", order, 0, "neq", None)
+        if e:
+            raise e
+        _, e = numeric_limit("scale", scale, 0, "neq", None)
+        if e:
+            raise e
 
         # inner hook function
         def hook(module):

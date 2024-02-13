@@ -1,0 +1,6 @@
+﻿enc\_poisson\_interval\_online
+==============================
+
+.. currentmodule:: inferno.neural.functional
+
+.. autofunction:: enc_poisson_interval_online

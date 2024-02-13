@@ -2,6 +2,7 @@ from inferno import DimensionalModule, Module
 from inferno._internal import attr_members, instance_of
 import torch
 import torch.nn as nn
+from typing import Callable
 
 
 class AdaptationMixin:
@@ -11,6 +12,9 @@ class AdaptationMixin:
         data (torch.Tensor): initial membrane adaptations.
         requires_grad (bool, optional): if the parameters created require gradients.
             Defaults to False.
+        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+            function to reduce adaptation updates over the batch dimension,
+            :py:func:`torch.mean` when None. Defaults to None.
 
     Caution:
         This must be added to a class which inherits from
@@ -18,16 +22,38 @@ class AdaptationMixin:
         mixin must be called after the module constructor.
 
     Note:
-        This registers a parameter ``adaptation_`` and sets it as constrained.
+        This registers a parameter ``adaptation_`` and sets an attribute
+        ``adapt_batchreduce``.
+
+    Note:
+        ``batch_reduction`` can be one of the functions in PyTorch including but not
+        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        A custom function with similar behavior can also be passed in. Like with the
+        included function, it should not keep the original dimensions by default.
     """
 
-    def __init__(self, data: torch.Tensor, requires_grad=False):
-        instance_of("`self`", self, Module)
+    def __init__(
+        self,
+        data: torch.Tensor,
+        requires_grad: bool = False,
+        batch_reduction: (
+            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+        ) = None,
+    ):
+        e = instance_of("self", self, Module)
+        if e:
+            raise e
         self.register_parameter("adaptation_", nn.Parameter(data, requires_grad))
+
+        self.adapt_batchreduce = batch_reduction if batch_reduction else torch.mean
 
     @property
     def adaptation(self) -> torch.Tensor:
         r"""Membrane adaptations.
+
+        If the value the setter attempts to assign has the same shape but with an
+        additonal leading dimension, it will assume that is an unreduced batch dimension
+        and reduce it.
 
         Args:
             value (torch.Tensor): new membrane adaptations.
@@ -39,11 +65,17 @@ class AdaptationMixin:
 
     @adaptation.setter
     def adaptation(self, value: torch.Tensor):
-        self.adaptation_.data = value
+        if value.ndim == self.adaptation_.ndim + 1:
+            if value.shape[1:] == self.adaptation_.shape:
+                self.adaptation_.data = self.adapt_batchreduce(value, 0)
+            else:
+                self.adaptation_.data = value
+        else:
+            self.adaptation_.data = value
 
 
 class CurrentMixin:
-    r"""Mixin for neurons with separate postsynaptic currents.
+    r"""Mixin for neurons with membrane currents.
 
     Args:
         data (torch.Tensor): initial currents, in :math:`\text{nA}`.
@@ -59,20 +91,22 @@ class CurrentMixin:
         This registers a parameter ``current_`` and sets it as constrained.
     """
 
-    def __init__(self, data: torch.Tensor, requires_grad=False):
-        instance_of("`self`", self, DimensionalModule)
+    def __init__(self, data: torch.Tensor, requires_grad: bool = False):
+        e = instance_of("self", self, DimensionalModule)
+        if e:
+            raise e
         self.register_parameter("current_", nn.Parameter(data, requires_grad))
         self.register_constrained("current_")
 
     @property
     def current(self) -> torch.Tensor:
-        r"""Postsynaptic current in nanoamperes.
+        r"""Membrane current in nanoamperes.
 
         Args:
-            value (torch.Tensor): new postsynaptic currents.
+            value (torch.Tensor): new membrane currents.
 
         Returns:
-            torch.Tensor: present postsynaptic currents.
+            torch.Tensor: present membrane currents.
         """
         return self.current_.data
 
@@ -98,8 +132,10 @@ class VoltageMixin:
         This registers a parameter ``voltage_`` and sets it as constrained.
     """
 
-    def __init__(self, data: torch.Tensor, requires_grad=False):
-        instance_of("`self`", self, DimensionalModule)
+    def __init__(self, data: torch.Tensor, requires_grad: bool = False):
+        e = instance_of("self", self, DimensionalModule)
+        if e:
+            raise e
         self.register_parameter("voltage_", nn.Parameter(data, requires_grad))
         self.register_constrained("voltage_")
 
@@ -137,8 +173,10 @@ class RefractoryMixin:
         This registers a parameter ``refrac_`` and sets it as constrained.
     """
 
-    def __init__(self, refrac, requires_grad=False):
-        instance_of("`self`", self, DimensionalModule)
+    def __init__(self, refrac: torch.Tensor, requires_grad: bool = False):
+        e = instance_of("self", self, DimensionalModule)
+        if e:
+            raise e
         self.register_parameter("refrac_", nn.Parameter(refrac, requires_grad))
         self.register_constrained("refrac_")
 
@@ -180,8 +218,10 @@ class SpikeRefractoryMixin(RefractoryMixin):
         represents the length of the absolute refractory period in :math:`\text{ms}`.
     """
 
-    def __init__(self, refrac, requires_grad=False):
-        attr_members("`self`", self, "refrac_t")
+    def __init__(self, refrac: torch.Tensor, requires_grad: bool = False):
+        e = attr_members("self", self, "refrac_t")
+        if e:
+            raise e
         RefractoryMixin.__init__(self, refrac, requires_grad)
 
     @property
@@ -191,13 +231,13 @@ class SpikeRefractoryMixin(RefractoryMixin):
         .. math::
             f(t) =
             \begin{cases}
-                1, &t_\text{refrac}(t) = \text{ARP}
+                1, &t_\text{refrac}(t) = \text{ARP} \\
                 0, &\text{otherwise}
             \end{cases}
 
         Where:
             * :math:`f_(t)` are the postsynaptic spikes.
-            * :math:`t_\text{refrac}`(t) are the remaining refractory periods, in :math:`\text{ms}`.
+            * :math:`t_\text{refrac}(t)` are the remaining refractory periods, in :math:`\text{ms}`.
             * :math:`\text{ARP}` is the absolute refractory period, in :math:`\text{ms}`.
 
         Returns:
@@ -205,58 +245,3 @@ class SpikeRefractoryMixin(RefractoryMixin):
                 during the prior step.
         """
         return self.refrac == self.refrac_t
-
-
-class CurrentSpikeRefractoryMixin(SpikeRefractoryMixin):
-    r"""Mixin for neurons with refractory periods with spikes and currents based off of them.
-
-    Args:
-        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.
-        requires_grad (bool, optional): if the parameters created require gradients.
-            Defaults to False.
-
-    Caution:
-        This must be added to a class which inherits from
-        :py:class:`DimensionalModule`, and the constructor for this
-        mixin must be called after the module constructor.
-
-    Note:
-        This registers a parameter ``refrac_`` and sets it as constrained.
-
-    Important:
-        This must be added to a class which has an attribute named ``refrac_t``, which
-        represents the length of the absolute refractory period in :math:`\text{ms}`,
-        and an attribute named ``resistance`` which represents the membrane resistance
-        in in :math:`\text{M\Omega}`.
-    """
-
-    def __init__(self, refrac, requires_grad=False):
-        attr_members("`self`", self, "resistance")
-        SpikeRefractoryMixin.__init__(self, refrac, requires_grad)
-
-    @property
-    def current(self) -> torch.Tensor:
-        r"""Postsynaptic current in nanoamperes.
-
-        .. math::
-            I_\text{post}(t) = f(t) R_m
-
-        Where:
-            * :math:`f_(t)` are the postsynaptic spikes.
-            * :math:`R_m` is the membrane resistance, in :math:`\text{M\Omega}`.
-
-        Args:
-            value (torch.Tensor): new postsynaptic currents.
-
-        Returns:
-            torch.Tensor: present postsynaptic currents.
-
-        Note:
-            Currents are derived from spiking activity and membrane resistance, and
-            consequentially the setter for this property has no function.
-        """
-        return self.spike * self.resistance
-
-    @current.setter
-    def current(self, value: torch.Tensor):
-        pass

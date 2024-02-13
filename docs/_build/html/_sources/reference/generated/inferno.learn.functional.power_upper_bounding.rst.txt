@@ -1,0 +1,6 @@
+﻿power\_upper\_bounding
+======================
+
+.. currentmodule:: inferno.learn.functional
+
+.. autofunction:: power_upper_bounding

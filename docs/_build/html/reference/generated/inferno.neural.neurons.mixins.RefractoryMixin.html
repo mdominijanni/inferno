@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="SpikeRefractoryMixin" href="inferno.neural.neurons.mixins.SpikeRefractoryMixin.html" /><link rel="prev" title="CurrentSpikeRefractoryMixin" href="inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="SpikeRefractoryMixin" href="inferno.neural.neurons.mixins.SpikeRefractoryMixin.html" /><link rel="prev" title="CurrentMixin" href="inferno.neural.neurons.mixins.CurrentMixin.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>RefractoryMixin - Inferno</title>
@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -177,6 +178,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -219,7 +223,7 @@
 <h1>RefractoryMixin<a class="headerlink" href="#refractorymixin" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.neural.neurons.mixins.RefractoryMixin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RefractoryMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refrac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requires_grad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/neurons/mixins.html#RefractoryMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.neurons.mixins.RefractoryMixin" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RefractoryMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refrac</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">requires_grad</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/neurons/mixins.html#RefractoryMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.neurons.mixins.RefractoryMixin" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Mixin for neurons with refractory periods.</p>
 <dl class="field-list simple">
@@ -276,14 +280,14 @@ mixin must be called after the module constructor.</p>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin.html">
+          <a class="prev-page" href="inferno.neural.neurons.mixins.CurrentMixin.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">CurrentSpikeRefractoryMixin</div>
+                <div class="title">CurrentMixin</div>
                 
               </div>
             </a>

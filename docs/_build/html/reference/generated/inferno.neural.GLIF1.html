@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -177,6 +178,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -220,13 +224,14 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.neural.GLIF1">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GLIF1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rest_v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresh_v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">refrac_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_constant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resistance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/neurons/linear.html#GLIF1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.GLIF1" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="inferno.neural.neurons.mixins.VoltageMixin.html#inferno.neural.neurons.mixins.VoltageMixin" title="inferno.neural.neurons.mixins.VoltageMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">VoltageMixin</span></code></a>, <a class="reference internal" href="inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin.html#inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin" title="inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">CurrentSpikeRefractoryMixin</span></code></a>, <a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.base.Neuron"><code class="xref py py-class docutils literal notranslate"><span class="pre">Neuron</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="inferno.neural.neurons.mixins.VoltageMixin.html#inferno.neural.neurons.mixins.VoltageMixin" title="inferno.neural.neurons.mixins.VoltageMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">VoltageMixin</span></code></a>, <a class="reference internal" href="inferno.neural.neurons.mixins.SpikeRefractoryMixin.html#inferno.neural.neurons.mixins.SpikeRefractoryMixin" title="inferno.neural.neurons.mixins.SpikeRefractoryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpikeRefractoryMixin</span></code></a>, <a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.base.Neuron"><code class="xref py py-class docutils literal notranslate"><span class="pre">Neuron</span></code></a></p>
 <p>Simulation of generalized leaky integrate-and-fire 1 (GLIF<sub>1</sub>) neuron dynamics.</p>
 <p>Alias for <a class="reference internal" href="inferno.neural.LIF.html#inferno.neural.LIF" title="inferno.neural.LIF"><code class="xref py py-class docutils literal notranslate"><span class="pre">LIF</span></code></a>.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p>For more details and references, visit
-<a class="reference internal" href="../../zoo/neurons-linear.html#generalized-leaky-integrate-and-fire-1-glif1"><span class="std std-ref">Generalized Leaky Integrate-and-Fire 1 (GLIF1)</span></a> in the zoo.</p>
+<a class="reference internal" href="../../zoo/neurons-linear.html#generalized-leaky-integrate-and-fire-1-glif1"><span class="std std-ref">Generalized Leaky Integrate-and-Fire 1 (GLIF1)</span></a>
+in the zoo.</p>
 </div>
 <p class="rubric">Methods</p>
 <dl class="py method">
@@ -276,39 +281,6 @@ in the refractory period. Defaults to True.</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.GLIF1.current">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.GLIF1.current" title="Link to this definition">#</a></dt>
-<dd><p>Postsynaptic current in nanoamperes.</p>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[I_\text{post}(t) = f(t) R_m\]</div>
-</div>
-<dl class="simple">
-<dt>Where:</dt><dd><ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(f_(t)\)</span> are the postsynaptic spikes.</p></li>
-<li><p><span class="math notranslate nohighlight">\(R_m\)</span> is the membrane resistance, in <span class="math notranslate nohighlight">\(\text{M\Omega}\)</span>.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – new postsynaptic currents.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present postsynaptic currents.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Currents are derived from spiking activity and membrane resistance, and
-consequentially the setter for this property has no function.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.GLIF1.dt">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><a class="headerlink" href="#inferno.neural.GLIF1.dt" title="Link to this definition">#</a></dt>
 <dd><p>Length of the simulation time step, in milliseconds.</p>
@@ -348,16 +320,16 @@ consequentially the setter for this property has no function.</p>
 <dd><p>Action potentials last generated.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[f(t) =
+\[\begin{split}f(t) =
 \begin{cases}
-    1, &amp;t_\text{refrac}(t) = \text{ARP}
+    1, &amp;t_\text{refrac}(t) = \text{ARP} \\
     0, &amp;\text{otherwise}
-\end{cases}\]</div>
+\end{cases}\end{split}\]</div>
 </div>
 <dl class="simple">
 <dt>Where:</dt><dd><ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(f_(t)\)</span> are the postsynaptic spikes.</p></li>
-<li><p><span class="math notranslate nohighlight">\(t_\text{refrac}`(t) are the remaining refractory periods, in :math:\)</span>text{ms}`.</p></li>
+<li><p><span class="math notranslate nohighlight">\(t_\text{refrac}(t)\)</span> are the remaining refractory periods, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><span class="math notranslate nohighlight">\(\text{ARP}\)</span> is the absolute refractory period, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 </ul>
 </dd>
@@ -457,7 +429,6 @@ consequentially the setter for this property has no function.</p>
 <li><a class="reference internal" href="#inferno.neural.GLIF1.clear"><code class="docutils literal notranslate"><span class="pre">GLIF1.clear()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.GLIF1.forward"><code class="docutils literal notranslate"><span class="pre">GLIF1.forward()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.GLIF1.bsize"><code class="docutils literal notranslate"><span class="pre">GLIF1.bsize</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.GLIF1.current"><code class="docutils literal notranslate"><span class="pre">GLIF1.current</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.GLIF1.dt"><code class="docutils literal notranslate"><span class="pre">GLIF1.dt</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.GLIF1.refrac"><code class="docutils literal notranslate"><span class="pre">GLIF1.refrac</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.GLIF1.spike"><code class="docutils literal notranslate"><span class="pre">GLIF1.spike</span></code></a></li>

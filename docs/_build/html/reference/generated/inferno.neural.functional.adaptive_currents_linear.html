@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="adaptive_thresholds_linear_voltage" href="inferno.neural.functional.adaptive_thresholds_linear_voltage.html" /><link rel="prev" title="apply_adaptive_thresholds" href="inferno.neural.functional.apply_adaptive_thresholds.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="adaptive_thresholds_linear_spike" href="inferno.neural.functional.adaptive_thresholds_linear_spike.html" /><link rel="prev" title="enc_poisson_interval_online" href="inferno.neural.functional.enc_poisson_interval_online.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>adaptive_currents_linear - Inferno</title>
@@ -166,6 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -177,6 +178,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -248,7 +252,7 @@ in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><strong>time_constant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – time constant of exponential decay,
 <span class="math notranslate nohighlight">\(\tau_k\)</span>, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><strong>voltage_coupling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – strength of coupling to membrane
-voltage, <span class="math notranslate nohighlight">\(a_k\)</span>, in <span class="math notranslate nohighlight">\(\text{\mu S}\)</span>.</p></li>
+voltage, <span class="math notranslate nohighlight">\(a_k\)</span>, in <span class="math notranslate nohighlight">\(\mu\text{S}\)</span>.</p></li>
 <li><p><strong>spike_increment</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – amount by which the adaptive current is
 increased after a spike, <span class="math notranslate nohighlight">\(b_k\)</span>, in <span class="math notranslate nohighlight">\(\text{nA}\)</span>.</p></li>
 <li><p><strong>refracs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – remaining absolute refractory periods,
@@ -305,23 +309,23 @@ dimension.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.neural.functional.adaptive_thresholds_linear_voltage.html">
+          <a class="next-page" href="inferno.neural.functional.adaptive_thresholds_linear_spike.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">adaptive_thresholds_linear_voltage</div>
+                <div class="title">adaptive_thresholds_linear_spike</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.neural.functional.apply_adaptive_thresholds.html">
+          <a class="prev-page" href="inferno.neural.functional.enc_poisson_interval_online.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">apply_adaptive_thresholds</div>
+                <div class="title">enc_poisson_interval_online</div>
                 
               </div>
             </a>

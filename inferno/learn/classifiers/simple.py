@@ -1,6 +1,6 @@
 import einops as ein
 from inferno import Module
-from inferno._internal import numeric_limit
+from inferno._internal import numeric_limit, multiple_numeric_limit
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -9,9 +9,9 @@ import torch.nn.functional as F
 class MaxRateClassifier(Module):
     r"""Classifies spikes by maximum per-class rates.
 
-    The classifier uses an internal parameter :py:attr:`rates` internally for other
+    The classifier uses an internal parameter :py:attr:`rates` for other
     calculations. When learning, the existing rates are decayed, multiplying them by
-    :math:`\exp{-\lambda b_k}` where :math:`b_k` is number of elements of class
+    :math:`\exp (-\lambda b_k)` where :math:`b_k` is the number of elements of class
     :math:`k` in the batch.
 
     Args:
@@ -37,14 +37,17 @@ class MaxRateClassifier(Module):
 
         # validate parameters
         try:
-            shape = numeric_limit("`shape`", shape, 0, "gt", int)
+            shape, e = numeric_limit("shape", shape, 0, "gt", int)
+            if e:
+                raise e
         except TypeError:
-            shape = tuple(
-                numeric_limit(f"`shape[{idx}]`", s, 0, "gt", int)
-                for idx, s in enumerate(shape)
-            )
+            shape, e = multiple_numeric_limit("shape", shape, 0, "gt", int, False)
+            if e:
+                raise e
 
-        num_classes = numeric_limit("`num_classes`", num_classes, 0, "gt", int)
+        num_classes, e = numeric_limit("num_classes", num_classes, 0, "gt", int)
+        if e:
+            raise e
 
         # class attributes
         self._proportional = proportional
@@ -66,7 +69,9 @@ class MaxRateClassifier(Module):
         )
 
         # class attribute
-        self.decay = numeric_limit("`decay`", decay, 0, "gte", float)
+        self.decay, e = numeric_limit("decay", decay, 0, "gte", float)
+        if e:
+            raise e
 
         # run after loading state_dict to recompute non-persistent buffers
         def sdhook(module, incompatible_keys) -> None:
@@ -150,7 +155,7 @@ class MaxRateClassifier(Module):
 
         Note:
             The attributes :py:attr:`proportions`, :py:attr:`assignments`, and
-            :py:attr:`occurances are automatically recalculated on assignment.
+            :py:attr:`occurances` are automatically recalculated on assignment.
 
         .. admonition:: Shape
             :class: tensorshape

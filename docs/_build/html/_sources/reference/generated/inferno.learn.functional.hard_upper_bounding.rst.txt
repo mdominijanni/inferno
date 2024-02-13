@@ -1,0 +1,6 @@
+﻿hard\_upper\_bounding
+=====================
+
+.. currentmodule:: inferno.learn.functional
+
+.. autofunction:: hard_upper_bounding

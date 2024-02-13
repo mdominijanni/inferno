@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -176,6 +177,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -218,6 +222,7 @@
 <span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">attr_members</span><span class="p">,</span> <span class="n">instance_of</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 
 <div class="viewcode-block" id="AdaptationMixin">
@@ -229,6 +234,9 @@
 <span class="sd">        data (torch.Tensor): initial membrane adaptations.</span>
 <span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
 <span class="sd">            Defaults to False.</span>
+<span class="sd">        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):</span>
+<span class="sd">            function to reduce adaptation updates over the batch dimension,</span>
+<span class="sd">            :py:func:`torch.mean` when None. Defaults to None.</span>
 
 <span class="sd">    Caution:</span>
 <span class="sd">        This must be added to a class which inherits from</span>
@@ -236,16 +244,38 @@
 <span class="sd">        mixin must be called after the module constructor.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        This registers a parameter ``adaptation_`` and sets it as constrained.</span>
+<span class="sd">        This registers a parameter ``adaptation_`` and sets an attribute</span>
+<span class="sd">        ``adapt_batchreduce``.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        ``batch_reduction`` can be one of the functions in PyTorch including but not</span>
+<span class="sd">        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.</span>
+<span class="sd">        A custom function with similar behavior can also be passed in. Like with the</span>
+<span class="sd">        included function, it should not keep the original dimensions by default.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;`self`&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">Module</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">batch_reduction</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">Module</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;adaptation_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">adapt_batchreduce</span> <span class="o">=</span> <span class="n">batch_reduction</span> <span class="k">if</span> <span class="n">batch_reduction</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">adaptation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane adaptations.</span>
+
+<span class="sd">        If the value the setter attempts to assign has the same shape but with an</span>
+<span class="sd">        additonal leading dimension, it will assume that is an unreduced batch dimension</span>
+<span class="sd">        and reduce it.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new membrane adaptations.</span>
@@ -257,14 +287,20 @@
 
     <span class="nd">@adaptation</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">adaptation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adaptation_</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span></div>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptation_</span><span class="o">.</span><span class="n">ndim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptation_</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">adaptation_</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adapt_batchreduce</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">adaptation_</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adaptation_</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span></div>
 
 
 
 <div class="viewcode-block" id="CurrentMixin">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.CurrentMixin.html#inferno.neural.neurons.mixins.CurrentMixin">[docs]</a>
 <span class="k">class</span> <span class="nc">CurrentMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with separate postsynaptic currents.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with membrane currents.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        data (torch.Tensor): initial currents, in :math:`\text{nA}`.</span>
@@ -280,20 +316,22 @@
 <span class="sd">        This registers a parameter ``current_`` and sets it as constrained.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;`self`&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Postsynaptic current in nanoamperes.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane current in nanoamperes.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new postsynaptic currents.</span>
+<span class="sd">            value (torch.Tensor): new membrane currents.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: present postsynaptic currents.</span>
+<span class="sd">            torch.Tensor: present membrane currents.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_</span><span class="o">.</span><span class="n">data</span>
 
@@ -322,8 +360,10 @@
 <span class="sd">        This registers a parameter ``voltage_`` and sets it as constrained.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;`self`&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;voltage_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;voltage_&quot;</span><span class="p">)</span>
 
@@ -364,8 +404,10 @@
 <span class="sd">        This registers a parameter ``refrac_`` and sets it as constrained.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;`self`&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;refrac_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;refrac_&quot;</span><span class="p">)</span>
 
@@ -410,8 +452,10 @@
 <span class="sd">        represents the length of the absolute refractory period in :math:`\text{ms}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">attr_members</span><span class="p">(</span><span class="s2">&quot;`self`&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;refrac_t&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">attr_members</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;refrac_t&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
         <span class="n">RefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -421,78 +465,20 @@
 <span class="sd">        .. math::</span>
 <span class="sd">            f(t) =</span>
 <span class="sd">            \begin{cases}</span>
-<span class="sd">                1, &amp;t_\text{refrac}(t) = \text{ARP}</span>
+<span class="sd">                1, &amp;t_\text{refrac}(t) = \text{ARP} \\</span>
 <span class="sd">                0, &amp;\text{otherwise}</span>
 <span class="sd">            \end{cases}</span>
 
 <span class="sd">        Where:</span>
 <span class="sd">            * :math:`f_(t)` are the postsynaptic spikes.</span>
-<span class="sd">            * :math:`t_\text{refrac}`(t) are the remaining refractory periods, in :math:`\text{ms}`.</span>
+<span class="sd">            * :math:`t_\text{refrac}(t)` are the remaining refractory periods, in :math:`\text{ms}`.</span>
 <span class="sd">            * :math:`\text{ARP}` is the absolute refractory period, in :math:`\text{ms}`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential</span>
 <span class="sd">                during the prior step.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">refracs</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span></div>
-
-
-
-<div class="viewcode-block" id="CurrentSpikeRefractoryMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin.html#inferno.neural.neurons.mixins.CurrentSpikeRefractoryMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">CurrentSpikeRefractoryMixin</span><span class="p">(</span><span class="n">SpikeRefractoryMixin</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with refractory periods with spikes and currents based off of them.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.</span>
-<span class="sd">        requires_grad (bool, optional): if the parameters created require gradients.</span>
-<span class="sd">            Defaults to False.</span>
-
-<span class="sd">    Caution:</span>
-<span class="sd">        This must be added to a class which inherits from</span>
-<span class="sd">        :py:class:`DimensionalModule`, and the constructor for this</span>
-<span class="sd">        mixin must be called after the module constructor.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        This registers a parameter ``refrac_`` and sets it as constrained.</span>
-
-<span class="sd">    Important:</span>
-<span class="sd">        This must be added to a class which has an attribute named ``refrac_t``, which</span>
-<span class="sd">        represents the length of the absolute refractory period in :math:`\text{ms}`,</span>
-<span class="sd">        and an attribute named ``resistance`` which represents the membrane resistance</span>
-<span class="sd">        in in :math:`\text{M\Omega}`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">attr_members</span><span class="p">(</span><span class="s2">&quot;`self`&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;resistance&quot;</span><span class="p">)</span>
-        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Postsynaptic current in nanoamperes.</span>
-
-<span class="sd">        .. math::</span>
-<span class="sd">            I_\text{post}(t) = f(t) R_m</span>
-
-<span class="sd">        Where:</span>
-<span class="sd">            * :math:`f_(t)` are the postsynaptic spikes.</span>
-<span class="sd">            * :math:`R_m` is the membrane resistance, in :math:`\text{M\Omega}`.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new postsynaptic currents.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: present postsynaptic currents.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            Currents are derived from spiking activity and membrane resistance, and</span>
-<span class="sd">            consequentially the setter for this property has no function.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">spike</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span>
-
-    <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">pass</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span></div>
 
 </pre></div>
         </article>

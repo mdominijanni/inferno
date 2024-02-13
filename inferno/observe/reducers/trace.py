@@ -46,17 +46,23 @@ class NearestTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, history_len)
 
         # reducer attributes
-        self.time_constant = numeric_limit(
-            "`time_constant`", time_constant, 0, "gt", float
+        self.time_constant, e = numeric_limit(
+            "time_constant", time_constant, 0, "gt", float
         )
+        if e:
+            raise e
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude = numeric_limit("`amplitude`", amplitude, 0, "neq", None)
+        self.amplitude, e = numeric_limit("amplitude", amplitude, 0, "neq", None)
+        if e:
+            raise e
         self.target = target
-        self.tolerance = (
-            None
+        self.tolerance, e = (
+            None, None
             if tolerance is None
-            else numeric_limit("`tolerance`", tolerance, 0, "gt", float)
+            else numeric_limit("tolerance", tolerance, 0, "gt", float)
         )
+        if e:
+            raise e
 
     @property
     def dt(self) -> float:
@@ -169,17 +175,23 @@ class CumulativeTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, history_len)
 
         # reducer attributes
-        self.time_constant = numeric_limit(
-            "`time_constant`", time_constant, 0, "gt", float
+        self.time_constant, e = numeric_limit(
+            "time_constant", time_constant, 0, "gt", float
         )
+        if e:
+            raise e
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude = numeric_limit("`amplitude`", amplitude, 0, "neq", None)
+        self.amplitude, e = numeric_limit("amplitude", amplitude, 0, "neq", None)
+        if e:
+            raise e
         self.target = target
-        self.tolerance = (
-            None
+        self.tolerance, e = (
+            None, None
             if tolerance is None
-            else numeric_limit("`tolerance`", tolerance, 0, "gt", float)
+            else numeric_limit("tolerance", tolerance, 0, "gt", float)
         )
+        if e:
+            raise e
 
     @property
     def dt(self) -> float:
@@ -296,11 +308,15 @@ class ScaledNearestTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, history_len)
 
         # reducer attributes
-        self.time_constant = numeric_limit(
-            "`time_constant`", time_constant, 0, "gt", float
+        self.time_constant, e = numeric_limit(
+            "time_constant", time_constant, 0, "gt", float
         )
+        if e:
+            raise e
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude = numeric_limit("`amplitude`", amplitude, 0, "neq", None)
+        self.amplitude, e = numeric_limit("amplitude", amplitude, 0, "neq", None)
+        if e:
+            raise e
         self.scale = scale
         self.criterion = criterion
 
@@ -419,11 +435,15 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, history_len)
 
         # register state
-        self.time_constant = numeric_limit(
-            "`time_constant`", time_constant, 0, "gt", float
+        self.time_constant, e = numeric_limit(
+            "time_constant", time_constant, 0, "gt", float
         )
+        if e:
+            raise e
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude = numeric_limit("`amplitude`", amplitude, 0, "neq", None)
+        self.amplitude, e = numeric_limit("amplitude", amplitude, 0, "neq", None)
+        if e:
+            raise e
         self.scale = scale
         self.criterion = criterion
 

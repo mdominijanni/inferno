@@ -207,9 +207,6 @@ class Hook:
             in train mode. Defaults to True.
         eval_update (bool, optional): if the hooks should be run when hooked module is
             in eval mode. Defaults to True.
-        module (nn.Module, optional): PyTorch module to which the forward hook will
-            be registered. Defaults to `None`.
-
     Note:
         If not None, the signature of the prehook must be of the following form.
 
@@ -258,7 +255,6 @@ class Hook:
         posthook_kwargs: dict[str, Any] | None = None,
         train_update: bool = True,
         eval_update: bool = True,
-        module: nn.Module | None = None,
     ):
         # check if at least one callable is defined
         if not prehook and not posthook:
@@ -266,93 +262,53 @@ class Hook:
                 "at least one of `prehook` and `posthook` must not be None."
             )
 
-        # check if at least one update is true
-        if not train_update and not eval_update:
-            raise RuntimeError(
-                "at least one of `train_update` and `eval_update` must be True."
-            )
+        # prehook and posthook functions
+        self._prefunc = prehook
+        self._postfunc = posthook
 
         # set returned handle
-        self._prehook_handle = None
-        self._posthook_handle = None
+        self._prehandle = None
+        self._posthandle = None
 
         # set hook registering kwargs
-        self._prehook_kwargs = prehook_kwargs if prehook_kwargs else {}
-        self._posthook_kwargs = posthook_kwargs if posthook_kwargs else {}
+        self._prekwargs = prehook_kwargs if prehook_kwargs else {}
+        self._postkwargs = posthook_kwargs if posthook_kwargs else {}
 
-        # set prehook
-        # triggers conditionally
-        if not train_update and eval_update:
-            # signature includes kwargs
-            if self._prehook_kwargs.get("with_kwargs"):
-                if train_update:
-                    self._prehook_fn = (
-                        lambda module, args, kwargs: None
-                        if not module.training
-                        else prehook(module, args, kwargs)
-                    )
-                if eval_update:
-                    self._prehook_fn = (
-                        lambda module, args, kwargs: None
-                        if module.training
-                        else prehook(module, args, kwargs)
-                    )
-            # signature excludes kwargs
-            else:
-                if train_update:
-                    self._prehook_fn = (
-                        lambda module, args: None
-                        if not module.training
-                        else prehook(module, args)
-                    )
-                if eval_update:
-                    self._prehook_fn = (
-                        lambda module, args: None
-                        if module.training
-                        else prehook(module, args)
-                    )
-        # triggers always/never
-        else:
-            self._prehook_fn = prehook
+        # set training conditionals
+        self._trainupdate = train_update
+        self._evalupdate = eval_update
 
-        # set posthook
-        # triggers conditionally
-        if not train_update and eval_update:
-            # signature includes kwargs
-            if self._posthook_kwargs.get("with_kwargs"):
-                if train_update:
-                    self._posthook_fn = (
-                        lambda module, args, kwargs, output: None
-                        if not module.training
-                        else posthook(module, args, kwargs, output)
-                    )
-                if eval_update:
-                    self._posthook_fn = (
-                        lambda module, args, kwargs, output: None
-                        if module.training
-                        else posthook(module, args, kwargs, output)
-                    )
-            # signature excludes kwargs
-            else:
-                if train_update:
-                    self._posthook_fn = (
-                        lambda module, args, output: None
-                        if not module.training
-                        else posthook(module, args, output)
-                    )
-                if eval_update:
-                    self._posthook_fn = (
-                        lambda module, args, output: None
-                        if module.training
-                        else posthook(module, args, output)
-                    )
-        # triggers always/never
-        else:
-            self._posthook_fn = posthook
+    @property
+    def on_train(self) -> bool:
+        """If the hook is called when the module passed in is in training mode.
 
-        # register with module if provided
-        if module is not None:
-            self.register(module)
+        Args:
+            value (bool): if the hook should be called when the module is training.
+
+        Returns:
+            bool: if the hook is called when the module is training.
+        """
+        return self._trainupdate
+
+    @on_train.setter
+    def on_train(self, value: bool) -> None:
+        self._trainupdate = value
+
+    @property
+    def on_eval(self) -> bool:
+        """If the hook is called when the module passed in is in evaluation mode.
+
+        Args:
+            value (bool): if the hook should be called when the module is evaluating.
+
+        Returns:
+            bool: if the hook is called when the module is evaluating.
+        """
+        return self._evalupdate
+
+    @on_eval.setter
+    def on_eval(self, value: bool) -> None:
+        self._evalupdate = value
 
     @property
     def registered(self) -> bool:
@@ -361,11 +317,7 @@ class Hook:
         Returns:
             bool: if a module to which this hook is registred.
         """
-        return self._prehook_handle or self._posthook_handle
-
-    def __del__(self) -> None:
-        r"""Automatically deregister on deconstruction."""
-        return self.deregister()
+        return self._prehandle or self._posthandle
 
     def register(self, module: nn.Module) -> None:
         r"""Registers the hook as a forward hook/prehook with specified
@@ -384,17 +336,19 @@ class Hook:
                 :py:class:`~torch.nn.Module` and will ignore :py:meth:`register`
                 if already registered.
         """
-        if not self._prehook_handle and not self._posthook_handle:
-            instance_of("`module`", module, nn.Module)
+        if not self.registered:
+            e = instance_of("module", module, nn.Module)
+            if e:
+                raise e
 
-            if self._prehook_fn:
-                self._prehook_handle = module.register_forward_pre_hook(
-                    self._prehook_fn, **self._prehook_kwargs
+            if self._prefunc:
+                self._prehandle = module.register_forward_pre_hook(
+                    self._prefunc, **self._prekwargs
                 )
 
-            if self._posthook_fn:
-                self._posthook_handle = module.register_forward_hook(
-                    self._posthook_fn, **self._posthook_kwargs
+            if self._postfunc:
+                self._posthandle = module.register_forward_hook(
+                    self._postfunc, **self._postkwargs
                 )
         else:
             warnings.warn(
@@ -406,12 +360,40 @@ class Hook:
     def deregister(self) -> None:
         r"""Deregisters the hook as a forward hook/prehook from registered
         :py:class:`~torch.nn.Module`, if it is already registered."""
-        if self._prehook_handle:
-            self._prehook_handle.remove()
-            self._prehook_handle = None
-        if self._posthook_handle:
-            self._posthook_handle.remove()
-            self._posthook_handle = None
+        if self._prehandle:
+            self._prehandle.remove()
+            self._prehandle = None
+        if self._posthandle:
+            self._posthandle.remove()
+            self._posthandle = None
+
+    def __del__(self) -> None:
+        r"""Automatically deregister on deconstruction."""
+        return self.deregister()
+
+    def prehook(self, *args) -> Any:
+        r"""Calls the prehook function if updating in the module's mode.
+
+        Either two or three arguments will be passed in depending on if ``with_kwargs``
+        was set to True in ``prehook_kwargs`` on construction.
+
+        Returns:
+            Any: modified input or None, depending on the prehook passed on init.
+        """
+        if (self._evalupdate, self._trainupdate)[args[0].training]:
+            return self._prefunc(*args)
+
+    def posthook(self, *args) -> Any:
+        r"""Calls the posthook function if updating in the module's mode.
+
+        Either three or four arguments will be passed in depending on if ``with_kwargs``
+        was set to True in ``posthook_kwargs`` on construction.
+
+        Returns:
+            Any: modified output or None, depending on the posthook passed on init.
+        """
+        if (self._evalupdate, self._trainupdate)[args[0].training]:
+            return self._postfunc(*args)
 
 
 class StateHook(Hook):
@@ -438,7 +420,7 @@ class StateHook(Hook):
 
     Note:
         Unlike with :py:class:`Hook`, the ``hook`` here will only be passed a single
-        argument (the registered module) and any output will be ignored.
+        argument (the registered module itself) and any output will be ignored.
     """
 
     def __init__(
@@ -453,43 +435,30 @@ class StateHook(Hook):
         always_call: bool = False,
     ):
         # core state
-        self._hook_fn = hook
+        self._hook = hook
         self._module = module
-        self._handle = None
 
-        # conditional activation
-        self._whentrain = train_update
-        self._wheneval = eval_update
+        # create hook wrapper
+        def hookwrapper(*args):
+            self._hook(args[0])
 
-        # register inner function and keywords
+        # construct superclass
         if as_prehook:
-            self._reg_kwargs = {"prepend": prepend}
-
-            def register(module, hook, **kwargs):
-                return module.register_forward_pre_hook(hook, **kwargs)
-
+            Hook.__init__(
+                self,
+                prehook=hookwrapper,
+                prehook_kwargs={"prepend": prepend},
+                train_update=train_update,
+                eval_update=eval_update,
+            )
         else:
-            self._reg_kwargs = {"prepend": prepend, "always_call": always_call}
-
-            def register(module, hook, **kwargs):
-                return module.register_forward_hook(hook, **kwargs)
-
-        self._reg_func = register
-
-        # register by default
-        self.register()
-
-    def _onforward(self, module: nn.Module, *args, **kwargs) -> None:
-        r"""Wrapper for hook to take expected inputs.
-
-        Args:
-            module (nn.Module): hooked module.
-        """
-        if module.training and self.whentrain:
-            self._hook_fn(module)
-
-        if not module.training and self.wheneval:
-            self._hook_fn(module)
+            Hook.__init__(
+                self,
+                posthook=hookwrapper,
+                posthook_kwargs={"prepend": prepend, "always_call": always_call},
+                train_update=train_update,
+                eval_update=eval_update,
+            )
 
     @property
     def module(self) -> nn.Module:
@@ -500,64 +469,159 @@ class StateHook(Hook):
         """
         return self._module
 
-    @property
-    def registered(self) -> bool:
-        r"""If the module is currently hooked.
-
-        Returns:
-            bool: if the module is currently hooked.
-        """
-        return self._handle is not None
-
-    @property
-    def whentrain(self) -> bool:
-        r"""If the hook should be run when the hooked module is in train mode.
-
-        Args:
-            value (bool): if the hook is run when module is in train mode.
-
-        Returns:
-            bool: if the hook is run when module is in train mode.
-        """
-        return self._whentrain
-
-    @whentrain.setter
-    def whentrain(self, value: bool) -> None:
-        self._whentrain = bool(value)
-
-    @property
-    def wheneval(self) -> bool:
-        r"""If the hook should be run when the hooked module is in eval mode.
-
-        Args:
-            value (bool): if the hook is run when module is in eval mode.
-
-        Returns:
-            bool: if the hook is run when module is in eval mode.
-        """
-        return self._wheneval
-
-    @wheneval.setter
-    def wheneval(self, value: bool) -> None:
-        self._wheneval = bool(value)
-
-    def deregister(self) -> None:
-        """Deregisters the hook as a forward hook/prehook."""
-        if self.registered:
-            self._handle.remove()
-            self._handle = None
-
     def register(self) -> None:
-        """Registers the hook as a forward hook/prehook."""
-        if not self.registered:
-            self._handle = self._reg_func(
-                self.module, self._onforward, **self._reg_kwargs
-            )
+        r"""Registers the hook as a forward hook/prehook."""
+        Hook.register(self, self.module)
 
     def __call__(self):
         r"""Executes the hook at any time, only if it is registered."""
         if self.registered:
-            self._hook_fn(self.module)
+            self._hook(self.module)
+
+
+class RemoteHook(StateHook):
+    r"""A state hook which acts on modules other than the registered module.
+
+    Unlike a regular :py:class:`StateHook` where the module itself is passed on
+    its call, here an "inner module" is passed, along with associated keyword
+    arguments.
+
+    Subclass this for cases where updates should be triggered by a module on
+    other modules. For example, normalizing layer weights after an updater call.
+
+    Args:
+        hook (Callable[[nn.Module, dict[str, Any]], None]): function to call on hooked
+            module's :py:meth:`~torch.nn.Module.__call__`.
+        module (nn.Module): module to which the hook should be registered.
+        inner_train_update (bool, optional): if the hook should be run on the inner
+            module when the inner module is in training mode. Defaults to True.
+        inner_eval_update (bool, optional): if the hook should be run on the inner
+            module when the inner module is in evaluation mode. Defaults to False.
+        as_prehook (bool, optional): if the hook should be run prior to the hooked
+            module's :py:meth:`~torch.nn.Module.forward` call. Defaults to False.
+        prepend (bool, optional): if the hook should be run prior to the hooked
+            module's previously registered forward hooks. Defaults to False.
+        always_call (bool, optional): if the hook should be run even if an exception
+            occurs, only applies when ``as_prehook`` is False. Defaults to False.
+
+    Note:
+        By default, the hook will be triggered on the the registered module's call
+        whether its in training or evaluation mode (since generally this should) be
+        controlled by the ``inner_train_update`` and ``inner_eval_update`` arguments.
+        The same properties as in :py:class:`StateHook` can be used to alter this.
+    """
+
+    def __init__(
+        self,
+        hook: Callable[[nn.Module, dict[str, Any]], None],
+        module: nn.Module,
+        inner_train_update: bool = True,
+        inner_eval_update: bool = False,
+        *,
+        as_prehook: bool = False,
+        prepend: bool = False,
+        always_call: bool = False,
+    ):
+        # layer state
+        self.inner = nn.ModuleDict()
+        self.innerparams = {}
+
+        # internally called hook
+        self._innerhook = hook
+
+        # update triggers
+        self._innertrainupdate = inner_train_update
+        self._innerevalupdate = inner_eval_update
+
+        # call superclass constructor
+        StateHook.__init__(
+            self,
+            self.innerhook,
+            module,
+            True,
+            True,
+            as_prehook=as_prehook,
+            prepend=prepend,
+            always_call=always_call,
+        )
+
+    def innerhook(self, *args) -> None:
+        r"""Takes hook call and conditionally performs hook on inner modules."""
+        for key, module in self.inner.items():
+            if (self._innerevalupdate, self._innertrainupdate)[module.training]:
+                self._innerhook(module, **self.innerparams[key])
+
+    @staticmethod
+    def _keyof(module: nn.Module) -> str:
+        """Gets the key (hexidecimal ID) of an inner module.
+
+        Args:
+            module (nn.Module): module for which to generate the key.
+
+        Returns:
+            str: key for the given module.
+        """
+        return hex(id(module))
+
+    @property
+    def on_train_inner(self) -> bool:
+        """If the hook is called when the inner module is in training mode.
+
+        Args:
+            value (bool): if the hook should be called when the
+                inner module is training.
+
+        Returns:
+            bool: if the hook is called when the inner module is training.
+        """
+        return self._innertrainupdate
+
+    @on_train_inner.setter
+    def on_train_inner(self, value: bool) -> None:
+        self._innertrainupdate = value
+
+    @property
+    def on_eval_inner(self) -> bool:
+        """If the hook is called when the inner module passed in is in evaluation mode.
+
+        Args:
+            value (bool): if the hook should be called when the
+                inner module is evaluating.
+
+        Returns:
+            bool: if the hook is called when the inner module is evaluating.
+        """
+        return self._innerevalupdate
+
+    @on_eval_inner.setter
+    def on_eval_inner(self, value: bool) -> None:
+        self._innerevalupdate = value
+
+    def add_inner(self, *modules: nn.Module, **kwargs: dict[str, Any]) -> None:
+        r"""Adds inner modules to the hook.
+
+        Args:
+            *modules (~torch.nn.Module): inner modules to add.
+            **kwargs (dict[str, Any]): keyword arguments for the hook call.
+        """
+        for module in modules:
+            key = self._keyof(module)
+            if key not in self.inner:
+                self.inner[key] = module
+                self.innerparams[key] = kwargs
+
+    def remove_inner(self, *modules: nn.Module) -> None:
+        r"""Removes inner modules from the hook.
+
+        Args:
+            *modules (~torch.nn.Module): inner modules to remove.
+        """
+        for module in modules:
+            key = self._keyof(module)
+            if key in self.inner:
+                del self.inner[key]
+            if key in self.innerparams:
+                del self.innerparams[key]
 
 
 class DimensionalModule(Module):
@@ -1036,8 +1100,12 @@ class HistoryModule(DimensionalModule):
         history_len: float,
     ):
         # ensure valid step time and history length parameters
-        step_time = numeric_limit("`step_time`", step_time, 0, "gt", float)
-        history_len = numeric_limit("`history_len`", history_len, 0, "gte", float)
+        step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
+        if e:
+            raise e
+        history_len, e = numeric_limit("history_len", history_len, 0, "gte", float)
+        if e:
+            raise e
 
         # calculate size of time dimension
         history_size = math.ceil(history_len / step_time) + 1

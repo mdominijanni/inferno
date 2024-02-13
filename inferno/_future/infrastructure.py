@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Callable
 from inferno import Hook
 from itertools import zip_longest
 import torch
@@ -237,40 +237,43 @@ class TensorList(nn.Module):
         return nn.Module.zero_grad(set_to_none=set_to_none)
 
     def condense(self) -> None:
-        self.filter_(lambda x: x is not None, ignore_none=False)
+        self.filter(lambda x: x is not None, ignore_none=False)
 
-    def filter(
+    def condensed(self) -> TensorList:
+        return self.filtered(lambda x: x is not None, ignore_none=False)
+
+    def filtered(
         self,
-        fn: callable[[torch.Tensor | None], bool],
+        fn: Callable[[torch.Tensor | None], bool],
         ignore_none: bool = True,
     ) -> TensorList:
         ffn = (lambda x: True if x is None else fn(x)) if ignore_none else fn
         return TensorList(filter(ffn, self.data))
 
-    def filter_(
+    def filter(
         self,
-        fn: callable[[torch.Tensor | None], bool],
+        fn: Callable[[torch.Tensor | None], bool],
         ignore_none: bool = True,
     ) -> None:
-        self.data = self.filter(fn, ignore_none=ignore_none).data
+        self.data = self.filtered(fn, ignore_none=ignore_none).data
 
-    def map(
+    def mapped(
         self,
-        fn: callable[[torch.Tensor | None], torch.Tensor | None],
+        fn: Callable[[torch.Tensor | None], torch.Tensor | None],
         ignore_none: bool = True,
     ) -> TensorList:
         ffn = (lambda x: x if x is None else fn(x)) if ignore_none else fn
         return TensorList(map(ffn, self.data))
 
-    def map_(
+    def map(
         self,
-        fn: callable[[torch.Tensor | None], torch.Tensor | None],
+        fn: Callable[[torch.Tensor | None], torch.Tensor | None],
         ignore_none: bool = True,
     ) -> None:
         self.data = self.map(fn, ignore_none=ignore_none).data
 
     def data_to(self, *args, **kwargs) -> None:
-        self.map_(lambda x: x.to(*args, **kwargs))
+        self.map(lambda x: x.to(*args, **kwargs))
 
     def append(self, value: torch.Tensor | None) -> None:
         if value is None or isinstance(value, torch.Tensor):
@@ -299,3 +302,9 @@ class TensorList(nn.Module):
                 raise TypeError(f"value at position {idx} is neither None nor Tensor.")
 
         self.data.extend(values)
+
+    def cat(self, dim: int = 0) -> torch.Tensor:
+        return torch.cat(self.condensed().data, dim=dim)
+
+    def stack(self, dim: int = 0) -> torch.Tensor:
+        return torch.stack(self.condensed().data, dim=dim)

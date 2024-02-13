@@ -1,3 +1,4 @@
+import inferno
 import torch
 
 
@@ -40,7 +41,7 @@ def adaptive_currents_linear(
         time_constant (float | torch.Tensor): time constant of exponential decay,
             :math:`\tau_k`, in :math:`\text{ms}`.
         voltage_coupling (float | torch.Tensor): strength of coupling to membrane
-            voltage, :math:`a_k`, in :math:`\text{\mu S}`.
+            voltage, :math:`a_k`, in :math:`\mu\text{S}`.
         spike_increment (float | torch.Tensor): amount by which the adaptive current is
             increased after a spike, :math:`b_k`, in :math:`\text{nA}`.
         refracs (torch.Tensor | None): remaining absolute refractory periods,
@@ -116,7 +117,7 @@ def adaptive_thresholds_linear_voltage(
     rest_v: float | torch.Tensor,
     adapt_rate: float | torch.Tensor,
     rebound_rate: float | torch.Tensor,
-    adapt_reset_lb: float | torch.Tensor | None = None,
+    adapt_reset_min: float | torch.Tensor | None = None,
     spikes: torch.Tensor | None = None,
     refracs: torch.Tensor | None = None
 ) -> torch.Tensor:
@@ -132,7 +133,7 @@ def adaptive_thresholds_linear_voltage(
     If a spike was generated at time :math:`t`, then.
 
     .. math::
-        \theta_k(t) \leftarrow \max(\theta_k(t), {\theta_\text{reset}}_k)
+        \theta_k(t) \leftarrow \max(\theta_k(t), \theta_\text{reset})
 
     Args:
         adaptations (torch.Tensor): last adaptations applied to membrane voltage
@@ -147,9 +148,9 @@ def adaptive_thresholds_linear_voltage(
             membrane voltage term, :math:`a_k`, in :math:`\text{ms}^{-1}`.
         rebound_rate (float | torch.Tensor): rate constant of exponential decay for
             threshold voltage term, :math:`b_k`, in :math:`\text{ms}^{-1}`.
-        adapt_reset_lb (float | torch.Tensor | None, optional): lower bound for
+        adapt_reset_min (float | torch.Tensor | None, optional): lower bound for
             the threshold adaptation permitted after a postsynaptic potential,
-            :math:`{\theta_\text{reset}}_k`, in :math:`\text{mV}`. Defaults to None.
+            :math:`\theta_\text{reset}`, in :math:`\text{mV}`. Defaults to None.
         spikes (torch.Tensor | None, optional): if the corresponding neuron generated an
             action potential. Defaults to None.
         refracs (torch.Tensor | None): remaining absolute refractory periods,
@@ -176,7 +177,7 @@ def adaptive_thresholds_linear_voltage(
         `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
         ``voltages``, ``spikes``, and ``refracs``.
 
-        ``step_time``, ``adapt_rate``, ``rebound_rate``, ``adapt_reset_lb``:
+        ``step_time``, ``adapt_rate``, ``rebound_rate``, ``adapt_reset_min``:
 
         `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
         ``adaptations``.
@@ -191,7 +192,7 @@ def adaptive_thresholds_linear_voltage(
             * :math:`K` is the number of sets of adaptation parameters.
 
     Note:
-        If either ``adapt_reset_lb`` or ``spikes`` is None, then no lower bound
+        If either ``adapt_reset_min`` or ``spikes`` is None, then no lower bound
         will be applied to threshold adaptations.
 
     Tip:
@@ -217,10 +218,10 @@ def adaptive_thresholds_linear_voltage(
         )
 
     # post-spike adaptation step
-    if adapt_reset_lb is not None and spikes is not None:
+    if adapt_reset_min is not None and spikes is not None:
         adaptations = adaptations.where(
             spikes.unsqueeze(-1) == 0,
-            adaptations.clamp_min(adapt_reset_lb),
+            adaptations.clamp_min(adapt_reset_min),
         )
 
     # return updated adaptation state
@@ -231,19 +232,15 @@ def adaptive_thresholds_linear_spike(
     adaptations: torch.Tensor,
     spikes: torch.Tensor,
     *,
-    decay: float | torch.Tensor,
+    step_time: float | torch.Tensor,
+    time_constant: float | torch.Tensor,
     spike_increment: float | torch.Tensor,
     refracs: torch.Tensor | None = None
 ) -> torch.Tensor:
     r"""Update adaptive thresholds based on postsynaptic spikes.
 
     .. math::
-        \theta_k(t + \Delta t) = \theta_k(t) \alpha_k\right)
-
-    Where :math:`\alpha_k` is the multiple for exponential decay, typically expressed
-    as :math:`\alpha_k = \exp(-\Delta t / \tau_k)`, where :math:`\Delta t` is the
-    step time and :math:`\tau_k` is the time constant for the :math:`k^\text{th}`
-    adaptation, in like units of time.
+        \theta_k(t + \Delta t) = \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
 
     If a spike was generated at time :math:`t`, then.
 
@@ -255,8 +252,10 @@ def adaptive_thresholds_linear_spike(
             threshold, :math:`\theta_k`, in :math:`\text{mV}`.
         spikes (torch.Tensor): if the corresponding neuron generated an
             action potential.
-        decay (float | torch.Tensor): exponential decay factor for adaptations,
-            :math:`\alpha_k`, unitless.
+        step_time (float | torch.Tensor): length of a simulation time step,
+            :math:`\Delta t`, in :math:`\text{ms}`.
+        time_constant (float | torch.Tensor): time constant of exponential decay for
+            the adaptations, :math:`\tau_k`, in :math:`\text{ms}`.
         spike_increment (torch.Tensor): amount by which the adaptive threshold is
             increased after a spike, :math:`a_k`, in :math:`\text{mV}`.
         refracs (torch.Tensor | None): remaining absolute refractory periods,
@@ -278,7 +277,7 @@ def adaptive_thresholds_linear_spike(
 
         :math:`[B] \times N_0 \times \cdots`
 
-        ``decay``, ``spike_increment``:
+        ``step_time``, ``time_constant``, ``spike_increment``:
 
         `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
         ``adaptations``.
@@ -302,10 +301,11 @@ def adaptive_thresholds_linear_spike(
         :ref:`zoo/neurons-adaptation:Adaptive Threshold, Linear Spike-Dependent` in the zoo.
     """
     # decay adaptations over time
+    decayed = adaptations * inferno.exp(-step_time / time_constant)
     if refracs is None:
-        adaptations = adaptations * decay
+        adaptations = decayed
     else:
-        adaptations = adaptations.where(refracs.unsqueeze(-1) > 0, adaptations * decay)
+        adaptations = adaptations.where(refracs.unsqueeze(-1) > 0, decayed)
 
     # increment adaptations after spiking
     adaptations = adaptations + (spike_increment * spikes.unsqueeze(-1))
@@ -348,7 +348,7 @@ def apply_adaptive_thresholds(
 
     Args:
         threshold (float | torch.Tensor): equilibrium of the firing threshold,
-            :math:`\Theta_\infty$`, in :math:`\text{mV}`.
+            :math:`\Theta_\infty`, in :math:`\text{mV}`.
         adaptations (torch.Tensor): :math:`k` threshold adaptations, :math:`\theta_k`,
             in :math:`\text{mV}`.
 

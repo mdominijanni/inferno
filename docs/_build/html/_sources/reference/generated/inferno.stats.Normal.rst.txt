@@ -1,0 +1,8 @@
+﻿Normal
+======
+
+.. currentmodule:: inferno.stats
+
+.. autoclass:: Normal
+    :members:
+    :show-inheritance:

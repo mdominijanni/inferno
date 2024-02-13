@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/stats.html">inferno.dists</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -176,6 +177,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../zoo/index.html">Model and Method Zoo</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Model and Method Zoo</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../zoo/neurons-adaptation.html">Neuronal Adaptation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../zoo/neurons-linear.html">Neuron Models, Linear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../zoo/neurons-nonlinear.html">Neuron Models, Nonlinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../zoo/synapses-current.html">Synapse Models, Current-Based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
 </ul>
@@ -260,8 +264,12 @@
         <span class="n">always_call</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># sanity check arguments</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`order`&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;`scale`&quot;</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
         <span class="c1"># inner hook function</span>
         <span class="k">def</span> <span class="nf">hook</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
@@ -309,6 +317,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="nb">min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="nb">max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -318,7 +327,6 @@
         <span class="n">as_prehook</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">always_call</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># sanity check arguments</span>
         <span class="k">if</span> <span class="nb">min</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
