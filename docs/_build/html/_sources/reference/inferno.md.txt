@@ -46,6 +46,7 @@
     uniform
     normal
     scalar
+    tensorize
 ```
 
 ## Interpolation

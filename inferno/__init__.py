@@ -31,9 +31,15 @@ from .tensor import (
     uniform,
     normal,
     scalar,
+    tensorize,
+)
+
+from . import (
+    dists,
 )
 
 __all__ = [
+    "dists"
     "Module",
     "Configuration",
     "Hook",
@@ -60,4 +66,5 @@ __all__ = [
     "uniform",
     "normal",
     "scalar",
+    "tensorize",
 ]
