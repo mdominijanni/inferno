@@ -16,4 +16,6 @@
     hard_lower_bounding
     power_upper_bounding
     power_lower_bounding
+    mult_upper_bounding
+    mult_lower_bounding
 ```

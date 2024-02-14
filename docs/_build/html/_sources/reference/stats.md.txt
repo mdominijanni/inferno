@@ -1,4 +1,4 @@
-# inferno.dists
+# inferno.stats
 
 ```{eval-rst}
 .. automodule:: inferno.stats

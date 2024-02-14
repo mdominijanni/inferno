@@ -165,7 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/typing.html">inferno.typing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -264,7 +264,7 @@
     <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies soft parameter bounding on potentiative update amplitude.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies power law (soft) parameter bounding on potentiative update amplitude.</span>
 
 <span class="sd">    .. math::</span>
 
@@ -298,7 +298,7 @@
     <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies soft parameter bounding on depressive update amplitude.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies power law (soft) parameter bounding on depressive update amplitude.</span>
 
 <span class="sd">    .. math::</span>
 
@@ -321,6 +321,72 @@
 <span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">((</span><span class="n">parameter</span> <span class="o">-</span> <span class="nb">min</span><span class="p">)</span> <span class="o">**</span> <span class="n">power</span><span class="p">)</span> <span class="o">*</span> <span class="n">amplitude</span></div>
+
+
+
+<div class="viewcode-block" id="mult_upper_bounding">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.mult_upper_bounding.html#inferno.learn.functional.mult_upper_bounding">[docs]</a>
+<span class="k">def</span> <span class="nf">mult_upper_bounding</span><span class="p">(</span>
+    <span class="n">parameter</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
+    <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies multiplicative (soft) parameter bounding on potentiative update amplitude.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        A_+ = (v_\text{max} - w) \eta_+</span>
+
+<span class="sd">    Equivalent to :py:func:`power_upper_bounding` with ``power=1``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parameter (torch.Tensor): model parameter, :math:`v`.</span>
+<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update excluding parameter</span>
+<span class="sd">            dependence, :math:`\eta_+`.</span>
+<span class="sd">        max (float | torch.Tensor): upper bound of parameter, :math:`v_\text{max}`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: amplitudes :math:`A_+` after applying parameter bound.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        For more details and references, visit</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nb">max</span> <span class="o">-</span> <span class="n">parameter</span><span class="p">)</span> <span class="o">*</span> <span class="n">amplitude</span></div>
+
+
+
+<div class="viewcode-block" id="mult_lower_bounding">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.learn.functional.mult_lower_bounding.html#inferno.learn.functional.mult_lower_bounding">[docs]</a>
+<span class="k">def</span> <span class="nf">mult_lower_bounding</span><span class="p">(</span>
+    <span class="n">parameter</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
+    <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies multiplicative (soft) parameter bounding on depressive update amplitude.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        A_- = (w - v_\text{min}) \eta_-</span>
+
+<span class="sd">    Equivalent to :py:func:`power_lower_bounding` with ``power=1``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parameter (torch.Tensor): model parameter, :math:`v`.</span>
+<span class="sd">        amplitude (float | torch.Tensor): amplitude of the update excluding parameter</span>
+<span class="sd">            dependence, :math:`\eta_-`.</span>
+<span class="sd">        min (float | torch.Tensor): lower bound of parameter, :math:`v_\text{min}`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: amplitudes :math:`A_-` after applying parameter bound.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        For more details and references, visit</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">parameter</span> <span class="o">-</span> <span class="nb">min</span><span class="p">)</span> <span class="o">*</span> <span class="n">amplitude</span></div>
 
 
 

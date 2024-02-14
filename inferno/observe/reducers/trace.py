@@ -282,7 +282,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
         time_constant (float): time constant of exponential decay, :math:`\tau`.
         amplitude (int | float | complex): value to set trace to for matching elements,
             :math:`a`.
-        scale (int | float | complex): multiplicitive scale for contributions to trace,
+        scale (int | float | complex): multiplicative scale for contributions to trace,
             :math:`S`.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             a match for the purpose of tracing, :math:`K`.
@@ -409,7 +409,7 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         time_constant (float): time constant of exponential decay, :math:`\tau`.
         amplitude (int | float | complex): value to add to trace for matching elements,
             :math:`a`.
-        scale (int | float | complex): multiplicitive scale for contributions to trace,
+        scale (int | float | complex): multiplicative scale for contributions to trace,
             :math:`S`.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             a match for the purpose of tracing, :math:`K`.

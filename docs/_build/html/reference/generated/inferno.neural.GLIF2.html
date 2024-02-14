@@ -166,7 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../typing.html">inferno.typing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.stats</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -261,7 +261,7 @@
 <li><p><strong>tc_membrane</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time constant of exponential decay for membrane voltage,
 <span class="math notranslate nohighlight">\(\tau_m\)</span>, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 <li><p><strong>rc_adaptation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>...</em><em>]</em>) – rate constant of exponential decay
-for threshold adaptations, <span class="math notranslate nohighlight">\(\lambda_k\)</span>, in <span class="math notranslate nohighlight">\(\text{ms^{-1}}\)</span>.</p></li>
+for threshold adaptations, <span class="math notranslate nohighlight">\(\lambda_k\)</span>, in <span class="math notranslate nohighlight">\(\text{ms}^{-1}\)</span>.</p></li>
 <li><p><strong>spike_increment</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>...</em><em>]</em>) – amount by which the adaptive
 threshold is increased after a spike, <span class="math notranslate nohighlight">\(d_k\)</span>, in <span class="math notranslate nohighlight">\(\text{mV}\)</span>.</p></li>
 <li><p><strong>resistance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – resistance across the cell membrane,

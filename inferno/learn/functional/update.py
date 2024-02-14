@@ -39,7 +39,7 @@ def power_upper_bounding(
     max: float | torch.Tensor,
     power: float = 1.0,
 ) -> torch.Tensor:
-    r"""Applies soft parameter bounding on potentiative update amplitude.
+    r"""Applies power law (soft) parameter bounding on potentiative update amplitude.
 
     .. math::
 
@@ -70,7 +70,7 @@ def power_lower_bounding(
     min: float | torch.Tensor,
     power: float = 1.0,
 ) -> torch.Tensor:
-    r"""Applies soft parameter bounding on depressive update amplitude.
+    r"""Applies power law (soft) parameter bounding on depressive update amplitude.
 
     .. math::
 
@@ -93,6 +93,66 @@ def power_lower_bounding(
         :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.
     """
     return ((parameter - min) ** power) * amplitude
+
+
+def mult_upper_bounding(
+    parameter: torch.Tensor,
+    amplitude: float | torch.Tensor,
+    /,
+    max: float | torch.Tensor,
+) -> torch.Tensor:
+    r"""Applies multiplicative (soft) parameter bounding on potentiative update amplitude.
+
+    .. math::
+
+        A_+ = (v_\text{max} - w) \eta_+
+
+    Equivalent to :py:func:`power_upper_bounding` with ``power=1``.
+
+    Args:
+        parameter (torch.Tensor): model parameter, :math:`v`.
+        amplitude (float | torch.Tensor): amplitude of the update excluding parameter
+            dependence, :math:`\eta_+`.
+        max (float | torch.Tensor): upper bound of parameter, :math:`v_\text{max}`.
+
+    Returns:
+        torch.Tensor: amplitudes :math:`A_+` after applying parameter bound.
+
+    See Also:
+        For more details and references, visit
+        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.
+    """
+    return (max - parameter) * amplitude
+
+
+def mult_lower_bounding(
+    parameter: torch.Tensor,
+    amplitude: float | torch.Tensor,
+    /,
+    min: float | torch.Tensor,
+) -> torch.Tensor:
+    r"""Applies multiplicative (soft) parameter bounding on depressive update amplitude.
+
+    .. math::
+
+        A_- = (w - v_\text{min}) \eta_-
+
+    Equivalent to :py:func:`power_lower_bounding` with ``power=1``.
+
+    Args:
+        parameter (torch.Tensor): model parameter, :math:`v`.
+        amplitude (float | torch.Tensor): amplitude of the update excluding parameter
+            dependence, :math:`\eta_-`.
+        min (float | torch.Tensor): lower bound of parameter, :math:`v_\text{min}`.
+
+    Returns:
+        torch.Tensor: amplitudes :math:`A_-` after applying parameter bound.
+
+    See Also:
+        For more details and references, visit
+        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding` in the zoo.
+    """
+    return (parameter - min) * amplitude
 
 
 def hard_upper_bounding(

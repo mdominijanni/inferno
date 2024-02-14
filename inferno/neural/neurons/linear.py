@@ -527,7 +527,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         tc_membrane (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\text{ms}`.
         rc_adaptation (float | tuple[float, ...]): rate constant of exponential decay
-            for threshold adaptations, :math:`\lambda_k`, in :math:`\text{ms^{-1}}`.
+            for threshold adaptations, :math:`\lambda_k`, in :math:`\text{ms}^{-1}`.
         spike_increment (float | tuple[float, ...]): amount by which the adaptive
             threshold is increased after a spike, :math:`d_k`, in :math:`\text{mV}`.
         resistance (float, optional): resistance across the cell membrane,
