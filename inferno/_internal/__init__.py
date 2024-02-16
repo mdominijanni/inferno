@@ -14,7 +14,12 @@ from .exceptions import (
     attr_members,
 )
 
+from . import (
+    argtest,
+)
+
 __all__ = [
+    "argtest",
     "regroup",
     "newtensor",
     "rgetattr",
