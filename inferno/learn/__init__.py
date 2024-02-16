@@ -22,19 +22,12 @@ from .classifiers.simple import (
     MaxRateClassifier,
 )
 
-from .hooks import (
-    WeightNormalization,
-    WeightClamping,
-)
-
 __all__ = [
     "LayerwiseUpdater",
     "STDP",
     "MSTDP",
     "MSTDPET",
     "MaxRateClassifier",
-    "WeightNormalization",
-    "WeightClamping",
     "WeightDependence",
     "HardWeightDependence",
     "SoftWeightDependence",

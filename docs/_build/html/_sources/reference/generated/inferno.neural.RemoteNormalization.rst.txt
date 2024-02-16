@@ -1,0 +1,8 @@
+﻿RemoteNormalization
+===================
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: RemoteNormalization
+    :members:
+    :show-inheritance:

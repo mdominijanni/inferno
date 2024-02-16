@@ -105,7 +105,7 @@ def normalize(
     data: torch.Tensor,
     order: int | float,
     scale: float | complex = 1.0,
-    dims: int | tuple[int] | None = None,
+    dim: int | tuple[int] | None = None,
     epsilon: float = 1e-12,
 ) -> torch.Tensor:
     r"""Normalizes a tensor.
@@ -115,7 +115,7 @@ def normalize(
         order (int | float): order of :math:`p`-norm by which to normalize.
         scale (float | complex, optional): desired :math:`p`-norm of elements along
             specified dimensions. Defaults to 1.0.
-        dims (int | tuple[int] | None, optional): dimensions along which to normalize,
+        dim (int | tuple[int] | None, optional): dimension(s) along which to normalize,
             all dimensions if None. Defaults to None.
         epsilon (float, optional): value added to the demoninator in case of
             zero-valued norms. Defaults to 1e-12.
@@ -123,7 +123,7 @@ def normalize(
     Returns:
         torch.Tensor: normalized tensor.
     """
-    return scale * F.normalize(data, p=order, dim=dims, eps=epsilon)
+    return scale * F.normalize(data, p=order, dim=dim, eps=epsilon)
 
 
 def rescale(
@@ -133,7 +133,7 @@ def rescale(
     *,
     srcmin: int | float | torch.Tensor | None = None,
     srcmax: int | float | torch.Tensor | None = None,
-    dims: int | tuple[int, ...] | None = None,
+    dim: int | tuple[int, ...] | None = None,
 ) -> torch.Tensor:
     r"""Rescales a tensor (min-max normalization).
 
@@ -147,7 +147,7 @@ def rescale(
             tensor before rescaling, computed if None.. Defaults to None.
         srcmax (int | float | torch.Tensor | None, optional): maximum value for the
             tensor before rescaling, computed if None. Defaults to None.
-        dims (int | tuple[int, ...] | None, optional): dimensions along which amin/amax
+        dim (int | tuple[int, ...] | None, optional): dimension(s) along which amin/amax
             are computed if not provided, all dimensions if None. Defaults to None.
 
     Returns:
@@ -155,9 +155,9 @@ def rescale(
     """
     # perform substitutions
     if srcmin is None:
-        srcmin = torch.amin(data, dim=dims, keepdim=True)
+        srcmin = torch.amin(data, dim=dim, keepdim=True)
     if srcmax is None:
-        srcmax = torch.amax(data, dim=dims, keepdim=True)
+        srcmax = torch.amax(data, dim=dim, keepdim=True)
     if resmin is None:
         resmin = srcmin
     if resmax is None:

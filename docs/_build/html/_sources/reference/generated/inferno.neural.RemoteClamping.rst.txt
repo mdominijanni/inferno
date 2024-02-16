@@ -1,0 +1,8 @@
+﻿RemoteClamping
+==============
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: RemoteClamping
+    :members:
+    :show-inheritance:

@@ -333,7 +333,7 @@
     <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">dims</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Normalizes a tensor.</span>
@@ -343,7 +343,7 @@
 <span class="sd">        order (int | float): order of :math:`p`-norm by which to normalize.</span>
 <span class="sd">        scale (float | complex, optional): desired :math:`p`-norm of elements along</span>
 <span class="sd">            specified dimensions. Defaults to 1.0.</span>
-<span class="sd">        dims (int | tuple[int] | None, optional): dimensions along which to normalize,</span>
+<span class="sd">        dim (int | tuple[int] | None, optional): dimension(s) along which to normalize,</span>
 <span class="sd">            all dimensions if None. Defaults to None.</span>
 <span class="sd">        epsilon (float, optional): value added to the demoninator in case of</span>
 <span class="sd">            zero-valued norms. Defaults to 1e-12.</span>
@@ -351,7 +351,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: normalized tensor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">epsilon</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">epsilon</span><span class="p">)</span></div>
 
 
 
@@ -364,7 +364,7 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">srcmin</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">srcmax</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dims</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Rescales a tensor (min-max normalization).</span>
 
@@ -378,7 +378,7 @@
 <span class="sd">            tensor before rescaling, computed if None.. Defaults to None.</span>
 <span class="sd">        srcmax (int | float | torch.Tensor | None, optional): maximum value for the</span>
 <span class="sd">            tensor before rescaling, computed if None. Defaults to None.</span>
-<span class="sd">        dims (int | tuple[int, ...] | None, optional): dimensions along which amin/amax</span>
+<span class="sd">        dim (int | tuple[int, ...] | None, optional): dimension(s) along which amin/amax</span>
 <span class="sd">            are computed if not provided, all dimensions if None. Defaults to None.</span>
 
 <span class="sd">    Returns:</span>
@@ -386,9 +386,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># perform substitutions</span>
     <span class="k">if</span> <span class="n">srcmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">srcmin</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">srcmin</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">srcmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">srcmax</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">srcmax</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">resmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">resmin</span> <span class="o">=</span> <span class="n">srcmin</span>
     <span class="k">if</span> <span class="n">resmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

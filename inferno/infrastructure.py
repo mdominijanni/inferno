@@ -265,7 +265,7 @@ class Hook:
         eval_update: bool = True,
     ):
         # check if at least one callable is defined
-        _ = argtest.onedefined(("prehook", "posthook"), (prehook, posthook))
+        _ = argtest.onedefined(("prehook", prehook), ("posthook", posthook))
 
         # prehook and posthook functions
         if prehook:
@@ -396,8 +396,6 @@ class StateHook(Hook, ABC):
     r"""Interactable hook which only acts on module state.
 
     Args:
-        hook (Callable[[nn.Module], None]): function to call on hooked module's
-            :py:meth:`~torch.nn.Module.__call__`.
         module (nn.Module): module to which the hook should be registered.
         train_update (bool, optional): if the hook should be run when hooked module is
             in train mode. Defaults to True.

@@ -70,8 +70,10 @@
     :nosignatures:
     :toctree: generated
 
-    Normalization
     Clamping
+    Normalization
+    RemoteClamping
+    RemoteNormalization
 ```
 
 ## Types

@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from types import UnionType
 from typing import Any, Callable
 
@@ -31,7 +31,7 @@ def _prefixstr(prefix: str | None) -> str:
         str: string to display in the error message as the prefix.
     """
     if prefix:
-        return f"{prefix}: "
+        return f"{prefix}"
     else:
         return ""
 
@@ -100,26 +100,26 @@ def ofsequence(
 
 
 def onedefined(
-    names: Sequence[str], values: Sequence[Any], prefix: str | None = None
+    *nvpairs: tuple[str, Any], prefix: str | None = None
 ) -> tuple[Any, ...]:
     r"""Checks if at least one value in a sequence is not None.
     Args:
-        names (Sequence[str]): display names of the variables tested.
-        values (Sequence[Any]): variables being tested.
+        *nvpairs (tuple[str, Any]): tuples each containing the display name of a
+            variable being tested and the variable itself.
         prefix (str | None, optional): error message prefix. Defaults to None.
 
     Returns:
         tuple[Any, ...]: values tested.
     """
-    for value in values:
-        if value is not None:
-            return tuple(*values)
-    namestr, pfx = "', '".join(names), _prefixstr(prefix)
-    raise RuntimeError(f"{pfx}at least one of '{namestr}' must not be None")
+    if any(map(lambda nvp: nvp[1] is not None, nvpairs)):
+        return tuple(nvp[1] for nvp in nvpairs)
+    else:
+        namestr, pfx = "', '".join(nvp[0] for nvp in nvpairs), _prefixstr(prefix)
+        raise RuntimeError(f"{pfx}at least one of '{namestr}' must not be None")
 
 
 def integer(name: str, value: Any, prefix: str | None = None) -> int:
-    r"""Checks if a value can be interpreted as an integer
+    r"""Checks if a value can be interpreted as an integer.
 
     Args:
         name (str): display name of the variable tested.
@@ -150,6 +150,65 @@ def integer(name: str, value: Any, prefix: str | None = None) -> int:
         return int(value)
     else:
         raise ValueError(msg)
+
+
+def dimensions(
+    name: str,
+    value: Any,
+    lower: int | None,
+    upper: int | None,
+    permit_none: bool = False,
+    wrap_output: bool = False,
+    prefix: str | None = None,
+) -> int | tuple[int, ...] | None:
+    r"""Checks if a value can be interpreted as a shape or dimensions.
+
+    Generally, set ``permit_none`` to True for dimensions, and ``wrap_output`` to True
+    for a shape.
+
+    Args:
+        name (str): display name of the variable tested.
+        value (Any): variable being testing.
+        lower (Any | None): inclusive lower index bound, if any.
+        upper (Any | None): inclusive upper index bound, if any.
+        permit_none (bool, optional): if a value of None should be permitted.
+            Defaults to False.
+        wrap_output (bool, optional): if non-None singleton output should be wrapped.
+            Defaults to False.
+        prefix (str | None, optional): error message prefix to display.
+            Defaults to None.
+
+    Returns:
+        int | tuple[int, ...] | None: input after standardization.
+    """
+    if value is None:
+        if permit_none:
+            return None
+        else:
+            val, pfx = _valuestr(value), _prefixstr(prefix)
+            raise TypeError(f"{pfx}'{name}' ({val}) cannot be None")
+
+    else:
+        match (lower is None, upper is None):
+            case (False, False):
+                func = integer
+                args, kwargs = (), {"prefix": prefix}
+            case (False, True):
+                func = lte
+                args, kwargs = (upper,), {"cast": int, "prefix": prefix}
+            case (True, False):
+                func = gte
+                args, kwargs = (lower,), {"cast": int, "prefix": prefix}
+            case (True, True):
+                func = minmax_incl
+                args, kwargs = (lower, upper), {"cast": int, "prefix": prefix}
+
+        if isinstance(value, Iterable) and not isinstance(value, str):
+            return ofsequence(name, value, func, *args, **kwargs)
+        elif wrap_output:
+            return (func(name, value, *args, **kwargs),)
+        else:
+            return func(name, value, *args, **kwargs)
 
 
 def lt(
@@ -619,3 +678,27 @@ def members(name: str, obj: Any, *attr: str, prefix: str | None = None) -> Any:
         raise RuntimeError(
             f"{pfx}'{name}' of type {objt} is missing the attribute(s): {sa}"
         )
+
+
+def nestedidentifier(name: str, value: str, prefix: str | None = None) -> str:
+    r"""Checks if a string is a valid identifier, or dot seperated identifiers.
+
+    Args:
+        name (str): display name of the object being tested.
+        value (str): value (Any): variable being testing.
+        prefix (str | None, optional): error message prefix to display.
+            Defaults to None.
+
+    Returns:
+        str: tested object.
+    """
+    if not isinstance(value, str):
+        pfx = _prefixstr(prefix)
+        raise TypeError(f"{pfx}'{name}' must be a string, but is a {_typename(value)}")
+    elif all(map(lambda s: not s.isidentifier(), value.split("."))):
+        val, pfx = _valuestr(value), _prefixstr(prefix)
+        raise ValueError(
+            f"{pfx}'{name}' ({val}) is not a valid dot-seperated identifier"
+        )
+    else:
+        return value

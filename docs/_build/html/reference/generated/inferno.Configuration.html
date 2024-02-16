@@ -225,8 +225,8 @@
 <dt class="sig sig-object py" id="inferno.Configuration">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Configuration</span></span><a class="reference internal" href="../../_modules/inferno/infrastructure.html#Configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.Configuration" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a></p>
-<p>Class which provides unpacking functionality when used in conjunction with
-the <a class="reference external" href="https://www.attrs.org/en/stable/">attrs library</a>.</p>
+<p>Class which provides unpacking functionality when used in conjunction with the
+attrs library.</p>
 <p>When defining configuration classes which are to be wrapped by
 <a class="reference external" href="https://www.attrs.org/en/stable/api.html#attrs.define" title="(in attrs v23.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">attrs.define()</span></code></a>, if this is subclassed, then it can be unpacked with <code class="docutils literal notranslate"><span class="pre">**</span></code>.</p>
 <dl class="py method">
@@ -234,8 +234,8 @@ the <a class="reference external" href="https://www.attrs.org/en/stable/">attrs 
 <span class="sig-name descname"><span class="pre">_asadict_</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/inferno/infrastructure.html#Configuration._asadict_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.Configuration._asadict_" title="Link to this definition">#</a></dt>
 <dd><p>Controls how the fields of this class are convereted into a dictionary.</p>
 <p>This will flatten any nested <a class="reference internal" href="#inferno.Configuration" title="inferno.Configuration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></a> objects using their own
-<a class="reference internal" href="#inferno.Configuration._asadict_" title="inferno.Configuration._asadict_"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_asadict_()</span></code></a> method. If there are naming conflicts (i.e. if a nested
-configuration has) a field with the same name, only one will be preserved.
+<a class="reference internal" href="#inferno.Configuration._asadict_" title="inferno.Configuration._asadict_"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_asadict_()</span></code></a> method. If there are naming conflicts, i.e. if a nested
+configuration has a field with the same name, only one will be preserved.
 This can be overridden to change its behavior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>

@@ -218,12 +218,13 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.infrastructure</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">attrs</span>
-<span class="kn">from</span> <span class="nn">.math</span> <span class="kn">import</span> <span class="n">Interpolation</span>
+<span></span><span class="kn">from</span> <span class="nn">.math</span> <span class="kn">import</span> <span class="n">Interpolation</span>
+<span class="kn">import</span> <span class="nn">attrs</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Mapping</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
-<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">rsetattr</span><span class="p">,</span> <span class="n">instance_of</span><span class="p">,</span> <span class="n">numeric_limit</span>
+<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">rsetattr</span><span class="p">,</span> <span class="n">argtest</span><span class="p">,</span> <span class="n">numeric_limit</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -235,12 +236,11 @@
 <div class="viewcode-block" id="Module">
 <a class="viewcode-back" href="../../reference/generated/inferno.Module.html#inferno.Module">[docs]</a>
 <span class="k">class</span> <span class="nc">Module</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;An extension of PyTorch&#39;s `Module</span>
-<span class="sd">    &lt;https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module&gt;`_ class.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;An extension of PyTorch&#39;s Module class.</span>
 
 <span class="sd">    This extends :py:class:`torch.nn.Module` so that &quot;extra state&quot; is handled in a way</span>
 <span class="sd">    similar to regular tensor state (e.g. buffers and parameters). This enables simple</span>
-<span class="sd">    export/import to/from a state dictionary.</span>
+<span class="sd">    export to and import from a state dictionary.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made</span>
@@ -267,21 +267,28 @@
 <span class="sd">            value (Any): extra to be registered.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            TypeError: if the extra variable being registered is an instance of</span>
-<span class="sd">                :py:class:`torch.Tensor` or :py:class:`torch.nn.Module`.</span>
+<span class="sd">            TypeError: extra name has to be a string.</span>
+<span class="sd">            KeyError: extra name cannot be the empty string and cannot contain &quot;.&quot;.</span>
+<span class="sd">            TypeError: extras cannot be instances of :py:class:`~torch.Tensor` or</span>
+<span class="sd">                :py:class:`~torch.nn.Module`.</span>
+
+<span class="sd">        Important:</span>
+<span class="sd">            In order to be accessed with dot notation, the name must be a valid</span>
+<span class="sd">            Python identifier.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            :py:class:`~torch.Tensor` and :py:class:`~torch.nn.Module` objects cannot</span>
-<span class="sd">            be registered as extras and should be registered using existing methods.</span>
+<span class="sd">            :py:class:`~torch.Tensor`, :py:class:`~torch.nn.Parameter`, and</span>
+<span class="sd">            :py:class:`~torch.nn.Module` objects cannot be registered as extras and</span>
+<span class="sd">            should be registered using existing methods.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;extra name must be a string, received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;extra name cannot contain &quot;.&quot;&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;extra name cannot contain &#39;.&#39;&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;extra name cannot be empty string &quot;&quot;&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;extra name cannot be empty string &#39;&#39;&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;attribute &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; already exists&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -388,8 +395,8 @@
 <div class="viewcode-block" id="Configuration">
 <a class="viewcode-back" href="../../reference/generated/inferno.Configuration.html#inferno.Configuration">[docs]</a>
 <span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Class which provides unpacking functionality when used in conjunction with</span>
-<span class="sd">    the `attrs library &lt;https://www.attrs.org/en/stable/&gt;`_.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Class which provides unpacking functionality when used in conjunction with the</span>
+<span class="sd">    attrs library.</span>
 
 <span class="sd">    When defining configuration classes which are to be wrapped by</span>
 <span class="sd">    :py:func:`attrs.define`, if this is subclassed, then it can be unpacked with ``**``.</span>
@@ -403,8 +410,8 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Controls how the fields of this class are convereted into a dictionary.</span>
 
 <span class="sd">        This will flatten any nested :py:class:`Configuration` objects using their own</span>
-<span class="sd">        :py:meth:`_asadict_` method. If there are naming conflicts (i.e. if a nested</span>
-<span class="sd">        configuration has) a field with the same name, only one will be preserved.</span>
+<span class="sd">        :py:meth:`_asadict_` method. If there are naming conflicts, i.e. if a nested</span>
+<span class="sd">        configuration has a field with the same name, only one will be preserved.</span>
 <span class="sd">        This can be overridden to change its behavior.</span>
 
 <span class="sd">        Returns:</span>
@@ -429,7 +436,7 @@
 <div class="viewcode-block" id="Hook">
 <a class="viewcode-back" href="../../reference/generated/inferno.Hook.html#inferno.Hook">[docs]</a>
 <span class="k">class</span> <span class="nc">Hook</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Provides forward hook/prehook functionality for subclasses.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Provides forward hook and prehook functionality for subclasses.</span>
 
 <span class="sd">    `Hook` provides functionality to register and deregister itself as</span>
 <span class="sd">    forward hook with a :py:class:`torch.nn.Module` object. This is performed using</span>
@@ -450,6 +457,11 @@
 <span class="sd">            in train mode. Defaults to True.</span>
 <span class="sd">        eval_update (bool, optional): if the hooks should be run when hooked module is</span>
 <span class="sd">            in eval mode. Defaults to True.</span>
+
+<span class="sd">    Important:</span>
+<span class="sd">        Subclasses which inherit from this should, if overriding :py:meth:`__del__`,</span>
+<span class="sd">        should call the :py:meth:`__del__` of this class.</span>
+
 <span class="sd">    Note:</span>
 <span class="sd">        If not None, the signature of the prehook must be of the following form.</span>
 
@@ -463,7 +475,7 @@
 
 <span class="sd">            hook(module, args, kwargs) -&gt; None or modified input</span>
 
-<span class="sd">        See :py:meth:`torch.nn.Module.register_forward_pre_hook` for</span>
+<span class="sd">        See :py:meth:`~torch.nn.Module.register_forward_pre_hook` for</span>
 <span class="sd">        further information.</span>
 
 <span class="sd">    Note:</span>
@@ -479,14 +491,10 @@
 
 <span class="sd">            hook(module, args, kwargs, output) -&gt; None or modified output</span>
 
-<span class="sd">        See :py:meth:`torch.nn.Module.register_forward_hook` for further information.</span>
-
+<span class="sd">        See :py:meth:`~torch.nn.Module.register_forward_hook` for further information.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        RuntimeError: at least one of ``prehook`` and ``posthook`` must not be None.</span>
-<span class="sd">        RuntimeError: at least one of ``train_update`` and ``eval_update`` must be True.</span>
-<span class="sd">        TypeError: if parameter ``module`` is not ``None``, then it must be an instance</span>
-<span class="sd">            of :py:class:`torch.nn.Module`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -500,14 +508,28 @@
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># check if at least one callable is defined</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">prehook</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">posthook</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;at least one of `prehook` and `posthook` must not be None.&quot;</span>
-            <span class="p">)</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">onedefined</span><span class="p">((</span><span class="s2">&quot;prehook&quot;</span><span class="p">,</span> <span class="n">prehook</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;posthook&quot;</span><span class="p">,</span> <span class="n">posthook</span><span class="p">))</span>
 
         <span class="c1"># prehook and posthook functions</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_prefunc</span> <span class="o">=</span> <span class="n">prehook</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_postfunc</span> <span class="o">=</span> <span class="n">posthook</span>
+        <span class="k">if</span> <span class="n">prehook</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">prehookwrapper</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evalexec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainexec</span><span class="p">)[</span><span class="n">module</span><span class="o">.</span><span class="n">training</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="n">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prehook</span> <span class="o">=</span> <span class="n">prehookwrapper</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prehook</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">posthook</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">posthookwrapper</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evalexec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainexec</span><span class="p">)[</span><span class="n">module</span><span class="o">.</span><span class="n">training</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="n">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_posthook</span> <span class="o">=</span> <span class="n">posthookwrapper</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_posthook</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># set returned handle</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prehandle</span> <span class="o">=</span> <span class="kc">None</span>
@@ -522,7 +544,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_evalupdate</span> <span class="o">=</span> <span class="n">eval_update</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">on_train</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">trainexec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;If the hook is called when the module passed in is in training mode.</span>
 
 <span class="sd">        Args:</span>
@@ -533,12 +555,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainupdate</span>
 
-    <span class="nd">@on_train</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">on_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nd">@trainexec</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">trainexec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trainupdate</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">on_eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">evalexec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;If the hook is called when the module passed in is in evaluation mode.</span>
 
 <span class="sd">        Args:</span>
@@ -549,8 +571,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evalupdate</span>
 
-    <span class="nd">@on_eval</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">on_eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nd">@evalexec</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">evalexec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_evalupdate</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
@@ -565,16 +587,15 @@
 <div class="viewcode-block" id="Hook.register">
 <a class="viewcode-back" href="../../reference/generated/inferno.Hook.html#inferno.Hook.register">[docs]</a>
     <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registers the hook as a forward hook/prehook with specified</span>
-<span class="sd">        :py:class:`~torch.nn.Module`.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registers the hook as a forward hook and/or prehook with specified Module.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            module (nn.Module): PyTorch module to which the forward hook</span>
+<span class="sd">            module (~torch.nn.Module): PyTorch module to which the forward hook</span>
 <span class="sd">                will be registered.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            TypeError: parameter ``module`` must be an instance of</span>
-<span class="sd">                :py:class:`torch.nn.Module`.</span>
+<span class="sd">                :py:class:`~torch.nn.Module`.</span>
 
 <span class="sd">        Warns:</span>
 <span class="sd">            RuntimeWarning: each :py:class:`Hook` can only be registered to one</span>
@@ -582,22 +603,20 @@
 <span class="sd">                if already registered.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered</span><span class="p">:</span>
-            <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;module&quot;</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">e</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s2">&quot;module&quot;</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefunc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prehook</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_prehandle</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">register_forward_pre_hook</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_prefunc</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_prekwargs</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_prehook</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_prekwargs</span>
                 <span class="p">)</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postfunc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posthook</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_posthandle</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">register_forward_hook</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_postfunc</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_postkwargs</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_posthook</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_postkwargs</span>
                 <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;this </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> object is already registered to an object &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;this </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is already registered to a module &quot;</span>
                 <span class="s2">&quot;so new `register()` was ignored&quot;</span><span class="p">,</span>
                 <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">,</span>
             <span class="p">)</span></div>
@@ -618,48 +637,17 @@
 
     <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Automatically deregister on deconstruction.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">deregister</span><span class="p">()</span>
-
-<div class="viewcode-block" id="Hook.prehook">
-<a class="viewcode-back" href="../../reference/generated/inferno.Hook.html#inferno.Hook.prehook">[docs]</a>
-    <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calls the prehook function if updating in the module&#39;s mode.</span>
-
-<span class="sd">        Either two or three arguments will be passed in depending on if ``with_kwargs``</span>
-<span class="sd">        was set to True in ``prehook_kwargs`` on construction.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Any: modified input or None, depending on the prehook passed on init.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_evalupdate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainupdate</span><span class="p">)[</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">training</span><span class="p">]:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefunc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Hook.posthook">
-<a class="viewcode-back" href="../../reference/generated/inferno.Hook.html#inferno.Hook.posthook">[docs]</a>
-    <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calls the posthook function if updating in the module&#39;s mode.</span>
-
-<span class="sd">        Either three or four arguments will be passed in depending on if ``with_kwargs``</span>
-<span class="sd">        was set to True in ``posthook_kwargs`` on construction.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Any: modified output or None, depending on the posthook passed on init.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_evalupdate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainupdate</span><span class="p">)[</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">training</span><span class="p">]:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postfunc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
-</div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deregister</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__del__</span><span class="p">()</span></div>
 
 
 
 <div class="viewcode-block" id="StateHook">
 <a class="viewcode-back" href="../../reference/generated/inferno.StateHook.html#inferno.StateHook">[docs]</a>
-<span class="k">class</span> <span class="nc">StateHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">StateHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interactable hook which only acts on module state.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        hook (Callable[[nn.Module], None]): function to call on hooked module&#39;s</span>
-<span class="sd">            :py:meth:`~torch.nn.Module.__call__`.</span>
 <span class="sd">        module (nn.Module): module to which the hook should be registered.</span>
 <span class="sd">        train_update (bool, optional): if the hook should be run when hooked module is</span>
 <span class="sd">            in train mode. Defaults to True.</span>
@@ -683,7 +671,6 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span>
         <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
         <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -693,12 +680,11 @@
         <span class="n">always_call</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># core state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_hook</span> <span class="o">=</span> <span class="n">hook</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_module</span> <span class="o">=</span> <span class="n">module</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hookedmodule</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s2">&quot;module&quot;</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span>
 
         <span class="c1"># create hook wrapper</span>
-        <span class="k">def</span> <span class="nf">hookwrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_hook</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">def</span> <span class="nf">hookwrapper</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
 
         <span class="c1"># construct superclass</span>
         <span class="k">if</span> <span class="n">as_prehook</span><span class="p">:</span>
@@ -718,45 +704,68 @@
                 <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
             <span class="p">)</span>
 
+<div class="viewcode-block" id="StateHook.hook">
+<a class="viewcode-back" href="../../reference/generated/inferno.StateHook.html#inferno.StateHook.hook">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to be called on the registered module&#39;s call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            module (nn.Module): registered module.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``hook`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(StateHook) must implement the method &#39;hook&#39;&quot;</span>
+        <span class="p">)</span></div>
+
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">module</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Module to which the hook is applied</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Module to which the hook is applied.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            nn.Module: module to which the hook is applied.</span>
+<span class="sd">            ~torch.nn.Module: module to which the hook is applied.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_module</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hookedmodule</span>
 
 <div class="viewcode-block" id="StateHook.register">
 <a class="viewcode-back" href="../../reference/generated/inferno.StateHook.html#inferno.StateHook.register">[docs]</a>
     <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registers the hook as a forward hook/prehook.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registers the hook as a forward hook or prehook.&quot;&quot;&quot;</span>
         <span class="n">Hook</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Executes the hook at any time, only if it is registered.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="p">)</span></div>
+<div class="viewcode-block" id="StateHook.run">
+<a class="viewcode-back" href="../../reference/generated/inferno.StateHook.html#inferno.StateHook.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Executes the hook at any time, by default only when registered.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            force (bool, optional): run the hook even if it is unregistered.</span>
+<span class="sd">                Defaults to False.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This will respect if the hooked module, registered or not, is in</span>
+<span class="sd">            training or evaluation mode (only relevant if manually configured).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="p">)</span></div>
+</div>
 
 
 
 <div class="viewcode-block" id="RemoteHook">
 <a class="viewcode-back" href="../../reference/generated/inferno.RemoteHook.html#inferno.RemoteHook">[docs]</a>
-<span class="k">class</span> <span class="nc">RemoteHook</span><span class="p">(</span><span class="n">StateHook</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;A state hook which acts on modules other than the registered module.</span>
+<span class="k">class</span> <span class="nc">RemoteHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interactable hook which acts on the state of inner modules.</span>
 
-<span class="sd">    Unlike a regular :py:class:`StateHook` where the module itself is passed on</span>
-<span class="sd">    its call, here an &quot;inner module&quot; is passed, along with associated keyword</span>
-<span class="sd">    arguments.</span>
-
-<span class="sd">    Subclass this for cases where updates should be triggered by a module on</span>
-<span class="sd">    other modules. For example, normalizing layer weights after an updater call.</span>
+<span class="sd">    Unlike a :py:class:`StateHook`, this acts not on the registered module but on</span>
+<span class="sd">    added &quot;inner modules&quot;. Subclass this for cases where the triggering event for a hook</span>
+<span class="sd">    should be a module other than the one on which the hook should be evaluated.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        hook (Callable[[nn.Module, dict[str, Any]], None]): function to call on hooked</span>
-<span class="sd">            module&#39;s :py:meth:`~torch.nn.Module.__call__`.</span>
-<span class="sd">        module (nn.Module): module to which the hook should be registered.</span>
 <span class="sd">        inner_train_update (bool, optional): if the hook should be run on the inner</span>
 <span class="sd">            module when the inner module is in training mode. Defaults to True.</span>
 <span class="sd">        inner_eval_update (bool, optional): if the hook should be run on the inner</span>
@@ -770,15 +779,13 @@
 
 <span class="sd">    Note:</span>
 <span class="sd">        By default, the hook will be triggered on the the registered module&#39;s call</span>
-<span class="sd">        whether its in training or evaluation mode (since generally this should) be</span>
-<span class="sd">        controlled by the ``inner_train_update`` and ``inner_eval_update`` arguments.</span>
+<span class="sd">        whether its in training or evaluation mode (since generally this should be</span>
+<span class="sd">        controlled by the ``inner_train_update`` and ``inner_eval_update`` arguments).</span>
 <span class="sd">        The same properties as in :py:class:`StateHook` can be used to alter this.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
         <span class="n">inner_train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">inner_eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -786,52 +793,122 @@
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">always_call</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="c1"># layer state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inner</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">innerparams</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="c1"># internally called hook</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_innerhook</span> <span class="o">=</span> <span class="n">hook</span>
+        <span class="c1"># inner modules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># update triggers</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_innertrainupdate</span> <span class="o">=</span> <span class="n">inner_train_update</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_innerevalupdate</span> <span class="o">=</span> <span class="n">inner_eval_update</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inner_trainupdate</span> <span class="o">=</span> <span class="n">inner_train_update</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inner_evalupdate</span> <span class="o">=</span> <span class="n">inner_eval_update</span>
 
-        <span class="c1"># call superclass constructor</span>
-        <span class="n">StateHook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">innerhook</span><span class="p">,</span>
-            <span class="n">module</span><span class="p">,</span>
-            <span class="kc">True</span><span class="p">,</span>
-            <span class="kc">True</span><span class="p">,</span>
-            <span class="n">as_prehook</span><span class="o">=</span><span class="n">as_prehook</span><span class="p">,</span>
-            <span class="n">prepend</span><span class="o">=</span><span class="n">prepend</span><span class="p">,</span>
-            <span class="n">always_call</span><span class="o">=</span><span class="n">always_call</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="c1"># create hook wrapper</span>
+        <span class="k">def</span> <span class="nf">hookwrapper</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">im</span><span class="p">,</span> <span class="n">ia</span><span class="p">,</span> <span class="n">ik</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainexec_inner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalexec_inner</span><span class="p">)[</span><span class="n">module</span><span class="o">.</span><span class="n">training</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">innerhook</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="o">*</span><span class="n">ia</span><span class="p">,</span> <span class="o">**</span><span class="n">ik</span><span class="p">)</span>
+
+        <span class="c1"># construct superclass</span>
+        <span class="k">if</span> <span class="n">as_prehook</span><span class="p">:</span>
+            <span class="n">Hook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">prehook</span><span class="o">=</span><span class="n">hookwrapper</span><span class="p">,</span>
+                <span class="n">prehook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">},</span>
+                <span class="n">train_update</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">eval_update</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Hook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">posthook</span><span class="o">=</span><span class="n">hookwrapper</span><span class="p">,</span>
+                <span class="n">posthook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">,</span> <span class="s2">&quot;always_call&quot;</span><span class="p">:</span> <span class="n">always_call</span><span class="p">},</span>
+                <span class="n">train_update</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">eval_update</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
 
 <div class="viewcode-block" id="RemoteHook.innerhook">
 <a class="viewcode-back" href="../../reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.innerhook">[docs]</a>
-    <span class="k">def</span> <span class="nf">innerhook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Takes hook call and conditionally performs hook on inner modules.&quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_innerevalupdate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_innertrainupdate</span><span class="p">)[</span><span class="n">module</span><span class="o">.</span><span class="n">training</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_innerhook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">innerparams</span><span class="p">[</span><span class="n">key</span><span class="p">])</span></div>
-
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_keyof</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the key (hexidecimal ID) of an inner module.</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">innerhook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to be called on the inner modules when the registered module is called.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            module (nn.Module): module for which to generate the key.</span>
+<span class="sd">            module (nn.Module): inner module.</span>
+<span class="sd">            *args (Any): positional arguments given with the inner module.</span>
+<span class="sd">            **kwargs (Any): keyword arguments given with the inner module.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            str: key for the given module.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``innerhook`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">module</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(RemoteHook) must implement the method &#39;innerhook&#39;&quot;</span>
+        <span class="p">)</span></div>
+
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">on_train_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currently added inner modules.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[nn.Module, ...]: inner modules.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            nn.Module: inner modules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">inner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">inner</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RemoteHook.innerargs">
+<a class="viewcode-back" href="../../reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.innerargs">[docs]</a>
+    <span class="k">def</span> <span class="nf">innerargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves (and optionally sets) positional arguments for an inner module hook call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            module (nn.Module): inner module to target.</span>
+<span class="sd">            *args (Any): if provided, the new positional arguments to use on hook call.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: provided module is not an inner module of the RemoteHook.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[Any, ...]: positional arguments to use for the module on the hook call.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">inner</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="n">inner</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+                    <span class="n">inner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span>
+                <span class="k">return</span> <span class="n">inner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;&#39;module&#39; has not been added as an inner module to &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;this </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(RemoteHook)&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RemoteHook.innerkwargs">
+<a class="viewcode-back" href="../../reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.innerkwargs">[docs]</a>
+    <span class="k">def</span> <span class="nf">innerkwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves (and optionally sets) keyword arguments for an inner module hook call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            module (nn.Module): inner module to target.</span>
+<span class="sd">            **kwargs (Any): if provided, the new keyword arguments to use on hook call.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: provided module is not an inner module of the RemoteHook.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict[str, Any]: keyword arguments to use for the module on the hook call.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">inner</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="n">inner</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="n">inner</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span>
+                <span class="k">return</span> <span class="n">inner</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;&#39;module&#39; has not been added as an inner module to &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;this </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(RemoteHook)&quot;</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">trainexec_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;If the hook is called when the inner module is in training mode.</span>
 
 <span class="sd">        Args:</span>
@@ -841,14 +918,14 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if the hook is called when the inner module is training.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_innertrainupdate</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner_trainupdate</span>
 
-    <span class="nd">@on_train_inner</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">on_train_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_innertrainupdate</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="nd">@trainexec_inner</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">trainexec_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inner_trainupdate</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">on_eval_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">evalexec_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;If the hook is called when the inner module passed in is in evaluation mode.</span>
 
 <span class="sd">        Args:</span>
@@ -858,42 +935,78 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if the hook is called when the inner module is evaluating.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_innerevalupdate</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner_evalupdate</span>
 
-    <span class="nd">@on_eval_inner</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">on_eval_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_innerevalupdate</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="nd">@evalexec_inner</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">evalexec_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inner_evalupdate</span> <span class="o">=</span> <span class="n">value</span>
 
 <div class="viewcode-block" id="RemoteHook.add_inner">
 <a class="viewcode-back" href="../../reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.add_inner">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">modules</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">add_inner</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">modules</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds inner modules to the hook.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            *modules (~torch.nn.Module): inner modules to add.</span>
-<span class="sd">            **kwargs (dict[str, Any]): keyword arguments for the hook call.</span>
+<span class="sd">            modules (~torch.nn.Module | tuple[~torch.nn.Module, ...]): inner module(s)</span>
+<span class="sd">                to add.</span>
+<span class="sd">            *args (Any): positional arguments which will be passed to the inner hook for</span>
+<span class="sd">                the modules added in this call.</span>
+<span class="sd">            **kwargs (Any): keyword arguments which will be passed to the inner hook for</span>
+<span class="sd">                the modules added in this call.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The positional and keyword arguments are shared amongst all of the modules</span>
+<span class="sd">            added in this call, but not amongst all added modules. If different</span>
+<span class="sd">            arguments are required for different inner modules, add in multiple calls.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">modules</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+            <span class="n">modules</span> <span class="o">=</span> <span class="p">(</span><span class="n">modules</span><span class="p">,)</span>
+
         <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">:</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keyof</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">innerparams</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span></div>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">module</span> <span class="ow">is</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="RemoteHook.remove_inner">
 <a class="viewcode-back" href="../../reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.remove_inner">[docs]</a>
-    <span class="k">def</span> <span class="nf">remove_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">modules</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">remove_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modules</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Removes inner modules from the hook.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            *modules (~torch.nn.Module): inner modules to remove.</span>
+<span class="sd">            modules (~torch.nn.Module | tuple[~torch.nn.Module, ...]): inner module(s)</span>
+<span class="sd">                to remove.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">:</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keyof</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">:</span>
-                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">innerparams</span><span class="p">:</span>
-                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">innerparams</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">modules</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+            <span class="n">modules</span> <span class="o">=</span> <span class="p">(</span><span class="n">modules</span><span class="p">,)</span>
+
+        <span class="n">innerlist</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">inner</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">inner</span> <span class="ow">is</span> <span class="n">x</span><span class="p">,</span> <span class="n">modules</span><span class="p">)):</span>
+                <span class="n">innerlist</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">inner</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span> <span class="o">=</span> <span class="n">innerlist</span></div>
+
+
+<div class="viewcode-block" id="RemoteHook.run">
+<a class="viewcode-back" href="../../reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Executes the hook at any time, by default only when registered.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            force (bool, optional): run the hook even if it is unregistered.</span>
+<span class="sd">                Defaults to False.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Whether or not it is registered to a module, this will not respect if it</span>
+<span class="sd">            is in training or evaluation mode (only relevant if manually configured).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">im</span><span class="p">,</span> <span class="n">ia</span><span class="p">,</span> <span class="n">ik</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">innerhook</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="o">*</span><span class="n">ia</span><span class="p">,</span> <span class="o">**</span><span class="n">ik</span><span class="p">)</span></div>
 </div>
 
 
