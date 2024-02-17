@@ -1,8 +1,126 @@
 from . import Connection, Neuron, Synapse
 import functools
 from inferno import Module
+from inferno.observe import ManagedMonitor, MonitorConstructor
+import torch
 from typing import Any
 import warnings
+
+class Trainable(Module):
+
+    def __init__(self, connection: Connection, neuron: Neuron):
+        r"""A trainable connection-neuron pair.
+
+        This is a construct used to associate a single connection and neuron object
+        for the purposes of training. The contained connection may produce output for
+        multiple neurons and the neuron may take input from multiple connections.
+
+        When implementing a new updater, the properties here should be used when
+        accessing or alering the model parameters.
+
+        Args:
+            connection (Connection): connection which produces output for the neuron.
+            neuron (Neuron): neuron which takes output from the connection.
+        """
+        # call superclass constructor
+        Module.__init__(self)
+
+        # component elements
+        self.connection_ = connection
+        self.neuron_ = neuron
+
+    @property
+    def connection(self) -> Connection:
+        r"""Connection submodule.
+
+        Args:
+            value (Connection): replacement connection.
+
+        Returns:
+            Connection: existing connection.
+        """
+        return self.connection_
+
+    @connection.setter
+    def connection(self, value: Connection) -> None:
+        self.connection_ = value
+
+    @property
+    def neuron(self) -> Neuron:
+        r"""Neuron submodule.
+
+        Args:
+            value (Neuron): replacement neuron.
+
+        Returns:
+            Neuron: existing neuron.
+        """
+        return self.neuron_
+
+    @neuron.setter
+    def neuron(self, value: Neuron) -> None:
+        self.neuron_ = value
+
+    @property
+    def synapse(self) -> Synapse:
+        r"""Synapse submodule.
+
+        Args:
+            value (Synapse): replacement synapse.
+
+        Returns:
+            Synapse: existing synapse.
+        """
+        return self.connection_.synapse
+
+    @synapse.setter
+    def synapse(self, value: Synapse) -> None:
+        self.connection_.synapse = value
+
+    @property
+    def precurrent(self) -> torch.Tensor:
+        r"""Currents from the synapse at the time last used by the connection.
+
+        Alias for ``connection.syncurrent``.
+
+        Returns:
+            torch.Tensor: delay-offset synaptic currents.
+        """
+        return self.connection_.syncurrent
+
+    @property
+    def prespike(self) -> torch.Tensor:
+        r"""Spikes to the synapse at the time last used by the connection.
+
+        Alias for ``connection.synspike``.
+
+        Returns:
+            torch.Tensor: delay-offset synaptic spikes.
+        """
+        return self.connection_.synspike
+
+    @property
+    def postvoltage(self) -> torch.Tensor:
+        r"""Membrane voltages in millivolts.
+
+        Returns:
+            torch.Tensor: membrane voltages.
+        """
+        return self.neuron_.voltage
+
+    @property
+    def postspike(self) -> torch.Tensor:
+        r"""Action potentials last generated.
+
+        Returns:
+            torch.Tensor: membrane voltages.
+        """
+        return self.neuron_.spike
+
+class MonitorPool(Module):
+
+    def __init__(self):
+        self.
 
 
 class Layer(Module):

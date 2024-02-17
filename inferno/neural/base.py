@@ -172,7 +172,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
 
 
 class SynapseConstructor(Protocol):
-    """Common constructor for synapses, used by :py:class:`Connection` objects.
+    r"""Common constructor for synapses, used by :py:class:`Connection` objects.
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of synapses,
@@ -220,7 +220,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
 
     @classmethod
     @abstractmethod
-    def partialconstructor(self, *args, **kwargs) -> SynapseConstructor:
+    def partialconstructor(cls, *args, **kwargs) -> SynapseConstructor:
         r"""Returns a function with a common signature for synapse construction.
 
         Raises:
@@ -231,7 +231,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
            SynapseConstructor: partial constructor for synapses of a given class.
         """
         raise NotImplementedError(
-            f"{type(self).__name__}(Synapse) must implement "
+            f"{cls.__name__}(Synapse) must implement "
             "the method `partialconstructor`."
         )
 
@@ -661,7 +661,7 @@ class Connection(Module, ABC):
         r"""Currents from the synapse at the time last used by the connection.
 
         Returns:
-            torch.Tensor: last used  synaptic currents.
+            torch.Tensor: delay-offset synaptic currents.
 
         Note:
             If :py:attr:`delayed` is None, this should return the most recent synaptic

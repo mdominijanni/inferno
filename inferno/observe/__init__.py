@@ -22,11 +22,14 @@ from .reducers.stats import (
 
 from .monitors import (
     Monitor,
+    ManagedMonitor,
     InputMonitor,
     OutputMonitor,
     StateMonitor,
+    DifferenceMonitor,
     PreMonitor,
     PostMonitor,
+    MonitorConstructor,
 )
 
 __all__ = [
@@ -41,9 +44,12 @@ __all__ = [
     "EventReducer",
     "PassthroughReducer",
     "Monitor",
+    "ManagedMonitor",
     "InputMonitor",
     "OutputMonitor",
     "StateMonitor",
+    "DifferenceMonitor",
     "PreMonitor",
     "PostMonitor",
+    "MonitorConstructor",
 ]
