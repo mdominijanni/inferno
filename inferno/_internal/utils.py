@@ -3,6 +3,53 @@ import torch
 from typing import Any
 
 
+class Proxy:
+    r"""Controlls access to nested members.
+
+    This prevents overwriting class attributes sent this way and can remap attributes.
+    The following example.
+
+    .. code-block:: python
+
+            self.layers = nn.ModuleDict()
+            self.layers["linear"] = nn.Linear(784, 10)
+
+            @property
+            def weight(self):
+                return Proxy(self.layers, 'linear')
+
+    When the user calls the ``weight`` property of that object, it returns a proxy
+    which will intercept any ``__getattr__`` calls and postpend the accessor. The
+    returned value of that call can then be put chained with other proxies for more
+    complex logic.
+
+    Args:
+        inner (Any): object to wrap.
+        firstacc (str | None): top level proxy attribute.
+        *otheracc (str | None): additional proxy attributes.
+
+    Note:
+        Each accessor can be a dot-seperated string of attributes.
+    """
+    def __init__(self, inner: Any, firstacc: str | None, *otheracc: str | None):
+        self.inner = inner
+        self.firstacc = firstacc
+        self.otheracc = otheracc
+
+    def __getattr__(self, attr: str) -> Any:
+        # first proxy step
+        if self.firstacc:
+            res = rgetattr(self.inner, attr + '.' + self.firstacc)
+        else:
+            res = rgetattr(self.inner, attr)
+
+        # optionally chain proxies
+        if self.otheracc:
+            return Proxy(res, self.otheracc[0], self.otheracc[1:])
+        else:
+            return res
+
+
 def regroup(
     flatseq: tuple[Any, ...], groups: tuple[int | tuple, ...]
 ) -> tuple[Any, ...]:

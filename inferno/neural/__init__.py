@@ -49,8 +49,6 @@ from .modeling import (
 from .hooks import (
     Normalization,
     Clamping,
-    RemoteNormalization,
-    RemoteClamping,
 )
 
 __all__ = [
@@ -77,6 +75,4 @@ __all__ = [
     "Layer",
     "Normalization",
     "Clamping",
-    "RemoteNormalization",
-    "RemoteClamping",
 ]

@@ -1,4 +1,5 @@
 from .utils import (
+    Proxy,
     regroup,
     newtensor,
     rgetattr,
@@ -20,6 +21,7 @@ from . import (
 
 __all__ = [
     "argtest",
+    "Proxy",
     "regroup",
     "newtensor",
     "rgetattr",

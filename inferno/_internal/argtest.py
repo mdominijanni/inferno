@@ -99,9 +99,7 @@ def ofsequence(
     )
 
 
-def onedefined(
-    *nvpairs: tuple[str, Any], prefix: str | None = None
-) -> tuple[Any, ...]:
+def onedefined(*nvpairs: tuple[str, Any], prefix: str | None = None) -> tuple[Any, ...]:
     r"""Checks if at least one value in a sequence is not None.
     Args:
         *nvpairs (tuple[str, Any]): tuples each containing the display name of a
@@ -680,8 +678,8 @@ def members(name: str, obj: Any, *attr: str, prefix: str | None = None) -> Any:
         )
 
 
-def nestedidentifier(name: str, value: str, prefix: str | None = None) -> str:
-    r"""Checks if a string is a valid identifier, or dot seperated identifiers.
+def identifier(name: str, value: str, prefix: str | None = None) -> str:
+    r"""Checks if a string is a valid identifier. Does not check for existance.
 
     Args:
         name (str): display name of the object being tested.
@@ -695,7 +693,29 @@ def nestedidentifier(name: str, value: str, prefix: str | None = None) -> str:
     if not isinstance(value, str):
         pfx = _prefixstr(prefix)
         raise TypeError(f"{pfx}'{name}' must be a string, but is a {_typename(value)}")
-    elif all(map(lambda s: not s.isidentifier(), value.split("."))):
+    elif not value.isidentifier():
+        val, pfx = _valuestr(value), _prefixstr(prefix)
+        raise ValueError(f"{pfx}'{name}' ({val}) is not a valid identifier")
+    else:
+        return value
+
+
+def nestedidentifier(name: str, value: str, prefix: str | None = None) -> str:
+    r"""Checks if a string is a valid identifier, or dot seperated identifiers. Does not check for existance.
+
+    Args:
+        name (str): display name of the object being tested.
+        value (str): value (Any): variable being testing.
+        prefix (str | None, optional): error message prefix to display.
+            Defaults to None.
+
+    Returns:
+        str: tested object.
+    """
+    if not isinstance(value, str):
+        pfx = _prefixstr(prefix)
+        raise TypeError(f"{pfx}'{name}' must be a string, but is a {_typename(value)}")
+    elif any(map(lambda s: not s.isidentifier(), value.split("."))):
         val, pfx = _valuestr(value), _prefixstr(prefix)
         raise ValueError(
             f"{pfx}'{name}' ({val}) is not a valid dot-seperated identifier"
