@@ -7,7 +7,7 @@ from .infrastructure import (
     HistoryModule,
 )
 
-from .math import (
+from .mathops import (
     exp,
     sqrt,
     normalize,

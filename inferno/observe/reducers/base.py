@@ -1,8 +1,8 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 import inferno
-from inferno import HistoryModule
-from inferno.typing import OneToOne
+from ... import HistoryModule
+from inferno.infernotypes import OneToOne
 import torch
 from typing import Callable
 

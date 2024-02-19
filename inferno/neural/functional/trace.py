@@ -1,5 +1,5 @@
 import torch
-from inferno.typing import OneToOne
+from inferno.infernotypes import OneToOne
 
 
 def trace_nearest(

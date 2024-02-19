@@ -1,5 +1,5 @@
 from functools import cached_property
-from inferno import DimensionalModule
+from .. import DimensionalModule
 from inferno._internal import instance_of, numeric_limit, multiple_numeric_limit
 import math
 

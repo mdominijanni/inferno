@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any, Callable
-from inferno import Hook
+from .. import Hook
 from itertools import zip_longest
 import torch
 import torch.nn as nn

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from inferno import DimensionalModule, HistoryModule, Module
+from .. import DimensionalModule, HistoryModule, Module
 import math
 from functools import cached_property
 import torch

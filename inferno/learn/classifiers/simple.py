@@ -1,5 +1,5 @@
 import einops as ein
-from inferno import Module
+from ... import Module
 from inferno._internal import numeric_limit, multiple_numeric_limit
 import torch
 import torch.nn as nn

@@ -1,4 +1,4 @@
-from .math import Interpolation
+from .mathops import Interpolation
 import attrs
 from abc import ABC, abstractmethod
 from collections import OrderedDict

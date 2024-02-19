@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Generator
-from inferno import Module
+from .. import Module
 from inferno.neural import Layer
 from inferno.observe import Monitor
 import itertools

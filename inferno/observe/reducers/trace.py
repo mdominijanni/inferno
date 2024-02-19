@@ -2,7 +2,7 @@ from .base import FoldingReducer
 import inferno
 from inferno._internal import numeric_limit
 import inferno.neural.functional as nf
-from inferno.typing import OneToOne
+from inferno.infernotypes import OneToOne
 import math
 import torch
 

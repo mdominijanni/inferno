@@ -1,7 +1,7 @@
 from __future__ import annotations
 from .base import FoldingReducer
 import inferno
-from inferno.typing import OneToOne
+from inferno.infernotypes import OneToOne
 import torch
 
 

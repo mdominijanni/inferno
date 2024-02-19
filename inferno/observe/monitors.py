@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from inferno import Module, Hook
+from .. import Module, Hook
 from inferno._internal import rgetattr
-from inferno.typing import ManyToOne
+from inferno.infernotypes import ManyToOne
 import torch
 from typing import Any, Callable, Protocol
 from . import Reducer

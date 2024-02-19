@@ -1,4 +1,4 @@
-from inferno import DimensionalModule, Module
+from ... import DimensionalModule, Module
 from inferno._internal import attr_members, instance_of
 import torch
 import torch.nn as nn

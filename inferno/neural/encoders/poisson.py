@@ -1,6 +1,6 @@
 from .. import functional as nf
 from .mixins import GeneratorMixin, RefractoryStepMixin
-from inferno import Module
+from ... import Module
 from inferno._internal import numeric_limit
 import torch
 from typing import Iterator

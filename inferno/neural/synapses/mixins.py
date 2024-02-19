@@ -1,6 +1,6 @@
-from inferno import HistoryModule, Interpolation
+from ... import HistoryModule, Interpolation
 from inferno._internal import instance_of, numeric_limit, attr_members
-from inferno.typing import OneToOne
+from inferno.infernotypes import OneToOne
 import torch
 import torch.nn as nn
 from typing import Any

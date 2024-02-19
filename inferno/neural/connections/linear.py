@@ -3,7 +3,7 @@ from ..base import Synapse  # noqa:F401, for docstrings
 from .mixins import WeightBiasDelayMixin
 import einops as ein
 from inferno._internal import numeric_limit, multiple_numeric_limit, regroup
-from inferno.typing import OneToOne
+from inferno.infernotypes import OneToOne
 import math
 import torch
 import torch.nn.functional as F

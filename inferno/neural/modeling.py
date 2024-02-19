@@ -2,14 +2,12 @@ from . import Connection, Neuron, Synapse
 from . import Normalization, Clamping  # noqa:F401; ignore, used for docs
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-import functools
 from inferno import Module
 from inferno._internal import argtest, rgetattr, Proxy
 from inferno.observe import ManagedMonitor, MonitorConstructor
 import torch
 import torch.nn as nn
 from typing import Any, Callable
-import warnings
 
 
 class Updater(Module):
@@ -341,26 +339,6 @@ class Updater(Module):
         """
         return self.connection_
 
-    @property
-    def weight(self) -> torch.Tensor:
-        return self.connection.weight
-
-    @property
-    def bias(self) -> torch.Tensor | None:
-        return self.connection.bias
-
-    @property
-    def delay(self) -> torch.Tensor | None:
-        return self.connection.delay
-
-    @property
-    def trainablebias(self) -> bool:
-        return self.bias is not None
-
-    @property
-    def trainabledelay(self) -> bool:
-        return self.delay is not None
-
     def _add_update(
         self, update: torch.Tensor | nn.Parameter, store: nn.ParameterList
     ) -> None:
@@ -535,6 +513,99 @@ class Trainable(Module):
         # key for automatic management
         self._layerkey = None
 
+    def add_monitor(
+        self, caller: str, name: str, attr: str, monitor: MonitorConstructor
+    ) -> ManagedMonitor:
+        r"""Adds a managed monitor associated with a trainer.
+
+        This works in conjunction with :py:class:`Layer` to ensure that the added
+        monitors are not duplicated if it is unneeded. This non-duplication is only
+        enforced across a single layer and single trainer.
+
+        For example, if a layer goes from two connections to one neuron, and both
+        resultant trainables are trained with the same trainer, both monitors have
+        equivalent attribute chains (defined by ``attr``), and the same name as
+        defined by ``name``, then rather than creating a new monitor, the existing one
+        will be returned.
+
+        The check of if two trainers are the same is based on the string passed as
+        ``caller``. Trainers should take this as a constructor argument, and as such,
+        it is possible to share monitors across trainers. This behavior is dangerous
+        and should only be done if it can be ensured this will not cause issues.
+
+        Because of this, ``name`` must also capture any information which may be unique
+        to a specific trainable.
+
+        All monitor's added this way will be added to the lifecycle of the ``Layer``
+        which created them.
+
+        Args:
+            caller (str): instance-name of the trainer which
+            name (str): name of the monitor to add.
+            attr (str): dot-seperated attribute path, relative to this trainable, to
+                monitor.
+            monitor (MonitorConstructor): partial constructor for the monitor to add.
+
+        Raises:
+            RuntimeError: attribute must be a member of this trainable.
+            RuntimeError: 'updater.connection' is the only valid head of the attribute
+                chain starting with 'updater'.
+
+        Returns:
+            ManagedMonitor: added monitor.
+        """
+        # check that the attribute is a valid dot-chain identifier
+        _ = argtest.nestedidentifier("attr", attr)
+
+        # split the identifier and check for ownership
+        attrchain = attr.split(".")
+
+        # ensure the top-level attribute is in this trainable
+        if not hasattr(self, attrchain[0]):
+            raise RuntimeError(
+                f"this trainable does not have an attribute '{attrchain[0]}'"
+            )
+
+        # remap the top-level target if pointing to a private attribute
+        attrchain[0] = {
+            "updater_": "updater",
+            "neuron_": "neuron",
+        }.get(attrchain[0], attrchain[0])
+
+        # special case targeting updater
+        if attrchain[0] == "updater":
+            if not attrchain[1:]:
+                raise RuntimeError(
+                    "'updater' itself cannot be the target for monitoring"
+                )
+            elif attrchain[1] in ("connection", "connection_"):
+                attrchain = ["connection"] + attrchain[2:]
+            else:
+                raise RuntimeError(
+                    "only 'connection' is a valid subtarget of 'updater'"
+                )
+
+        # test against Inferno-defined alias attributes
+        attrsub = {
+            "synapse": ["connection", "synapse"],
+            "precurrent": ["connection", "syncurrent"],
+            "prespike": ["connection", "synspike"],
+            "postvoltage": ["neuron", "voltage"],
+            "postspike": ["neuron", "spike"],
+        }.get(attrchain[0], [attrchain[0]])
+        attrchain = attrsub + attrchain[1:]
+
+        # split the chain into owner and target
+        match attrchain[0]:
+            case "connection":
+                owner, target = "connection", ".".join(attrchain[1:])
+            case "neuron":
+                owner, target = "neuron", ".".join(attrchain[1:])
+            case _:
+                owner, target = "trainable", ".".join(attrchain)
+
+        # use layer callback to add the monitor to its pool and return
+
     @property
     def _key(self) -> str | None:
         r"""Layer managed key.
@@ -651,6 +722,7 @@ class Layer(Module, ABC):
         self.updaters_ = nn.ModuleDict()
         self.neurons_ = nn.ModuleDict()
         self.trainables_ = nn.ModuleDict()
+        self.monitors_ = nn.ModuleDict()
 
     def add_input(self, name: str, module: Updater | Connection) -> Updater:
         r"""Adds a module that receives input from outside the layer.
@@ -697,6 +769,10 @@ class Layer(Module, ABC):
 
         Returns:
             Updater: added input module.
+
+        Tip:
+            If an input module is to be added to multiple :py:class:`Layer` objects,
+            then it should be passed to all of them as the same ``Updater`` object.
         """
         # test that the name is a valid identifier
         _ = argtest.identifier("name", name)
@@ -775,6 +851,27 @@ class Layer(Module, ABC):
         # return assigned value
         return self.neurons_[name]
 
+    def add_monitor(
+        self,
+        pool: str,
+        name: str,
+        attr: str,
+        monitor: MonitorConstructor,
+    ) -> ManagedMonitor:
+        r"""Adds a managed monitor to the layer.
+
+        Args:
+            pool (str): name of the pool to which this monitor will be added.
+            name (str): name of the monitor to add.
+            attr (str): dot-chained attribute path relative to the layer.
+            monitor (MonitorConstructor): partial constructor for the monitor.
+
+        Returns:
+            ManagedMonitor: newly constructed monitor if not found, otherwise a
+            reference to the existing monitor.
+        """
+        pass
+
     @property
     def innames(self) -> Iterable[str]:
         r"""Registered input names.
@@ -817,6 +914,35 @@ class Layer(Module, ABC):
             Proxy: safe access to registered connections.
         """
         return Proxy(self.updaters_, "connection")
+
+    @property
+    def named_connections(self) -> Iterable[tuple[str, Connection]]:
+        r"""Iterable of registered connections and their names.
+
+        Yields:
+            tuple[str, Connection]: tuple of a registered connection and its name.
+        """
+        return ((k, v.connection) for k, v in self.updaters_.items())
+
+    @property
+    def monitors(self) -> Proxy:
+        r"""Registred monitors.
+
+        Monitors are not directly added by the user but are added by trainers, through
+        a callback in :py:class:`Trainable` objects. For a given name associated with
+        a trainer (``pool``), and the name assigned to that monitor
+
+        .. code-block:: python
+
+            layer.neurons.name
+
+        It can be modified in-place (including setting other attributes, adding
+        monitors, etc), but it can neither be deleted nor reassigned.
+
+        Returns:
+            Proxy: safe access to registered neurons.
+        """
+        return Proxy(self.neurons_, "")
 
     @property
     def named_connections(self) -> Iterable[tuple[str, Connection]]:
@@ -1021,95 +1147,20 @@ class Layer(Module, ABC):
             return res
 
 
-class HomogeneousLayer(Layer, ABC):
-
-    def __init__(self):
-
-        # call superclass constructor
-        Layer.__init__(self)
-
-
 class Serial(Layer):
 
-    def __init__(self, inputs: Updater | Connection, outputs: Neuron):
+    def __init__(
+        self,
+        inputs: Updater | Connection,
+        outputs: Neuron,
+        op: Callable[[torch.Tensor], torch.Tensor] | None = None,
+    ):
 
         # call superclass constructor
         Layer.__init__(self)
 
         # add connection and neuron
         Layer.add_input(self)
-
-    def add_input(self, name: str, module: Updater | Connection) -> Updater:
-        r"""Adds a module that receives input from outside the layer.
-
-        This registers either a :py:class:`Connection` or :py:class:`Updater` as a
-        module that receives input from outside of the layer. If the module given is
-        not an ``Updater``, this will wrap it in one before registering. This will be
-        visible to PyTorch as a submodule.
-
-        This can be accessed later as an ``Updater`` via :py:attr:`updaters`,
-
-        .. code-block:: python
-
-            layer.updaters.name
-
-        a ``Connection`` via :py:attr:`connections`,
-
-        .. code-block:: python
-
-            layer.connections.name
-
-        or a ``Synapse`` via :py:attr:`synapses`.
-
-        .. code-block:: python
-
-            layer.synapses.name
-
-        Any :py:class:`Trainable` objects are also constructed from this input to all
-        existing outputs. For each output with name ``output_name``, it can be accessed
-        via :py:attr:`trainables` as follows.
-
-        .. code-block:: python
-
-            layer.trainables.name.output_name
-
-        Args:
-            name (str): attribute name of the module receiving input from
-                outside the layer.
-            module (Updater | Connection): module which receives the input and
-                generates intermediate output.
-
-        Raises:
-            RuntimeError: the name must be unique amongst added inputs.
-
-        Returns:
-            Updater: added input module.
-        """
-        # test that the name is a valid identifier
-        _ = argtest.identifier("name", name)
-
-        # check that the name is not taken
-        if name in self.updaters_:
-            raise RuntimeError(f"'name' ('{name}') already assigned to an input")
-
-        # wraps connection if it is not an updater and assigns
-        if not isinstance(module, Updater):
-            self.updaters_[name] = Updater(module)
-        else:
-            self.updaters_[name] = module
-
-        # automatically add trainables
-        if name in self.trainables_:
-            raise RuntimeError(f"'name' ('{name}') already a first-order trainable key")
-        else:
-            self.trainables_[name] = nn.ModuleDict()
-            for oname, neuron in self.neurons_.items():
-                trainable = Trainable(self.updaters_[name], neuron)
-                trainable._key = f"{name}.{oname}"
-                self.trainables_[name][oname] = trainable
-
-        # return assigned value
-        return self.updaters_[name]
 
     def add_input(self):
         raise RuntimeError(
@@ -1126,9 +1177,17 @@ class Biclique(Layer):
 
     def __init__(
         self,
-        inputs: tuple[tuple[str, Updater | Connection], ...],
-        outputs: tuple[tuple[str, Neuron], ...],
-        reduction: None,
+        inputs: tuple[
+            tuple[str, Updater | Connection]
+            | tuple[str, Updater | Connection, Callable[[torch.Tensor], torch.Tensor]],
+            ...,
+        ],
+        outputs: tuple[
+            tuple[str, Neuron]
+            | tuple[str, Neuron, Callable[[torch.Tensor], torch.Tensor]],
+            ...,
+        ],
+        reduction: Callable[[torch.Tensor, int], torch.Tensor] | None = None,
     ):
         # superclass constructor
         Layer.__init__(self)
@@ -1143,156 +1202,3 @@ class Biclique(Layer):
 
     def wiring(self, inputs: dict[str, torch.Tensor]):
         pass
-
-
-class SerialLayer(Module):
-    r"""Container for sequential Connection and Neuron objects.
-
-    This is used as the base building block of spiking neural networks in Inferno,
-    and is used for training models.
-
-    Args:
-        connection (Connection): connection between the layer inputs and the neurons.
-        neuron (Neuron): neurons which take their input from the connection and their
-            output is returned.
-        connection_kwargs (dict[str, str] | None, optional): keyword argument
-                mapping for connection methods. Defaults to None.
-        neuron_kwargs (dict[str, str] | None, optional): keyword argument
-                mapping for neuron methods. Defaults to None.
-
-    Note:
-        The keyword argument mappings are a dictionary, where the key is a
-        kwarg in a :py:class:`Layer` method, and the corresponding value is
-        the name for that kwarg which will be passed to the dependent method in
-        in the :py:class:`Connection` or :py:meth:`Neuron`.
-
-        When None, *all kwargs* are passed in. Included classes in Inferno are
-        written to avoid conflicts, but that is not always guaranteed.
-
-    Tip:
-        The composed :py:class:`Neuron` does not need to be unique to this layer, and
-        some architectures explicitly have multiple connections going to the same
-        group of neurons. The uniqueness of the composed :py:class:`Connection` is
-        not enforced, but unexpected behavior may occur if it is not unique.
-    """
-
-    def __init__(
-        self,
-        connection: Connection,
-        neuron: Neuron,
-        connection_kwargs: dict[str, str] | None = None,
-        neuron_kwargs: dict[str, str] | None = None,
-    ):
-        Module.__init__(self)
-        # warn if connection and neuron are inconsistent
-        if connection.dt != neuron.dt:
-            warnings.warn(
-                f"inconsistent step times, {connection.dt} "
-                f"for connection and {neuron.dt} for neuron."
-            )
-
-        # error if incompatible
-        if connection.bsize != neuron.bsize:
-            raise RuntimeError(
-                f"incompatible batch sizes, {connection.bsize} "
-                f"for connection and {neuron.bsize} for neuron."
-            )
-
-        if connection.outshape != neuron.shape:
-            raise RuntimeError(
-                f"incompatible shapes, {connection.outshape} "
-                f"for connection output and {neuron.shape} for neuron."
-            )
-
-        # register submodules
-        self.register_module("connection_", connection)
-        self.register_module("neuron_", neuron)
-
-        # keyword argument mapping functions
-        def filterkwargs(kwargs: dict[str, Any], kwamap: dict[str, str | str]):
-            return {
-                kwamap.get(arg): val for arg, val in kwargs.values() if arg in kwamap
-            }
-
-        # kwarg mapping for connection
-        if connection_kwargs is None:
-            self.kwargmap_c = lambda x: x
-        else:
-            self.kwargmap_c = functools.partial(filterkwargs, connection_kwargs)
-
-        # kwarg mapping for neuron
-        if neuron_kwargs is None:
-            self.kwargmap_n = lambda x: x
-        else:
-            self.kwargmap_n = functools.partial(filterkwargs, neuron_kwargs)
-
-    @property
-    def connection(self) -> Connection:
-        r"""Connection submodule.
-
-        Args:
-            value (Connection): replacement connection.
-
-        Returns:
-            Connection: existing connection.
-        """
-        return self.connection_
-
-    @connection.setter
-    def connection(self, value: Neuron):
-        self.connection_ = value
-
-    @property
-    def neuron(self) -> Neuron:
-        r"""Neuron submodule.
-
-        Args:
-            value (Neuron): replacement neuron.
-
-        Returns:
-            Neuron: existing neuron.
-        """
-        return self.neuron_
-
-    @neuron.setter
-    def neuron(self, value: Connection):
-        self.neuron_ = value
-
-    @property
-    def synapse(self) -> Synapse:
-        r"""Synapse submodule.
-
-        Args:
-            value (Synapse): replacement synapse.
-
-        Returns:
-            Synapse: existing synapse.
-        """
-        return self.connection_.synapse
-
-    @synapse.setter
-    def synapse(self, value: Synapse):
-        self.connection_.synapse = value
-
-    def clear(self, **kwargs):
-        r"""Resets connections and neurons to their resting state.
-
-        Keyword arguments are filtered and then passed to :py:meth:`Connection.clear`
-        and :py:meth:`Neuron.clear`.
-        """
-        self.connection.clear(**self.kwargmap_c(kwargs))
-        self.neuron.clear(**self.kwargmap_n(kwargs))
-
-    def forward(self, *inputs, **kwargs):
-        r"""Runs a simulation step of the connection and then the neurons.
-
-        Keyword arguments are filtered and then passed to :py:meth:`Connection.forward`
-        and :py:meth:`Neuron.forward`. It is expected that :py:meth:`Connection.forward`
-        outputs a single tensor and :py:meth:`Neuron.forward` and takes a single
-        positional argument. The output of the former is used for the input of the
-        latter.
-        """
-        return self.neuron(
-            self.connection(*inputs, **self.kwargmap_c(kwargs)),
-            **self.kwargmap_n(kwargs),
-        )

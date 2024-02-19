@@ -1,4 +1,4 @@
-from inferno import StateHook, normalize
+from .. import StateHook, normalize
 from inferno._internal import argtest, rgetattr, rsetattr
 import torch
 import torch.nn as nn
