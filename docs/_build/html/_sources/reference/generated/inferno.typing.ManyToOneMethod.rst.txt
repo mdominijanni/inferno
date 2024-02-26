@@ -1,8 +1,0 @@
-﻿ManyToOneMethod
-===============
-
-.. currentmodule:: inferno.typing
-
-.. autoclass:: ManyToOneMethod
-    :members:
-    :show-inheritance:

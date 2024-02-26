@@ -1,0 +1,8 @@
+﻿OneToOne
+========
+
+.. currentmodule:: inferno.infernotypes
+
+.. autoclass:: OneToOne
+    :members:
+    :show-inheritance:

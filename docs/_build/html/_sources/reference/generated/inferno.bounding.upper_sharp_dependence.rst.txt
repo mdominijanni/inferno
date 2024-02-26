@@ -1,0 +1,6 @@
+﻿upper\_sharp\_dependence
+========================
+
+.. currentmodule:: inferno.bounding
+
+.. autofunction:: upper_sharp_dependence

@@ -1,0 +1,8 @@
+﻿ManyToManyMethod
+================
+
+.. currentmodule:: inferno.infernotypes
+
+.. autoclass:: ManyToManyMethod
+    :members:
+    :show-inheritance:

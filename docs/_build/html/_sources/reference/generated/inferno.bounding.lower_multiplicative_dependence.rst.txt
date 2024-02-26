@@ -1,0 +1,6 @@
+﻿lower\_multiplicative\_dependence
+=================================
+
+.. currentmodule:: inferno.bounding
+
+.. autofunction:: lower_multiplicative_dependence

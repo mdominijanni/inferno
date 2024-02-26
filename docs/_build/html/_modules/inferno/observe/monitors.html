@@ -164,7 +164,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/infernotypes.html">inferno.infernotypes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -218,12 +219,14 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.observe.monitors</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">Module</span><span class="p">,</span> <span class="n">Hook</span>
+<span></span><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Reducer</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Module</span><span class="p">,</span> <span class="n">Hook</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">rgetattr</span>
-<span class="kn">from</span> <span class="nn">inferno.typing</span> <span class="kn">import</span> <span class="n">ManyToOne</span>
+<span class="kn">from</span> <span class="nn">inferno.infernotypes</span> <span class="kn">import</span> <span class="n">ManyToOne</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Reducer</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Protocol</span>
+<span class="kn">import</span> <span class="nn">weakref</span>
 
 
 <div class="viewcode-block" id="Monitor">
@@ -343,6 +346,10 @@
 <span class="sd">        mapping (ManyToOne[torch.Tensor] | None, optional): modifies/selects</span>
 <span class="sd">            which inputs to forward to reducer. Defaults to None.</span>
 
+<span class="sd">    Caution:</span>
+<span class="sd">        When implementing custom updaters, :py:class:`InputMonitor` should never be</span>
+<span class="sd">        used. Use either :py:class:`StateMonitor` or :py:class:`DifferenceMonitor`.</span>
+
 <span class="sd">    Note:</span>
 <span class="sd">        The inputs, which are received as a tuple, will be unpacked and sent to</span>
 <span class="sd">        the reducer. If there is only one input tensor, this will work as expected.</span>
@@ -362,13 +369,13 @@
         <span class="c1"># determine arguments for superclass constructor</span>
         <span class="k">if</span> <span class="n">mapping</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-                <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
+            <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">fwdargs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="o">*</span><span class="n">fwdargs</span><span class="p">))</span>
 
         <span class="k">else</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-                <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">fwdargs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">fwdargs</span><span class="p">)</span>
 
         <span class="c1"># construct superclass</span>
         <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -402,6 +409,10 @@
 <span class="sd">        mapping (Callable[[Any], torch.Tensor] | None, optional): modifies/selects</span>
 <span class="sd">            which outputs to forward to the reducer. Defaults to None.</span>
 
+<span class="sd">    Caution:</span>
+<span class="sd">        When implementing custom updaters, :py:class:`OutputMonitor` should never be</span>
+<span class="sd">        used. Use either :py:class:`StateMonitor` or :py:class:`DifferenceMonitor`.</span>
+
 <span class="sd">    Note:</span>
 <span class="sd">        The output depends on the :py:meth:`~torch.nn.Module.forward` of the</span>
 <span class="sd">        :py:class:`~torch.nn.Module` being called. If it a single tensor, it will</span>
@@ -421,12 +432,12 @@
         <span class="c1"># determine arguments for superclass constructor</span>
         <span class="k">if</span> <span class="n">mapping</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">fwdargs</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
                 <span class="n">reducer</span><span class="p">(</span><span class="n">mapping</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
 
         <span class="k">else</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">fwdargs</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
                 <span class="n">reducer</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
 
         <span class="c1"># construct superclass</span>
@@ -442,9 +453,140 @@
 
 
 
+<span class="k">class</span> <span class="nc">MonitorConstructor</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Common constructor for managed monitors, used in updaters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        regattr (str): attribute or nested attribute to target.</span>
+<span class="sd">        regmodule (Module): module to register as the target for monitoring.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Monitor: newly constructed monitor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Monitor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Callback protocol function&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+
+<div class="viewcode-block" id="ManagedMonitor">
+<a class="viewcode-back" href="../../../reference/generated/inferno.observe.ManagedMonitor.html#inferno.observe.ManagedMonitor">[docs]</a>
+<span class="k">class</span> <span class="nc">ManagedMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Monitors with construction which can be managed by other modules.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
+<span class="sd">            and storing them.</span>
+<span class="sd">        module (Module | None, optional): module to register as the target for monitoring,</span>
+<span class="sd">            can be modified after construction. Defaults to None.</span>
+<span class="sd">        prehook (Callable | None, optional): function to call before hooked&#39;s</span>
+<span class="sd">            :py:meth:`~torch.nn.Module.forward`. Defaults to None.</span>
+<span class="sd">        posthook (Callable | None, optional): function to call after hooked&#39;s</span>
+<span class="sd">            :py:meth:`~torch.nn.Module.forward`. Defaults to None.</span>
+<span class="sd">        prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to</span>
+<span class="sd">            :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to None.</span>
+<span class="sd">        posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to</span>
+<span class="sd">            :py:meth:`~torch.nn.Module.register_forward_hook`. Defaults to None.</span>
+<span class="sd">        train_update (bool, optional): if this monitor should be called when the module</span>
+<span class="sd">            being monitored is in train mode. Defaults to True.</span>
+<span class="sd">        eval_update (bool, optional): if this monitor should be called when the module</span>
+<span class="sd">            being monitored is in eval mode. Defaults to True.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        This keeps the same constructor signature as :py:class:`Monitor` and when the</span>
+<span class="sd">        constructor is called directly will behave like a :py:class:`Monitor`.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        See :py:meth:`~torch.nn.Module.register_forward_pre_hook` and</span>
+<span class="sd">        :py:meth:`~torch.nn.Module.register_forward_hook` for keyword arguments that</span>
+<span class="sd">        can be passed with ``prehook_kwargs`` and ``posthook_kwargs`` respectively.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
+        <span class="n">module</span><span class="p">:</span> <span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">prehook</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">posthook</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">prehook_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">posthook_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
+            <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
+            <span class="n">prehook</span><span class="o">=</span><span class="n">prehook</span><span class="p">,</span>
+            <span class="n">posthook</span><span class="o">=</span><span class="n">posthook</span><span class="p">,</span>
+            <span class="n">prehook_kwargs</span><span class="o">=</span><span class="n">prehook_kwargs</span><span class="p">,</span>
+            <span class="n">posthook_kwargs</span><span class="o">=</span><span class="n">posthook_kwargs</span><span class="p">,</span>
+            <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
+            <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">module</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_monitored_ref</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ManagedMonitor.partialconstructor">
+<a class="viewcode-back" href="../../../reference/generated/inferno.observe.ManagedMonitor.html#inferno.observe.ManagedMonitor.partialconstructor">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``partialconstructor`` must be implemented</span>
+<span class="sd">                by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(ManagedMonitor) must implement &quot;</span>
+            <span class="s2">&quot;the method `partialconstructor`.&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManagedMonitor.register">
+<a class="viewcode-back" href="../../../reference/generated/inferno.observe.ManagedMonitor.html#inferno.observe.ManagedMonitor.register">[docs]</a>
+    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registers the monitor as a forward hook/prehook.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            module (Module | None, optional): module with which to register, last</span>
+<span class="sd">                registered if None. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: weak reference to the last referenced module is no longer</span>
+<span class="sd">                valid or did not exist</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get module from weakref if required</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">module</span><span class="p">:</span>
+            <span class="c1"># don&#39;t duplicate register call if module is unspecified</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitored_ref</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitored_ref</span><span class="p">():</span>
+                    <span class="n">module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitored_ref</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                            <span class="s2">&quot;weak reference to monitored module does not exist, &quot;</span>
+                            <span class="s2">&quot;cannot infer argument &#39;module&#39;&quot;</span>
+                        <span class="p">)</span>
+
+        <span class="c1"># register using superclass</span>
+        <span class="n">Monitor</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
+
+        <span class="c1"># update stored weak reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_monitored_ref</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">module</span><span class="p">)</span></div>
+</div>
+
+
+
 <div class="viewcode-block" id="StateMonitor">
 <a class="viewcode-back" href="../../../reference/generated/inferno.observe.StateMonitor.html#inferno.observe.StateMonitor">[docs]</a>
-<span class="k">class</span> <span class="nc">StateMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">StateMonitor</span><span class="p">(</span><span class="n">ManagedMonitor</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records the state of an attribute in a Module.</span>
 
 <span class="sd">    Args:</span>
@@ -453,6 +595,8 @@
 <span class="sd">        attr (str): attribute or nested attribute to target.</span>
 <span class="sd">        module (Module, optional): module to register as the target for monitoring,</span>
 <span class="sd">            can be modified after construction. Defaults to None.</span>
+<span class="sd">        as_prehook (bool, optional): if this monitor should be called before the forward</span>
+<span class="sd">            call of the module being monitored. Defaults to False.</span>
 <span class="sd">        train_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in train mode. Defaults to True.</span>
 <span class="sd">        eval_update (bool, optional): if this monitor should be called when the module</span>
@@ -481,7 +625,7 @@
         <span class="c1"># determine arguments for superclass constructor</span>
         <span class="k">if</span> <span class="n">as_prehook</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
                 <span class="n">reducer</span><span class="p">(</span><span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
 
             <span class="n">prehook_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span>
@@ -489,14 +633,14 @@
 
         <span class="k">else</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
                 <span class="n">reducer</span><span class="p">(</span><span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
 
             <span class="n">posthook_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span>
             <span class="n">prehook</span><span class="p">,</span> <span class="n">prehook_kwargs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="c1"># construct superclass</span>
-        <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="n">ManagedMonitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
             <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
@@ -506,7 +650,159 @@
             <span class="n">posthook_kwargs</span><span class="o">=</span><span class="n">posthook_kwargs</span><span class="p">,</span>
             <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
             <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="StateMonitor.partialconstructor">
+<a class="viewcode-back" href="../../../reference/generated/inferno.observe.StateMonitor.html#inferno.observe.StateMonitor.partialconstructor">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
+        <span class="n">as_prehook</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reducer (Reducer): underlying means for reducing samples over time</span>
+<span class="sd">                and storing them.</span>
+<span class="sd">            as_prehook (bool, optional): if this monitor should be called before the</span>
+<span class="sd">                forward call of the module being monitored. Defaults to False.</span>
+<span class="sd">            train_update (bool, optional): if this monitor should be called when the</span>
+<span class="sd">                module being monitored is in train mode. Defaults to True.</span>
+<span class="sd">            eval_update (bool, optional): if this monitor should be called when the</span>
+<span class="sd">                module being monitored is in eval mode. Defaults to True.</span>
+<span class="sd">            prepend (bool, optional): if this monitor should be called before other</span>
+<span class="sd">                registered forward prehooks or posthooks. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MonitorConstructor: partial constructor for monitor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">constructor</span><span class="p">(</span><span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+                <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
+                <span class="n">attr</span><span class="o">=</span><span class="n">attr</span><span class="p">,</span>
+                <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
+                <span class="n">as_prehook</span><span class="o">=</span><span class="n">as_prehook</span><span class="p">,</span>
+                <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
+                <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
+                <span class="n">prepend</span><span class="o">=</span><span class="n">prepend</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">constructor</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DifferenceMonitor">
+<a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor">[docs]</a>
+<span class="k">class</span> <span class="nc">DifferenceMonitor</span><span class="p">(</span><span class="n">ManagedMonitor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Records the difference of an attribute in a Module before and after its forward call.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
+<span class="sd">            and storing them.</span>
+<span class="sd">        attr (str): attribute or nested attribute to target.</span>
+<span class="sd">        module (Module, optional): module to register as the target for monitoring,</span>
+<span class="sd">            can be modified after construction. Defaults to None.</span>
+<span class="sd">        train_update (bool, optional): if this monitor should be called when the module</span>
+<span class="sd">            being monitored is in train mode. Defaults to True.</span>
+<span class="sd">        eval_update (bool, optional): if this monitor should be called when the module</span>
+<span class="sd">            being monitored is in eval mode. Defaults to True.</span>
+<span class="sd">        prepend (bool, optional): if this monitor should be called before other</span>
+<span class="sd">            registered forward prehooks or posthooks. Defaults to False.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The nested attribute should be specified with dot notation. For instance,</span>
+<span class="sd">        if the observed module has an attribute ``a`` which in turn has an</span>
+<span class="sd">        attribute ``b`` that should be monitored, then ``attr`` should be</span>
+<span class="sd">        `&#39;a.b&#39;``. Even with nested attributes, the monitor&#39;s hook will be tied to</span>
+<span class="sd">        the module with which it is registered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
+        <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">module</span><span class="p">:</span> <span class="n">Module</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># monitor state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># hook functions</span>
+        <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># construct superclass</span>
+        <span class="n">ManagedMonitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
+            <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
+            <span class="n">prehook</span><span class="o">=</span><span class="n">prehook</span><span class="p">,</span>
+            <span class="n">posthook</span><span class="o">=</span><span class="n">posthook</span><span class="p">,</span>
+            <span class="n">prehook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">},</span>
+            <span class="n">posthook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">},</span>
+            <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
+            <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="DifferenceMonitor.partialconstructor">
+<a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor.partialconstructor">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
+        <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reducer (Reducer): underlying means for reducing samples over time</span>
+<span class="sd">                and storing them.</span>
+<span class="sd">            train_update (bool, optional): if this monitor should be called when the</span>
+<span class="sd">                module being monitored is in train mode. Defaults to True.</span>
+<span class="sd">            eval_update (bool, optional): if this monitor should be called when the</span>
+<span class="sd">                module being monitored is in eval mode. Defaults to True.</span>
+<span class="sd">            prepend (bool, optional): if this monitor should be called before other</span>
+<span class="sd">                registered forward prehooks or posthooks. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MonitorConstructor: partial constructor for monitor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">constructor</span><span class="p">(</span><span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+                <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
+                <span class="n">attr</span><span class="o">=</span><span class="n">attr</span><span class="p">,</span>
+                <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
+                <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
+                <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
+                <span class="n">prepend</span><span class="o">=</span><span class="n">prepend</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">constructor</span></div>
+
+
+<div class="viewcode-block" id="DifferenceMonitor.clear">
+<a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor.clear">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears monitor state and reinitializes the reducer&#39;s state.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</div>
 
 
 

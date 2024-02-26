@@ -43,7 +43,11 @@ from .encoders.special import (
 )
 
 from .modeling import (
+    Updater,
+    Trainable,
     Layer,
+    Biclique,
+    Serial,
 )
 
 from .hooks import (
@@ -72,7 +76,11 @@ __all__ = [
     "LinearDirect",
     "LinearLateral",
     "Conv2D",
+    "Updater",
+    "Trainable",
     "Layer",
+    "Biclique",
+    "Serial",
     "Normalization",
     "Clamping",
 ]

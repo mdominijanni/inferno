@@ -2,7 +2,7 @@
 <html class="no-js" lang="en" data-content_root="../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="FoldingReducer" href="inferno.observe.FoldingReducer.html" /><link rel="prev" title="PostMonitor" href="inferno.observe.PostMonitor.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
@@ -165,7 +165,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../learn.html">inferno.learn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../infernotypes.html">inferno.infernotypes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -223,7 +224,7 @@
 <h1>FoldReducer<a class="headerlink" href="#foldreducer" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.observe.FoldReducer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FoldReducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">fold_fn:</span> <span class="pre">~typing.Callable[[~torch.Tensor</span> <span class="pre">|</span> <span class="pre">None,</span> <span class="pre">~torch.Tensor],</span> <span class="pre">~torch.Tensor],</span> <span class="pre">step_time:</span> <span class="pre">float,</span> <span class="pre">history_len:</span> <span class="pre">float,</span> <span class="pre">*,</span> <span class="pre">interpolation:</span> <span class="pre">~inferno.math.Interpolation</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">interp_nearest&gt;,</span> <span class="pre">initializer:</span> <span class="pre">~inferno.typing.functional.OneToOne[~torch.Tensor]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#FoldReducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.FoldReducer" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FoldReducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">fold_fn:</span> <span class="pre">~typing.Callable[[~torch.Tensor</span> <span class="pre">|</span> <span class="pre">None,</span> <span class="pre">~torch.Tensor],</span> <span class="pre">~torch.Tensor],</span> <span class="pre">step_time:</span> <span class="pre">float,</span> <span class="pre">history_len:</span> <span class="pre">float,</span> <span class="pre">*,</span> <span class="pre">interpolation:</span> <span class="pre">~inferno.mathops.Interpolation</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">interp_nearest&gt;,</span> <span class="pre">initializer:</span> <span class="pre">~inferno.infernotypes.functional.OneToOne[~torch.Tensor]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#FoldReducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.FoldReducer" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="inferno.observe.Reducer.html#inferno.observe.Reducer" title="inferno.observe.reducers.base.Reducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Reducer</span></code></a></p>
 <p>Applies a function between the most recent previously stored data and a new observation.</p>
 <dl class="field-list simple">
@@ -237,7 +238,7 @@ returning the new state.</p></li>
 <li><p><strong>interpolation</strong> (<a class="reference internal" href="inferno.Interpolation.html#inferno.Interpolation" title="inferno.Interpolation"><em>inferno.Interpolation</em></a><em>, </em><em>optional</em>) – interpolation function to use
 when retrieving data between observations.
 Defaults to <a class="reference internal" href="inferno.interp_nearest.html#inferno.interp_nearest" title="inferno.interp_nearest"><code class="xref py py-func docutils literal notranslate"><span class="pre">inferno.interp_nearest()</span></code></a>.</p></li>
-<li><p><strong>initializer</strong> (<a class="reference internal" href="inferno.typing.OneToOne.html#inferno.typing.OneToOne" title="inferno.typing.OneToOne"><em>OneToOne</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – function to set the
+<li><p><strong>initializer</strong> (<a class="reference internal" href="inferno.infernotypes.OneToOne.html#inferno.infernotypes.OneToOne" title="inferno.infernotypes.OneToOne"><em>OneToOne</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – function to set the
 initial state, zeroes when None. Defaults to None.</p></li>
 </ul>
 </dd>

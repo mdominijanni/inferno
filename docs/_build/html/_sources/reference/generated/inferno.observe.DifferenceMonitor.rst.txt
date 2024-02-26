@@ -1,0 +1,8 @@
+﻿DifferenceMonitor
+=================
+
+.. currentmodule:: inferno.observe
+
+.. autoclass:: DifferenceMonitor
+    :members:
+    :show-inheritance:

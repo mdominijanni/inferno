@@ -1,0 +1,8 @@
+﻿Trainable
+=========
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: Trainable
+    :members:
+    :show-inheritance:

@@ -1,0 +1,6 @@
+﻿lower\_power\_dependence
+========================
+
+.. currentmodule:: inferno.bounding
+
+.. autofunction:: lower_power_dependence

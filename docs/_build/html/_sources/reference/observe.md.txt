@@ -11,6 +11,7 @@
     :toctree: generated
 
     Monitor
+    ManagedMonitor
     Reducer
 ```
 
@@ -23,6 +24,7 @@
     InputMonitor
     OutputMonitor
     StateMonitor
+    DifferenceMonitor
     PreMonitor
     PostMonitor
 ```
@@ -42,4 +44,9 @@
     ScaledNearestTraceReducer
     ScaledCumulativeTraceReducer
     EMAReducer
+```
+
+## Types
+```{eval-rst}
+    MonitorConstructor
 ```

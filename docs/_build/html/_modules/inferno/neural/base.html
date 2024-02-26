@@ -164,7 +164,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/infernotypes.html">inferno.infernotypes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -220,7 +221,7 @@
           <h1>Source code for inferno.neural.base</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">DimensionalModule</span><span class="p">,</span> <span class="n">HistoryModule</span><span class="p">,</span> <span class="n">Module</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">DimensionalModule</span><span class="p">,</span> <span class="n">HistoryModule</span><span class="p">,</span> <span class="n">Module</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -406,7 +407,7 @@
 <div class="viewcode-block" id="SynapseConstructor">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.SynapseConstructor.html#inferno.neural.SynapseConstructor">[docs]</a>
 <span class="k">class</span> <span class="nc">SynapseConstructor</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Common constructor for synapses, used by :py:class:`Connection` objects.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Common constructor for synapses, used by :py:class:`Connection` objects.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of synapses,</span>
@@ -459,7 +460,7 @@
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.partialconstructor">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynapseConstructor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynapseConstructor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for synapse construction.</span>
 
 <span class="sd">        Raises:</span>
@@ -470,7 +471,7 @@
 <span class="sd">           SynapseConstructor: partial constructor for synapses of a given class.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
             <span class="s2">&quot;the method `partialconstructor`.&quot;</span>
         <span class="p">)</span></div>
 
@@ -916,7 +917,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents from the synapse at the time last used by the connection.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: last used  synaptic currents.</span>
+<span class="sd">            torch.Tensor: delay-offset synaptic currents.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            If :py:attr:`delayed` is None, this should return the most recent synaptic</span>

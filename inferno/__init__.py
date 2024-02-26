@@ -35,10 +35,12 @@ from .tensor import (
 
 from . import (
     stats,
+    bounding,
 )
 
 __all__ = [
     "stats",
+    "bounding",
     "Module",
     "Configuration",
     "Hook",

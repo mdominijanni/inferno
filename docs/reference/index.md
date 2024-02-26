@@ -9,6 +9,7 @@ neural-functional
 learn
 learn-functional
 observe
-typing
+infernotypes
+bounding
 stats
 ```

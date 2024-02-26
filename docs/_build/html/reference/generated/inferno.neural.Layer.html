@@ -2,8 +2,8 @@
 <html class="no-js" lang="en" data-content_root="../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="LIF" href="inferno.neural.LIF.html" /><link rel="prev" title="Connection" href="inferno.neural.Connection.html" />
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Biclique" href="inferno.neural.Biclique.html" /><link rel="prev" title="inferno.neural" href="../neural.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>Layer - Inferno</title>
@@ -165,7 +165,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../learn.html">inferno.learn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../infernotypes.html">inferno.infernotypes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -223,106 +224,350 @@
 <h1>Layer<a class="headerlink" href="#layer" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.neural.Layer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.base.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.base.Neuron"><span class="pre">Neuron</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
-<p>Container for sequential Connection and Neuron objects.</p>
-<p>This is used as the base building block of spiking neural networks in Inferno,
-and is used for training models.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Layer</span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<p>Representation of simultaneously processed connections and neurons.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.add_input">
+<span class="sig-name descname"><span class="pre">add_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.modeling.Updater"><span class="pre">Updater</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.base.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.modeling.Updater"><span class="pre">Updater</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Layer.add_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.add_input" title="Link to this definition">#</a></dt>
+<dd><p>Adds a module that receives input from outside the layer.</p>
+<p>This registers either a <a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> or <a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater"><code class="xref py py-class docutils literal notranslate"><span class="pre">Updater</span></code></a> as a
+module that receives input from outside of the layer. If the module given is
+not an <code class="docutils literal notranslate"><span class="pre">Updater</span></code>, this will wrap it in one before registering. This will be
+visible to PyTorch as a submodule.</p>
+<p>This can be accessed later as an <code class="docutils literal notranslate"><span class="pre">Updater</span></code> via <a class="reference internal" href="#inferno.neural.Layer.updaters" title="inferno.neural.Layer.updaters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">updaters</span></code></a>,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">updaters</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+</div>
+<p>a <code class="docutils literal notranslate"><span class="pre">Connection</span></code> via <a class="reference internal" href="#inferno.neural.Layer.connections" title="inferno.neural.Layer.connections"><code class="xref py py-attr docutils literal notranslate"><span class="pre">connections</span></code></a>,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+</div>
+<p>or a <code class="docutils literal notranslate"><span class="pre">Synapse</span></code> via <a class="reference internal" href="#inferno.neural.Layer.synapses" title="inferno.neural.Layer.synapses"><code class="xref py py-attr docutils literal notranslate"><span class="pre">synapses</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">synapses</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+</div>
+<p>Any <a class="reference internal" href="inferno.neural.Trainable.html#inferno.neural.Trainable" title="inferno.neural.Trainable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Trainable</span></code></a> objects are also constructed from this input to all
+existing outputs. For each output with name <code class="docutils literal notranslate"><span class="pre">output_name</span></code>, it can be accessed
+via <a class="reference internal" href="#inferno.neural.Layer.trainables" title="inferno.neural.Layer.trainables"><code class="xref py py-attr docutils literal notranslate"><span class="pre">trainables</span></code></a> as follows.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">trainables</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">output_name</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>connection</strong> (<a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><em>Connection</em></a>) – connection between the layer inputs and the neurons.</p></li>
-<li><p><strong>neuron</strong> (<a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron"><em>Neuron</em></a>) – neurons which take their input from the connection and their
-output is returned.</p></li>
-<li><p><strong>connection_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – keyword argument
-mapping for connection methods. Defaults to None.</p></li>
-<li><p><strong>neuron_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – keyword argument
-mapping for neuron methods. Defaults to None.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – attribute name of the module receiving input from
+outside the layer.</p></li>
+<li><p><strong>module</strong> (<a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater"><em>Updater</em></a><em> | </em><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><em>Connection</em></a>) – module which receives the input and
+generates intermediate output.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – the name must be unique amongst added inputs.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>added input module.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater">Updater</a></p>
+</dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The keyword argument mappings are a dictionary, where the key is a
-kwarg in a <a class="reference internal" href="#inferno.neural.Layer" title="inferno.neural.Layer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></a> method, and the corresponding value is
-the name for that kwarg which will be passed to the dependent method in
-in the <a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> or <a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Neuron()</span></code></a>.</p>
-<p>When None, <em>all kwargs</em> are passed in. Included classes in Inferno are
-written to avoid conflicts, but that is not always guaranteed.</p>
-</div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>The composed <a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron"><code class="xref py py-class docutils literal notranslate"><span class="pre">Neuron</span></code></a> does not need to be unique to this layer, and
-some architectures explicitly have multiple connections going to the same
-group of neurons. The uniqueness of the composed <a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> is
-not enforced, but unexpected behavior may occur if it is not unique.</p>
+<p>If an input module is to be added to multiple <a class="reference internal" href="#inferno.neural.Layer" title="inferno.neural.Layer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></a> objects,
+then it should be passed to all of them as the same <code class="docutils literal notranslate"><span class="pre">Updater</span></code> object.</p>
 </div>
+</dd></dl>
+
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Layer.clear">
-<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Layer.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.clear" title="Link to this definition">#</a></dt>
-<dd><p>Resets connections and neurons to their resting state.</p>
-<p>Keyword arguments are filtered and then passed to <a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection.clear" title="inferno.neural.Connection.clear"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.clear()</span></code></a>
-and <a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron.clear" title="inferno.neural.Neuron.clear"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Neuron.clear()</span></code></a>.</p>
+<dt class="sig sig-object py" id="inferno.neural.Layer.add_output">
+<span class="sig-name descname"><span class="pre">add_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.base.Neuron"><span class="pre">Neuron</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.base.Neuron"><span class="pre">Neuron</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Layer.add_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.add_output" title="Link to this definition">#</a></dt>
+<dd><p>Adds a module that generates output from input modules.</p>
+<p>This registers a <a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron"><code class="xref py py-class docutils literal notranslate"><span class="pre">Neuron</span></code></a> as a module that receives intermediate
+input and will generate output external to the layer. This will be visible to
+PyTorch as a submodule.</p>
+<p>This can be accessed later as a <code class="docutils literal notranslate"><span class="pre">Neuron</span></code> via <a class="reference internal" href="#inferno.neural.Layer.neurons" title="inferno.neural.Layer.neurons"><code class="xref py py-attr docutils literal notranslate"><span class="pre">neurons</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">neurons</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – attribute name of the module generating output to
+outside the layer.</p></li>
+<li><p><strong>module</strong> (<a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron"><em>Neuron</em></a>) – module which receives intermediate output and generates
+the final output.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – the name must be unique amongst added outputs.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>added output module.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron">Neuron</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Layer.connection">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connection</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.base.Connection"><span class="pre">Connection</span></a></em><a class="headerlink" href="#inferno.neural.Layer.connection" title="Link to this definition">#</a></dt>
-<dd><p>Connection submodule.</p>
+<dt class="sig sig-object py" id="inferno.neural.Layer.connections">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connections</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Proxy</span></em><a class="headerlink" href="#inferno.neural.Layer.connections" title="Link to this definition">#</a></dt>
+<dd><p>Registred connections.</p>
+<p>For a given <code class="docutils literal notranslate"><span class="pre">name</span></code> registered with <a class="reference internal" href="#inferno.neural.Layer.add_input" title="inferno.neural.Layer.add_input"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_input()</span></code></a>, its corresponding
+<a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> can be accessed as.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+</div>
+<p>And is equivalent to the following.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">updaters</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">connection</span>
+</pre></div>
+</div>
+<p>It can be modified in-place (including setting other attributes, adding
+monitors, etc), but it can neither be deleted nor reassigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><em>Connection</em></a>) – replacement connection.</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>safe access to registered connections.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>existing connection.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection">Connection</a></p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proxy</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Layer.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Layer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.forward" title="Link to this definition">#</a></dt>
-<dd><p>Runs a simulation step of the connection and then the neurons.</p>
-<p>Keyword arguments are filtered and then passed to <a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection.forward" title="inferno.neural.Connection.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.forward()</span></code></a>
-and <a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron.forward" title="inferno.neural.Neuron.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Neuron.forward()</span></code></a>. It is expected that <a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection.forward" title="inferno.neural.Connection.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.forward()</span></code></a>
-outputs a single tensor and <a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron.forward" title="inferno.neural.Neuron.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Neuron.forward()</span></code></a> and takes a single
-positional argument. The output of the former is used for the input of the
-latter.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Layer.neuron">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">neuron</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.base.Neuron"><span class="pre">Neuron</span></a></em><a class="headerlink" href="#inferno.neural.Layer.neuron" title="Link to this definition">#</a></dt>
-<dd><p>Neuron submodule.</p>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inkwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outkwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capture_intermediate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Layer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.forward" title="Link to this definition">#</a></dt>
+<dd><p>Computes a forward pass.</p>
+<p>The keys for <code class="docutils literal notranslate"><span class="pre">inputs</span></code> and <code class="docutils literal notranslate"><span class="pre">inkwargs</span></code> are the names of registered
+<a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater"><code class="xref py py-class docutils literal notranslate"><span class="pre">Updater</span></code></a> objects correspond to elements in :py:attr`innames`.
+The keys for <code class="docutils literal notranslate"><span class="pre">outkwargs</span></code> are the names of the registered :py:class`Neuron`
+objects and correspond to elements in <a class="reference internal" href="#inferno.neural.Layer.outnames" title="inferno.neural.Layer.outnames"><code class="xref py py-attr docutils literal notranslate"><span class="pre">outnames</span></code></a>.</p>
+<p>Underlying <a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and <a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron"><code class="xref py py-class docutils literal notranslate"><span class="pre">Neuron</span></code></a> objects are called
+using <code class="xref py py-meth docutils literal notranslate"><span class="pre">__call__()</span></code>, which in turn call
+<a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection.forward" title="inferno.neural.Connection.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.forward()</span></code></a> and <a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron.forward" title="inferno.neural.Neuron.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Neuron.forward()</span></code></a> respectively.
+The keyword argument dictionaries will be unpacked for each call automatically,
+and the inputs will be unpacked as positional arguments for each call.</p>
+<p>Only input modules which have keys in <code class="docutils literal notranslate"><span class="pre">inputs</span></code> will be run and added to
+the positional argument of <a class="reference internal" href="#inferno.neural.Layer.wiring" title="inferno.neural.Layer.wiring"><code class="xref py py-meth docutils literal notranslate"><span class="pre">wiring()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron"><em>Neuron</em></a>) – replacement neuron.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><em>...</em><em>]</em><em>]</em>) – inputs passed to the
+registered connections’ forward calls.</p></li>
+<li><p><strong>inkwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – keyword arguments
+passed to registered connections’ forward calls. Defaults to None.</p></li>
+<li><p><strong>outkwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – keyword arguments
+passed to registered neurons’ forward calls. Defaults to None.</p></li>
+<li><p><strong>capture_intermediate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if output from the connections should
+also be returned. Defaults to False.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – keyword arguments passed to <a class="reference internal" href="#inferno.neural.Layer.wiring" title="inferno.neural.Layer.wiring"><code class="xref py py-meth docutils literal notranslate"><span class="pre">wiring()</span></code></a>.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>existing neuron.</p>
+<dd class="field-even"><p>tensors from neurons and the associated neuron names, if <code class="docutils literal notranslate"><span class="pre">capture_intermediate</span></code>,
+this is the second element of a tuple, the first being a tuple of tensors from
+connections and the associated connection names.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron">Neuron</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a>] | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a>], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Layer.synapse">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">synapse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Synapse.html#inferno.neural.Synapse" title="inferno.neural.base.Synapse"><span class="pre">Synapse</span></a></em><a class="headerlink" href="#inferno.neural.Layer.synapse" title="Link to this definition">#</a></dt>
-<dd><p>Synapse submodule.</p>
+<dt class="sig sig-object py" id="inferno.neural.Layer.innames">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">innames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.12)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Layer.innames" title="Link to this definition">#</a></dt>
+<dd><p>Registered input names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>str</em> – name of a registered input.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Layer.named_connections">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">named_connections</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.12)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.base.Connection"><span class="pre">Connection</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Layer.named_connections" title="Link to this definition">#</a></dt>
+<dd><p>Iterable of registered connections and their names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>tuple[str, Connection]</em> – tuple of a registered connection and its name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Layer.named_neurons">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">named_neurons</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.12)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.base.Neuron"><span class="pre">Neuron</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Layer.named_neurons" title="Link to this definition">#</a></dt>
+<dd><p>Iterable of registered neurons and their names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>tuple[str, Neuron]</em> – tuple of a registered neuron and its name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Layer.named_synapses">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">named_synapses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.12)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Synapse.html#inferno.neural.Synapse" title="inferno.neural.base.Synapse"><span class="pre">Synapse</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Layer.named_synapses" title="Link to this definition">#</a></dt>
+<dd><p>Iterable of registered synapses and their names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>tuple[str, Synapse]</em> – tuple of a registered synapse and its name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Layer.named_trainables">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">named_trainables</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.12)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Trainable.html#inferno.neural.Trainable" title="inferno.neural.modeling.Trainable"><span class="pre">Trainable</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Layer.named_trainables" title="Link to this definition">#</a></dt>
+<dd><p>Iterable of registered trainables and tuples of the input and output name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>tuple[tuple[str, str], torch.Tensor]</em> – tuple of a registered connection and
+a tuple of the input name and output name corresponding to it.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Layer.named_updaters">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">named_updaters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.12)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.modeling.Updater"><span class="pre">Updater</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Layer.named_updaters" title="Link to this definition">#</a></dt>
+<dd><p>Iterable of registered updaters and their names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>tuple[str, Updater]</em> – tuple of a registered updater and its name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Layer.neurons">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">neurons</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Proxy</span></em><a class="headerlink" href="#inferno.neural.Layer.neurons" title="Link to this definition">#</a></dt>
+<dd><p>Registred neurons.</p>
+<p>For a given <code class="docutils literal notranslate"><span class="pre">name</span></code> registered with <a class="reference internal" href="#inferno.neural.Layer.add_output" title="inferno.neural.Layer.add_output"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_output()</span></code></a>, its corresponding
+<a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron"><code class="xref py py-class docutils literal notranslate"><span class="pre">Neuron</span></code></a> can be accessed as.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">neurons</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+</div>
+<p>It can be modified in-place (including setting other attributes, adding
+monitors, etc), but it can neither be deleted nor reassigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>safe access to registered neurons.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proxy</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Layer.outnames">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outnames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.12)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Layer.outnames" title="Link to this definition">#</a></dt>
+<dd><p>Registered output names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>str</em> – name of a registered output.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Layer.synapses">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">synapses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Proxy</span></em><a class="headerlink" href="#inferno.neural.Layer.synapses" title="Link to this definition">#</a></dt>
+<dd><p>Registred synapses.</p>
+<p>For a given <code class="docutils literal notranslate"><span class="pre">name</span></code> registered with <a class="reference internal" href="#inferno.neural.Layer.add_input" title="inferno.neural.Layer.add_input"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_input()</span></code></a>, its corresponding
+<a class="reference internal" href="inferno.neural.Synapse.html#inferno.neural.Synapse" title="inferno.neural.Synapse"><code class="xref py py-class docutils literal notranslate"><span class="pre">Synapse</span></code></a> can be accessed as.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">synapses</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+</div>
+<p>And is equivalent to the following.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">updaters</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">synapse</span>
+</pre></div>
+</div>
+<p>It can be modified in-place (including setting other attributes, adding
+monitors, etc), but it can neither be deleted nor reassigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>safe access to registered synapses.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proxy</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Layer.trainables">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trainables</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Proxy</span></em><a class="headerlink" href="#inferno.neural.Layer.trainables" title="Link to this definition">#</a></dt>
+<dd><p>Registered trainables.</p>
+<p>For a given <code class="docutils literal notranslate"><span class="pre">input_name</span></code> and <code class="docutils literal notranslate"><span class="pre">output_name</span></code>, its corresponding
+<a class="reference internal" href="inferno.neural.Trainable.html#inferno.neural.Trainable" title="inferno.neural.Trainable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Trainable</span></code></a> can be accessed as.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">trainables</span><span class="o">.</span><span class="n">input_name</span><span class="o">.</span><span class="n">output_name</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proxy</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Layer.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.update" title="Link to this definition">#</a></dt>
+<dd><p>Applies all cumulative updates.</p>
+<p>This calls every updated which applies cumulative updates and any updater
+hooks are automatically called (e.g. parameter clamping).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Layer.updaters">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">updaters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Proxy</span></em><a class="headerlink" href="#inferno.neural.Layer.updaters" title="Link to this definition">#</a></dt>
+<dd><p>Registred updaters.</p>
+<p>For a given <code class="docutils literal notranslate"><span class="pre">name</span></code> registered with <a class="reference internal" href="#inferno.neural.Layer.add_input" title="inferno.neural.Layer.add_input"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_input()</span></code></a>, its corresponding
+<a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater"><code class="xref py py-class docutils literal notranslate"><span class="pre">Updater</span></code></a> can be accessed as.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">updaters</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+</div>
+<p>It can be modified in-place (including setting other attributes, adding
+monitors, etc), but it can neither be deleted nor reassigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>safe access to registered synapses.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proxy</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.wiring">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wiring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Layer.wiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.wiring" title="Link to this definition">#</a></dt>
+<dd><p>Connection logic between connection outputs and neuron inputs.</p>
+<p>The inputs are given as a dictionary where each key is a registered input name
+and the value is the tensor output from that connection. This is expected to
+return a dictionary where each key is the name of a registered output and the
+value is the tensor to be passed to its <code class="xref py py-meth docutils literal notranslate"><span class="pre">__call__()</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference internal" href="inferno.neural.Synapse.html#inferno.neural.Synapse" title="inferno.neural.Synapse"><em>Synapse</em></a>) – replacement synapse.</p>
+<dd class="field-odd"><p><strong>inputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – dictionary of input names to tensors.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>existing synapse.</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">wiring</span></code> must be implemented by the subclass.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="inferno.neural.Synapse.html#inferno.neural.Synapse" title="inferno.neural.Synapse">Synapse</a></p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary of output names to tensors.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -336,23 +581,23 @@ latter.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.neural.LIF.html">
+          <a class="next-page" href="inferno.neural.Biclique.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">LIF</div>
+                <div class="title">Biclique</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.neural.Connection.html">
+          <a class="prev-page" href="../neural.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Connection</div>
+                <div class="title">inferno.neural</div>
                 
               </div>
             </a>
@@ -388,11 +633,23 @@ latter.</p>
             <ul>
 <li><a class="reference internal" href="#">Layer</a><ul>
 <li><a class="reference internal" href="#inferno.neural.Layer"><code class="docutils literal notranslate"><span class="pre">Layer</span></code></a><ul>
-<li><a class="reference internal" href="#inferno.neural.Layer.clear"><code class="docutils literal notranslate"><span class="pre">Layer.clear()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Layer.connection"><code class="docutils literal notranslate"><span class="pre">Layer.connection</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.add_input"><code class="docutils literal notranslate"><span class="pre">Layer.add_input()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.add_output"><code class="docutils literal notranslate"><span class="pre">Layer.add_output()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.connections"><code class="docutils literal notranslate"><span class="pre">Layer.connections</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.forward"><code class="docutils literal notranslate"><span class="pre">Layer.forward()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Layer.neuron"><code class="docutils literal notranslate"><span class="pre">Layer.neuron</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Layer.synapse"><code class="docutils literal notranslate"><span class="pre">Layer.synapse</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.innames"><code class="docutils literal notranslate"><span class="pre">Layer.innames</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.named_connections"><code class="docutils literal notranslate"><span class="pre">Layer.named_connections</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.named_neurons"><code class="docutils literal notranslate"><span class="pre">Layer.named_neurons</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.named_synapses"><code class="docutils literal notranslate"><span class="pre">Layer.named_synapses</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.named_trainables"><code class="docutils literal notranslate"><span class="pre">Layer.named_trainables</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.named_updaters"><code class="docutils literal notranslate"><span class="pre">Layer.named_updaters</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.neurons"><code class="docutils literal notranslate"><span class="pre">Layer.neurons</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.outnames"><code class="docutils literal notranslate"><span class="pre">Layer.outnames</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.synapses"><code class="docutils literal notranslate"><span class="pre">Layer.synapses</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.trainables"><code class="docutils literal notranslate"><span class="pre">Layer.trainables</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.update"><code class="docutils literal notranslate"><span class="pre">Layer.update()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.updaters"><code class="docutils literal notranslate"><span class="pre">Layer.updaters</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.wiring"><code class="docutils literal notranslate"><span class="pre">Layer.wiring()</span></code></a></li>
 </ul>
 </li>
 </ul>

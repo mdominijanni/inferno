@@ -1,8 +1,0 @@
-﻿OneToManyMethod
-===============
-
-.. currentmodule:: inferno.typing
-
-.. autoclass:: OneToManyMethod
-    :members:
-    :show-inheritance:

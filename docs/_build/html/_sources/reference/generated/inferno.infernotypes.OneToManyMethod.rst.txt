@@ -1,0 +1,8 @@
+﻿OneToManyMethod
+===============
+
+.. currentmodule:: inferno.infernotypes
+
+.. autoclass:: OneToManyMethod
+    :members:
+    :show-inheritance:

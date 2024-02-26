@@ -163,7 +163,8 @@
 <li class="toctree-l2"><a class="reference internal" href="reference/learn.html">inferno.learn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/typing.html">inferno.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/infernotypes.html">inferno.infernotypes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -251,22 +252,34 @@
 </li>
         <li><a href="reference/generated/inferno.neural.functional.adaptive_thresholds_linear_voltage.html#inferno.neural.functional.adaptive_thresholds_linear_voltage">adaptive_thresholds_linear_voltage() (in module inferno.neural.functional)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.RemoteClamping.html#inferno.neural.RemoteClamping.add_inner">add_inner() (RemoteClamping method)</a>
+        <li><a href="reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.add_input">add_input() (Biclique method)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.add_inner">(RemoteHook method)</a>
+          <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.add_input">(Layer method)</a>
 </li>
-          <li><a href="reference/generated/inferno.neural.RemoteNormalization.html#inferno.neural.RemoteNormalization.add_inner">(RemoteNormalization method)</a>
+          <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.add_input">(Serial method)</a>
+</li>
+        </ul></li>
+        <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_monitor">add_monitor() (LayerwiseUpdater method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.add_monitor">(Trainable method)</a>
 </li>
         </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_monitor">add_monitor() (LayerwiseUpdater method)</a>
-</li>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_monitors">add_monitors() (LayerwiseUpdater method)</a>
 
         <ul>
           <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.add_monitors">(STDP method)</a>
+</li>
+        </ul></li>
+        <li><a href="reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.add_output">add_output() (Biclique method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.add_output">(Layer method)</a>
+</li>
+          <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.add_output">(Serial method)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_trainable">add_trainable() (LayerwiseUpdater method)</a>
@@ -307,6 +320,16 @@
           <li><a href="reference/generated/inferno.neural.connections.mixins.WeightBiasMixin.html#inferno.neural.connections.mixins.WeightBiasMixin.bias">(WeightBiasMixin property)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.bias_bounding">bias_bounding() (Updater method)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.bias_lower_bounding">bias_lower_bounding() (Updater method)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.bias_reduction">bias_reduction (Updater property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.bias_update">bias_update() (Updater method)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.bias_upper_bounding">bias_upper_bounding() (Updater method)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.biased">biased (Connection property)</a>
 
         <ul>
@@ -319,6 +342,8 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.biased">(LinearLateral property)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique">Biclique (class in inferno.neural)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.binshape">binshape (Connection property)</a>
 
         <ul>
@@ -404,6 +429,8 @@
 </li>
           <li><a href="reference/generated/inferno.neural.DeltaPlusCurrent.html#inferno.neural.DeltaPlusCurrent.clear">(DeltaPlusCurrent method)</a>
 </li>
+          <li><a href="reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor.clear">(DifferenceMonitor method)</a>
+</li>
           <li><a href="reference/generated/inferno.neural.EIF.html#inferno.neural.EIF.clear">(EIF method)</a>
 </li>
           <li><a href="reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.clear">(FoldReducer method)</a>
@@ -413,8 +440,6 @@
           <li><a href="reference/generated/inferno.neural.GLIF2.html#inferno.neural.GLIF2.clear">(GLIF2 method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Izhikevich.html#inferno.neural.Izhikevich.clear">(Izhikevich method)</a>
-</li>
-          <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.clear">(Layer method)</a>
 </li>
           <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.clear">(LayerwiseUpdater method)</a>
 </li>
@@ -453,7 +478,15 @@
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection">Connection (class in inferno.neural)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.connection">connection (Layer property)</a>
+        <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.connection">connection (Serial property)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.connection">(Trainable property)</a>
+</li>
+          <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.connection">(Updater property)</a>
+</li>
+        </ul></li>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.connections">connections (Layer property)</a>
 </li>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.constraints">constraints (DimensionalModule property)</a>
 </li>
@@ -498,7 +531,11 @@
         <li><a href="reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.data">data (FoldReducer property)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.del_monitor">del_monitor() (LayerwiseUpdater method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.del_monitor">(Trainable method)</a>
 </li>
+        </ul></li>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.del_monitors">del_monitors() (LayerwiseUpdater method)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.del_trainable">del_trainable() (LayerwiseUpdater method)</a>
@@ -519,6 +556,16 @@
           <li><a href="reference/generated/inferno.neural.connections.mixins.WeightBiasDelayMixin.html#inferno.neural.connections.mixins.WeightBiasDelayMixin.delay">(WeightBiasDelayMixin property)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.delay_bounding">delay_bounding() (Updater method)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.delay_lower_bounding">delay_lower_bounding() (Updater method)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.delay_reduction">delay_reduction (Updater property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.delay_update">delay_update() (Updater method)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.delay_upper_bounding">delay_upper_bounding() (Updater method)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.delayedby">delayedby (Connection property)</a>
 
         <ul>
@@ -545,12 +592,14 @@
           <li><a href="reference/generated/inferno.HistoryModule.html#inferno.HistoryModule.deregister_constrained">(HistoryModule method)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.detach">detach() (LayerwiseUpdater method)</a>
+</li>
+        <li><a href="reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor">DifferenceMonitor (class in inferno.observe)</a>
 </li>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule">DimensionalModule (class in inferno)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.AdEx.html#inferno.neural.AdEx.dt">dt (AdEx property)</a>
 
         <ul>
@@ -632,8 +681,6 @@
         <li><a href="reference/generated/inferno.neural.functional.enc_poisson_interval_online.html#inferno.neural.functional.enc_poisson_interval_online">enc_poisson_interval_online() (in module inferno.neural.functional)</a>
 </li>
         <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.evalexec">evalexec (Hook property)</a>
-</li>
-        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.evalexec_inner">evalexec_inner (RemoteHook property)</a>
 </li>
         <li><a href="reference/generated/inferno.observe.EventReducer.html#inferno.observe.EventReducer">EventReducer (class in inferno.observe)</a>
 </li>
@@ -718,9 +765,15 @@
 </li>
           <li><a href="reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.forward">(Reducer method)</a>
 </li>
+          <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.forward">(Serial method)</a>
+</li>
           <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.forward">(STDP method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.forward">(Synapse method)</a>
+</li>
+          <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.forward">(Trainable method)</a>
+</li>
+          <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.forward">(Updater method)</a>
 </li>
         </ul></li>
     </ul></td>
@@ -763,6 +816,8 @@
   <h2>H</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding">HalfBounding (class in inferno.bounding)</a>
+</li>
         <li><a href="reference/generated/inferno.learn.functional.hard_lower_bounding.html#inferno.learn.functional.hard_lower_bounding">hard_lower_bounding() (in module inferno.learn.functional)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.functional.hard_upper_bounding.html#inferno.learn.functional.hard_upper_bounding">hard_upper_bounding() (in module inferno.learn.functional)</a>
@@ -777,14 +832,14 @@
 </li>
         <li><a href="reference/generated/inferno.HistoryModule.html#inferno.HistoryModule">HistoryModule (class in inferno)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.hlen">hlen (FoldReducer property)</a>
 
         <ul>
           <li><a href="reference/generated/inferno.HistoryModule.html#inferno.HistoryModule.hlen">(HistoryModule property)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.holt_linear_smoothing.html#inferno.holt_linear_smoothing">holt_linear_smoothing() (in module inferno)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.HomogeneousPoissonEncoder.html#inferno.neural.HomogeneousPoissonEncoder">HomogeneousPoissonEncoder (class in inferno.neural)</a>
@@ -811,6 +866,13 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.infer">infer() (MaxRateClassifier method)</a>
 </li>
+        <li>
+    inferno.bounding
+
+        <ul>
+          <li><a href="reference/bounding.html#module-inferno.bounding">module</a>
+</li>
+        </ul></li>
         <li>
     inferno.learn
 
@@ -864,24 +926,12 @@
           <li><a href="reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer.initialize">(ScaledNearestTraceReducer method)</a>
 </li>
         </ul></li>
-        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.inner">inner (RemoteHook property)</a>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.innames">innames (Layer property)</a>
 </li>
-        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.innerargs">innerargs() (RemoteHook method)</a>
-</li>
-        <li><a href="reference/generated/inferno.neural.RemoteClamping.html#inferno.neural.RemoteClamping.innerhook">innerhook() (RemoteClamping method)</a>
-
-        <ul>
-          <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.innerhook">(RemoteHook method)</a>
-</li>
-          <li><a href="reference/generated/inferno.neural.RemoteNormalization.html#inferno.neural.RemoteNormalization.innerhook">(RemoteNormalization method)</a>
-</li>
-        </ul></li>
-        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.innerkwargs">innerkwargs() (RemoteHook method)</a>
+        <li><a href="reference/generated/inferno.observe.InputMonitor.html#inferno.observe.InputMonitor">InputMonitor (class in inferno.observe)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.observe.InputMonitor.html#inferno.observe.InputMonitor">InputMonitor (class in inferno.observe)</a>
-</li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.inshape">inshape (Connection property)</a>
 
         <ul>
@@ -978,10 +1028,10 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.like_synaptic">(LinearLateral method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense">LinearDense (class in inferno.neural)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect">LinearDirect (class in inferno.neural)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral">LinearLateral (class in inferno.neural)</a>
@@ -1012,6 +1062,12 @@
           <li><a href="reference/generated/inferno.learn.WeightDependence.html#inferno.learn.WeightDependence.lower">(WeightDependence method)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.bounding.lower_multiplicative_dependence.html#inferno.bounding.lower_multiplicative_dependence">lower_multiplicative_dependence() (in module inferno.bounding)</a>
+</li>
+        <li><a href="reference/generated/inferno.bounding.lower_power_dependence.html#inferno.bounding.lower_power_dependence">lower_power_dependence() (in module inferno.bounding)</a>
+</li>
+        <li><a href="reference/generated/inferno.bounding.lower_sharp_dependence.html#inferno.bounding.lower_sharp_dependence">lower_sharp_dependence() (in module inferno.bounding)</a>
+</li>
         <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.lrpost">lrpost (STDP property)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.lrpre">lrpre (STDP property)</a>
@@ -1024,13 +1080,15 @@
   <h2>M</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.typing.ManyToMany.html#inferno.typing.ManyToMany">ManyToMany (class in inferno.typing)</a>
+        <li><a href="reference/generated/inferno.observe.ManagedMonitor.html#inferno.observe.ManagedMonitor">ManagedMonitor (class in inferno.observe)</a>
 </li>
-        <li><a href="reference/generated/inferno.typing.ManyToManyMethod.html#inferno.typing.ManyToManyMethod">ManyToManyMethod (class in inferno.typing)</a>
+        <li><a href="reference/generated/inferno.infernotypes.ManyToMany.html#inferno.infernotypes.ManyToMany">ManyToMany (class in inferno.infernotypes)</a>
 </li>
-        <li><a href="reference/generated/inferno.typing.ManyToOne.html#inferno.typing.ManyToOne">ManyToOne (class in inferno.typing)</a>
+        <li><a href="reference/generated/inferno.infernotypes.ManyToManyMethod.html#inferno.infernotypes.ManyToManyMethod">ManyToManyMethod (class in inferno.infernotypes)</a>
 </li>
-        <li><a href="reference/generated/inferno.typing.ManyToOneMethod.html#inferno.typing.ManyToOneMethod">ManyToOneMethod (class in inferno.typing)</a>
+        <li><a href="reference/generated/inferno.infernotypes.ManyToOne.html#inferno.infernotypes.ManyToOne">ManyToOne (class in inferno.infernotypes)</a>
+</li>
+        <li><a href="reference/generated/inferno.infernotypes.ManyToOneMethod.html#inferno.infernotypes.ManyToOneMethod">ManyToOneMethod (class in inferno.infernotypes)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.SoftWeightDependence.html#inferno.learn.SoftWeightDependence.maxpow">maxpow (SoftWeightDependence property)</a>
 </li>
@@ -1056,6 +1114,8 @@
     module
 
         <ul>
+          <li><a href="reference/bounding.html#module-inferno.bounding">inferno.bounding</a>
+</li>
           <li><a href="reference/learn.html#module-inferno.learn">inferno.learn</a>
 </li>
           <li><a href="reference/learn-functional.html#module-inferno.learn.functional">inferno.learn.functional</a>
@@ -1087,17 +1147,39 @@
   <h2>N</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.named_connections">named_connections (Layer property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.named_neurons">named_neurons (Layer property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.named_synapses">named_synapses (Layer property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.named_trainables">named_trainables (Layer property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.named_updaters">named_updaters (Layer property)</a>
+</li>
         <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.nclass">nclass (MaxRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.ndim">ndim (MaxRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer">NearestTraceReducer (class in inferno.observe)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron">Neuron (class in inferno.neural)</a>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.neg_bias_update">neg_bias_update (Updater property)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.neuron">neuron (Layer property)</a>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.neg_delay_update">neg_delay_update (Updater property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.neg_weight_update">neg_weight_update (Updater property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron">Neuron (class in inferno.neural)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.neuron">neuron (Serial property)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.neuron">(Trainable property)</a>
+</li>
+        </ul></li>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.neurons">neurons (Layer property)</a>
 </li>
         <li><a href="reference/generated/inferno.stats.Normal.html#inferno.stats.Normal">Normal (class in inferno.stats)</a>
 </li>
@@ -1119,13 +1201,15 @@
 </li>
         <li><a href="reference/generated/inferno.ones.html#inferno.ones">ones() (in module inferno)</a>
 </li>
-        <li><a href="reference/generated/inferno.typing.OneToMany.html#inferno.typing.OneToMany">OneToMany (class in inferno.typing)</a>
+        <li><a href="reference/generated/inferno.infernotypes.OneToMany.html#inferno.infernotypes.OneToMany">OneToMany (class in inferno.infernotypes)</a>
 </li>
-        <li><a href="reference/generated/inferno.typing.OneToManyMethod.html#inferno.typing.OneToManyMethod">OneToManyMethod (class in inferno.typing)</a>
+        <li><a href="reference/generated/inferno.infernotypes.OneToManyMethod.html#inferno.infernotypes.OneToManyMethod">OneToManyMethod (class in inferno.infernotypes)</a>
 </li>
-        <li><a href="reference/generated/inferno.typing.OneToOne.html#inferno.typing.OneToOne">OneToOne (class in inferno.typing)</a>
+        <li><a href="reference/generated/inferno.infernotypes.OneToOne.html#inferno.infernotypes.OneToOne">OneToOne (class in inferno.infernotypes)</a>
 </li>
-        <li><a href="reference/generated/inferno.typing.OneToOneMethod.html#inferno.typing.OneToOneMethod">OneToOneMethod (class in inferno.typing)</a>
+        <li><a href="reference/generated/inferno.infernotypes.OneToOneMethod.html#inferno.infernotypes.OneToOneMethod">OneToOneMethod (class in inferno.infernotypes)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.outnames">outnames (Layer property)</a>
 </li>
         <li><a href="reference/generated/inferno.observe.OutputMonitor.html#inferno.observe.OutputMonitor">OutputMonitor (class in inferno.observe)</a>
 </li>
@@ -1174,6 +1258,12 @@
         <ul>
           <li><a href="reference/generated/inferno.neural.DeltaPlusCurrent.html#inferno.neural.DeltaPlusCurrent.partialconstructor">(DeltaPlusCurrent class method)</a>
 </li>
+          <li><a href="reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor.partialconstructor">(DifferenceMonitor class method)</a>
+</li>
+          <li><a href="reference/generated/inferno.observe.ManagedMonitor.html#inferno.observe.ManagedMonitor.partialconstructor">(ManagedMonitor class method)</a>
+</li>
+          <li><a href="reference/generated/inferno.observe.StateMonitor.html#inferno.observe.StateMonitor.partialconstructor">(StateMonitor class method)</a>
+</li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.partialconstructor">(Synapse class method)</a>
 </li>
         </ul></li>
@@ -1199,7 +1289,17 @@
 </li>
         <li><a href="reference/generated/inferno.neural.PoissonIntervalEncoder.html#inferno.neural.PoissonIntervalEncoder">PoissonIntervalEncoder (class in inferno.neural)</a>
 </li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.pos_bias_update">pos_bias_update (Updater property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.pos_delay_update">pos_delay_update (Updater property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.pos_weight_update">pos_weight_update (Updater property)</a>
+</li>
         <li><a href="reference/generated/inferno.observe.PostMonitor.html#inferno.observe.PostMonitor">PostMonitor (class in inferno.observe)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.postspike">postspike (Trainable property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.postsyn_receptive">postsyn_receptive() (Connection method)</a>
 
@@ -1213,13 +1313,17 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.postsyn_receptive">(LinearLateral method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.postvoltage">postvoltage (Trainable property)</a>
+</li>
         <li><a href="reference/generated/inferno.learn.functional.power_lower_bounding.html#inferno.learn.functional.power_lower_bounding">power_lower_bounding() (in module inferno.learn.functional)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.functional.power_upper_bounding.html#inferno.learn.functional.power_upper_bounding">power_upper_bounding() (in module inferno.learn.functional)</a>
 </li>
+        <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.precurrent">precurrent (Trainable property)</a>
+</li>
         <li><a href="reference/generated/inferno.observe.PreMonitor.html#inferno.observe.PreMonitor">PreMonitor (class in inferno.observe)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.prespike">prespike (Trainable property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.presyn_receptive">presyn_receptive() (Connection method)</a>
 
@@ -1287,16 +1391,18 @@
           <li><a href="reference/generated/inferno.neural.neurons.mixins.RefractoryMixin.html#inferno.neural.neurons.mixins.RefractoryMixin.refrac">(RefractoryMixin property)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.neurons.mixins.RefractoryMixin.html#inferno.neural.neurons.mixins.RefractoryMixin">RefractoryMixin (class in inferno.neural.neurons.mixins)</a>
 </li>
         <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.register">register() (Hook method)</a>
 
         <ul>
+          <li><a href="reference/generated/inferno.observe.ManagedMonitor.html#inferno.observe.ManagedMonitor.register">(ManagedMonitor method)</a>
+</li>
           <li><a href="reference/generated/inferno.StateHook.html#inferno.StateHook.register">(StateHook method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.register_constrained">register_constrained() (DimensionalModule method)</a>
 
         <ul>
@@ -1307,30 +1413,12 @@
 </li>
         <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.registered">registered (Hook property)</a>
 </li>
-        <li><a href="reference/generated/inferno.neural.RemoteClamping.html#inferno.neural.RemoteClamping">RemoteClamping (class in inferno.neural)</a>
-</li>
-        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook">RemoteHook (class in inferno)</a>
-</li>
-        <li><a href="reference/generated/inferno.neural.RemoteNormalization.html#inferno.neural.RemoteNormalization">RemoteNormalization (class in inferno.neural)</a>
-</li>
-        <li><a href="reference/generated/inferno.neural.RemoteClamping.html#inferno.neural.RemoteClamping.remove_inner">remove_inner() (RemoteClamping method)</a>
-
-        <ul>
-          <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.remove_inner">(RemoteHook method)</a>
-</li>
-          <li><a href="reference/generated/inferno.neural.RemoteNormalization.html#inferno.neural.RemoteNormalization.remove_inner">(RemoteNormalization method)</a>
-</li>
-        </ul></li>
         <li><a href="reference/generated/inferno.rescale.html#inferno.rescale">rescale() (in module inferno)</a>
 </li>
         <li><a href="reference/generated/inferno.HistoryModule.html#inferno.HistoryModule.reset">reset() (HistoryModule method)</a>
 </li>
-        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.run">run() (RemoteHook method)</a>
-
-        <ul>
-          <li><a href="reference/generated/inferno.StateHook.html#inferno.StateHook.run">(StateHook method)</a>
+        <li><a href="reference/generated/inferno.StateHook.html#inferno.StateHook.run">run() (StateHook method)</a>
 </li>
-        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -1373,6 +1461,8 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.selector">(LinearLateral property)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial">Serial (class in inferno.neural)</a>
+</li>
         <li><a href="reference/generated/inferno.Module.html#inferno.Module.set_extra_state">set_extra_state() (Module method)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.shape">shape (MaxRateClassifier property)</a>
@@ -1436,10 +1526,14 @@
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.synapse">synapse (Connection property)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.synapse">(Layer property)</a>
+          <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.synapse">(Serial property)</a>
+</li>
+          <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.synapse">(Trainable property)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.neural.SynapseConstructor.html#inferno.neural.SynapseConstructor">SynapseConstructor (class in inferno.neural)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.synapses">synapses (Layer property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.syncurrent">syncurrent (Connection property)</a>
 
@@ -1481,17 +1575,23 @@
 </li>
         <li><a href="reference/generated/inferno.neural.functional.trace_cumulative_scaled.html#inferno.neural.functional.trace_cumulative_scaled">trace_cumulative_scaled() (in module inferno.neural.functional)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.functional.trace_nearest.html#inferno.neural.functional.trace_nearest">trace_nearest() (in module inferno.neural.functional)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.functional.trace_nearest_scaled.html#inferno.neural.functional.trace_nearest_scaled">trace_nearest_scaled() (in module inferno.neural.functional)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.trainables">trainables (LayerwiseUpdater property)</a>
+        <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable">Trainable (class in inferno.neural)</a>
 </li>
+        <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.trainable">trainable (Serial property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.trainables">trainables (Layer property)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.trainables">(LayerwiseUpdater property)</a>
+</li>
+        </ul></li>
         <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.trainexec">trainexec (Hook property)</a>
-</li>
-        <li><a href="reference/generated/inferno.RemoteHook.html#inferno.RemoteHook.trainexec_inner">trainexec_inner (RemoteHook property)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -1504,11 +1604,25 @@
         <li><a href="reference/generated/inferno.uniform.html#inferno.uniform">uniform() (in module inferno)</a>
 </li>
         <li><a href="reference/generated/inferno.HistoryModule.html#inferno.HistoryModule.update">update() (HistoryModule method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.update">(Layer method)</a>
 </li>
+        </ul></li>
         <li><a href="reference/generated/inferno.learn.functional.UpdateBounding.html#inferno.learn.functional.UpdateBounding">UpdateBounding (class in inferno.learn.functional)</a>
 </li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater">Updater (class in inferno.neural)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.updater">updater (Serial property)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.updater">(Trainable property)</a>
+</li>
+        </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.updaters">updaters (Layer property)</a>
+</li>
         <li><a href="reference/generated/inferno.learn.HardWeightDependence.html#inferno.learn.HardWeightDependence.upper">upper() (HardWeightDependence method)</a>
 
         <ul>
@@ -1517,6 +1631,12 @@
           <li><a href="reference/generated/inferno.learn.WeightDependence.html#inferno.learn.WeightDependence.upper">(WeightDependence method)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.bounding.upper_multiplicative_dependence.html#inferno.bounding.upper_multiplicative_dependence">upper_multiplicative_dependence() (in module inferno.bounding)</a>
+</li>
+        <li><a href="reference/generated/inferno.bounding.upper_power_dependence.html#inferno.bounding.upper_power_dependence">upper_power_dependence() (in module inferno.bounding)</a>
+</li>
+        <li><a href="reference/generated/inferno.bounding.upper_sharp_dependence.html#inferno.bounding.upper_sharp_dependence">upper_sharp_dependence() (in module inferno.bounding)</a>
+</li>
     </ul></td>
   </tr></table>
 </section>
@@ -1597,8 +1717,18 @@
           <li><a href="reference/generated/inferno.neural.connections.mixins.WeightMixin.html#inferno.neural.connections.mixins.WeightMixin.weight">(WeightMixin property)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.weight_bounding">weight_bounding() (Updater method)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.weight_lower_bounding">weight_lower_bounding() (Updater method)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.weight_reduction">weight_reduction (Updater property)</a>
+</li>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.weight_update">weight_update() (Updater method)</a>
+</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.weight_upper_bounding">weight_upper_bounding() (Updater method)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.connections.mixins.WeightBiasDelayMixin.html#inferno.neural.connections.mixins.WeightBiasDelayMixin">WeightBiasDelayMixin (class in inferno.neural.connections.mixins)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.connections.mixins.WeightBiasMixin.html#inferno.neural.connections.mixins.WeightBiasMixin">WeightBiasMixin (class in inferno.neural.connections.mixins)</a>
@@ -1607,6 +1737,14 @@
 </li>
         <li><a href="reference/generated/inferno.neural.connections.mixins.WeightMixin.html#inferno.neural.connections.mixins.WeightMixin">WeightMixin (class in inferno.neural.connections.mixins)</a>
 </li>
+        <li><a href="reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.wiring">wiring() (Biclique method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.wiring">(Layer method)</a>
+</li>
+          <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.wiring">(Serial method)</a>
+</li>
+        </ul></li>
         <li><a href="reference/generated/inferno.learn.WeightDependence.html#inferno.learn.WeightDependence.wmax">wmax (WeightDependence property)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.WeightDependence.html#inferno.learn.WeightDependence.wmin">wmin (WeightDependence property)</a>

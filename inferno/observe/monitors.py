@@ -1,10 +1,11 @@
-from abc import ABC, abstractmethod
+from . import Reducer
 from .. import Module, Hook
+from abc import ABC, abstractmethod
 from inferno._internal import rgetattr
 from inferno.infernotypes import ManyToOne
 import torch
 from typing import Any, Callable, Protocol
-from . import Reducer
+import weakref
 
 
 class Monitor(Module, Hook):
@@ -264,7 +265,7 @@ class ManagedMonitor(Monitor, ABC):
     def __init__(
         self,
         reducer: Reducer,
-        module: Module,
+        module: Module | None = None,
         prehook: Callable | None = None,
         posthook: Callable | None = None,
         prehook_kwargs: dict[str, Any] | None = None,
@@ -284,6 +285,9 @@ class ManagedMonitor(Monitor, ABC):
             eval_update=eval_update,
         )
 
+        if module:
+            self._monitored_ref = weakref.ref(module)
+
     @classmethod
     @abstractmethod
     def partialconstructor(cls, *args, **kwargs) -> MonitorConstructor:
@@ -297,6 +301,36 @@ class ManagedMonitor(Monitor, ABC):
             f"{cls.__name__}(ManagedMonitor) must implement "
             "the method `partialconstructor`."
         )
+
+    def register(self, module: Module | None = None):
+        r"""Registers the monitor as a forward hook/prehook.
+
+        Args:
+            module (Module | None, optional): module with which to register, last
+                registered if None. Defaults to None.
+
+        Raises:
+            RuntimeError: weak reference to the last referenced module is no longer
+                valid or did not exist
+        """
+        # get module from weakref if required
+        if not module:
+            # don't duplicate register call if module is unspecified
+            if not self.registered:
+                if self._monitored_ref and self._monitored_ref():
+                    module = self._monitored_ref()
+                else:
+                    if module is None:
+                        raise RuntimeError(
+                            "weak reference to monitored module does not exist, "
+                            "cannot infer argument 'module'"
+                        )
+
+        # register using superclass
+        Monitor.register(self, module)
+
+        # update stored weak reference
+        self._monitored_ref = weakref.ref(module)
 
 
 class StateMonitor(ManagedMonitor):
@@ -391,6 +425,7 @@ class StateMonitor(ManagedMonitor):
         Returns:
             MonitorConstructor: partial constructor for monitor.
         """
+
         def constructor(attr: str, module: Module):
             return cls(
                 reducer=reducer,
@@ -486,6 +521,7 @@ class DifferenceMonitor(ManagedMonitor):
         Returns:
             MonitorConstructor: partial constructor for monitor.
         """
+
         def constructor(attr: str, module: Module):
             return cls(
                 reducer=reducer,
