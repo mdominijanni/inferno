@@ -1,7 +1,7 @@
-from .. import LayerwiseUpdater
+from .. import LayerwiseUpdater, LayerwiseTrainer
 from .. import functional as lf
-from inferno._internal import numeric_limit
-from inferno.neural import Layer
+from inferno._internal import numeric_limit, argtest
+from inferno.neural import Layer, Trainable
 from inferno.observe import (
     StateMonitor,
     CumulativeTraceReducer,
@@ -9,10 +9,154 @@ from inferno.observe import (
     PassthroughReducer,
 )
 import torch
-from typing import Callable, Literal
+from typing import Any, Callable, Literal
 
 
-class STDP(LayerwiseUpdater):
+class STDP(LayerwiseTrainer):
+    def __init__(
+        self,
+        step_time: float,
+        lr_post: float,
+        lr_pre: float,
+        tc_post: float,
+        tc_pre: float,
+        hebbian: bool = True,
+        delayed: bool = False,
+        interp_tolerance: float = 0.0,
+        trace_mode: Literal["cumulative", "nearest"] = "cumulative",
+        batch_reduction: (
+            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+        ) = None,
+        name: str | None = None,
+        **kwargs,
+    ):
+        # call superclass constructor
+        LayerwiseTrainer.__init__(self, name, **kwargs)
+
+        # default hyperparameters
+        self.step_time = argtest.gt("step_time", step_time, 0, float)
+        self.lr_post = float(lr_post)
+        self.lr_pre = float(lr_pre)
+        self.tc_post = argtest.gt("tc_post", tc_post, 0, float)
+        self.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
+        self.delayed = bool(delayed)
+        self.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
+        self.trace = argtest.oneof(
+            "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
+        )
+        self.batchreduce = batch_reduction if batch_reduction else torch.mean
+
+    def _hyperparameter_defaults(
+        self,
+        step_time: float | None = None,
+        lr_post: float | None = None,
+        lr_pre: float | None = None,
+        tc_post: float | None = None,
+        tc_pre: float | None = None,
+        hebbian: bool | None = None,
+        delayed: bool | None = None,
+        interp_tolerance: float | None = None,
+        trace_mode: Literal["cumulative", "nearest"] | None = None,
+        batch_reduction: (
+            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+        ) = None,
+    ) -> dict[str, Any]:
+        r"""Module Internal: construct a dictionary of hyperparameters with defaults.
+
+        Args:
+            step_time (float | None, optional): length of a simulation time step. Defaults to None.
+            lr_post (float | None, optional): learning rate for updates on postsynaptic spike updates (LTP). Defaults to None.
+            lr_pre (float | None, optional): _description_. Defaults to None.
+            tc_post (float | None, optional): _description_. Defaults to None.
+            tc_pre (float | None, optional): _description_. Defaults to None.
+            hebbian (bool | None, optional): _description_. Defaults to None.
+            delayed (bool | None, optional): _description_. Defaults to None.
+            interp_tolerance (float | None, optional): _description_. Defaults to None.
+            trace_mode (Literal[&quot;cumulative&quot;, &quot;nearest&quot;] | None, optional): _description_. Defaults to None.
+            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]  |  None, optional): _description_. Defaults to None.
+
+        Returns:
+            dict[str, Any]: _description_
+        """
+
+        # conditional dictionary update
+        def nullc(store, value, attr, fn):
+            if value is None:
+                store[attr] = getattr(self, attr)
+            else:
+                store[attr] = fn(value)
+
+        # alias argtest for compactness
+        gt, gte, oneof = argtest.gt, argtest.gte, argtest.oneof
+
+        # hyperparameter store
+        d = {}
+
+        # fill store
+        nullc(d, step_time, "step_time", lambda x: gt("step_time", x, 0, float))
+        nullc(d, lr_post, "lr_post", lambda x: float(x))
+        nullc(d, lr_pre, "lr_pre", lambda x: float(x))
+        nullc(d, tc_post, "tc_post", gt("tc_post", tc_post, 0, float))
+        nullc(d, tc_pre, "tc_pre", gt("tc_pre", tc_pre, 0, float))
+        nullc(d, delayed, "delayed", lambda x: bool(x))
+        nullc(
+            d,
+            interp_tolerance,
+            "tolerance",
+            gte("interp_tolerance", interp_tolerance, 0, float),
+        )
+
+        if trace_mode is None:
+            d["trace"] = self.trace
+        else:
+            d["trace"] = argtest.oneof(
+                "trace_mode",
+                trace_mode,
+                "cumulative",
+                "nearest",
+                op=(lambda x: x.lower()),
+            )
+        if batch_reduction is None:
+            d["batchreduce"] = self.batchreduce
+        else:
+            d["batchreduce"] = batch_reduction if batch_reduction else torch.mean
+
+        return d
+
+    def add_trainable(
+        self,
+        name: str,
+        trainable: Trainable,
+        *,
+        step_time: float | None = None,
+        lr_post: float | None = None,
+        lr_pre: float | None = None,
+        tc_post: float | None = None,
+        tc_pre: float | None = None,
+        delayed: bool | None = None,
+        interp_tolerance: float | None = None,
+        trace_mode: Literal["cumulative", "nearest"] | None = None,
+        batch_reduction: (
+            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+        ) = None,
+        **kwargs,
+    ) -> Trainable:
+        d = self._hyperparameter_defaults(
+            step_time,
+            lr_post,
+            lr_pre,
+            tc_post,
+            tc_pre,
+            delayed,
+            interp_tolerance,
+            trace_mode,
+            batch_reduction,
+        )
+
+        return LayerwiseTrainer.add_trainable(self, name, trainable, **d, **kwargs)
+
+
+class STDPv1(LayerwiseUpdater):
     r"""Spike-timing dependent plasticity updater.
 
     .. math::
@@ -50,7 +194,7 @@ class STDP(LayerwiseUpdater):
             :math:`tau_\text{post}`, in :math:`ms`.
         tc_pre (float): time constant for exponential decay of presynaptic trace,
             :math:`tau_\text{pre}`, in :math:`ms`.
-        delayed (bool, optional): if the updater should assume learned delays, if
+        delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to False.
         interp_tolerance (float): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.

@@ -99,6 +99,36 @@ def ofsequence(
     )
 
 
+def oneof(
+    name: str,
+    value: Any,
+    *targets: Any,
+    op: Callable[[Any], Any] | None = None,
+    prefix: str | None = None,
+) -> Any:
+    r"""Checks if a value is one of multiple options
+
+    Args:
+        name (str): display name of the variable tested.
+        value (Any): variable being testing.
+        *targets (Any): values to test against.
+        op (Callable[[Any], Any] | None, optional): operation to apply to ``value``
+            before comparison. Defaults to None.
+        prefix (str | None, optional): error message prefix. Defaults to None.
+
+    Returns:
+        Any: input value with operation applied.
+    """
+    v = op(value) if op else value
+    if any(map(lambda x: v == x, targets)):
+        return v
+    else:
+        val, pfx = _valuestr(value), _prefixstr(prefix)
+        raise ValueError(
+            f"{pfx}'{name}' of {val} must be one of: {(_valuestr(t) for t in targets)}"
+        )
+
+
 def onedefined(*nvpairs: tuple[str, Any], prefix: str | None = None) -> tuple[Any, ...]:
     r"""Checks if at least one value in a sequence is not None.
     Args:

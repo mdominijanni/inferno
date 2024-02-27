@@ -4,6 +4,8 @@ from .utils import (
     newtensor,
     rgetattr,
     rsetattr,
+    fzip,
+    unique,
 )
 
 from .exceptions import (
@@ -32,4 +34,6 @@ __all__ = [
     "numeric_interval",
     "instance_of",
     "attr_members",
+    "fzip",
+    "unique",
 ]

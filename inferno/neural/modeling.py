@@ -769,6 +769,31 @@ class Trainable(Module):
         self._add_monitor_callback = add_monitor_callback
         self._del_monitor_callback = del_monitor_callback
 
+        # reserve state for trainers
+        self.trainer_state_ = nn.ModuleDict()
+
+    def trainer_state(self, name: str) -> Module:
+        r"""Adds or retrieves trainer state module.
+
+        Args:
+            name (str): name of the trainer.
+
+        Returns:
+            Module: module containing trainer state
+        """
+        if name not in self.trainer_state_:
+            self.trainer_state_[name] = Module()
+        return self.trainer_state_[name]
+
+    def del_trainer_state(self, name: str) -> None:
+        r"""Deletes trainer state if it exists.
+
+        Args:
+            name (str): name of the trainer.
+        """
+        if name in self.trainer_state_:
+            del self.trainer_state_[name]
+
     def add_monitor(
         self, caller: str, name: str, attr: str, monitor: MonitorConstructor
     ) -> ManagedMonitor:

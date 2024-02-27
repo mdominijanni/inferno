@@ -1,6 +1,60 @@
+from collections.abc import Iterable, Iterator
 from functools import reduce
 import torch
-from typing import Any
+from typing import Any, Callable, TypeVar
+
+T = TypeVar("T")
+
+
+def fzip(
+    seq: Iterable[T], *fns: Callable[[T], T], identity: bool = True
+) -> Iterator[tuple[T, ...]]:
+    r"""Applies functions to an iterable.
+
+    The specified functions ``fns`` should be side-effect free. They will be processed
+    in the order given and applied in order to ``seq`` should they be stateful.
+
+    Args:
+        seq (Iterable[T]): sequence to which functions will be applied.
+        *fns (Callable[[T], T]): functions to apply.
+        identity (bool, optional): if the output of the identity function should be
+            prepended to each output tuple. Defaults to True.
+
+    Yields:
+        tuple[T, ...]: results of the functions applied to the sequence.
+    """
+    # prepend identity function if requested
+    if identity:
+        fns = (lambda x: x,) + fns
+
+    # iterate and apply
+    for e in seq:
+        yield tuple(fn(e) for fn in fns)
+
+
+def unique(seq: Iterable[T], ids: bool = True) -> Iterator[T]:
+    r"""Filters non-unique elements in an iterable.
+
+    Underneath this uses a hash set for testing equality. By default, the memory
+    location of objects, ``id(obj)`` is used and therefore tests by identity. When
+    ``ids`` is set to ``False``, this acts like a lazily evaluated ``set()`` call.
+
+    Args:
+        seq (Iterable[T]): sequence of elements to filter.
+        ids (bool, optional): if object ids should be used for testing presence.
+            Defaults to True.
+
+    Yields:
+        T: unique elements in the iterable.
+    """
+    # set of found elements
+    found = set()
+
+    # filter by hash equality (using integer id as key if ids)
+    for elem, key in fzip(seq, (lambda e: id(e)) if ids else (lambda e: e)):
+        if key not in found:
+            found.add(key)
+            yield elem
 
 
 class Proxy:
@@ -31,6 +85,7 @@ class Proxy:
     Note:
         Each accessor can be a dot-seperated string of attributes.
     """
+
     def __init__(self, inner: Any, firstacc: str | None, *otheracc: str | None):
         self.inner = inner
         self.firstacc = firstacc
@@ -39,7 +94,7 @@ class Proxy:
     def __getattr__(self, attr: str) -> Any:
         # first proxy step
         if self.firstacc:
-            res = rgetattr(self.inner, attr + '.' + self.firstacc)
+            res = rgetattr(self.inner, attr + "." + self.firstacc)
         else:
             res = rgetattr(self.inner, attr)
 

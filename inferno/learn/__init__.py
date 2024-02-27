@@ -1,5 +1,7 @@
 from .base import (
     LayerwiseUpdater,
+    Trainer,
+    LayerwiseTrainer,
 )
 
 from .updaters.ustdp import (
@@ -24,6 +26,8 @@ from .classifiers.simple import (
 
 __all__ = [
     "LayerwiseUpdater",
+    "Trainer",
+    "LayerwiseTrainer",
     "STDP",
     "MSTDP",
     "MSTDPET",
