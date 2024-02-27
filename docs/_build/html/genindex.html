@@ -269,11 +269,7 @@
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_monitors">add_monitors() (LayerwiseUpdater method)</a>
-
-        <ul>
-          <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.add_monitors">(STDP method)</a>
 </li>
-        </ul></li>
         <li><a href="reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.add_output">add_output() (Biclique method)</a>
 
         <ul>
@@ -283,7 +279,11 @@
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.add_trainable">add_trainable() (LayerwiseUpdater method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.add_trainable">(STDP method)</a>
 </li>
+        </ul></li>
         <li><a href="reference/generated/inferno.neural.AdEx.html#inferno.neural.AdEx">AdEx (class in inferno.neural)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.ALIF.html#inferno.neural.ALIF">ALIF (class in inferno.neural)</a>
@@ -540,6 +540,8 @@
 </li>
         <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.del_trainable">del_trainable() (LayerwiseUpdater method)</a>
 </li>
+        <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.del_trainer_state">del_trainer_state() (Trainable method)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.delay">delay (Connection property)</a>
 
         <ul>
@@ -640,8 +642,6 @@
           <li><a href="reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer.dt">(ScaledCumulativeTraceReducer property)</a>
 </li>
           <li><a href="reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer.dt">(ScaledNearestTraceReducer property)</a>
-</li>
-          <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.dt">(STDP property)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.dt">(Synapse property)</a>
 </li>
@@ -766,8 +766,6 @@
           <li><a href="reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.forward">(Reducer method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.forward">(Serial method)</a>
-</li>
-          <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.forward">(STDP method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.forward">(Synapse method)</a>
 </li>
@@ -1028,10 +1026,10 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.like_synaptic">(LinearLateral method)</a>
 </li>
         </ul></li>
-        <li><a href="reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense">LinearDense (class in inferno.neural)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense">LinearDense (class in inferno.neural)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect">LinearDirect (class in inferno.neural)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral">LinearLateral (class in inferno.neural)</a>
@@ -1067,10 +1065,6 @@
         <li><a href="reference/generated/inferno.bounding.lower_power_dependence.html#inferno.bounding.lower_power_dependence">lower_power_dependence() (in module inferno.bounding)</a>
 </li>
         <li><a href="reference/generated/inferno.bounding.lower_sharp_dependence.html#inferno.bounding.lower_sharp_dependence">lower_sharp_dependence() (in module inferno.bounding)</a>
-</li>
-        <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.lrpost">lrpost (STDP property)</a>
-</li>
-        <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.lrpre">lrpre (STDP property)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -1577,10 +1571,10 @@
 </li>
         <li><a href="reference/generated/inferno.neural.functional.trace_nearest.html#inferno.neural.functional.trace_nearest">trace_nearest() (in module inferno.neural.functional)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.functional.trace_nearest_scaled.html#inferno.neural.functional.trace_nearest_scaled">trace_nearest_scaled() (in module inferno.neural.functional)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable">Trainable (class in inferno.neural)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.trainable">trainable (Serial property)</a>
@@ -1591,6 +1585,8 @@
           <li><a href="reference/generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater.trainables">(LayerwiseUpdater property)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.trainer_state">trainer_state() (Trainable method)</a>
+</li>
         <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.trainexec">trainexec (Hook property)</a>
 </li>
     </ul></td>

@@ -258,7 +258,7 @@ should not be supplied by the user. If required, see the implementation of
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Trainable.add_monitor">
-<span class="sig-name descname"><span class="pre">add_monitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">caller</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MonitorConstructor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.observe.ManagedMonitor.html#inferno.observe.ManagedMonitor" title="inferno.observe.monitors.ManagedMonitor"><span class="pre">ManagedMonitor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Trainable.add_monitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Trainable.add_monitor" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">add_monitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">caller</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MonitorConstructor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unpooled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.observe.ManagedMonitor.html#inferno.observe.ManagedMonitor" title="inferno.observe.monitors.ManagedMonitor"><span class="pre">ManagedMonitor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Trainable.add_monitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Trainable.add_monitor" title="Link to this definition">#</a></dt>
 <dd><p>Adds a managed monitor associated with a trainer.</p>
 <p>This works in conjunction with <a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></a> to ensure that the added
 monitors are not duplicated if it is unneeded. This non-duplication is only
@@ -284,6 +284,8 @@ which created them.</p>
 <li><p><strong>attr</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – dot-seperated attribute path, relative to this trainable, to
 monitor.</p></li>
 <li><p><strong>monitor</strong> (<em>MonitorConstructor</em>) – partial constructor for the monitor to add.</p></li>
+<li><p><strong>unpooled</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – if the monitor should not be aliased from the pool
+regardless. Defaults to False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -300,6 +302,14 @@ monitor.</p></li>
 <dd class="field-even"><p><a class="reference internal" href="inferno.observe.ManagedMonitor.html#inferno.observe.ManagedMonitor" title="inferno.observe.ManagedMonitor">ManagedMonitor</a></p>
 </dd>
 </dl>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If the monitor’s behavior for the targeted attribute may vary with
+hyperparameters or other configuration state, <code class="docutils literal notranslate"><span class="pre">unpooled</span></code> should be
+set to <code class="docutils literal notranslate"><span class="pre">True</span></code>. This does not keep this monitor from being aliased however,
+so the setting of <code class="docutils literal notranslate"><span class="pre">unpooled</span></code> should be consistent across all monitors
+with the same name.</p>
+</div>
 </dd></dl>
 
 <dl class="py property">
@@ -329,6 +339,17 @@ with this trainable.</p>
 the monitor.</p></li>
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the monitor to remove.</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Trainable.del_trainer_state">
+<span class="sig-name descname"><span class="pre">del_trainer_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Trainable.del_trainer_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Trainable.del_trainer_state" title="Link to this definition">#</a></dt>
+<dd><p>Deletes trainer state if it exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the trainer.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -430,6 +451,23 @@ the monitor.</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Trainable.trainer_state">
+<span class="sig-name descname"><span class="pre">trainer_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.infrastructure.Module"><span class="pre">Module</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Trainable.trainer_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Trainable.trainer_state" title="Link to this definition">#</a></dt>
+<dd><p>Adds or retrieves trainer state module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the trainer.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>module containing trainer state</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.Module">Module</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.Trainable.updater">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">updater</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.modeling.Updater"><span class="pre">Updater</span></a></em><a class="headerlink" href="#inferno.neural.Trainable.updater" title="Link to this definition">#</a></dt>
@@ -508,6 +546,7 @@ the monitor.</p></li>
 <li><a class="reference internal" href="#inferno.neural.Trainable.add_monitor"><code class="docutils literal notranslate"><span class="pre">Trainable.add_monitor()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Trainable.connection"><code class="docutils literal notranslate"><span class="pre">Trainable.connection</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Trainable.del_monitor"><code class="docutils literal notranslate"><span class="pre">Trainable.del_monitor()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Trainable.del_trainer_state"><code class="docutils literal notranslate"><span class="pre">Trainable.del_trainer_state()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Trainable.forward"><code class="docutils literal notranslate"><span class="pre">Trainable.forward()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Trainable.neuron"><code class="docutils literal notranslate"><span class="pre">Trainable.neuron</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Trainable.postspike"><code class="docutils literal notranslate"><span class="pre">Trainable.postspike</span></code></a></li>
@@ -515,6 +554,7 @@ the monitor.</p></li>
 <li><a class="reference internal" href="#inferno.neural.Trainable.precurrent"><code class="docutils literal notranslate"><span class="pre">Trainable.precurrent</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Trainable.prespike"><code class="docutils literal notranslate"><span class="pre">Trainable.prespike</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Trainable.synapse"><code class="docutils literal notranslate"><span class="pre">Trainable.synapse</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Trainable.trainer_state"><code class="docutils literal notranslate"><span class="pre">Trainable.trainer_state()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Trainable.updater"><code class="docutils literal notranslate"><span class="pre">Trainable.updater</span></code></a></li>
 </ul>
 </li>

@@ -224,18 +224,18 @@
 <h1>STDP<a class="headerlink" href="#stdp" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.learn.STDP">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">STDP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_post</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_pre</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tc_post</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tc_pre</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">delayed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'cumulative'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'nearest'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cumulative'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wd_lower</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.learn.functional.UpdateBounding.html#inferno.learn.functional.UpdateBounding" title="inferno.learn.functional.update.UpdateBounding"><span class="pre">UpdateBounding</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wd_upper</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.learn.functional.UpdateBounding.html#inferno.learn.functional.UpdateBounding" title="inferno.learn.functional.update.UpdateBounding"><span class="pre">UpdateBounding</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater" title="inferno.learn.base.LayerwiseUpdater"><code class="xref py py-class docutils literal notranslate"><span class="pre">LayerwiseUpdater</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">STDP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_post</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_pre</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tc_post</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tc_pre</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">delayed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'cumulative'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'nearest'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cumulative'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LayerwiseTrainer</span></code></p>
 <p>Spike-timing dependent plasticity updater.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\Delta w = A_+ x_\text{pre} \bigl[t = t^f_\text{post}\bigr] -
+\[\Delta w = A_+ x_\text{pre} \bigl[t = t^f_\text{post}\bigr] +
 A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]\]</div>
 </div>
 <p>Where:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}x^{(t)} &amp;=
+\[\begin{split}x^{(t)} =
 \begin{cases}
     1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t = t^f \text{ and cumulative trace} \\
     1 &amp; t = t^f \text{ and nearest trace} \\
@@ -243,40 +243,81 @@ A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]\]</div>
 \end{cases}\end{split}\]</div>
 </div>
 <p><span class="math notranslate nohighlight">\(t\)</span> and <span class="math notranslate nohighlight">\(t^f\)</span> are the current time and the time of the most recent
-spike, respectively. <span class="math notranslate nohighlight">\(A_+\)</span> and <span class="math notranslate nohighlight">\(A_-\)</span> vary with weight dependence, but
-by default are.</p>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[A_+ = \eta_\text{post} \qquad A_- = \eta_\text{pre}\]</div>
+spike, respectively.</p>
+<p>The terms <span class="math notranslate nohighlight">\(A_+\)</span> and <span class="math notranslate nohighlight">\(A_-\)</span> are equal to the learning rates
+<span class="math notranslate nohighlight">\(\eta_\text{post}\)</span> and <span class="math notranslate nohighlight">\(\eta_\text{pre}\)</span> respectively, although they
+may be scaled by weight dependence at the updater level. The “mode” changes based on
+the sign of the learning rates, and updates are applied based on any potentiative
+and depressive components.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Mode</p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(\text{sgn}(\eta_\text{post})\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(\text{sgn}(\eta_\text{pre})\)</span></p></th>
+<th class="head"><p>LTP Term(s)</p></th>
+<th class="head"><p>LTD Term(s)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Hebbian</p></td>
+<td><p><span class="math notranslate nohighlight">\(+\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(-\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\eta_\text{post}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\eta_\text{pre}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Anti-Hebbian</p></td>
+<td><p><span class="math notranslate nohighlight">\(-\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(+\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\eta_\text{pre}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\eta_\text{post}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Depressive Only</p></td>
+<td><p><span class="math notranslate nohighlight">\(-\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(-\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\eta_\text{post}, \eta_\text{pre}\)</span></p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-odd"><td><p>Potentiative Only</p></td>
+<td><p><span class="math notranslate nohighlight">\(+\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(+\)</span></p></td>
+<td><p>None</p></td>
+<td><p><span class="math notranslate nohighlight">\(\eta_\text{post}, \eta_\text{pre}\)</span></p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of a simulation time step, <span class="math notranslate nohighlight">\(\Delta t\)</span>,
 in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
-<li><p><strong>lr_post</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – learning rate for updates on postsynaptic spike updates (LTP),
+<li><p><strong>lr_post</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – learning rate for updates on postsynaptic spike updates,
 <span class="math notranslate nohighlight">\(\eta_\text{post}\)</span>.</p></li>
-<li><p><strong>lr_pre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – learning rate for updates on presynaptic spike updates (LTD),
+<li><p><strong>lr_pre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – learning rate for updates on presynaptic spike updates,
 <span class="math notranslate nohighlight">\(\eta_\text{pre}\)</span>.</p></li>
 <li><p><strong>tc_post</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time constant for exponential decay of postsynaptic trace,
 <span class="math notranslate nohighlight">\(tau_\text{post}\)</span>, in <span class="math notranslate nohighlight">\(ms\)</span>.</p></li>
 <li><p><strong>tc_pre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time constant for exponential decay of presynaptic trace,
 <span class="math notranslate nohighlight">\(tau_\text{pre}\)</span>, in <span class="math notranslate nohighlight">\(ms\)</span>.</p></li>
-<li><p><strong>delayed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the updater should assume learned delays, if
+<li><p><strong>delayed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the updater should assume that learned delays, if
 present, may change. Defaults to False.</p></li>
 <li><p><strong>interp_tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – maximum difference in time from an observation
 to treat as co-occurring, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>. Defaults to 0.0.</p></li>
 <li><p><strong>trace_mode</strong> (<em>Literal</em><em>[</em><em>&quot;cumulative&quot;</em><em>, </em><em>&quot;nearest&quot;</em><em>]</em><em>, </em><em>optional</em>) – method to use for
 calculating spike traces. Defaults to “cumulative”.</p></li>
-<li><p><strong>wd_lower</strong> (<a class="reference internal" href="inferno.learn.functional.UpdateBounding.html#inferno.learn.functional.UpdateBounding" title="inferno.learn.functional.UpdateBounding"><em>UpdateBounding</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – callable for applying weight dependence on a lower bound, no dependence if
-None. Defaults to None.</p></li>
-<li><p><strong>wd_upper</strong> (<a class="reference internal" href="inferno.learn.functional.UpdateBounding.html#inferno.learn.functional.UpdateBounding" title="inferno.learn.functional.UpdateBounding"><em>UpdateBounding</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – callable for applying weight dependence on an bound, no dependence if
-None. Defaults to None.</p></li>
 <li><p><strong>batch_reduction</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>...</em><em>]</em><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em>) – function to reduce updates over the batch dimension, <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.mean.html#torch.mean" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.mean()</span></code></a>
 when None. Defaults to None.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – name of the trainer, for layer monitor pooling,
+generated uniquely when None. Defaults to None.</p></li>
 </ul>
 </dd>
 </dl>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The constructor arguments (except for <code class="docutils literal notranslate"><span class="pre">name</span></code>) are hyperparameters for STDP
+and can be overridden on a trainable-by-trainable basis.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">batch_reduction</span></code> can be one of the functions in PyTorch including but not
@@ -292,83 +333,44 @@ included function, it should not keep the original dimensions by default.</p>
 <a class="reference internal" href="../../zoo/learning-stdp.html#weight-dependence-hard-bounding"><span class="std std-ref">Weight Dependence, Hard Bounding</span></a> in the zoo.</p>
 </div>
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.STDP.add_monitors">
-<span class="sig-name descname"><span class="pre">add_monitors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.modeling.Layer"><span class="pre">Layer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP.add_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP.add_monitors" title="Link to this definition">#</a></dt>
-<dd><p>Associates base layout of monitors required by the updater with the layer.</p>
+<dt class="sig sig-object py" id="inferno.learn.STDP.add_trainable">
+<span class="sig-name descname"><span class="pre">add_trainable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Trainable.html#inferno.neural.Trainable" title="inferno.neural.modeling.Trainable"><span class="pre">Trainable</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Trainable.html#inferno.neural.Trainable" title="inferno.neural.modeling.Trainable"><span class="pre">Trainable</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP.add_trainable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP.add_trainable" title="Link to this definition">#</a></dt>
+<dd><p>Adds a trainable with required state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>trainable</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – layer to which monitors should be added.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the trainable to add.</p></li>
+<li><p><strong>trainable</strong> (<a class="reference internal" href="inferno.neural.Trainable.html#inferno.neural.Trainable" title="inferno.neural.Trainable"><em>Trainable</em></a>) – trainable to add.</p></li>
+</ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>if the monitors were successfully added.</p>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of a simulation time step.</p></li>
+<li><p><strong>lr_post</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – learning rate for updates on postsynaptic spike updates.</p></li>
+<li><p><strong>lr_pre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – learning rate for updates on presynaptic spike updates.</p></li>
+<li><p><strong>tc_post</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time constant for exponential decay of postsynaptic trace.</p></li>
+<li><p><strong>tc_pre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time constant for exponential decay of presynaptic trace.</p></li>
+<li><p><strong>delayed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – if the updater should assume that learned delays,
+if present, may change.</p></li>
+<li><p><strong>interp_tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – maximum difference in time from an observation
+to treat as co-occurring.</p></li>
+<li><p><strong>trace_mode</strong> (<em>Literal</em><em>[</em><em>&quot;cumulative&quot;</em><em>, </em><em>&quot;nearest&quot;</em><em>]</em>) – method to use for
+calculating spike traces.</p></li>
+<li><p><strong>batch_reduction</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>...</em><em>]</em><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – function to reduce updates over the batch dimension.</p></li>
+</ul>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>added trainable.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Trainable.html#inferno.neural.Trainable" title="inferno.neural.Trainable">Trainable</a></p>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This adds four prepended monitors named: “spike_post”, “spike_pre”,
-“trace_post”, and “trace_pre”. This method will fail to assign monitors
-if a monitor with these names is already associated with <code class="docutils literal notranslate"><span class="pre">trainable</span></code>.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Any specified keyword arguments will override the default hyperparameters
+set on initialization. See <a class="reference internal" href="#inferno.learn.STDP" title="inferno.learn.STDP"><code class="xref py py-class docutils literal notranslate"><span class="pre">STDP</span></code></a> for details.</p>
 </div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.learn.STDP.dt">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><a class="headerlink" href="#inferno.learn.STDP.dt" title="Link to this definition">#</a></dt>
-<dd><p>Length of the simulation time step, in milliseconds.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – new simulation time step length.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present simulation time step length.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.STDP.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP.forward" title="Link to this definition">#</a></dt>
-<dd><p>Processes update for given layers based on current monitor stored data.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.learn.STDP.lrpost">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lrpost</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><a class="headerlink" href="#inferno.learn.STDP.lrpost" title="Link to this definition">#</a></dt>
-<dd><p>Learning rate for updates on postsynaptic spikes (potentiative).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – new postsynaptic learning rate.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present postsynaptic learning rate.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.learn.STDP.lrpre">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lrpre</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><a class="headerlink" href="#inferno.learn.STDP.lrpre" title="Link to this definition">#</a></dt>
-<dd><p>Learning rate for updates on postsynaptic spikes (depressive).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – new postsynaptic learning rate.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present postsynaptic learning rate.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
@@ -432,11 +434,7 @@ if a monitor with these names is already associated with <code class="docutils l
             <ul>
 <li><a class="reference internal" href="#">STDP</a><ul>
 <li><a class="reference internal" href="#inferno.learn.STDP"><code class="docutils literal notranslate"><span class="pre">STDP</span></code></a><ul>
-<li><a class="reference internal" href="#inferno.learn.STDP.add_monitors"><code class="docutils literal notranslate"><span class="pre">STDP.add_monitors()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.STDP.dt"><code class="docutils literal notranslate"><span class="pre">STDP.dt</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.STDP.forward"><code class="docutils literal notranslate"><span class="pre">STDP.forward()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.STDP.lrpost"><code class="docutils literal notranslate"><span class="pre">STDP.lrpost</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.STDP.lrpre"><code class="docutils literal notranslate"><span class="pre">STDP.lrpre</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.STDP.add_trainable"><code class="docutils literal notranslate"><span class="pre">STDP.add_trainable()</span></code></a></li>
 </ul>
 </li>
 </ul>

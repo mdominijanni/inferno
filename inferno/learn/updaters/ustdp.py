@@ -13,6 +13,83 @@ from typing import Any, Callable, Literal
 
 
 class STDP(LayerwiseTrainer):
+    r"""Spike-timing dependent plasticity updater.
+
+    .. math::
+        \Delta w = A_+ x_\text{pre} \bigl[t = t^f_\text{post}\bigr] +
+        A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]
+
+    Where:
+
+    .. math::
+        x^{(t)} =
+        \begin{cases}
+            1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t = t^f \text{ and cumulative trace} \\
+            1 & t = t^f \text{ and nearest trace} \\
+            x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t \neq t^f
+        \end{cases}
+
+    :math:`t` and :math:`t^f` are the current time and the time of the most recent
+    spike, respectively.
+
+    The terms :math:`A_+` and :math:`A_-` are equal to the learning rates
+    :math:`\eta_\text{post}` and :math:`\eta_\text{pre}` respectively, although they
+    may be scaled by weight dependence at the updater level. The "mode" changes based on
+    the sign of the learning rates, and updates are applied based on any potentiative
+    and depressive components.
+
+    +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
+    | Mode              | :math:`\text{sgn}(\eta_\text{post})` | :math:`\text{sgn}(\eta_\text{pre})` | LTP Term(s)                               | LTD Term(s)                               |
+    +===================+======================================+=====================================+===========================================+===========================================+
+    | Hebbian           | :math:`+`                            | :math:`-`                           | :math:`\eta_\text{post}`                  | :math:`\eta_\text{pre}`                   |
+    +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
+    | Anti-Hebbian      | :math:`-`                            | :math:`+`                           | :math:`\eta_\text{pre}`                   | :math:`\eta_\text{post}`                  |
+    +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
+    | Depressive Only   | :math:`-`                            | :math:`-`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
+    +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
+    | Potentiative Only | :math:`+`                            | :math:`+`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
+    +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
+
+    Args:
+        step_time (float): length of a simulation time step, :math:`\Delta t`,
+            in :math:`\text{ms}`.
+        lr_post (float): learning rate for updates on postsynaptic spike updates,
+            :math:`\eta_\text{post}`.
+        lr_pre (float): learning rate for updates on presynaptic spike updates,
+            :math:`\eta_\text{pre}`.
+        tc_post (float): time constant for exponential decay of postsynaptic trace,
+            :math:`tau_\text{post}`, in :math:`ms`.
+        tc_pre (float): time constant for exponential decay of presynaptic trace,
+            :math:`tau_\text{pre}`, in :math:`ms`.
+        delayed (bool, optional): if the updater should assume that learned delays, if
+            present, may change. Defaults to False.
+        interp_tolerance (float): maximum difference in time from an observation
+            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
+        trace_mode (Literal["cumulative", "nearest"], optional): method to use for
+            calculating spike traces. Defaults to "cumulative".
+        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+            function to reduce updates over the batch dimension, :py:func:`torch.mean`
+            when None. Defaults to None.
+        name (str | None, optional): name of the trainer, for layer monitor pooling,
+            generated uniquely when None. Defaults to None.
+
+    Important:
+        The constructor arguments (except for ``name``) are hyperparameters for STDP
+        and can be overridden on a trainable-by-trainable basis.
+
+    Note:
+        ``batch_reduction`` can be one of the functions in PyTorch including but not
+        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        A custom function with similar behavior can also be passed in. Like with the
+        included function, it should not keep the original dimensions by default.
+
+    See Also:
+        For more details and references, visit
+        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)`,
+        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding`, and
+        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.
+    """
+
     def __init__(
         self,
         step_time: float,
@@ -20,7 +97,6 @@ class STDP(LayerwiseTrainer):
         lr_pre: float,
         tc_post: float,
         tc_pre: float,
-        hebbian: bool = True,
         delayed: bool = False,
         interp_tolerance: float = 0.0,
         trace_mode: Literal["cumulative", "nearest"] = "cumulative",
@@ -46,80 +122,45 @@ class STDP(LayerwiseTrainer):
         )
         self.batchreduce = batch_reduction if batch_reduction else torch.mean
 
-    def _hyperparameter_defaults(
-        self,
-        step_time: float | None = None,
-        lr_post: float | None = None,
-        lr_pre: float | None = None,
-        tc_post: float | None = None,
-        tc_pre: float | None = None,
-        hebbian: bool | None = None,
-        delayed: bool | None = None,
-        interp_tolerance: float | None = None,
-        trace_mode: Literal["cumulative", "nearest"] | None = None,
-        batch_reduction: (
-            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
-        ) = None,
-    ) -> dict[str, Any]:
+    def _hyperparam_config(self, **kwargs: Any) -> dict[str, Any]:
         r"""Module Internal: construct a dictionary of hyperparameters with defaults.
 
         Args:
-            step_time (float | None, optional): length of a simulation time step. Defaults to None.
-            lr_post (float | None, optional): learning rate for updates on postsynaptic spike updates (LTP). Defaults to None.
-            lr_pre (float | None, optional): _description_. Defaults to None.
-            tc_post (float | None, optional): _description_. Defaults to None.
-            tc_pre (float | None, optional): _description_. Defaults to None.
-            hebbian (bool | None, optional): _description_. Defaults to None.
-            delayed (bool | None, optional): _description_. Defaults to None.
-            interp_tolerance (float | None, optional): _description_. Defaults to None.
-            trace_mode (Literal[&quot;cumulative&quot;, &quot;nearest&quot;] | None, optional): _description_. Defaults to None.
-            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]  |  None, optional): _description_. Defaults to None.
+            **kwargs (Any) hyperparameter overrides.
 
         Returns:
-            dict[str, Any]: _description_
+            dict[str, Any]: dictionary of hyperparameters
         """
-
-        # conditional dictionary update
-        def nullc(store, value, attr, fn):
-            if value is None:
-                store[attr] = getattr(self, attr)
-            else:
-                store[attr] = fn(value)
-
-        # alias argtest for compactness
-        gt, gte, oneof = argtest.gt, argtest.gte, argtest.oneof
-
         # hyperparameter store
         d = {}
 
-        # fill store
-        nullc(d, step_time, "step_time", lambda x: gt("step_time", x, 0, float))
-        nullc(d, lr_post, "lr_post", lambda x: float(x))
-        nullc(d, lr_pre, "lr_pre", lambda x: float(x))
-        nullc(d, tc_post, "tc_post", gt("tc_post", tc_post, 0, float))
-        nullc(d, tc_pre, "tc_pre", gt("tc_pre", tc_pre, 0, float))
-        nullc(d, delayed, "delayed", lambda x: bool(x))
-        nullc(
-            d,
-            interp_tolerance,
-            "tolerance",
-            gte("interp_tolerance", interp_tolerance, 0, float),
+        # validation functions
+        gt0 = lambda n, h: argtest.gt(n, h, 0, float)  # noqa:E731;
+        gte0 = lambda n, h: argtest.gte(n, h, 0, float)  # noqa:E731;
+        trace_valid = lambda n, h: argtest.oneof(  # noqa:E731;
+            n, h, "cumulative", "nearest", op=(lambda x: x.lower())
         )
+        identf = lambda n, h: h  # noqa:E731;
+        floatf = lambda n, h: float(h)  # noqa:E731;
 
-        if trace_mode is None:
-            d["trace"] = self.trace
-        else:
-            d["trace"] = argtest.oneof(
-                "trace_mode",
-                trace_mode,
-                "cumulative",
-                "nearest",
-                op=(lambda x: x.lower()),
-            )
-        if batch_reduction is None:
-            d["batchreduce"] = self.batchreduce
-        else:
-            d["batchreduce"] = batch_reduction if batch_reduction else torch.mean
+        # iterate over expected keys
+        hparams = {
+            "step_time": ("step_time", gt0),
+            "lr_post": ("lr_post", floatf),
+            "lr_pre": ("lr_pre", floatf),
+            "tc_post": ("tc_post", gt0),
+            "tc_pre": ("tc_pre", gt0),
+            "delayed": ("delayed", floatf),
+            "interp_tolerance": ("tolerance", gte0),
+            "trace_mode": ("trace", trace_valid),
+            "batch_reduction": ("batchreduce", identf),
+        }
+
+        for key, (param, func) in hparams.items():
+            if key in kwargs:
+                d[param] = func(kwargs[key])
+            else:
+                d[param] = getattr(self, param)
 
         return d
 
@@ -127,33 +168,43 @@ class STDP(LayerwiseTrainer):
         self,
         name: str,
         trainable: Trainable,
-        *,
-        step_time: float | None = None,
-        lr_post: float | None = None,
-        lr_pre: float | None = None,
-        tc_post: float | None = None,
-        tc_pre: float | None = None,
-        delayed: bool | None = None,
-        interp_tolerance: float | None = None,
-        trace_mode: Literal["cumulative", "nearest"] | None = None,
-        batch_reduction: (
-            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
-        ) = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Trainable:
-        d = self._hyperparameter_defaults(
-            step_time,
-            lr_post,
-            lr_pre,
-            tc_post,
-            tc_pre,
-            delayed,
-            interp_tolerance,
-            trace_mode,
-            batch_reduction,
+        r"""Adds a trainable with required state.
+
+        Args:
+            name (str): name of the trainable to add.
+            trainable (Trainable): trainable to add.
+
+        Keyword Args:
+            step_time (float): length of a simulation time step.
+            lr_post (float): learning rate for updates on postsynaptic spike updates.
+            lr_pre (float): learning rate for updates on presynaptic spike updates.
+            tc_post (float): time constant for exponential decay of postsynaptic trace.
+            tc_pre (float): time constant for exponential decay of presynaptic trace.
+            delayed (bool): if the updater should assume that learned delays,
+                if present, may change.
+            interp_tolerance (float): maximum difference in time from an observation
+                to treat as co-occurring.
+            trace_mode (Literal["cumulative", "nearest"]): method to use for
+                calculating spike traces.
+            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
+                function to reduce updates over the batch dimension.
+
+        Returns:
+            Trainable: added trainable.
+
+        Important:
+            Any specified keyword arguments will override the default hyperparameters
+            set on initialization. See :py:class:`STDP` for details.
+        """
+        # add the trainable with additional hyperparameters
+        trainable = LayerwiseTrainer.add_trainable(
+            self, name, trainable, **self._hp_override(**kwargs)
         )
 
-        return LayerwiseTrainer.add_trainable(self, name, trainable, **d, **kwargs)
+        # TODO: add appropriate monitors, unpool trace
+        _ = self.add_monitor()
 
 
 class STDPv1(LayerwiseUpdater):

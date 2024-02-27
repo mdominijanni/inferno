@@ -1034,10 +1034,46 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_monitor_callback</span> <span class="o">=</span> <span class="n">add_monitor_callback</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_del_monitor_callback</span> <span class="o">=</span> <span class="n">del_monitor_callback</span>
 
+        <span class="c1"># reserve state for trainers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer_state_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Trainable.trainer_state">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.trainer_state">[docs]</a>
+    <span class="k">def</span> <span class="nf">trainer_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Module</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds or retrieves trainer state module.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): name of the trainer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Module: module containing trainer state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer_state_</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer_state_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Module</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer_state_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Trainable.del_trainer_state">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.del_trainer_state">[docs]</a>
+    <span class="k">def</span> <span class="nf">del_trainer_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes trainer state if it exists.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): name of the trainer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer_state_</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer_state_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
+
+
 <div class="viewcode-block" id="Trainable.add_monitor">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Trainable.html#inferno.neural.Trainable.add_monitor">[docs]</a>
     <span class="k">def</span> <span class="nf">add_monitor</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">caller</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">monitor</span><span class="p">:</span> <span class="n">MonitorConstructor</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">caller</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="p">:</span> <span class="n">MonitorConstructor</span><span class="p">,</span>
+        <span class="n">unpooled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ManagedMonitor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a managed monitor associated with a trainer.</span>
 
@@ -1068,6 +1104,8 @@
 <span class="sd">            attr (str): dot-seperated attribute path, relative to this trainable, to</span>
 <span class="sd">                monitor.</span>
 <span class="sd">            monitor (MonitorConstructor): partial constructor for the monitor to add.</span>
+<span class="sd">            unpooled (bool): if the monitor should not be aliased from the pool</span>
+<span class="sd">                regardless. Defaults to False.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            RuntimeError: attribute must be a member of this trainable.</span>
@@ -1076,6 +1114,13 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ManagedMonitor: added monitor.</span>
+
+<span class="sd">        Tip:</span>
+<span class="sd">            If the monitor&#39;s behavior for the targeted attribute may vary with</span>
+<span class="sd">            hyperparameters or other configuration state, ``unpooled`` should be</span>
+<span class="sd">            set to ``True``. This does not keep this monitor from being aliased however,</span>
+<span class="sd">            so the setting of ``unpooled`` should be consistent across all monitors</span>
+<span class="sd">            with the same name.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># check that the attribute is a valid dot-chain identifier</span>
         <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">nestedidentifier</span><span class="p">(</span><span class="s2">&quot;attr&quot;</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
@@ -1119,13 +1164,16 @@
         <span class="n">attrchain</span> <span class="o">=</span> <span class="n">attrsub</span> <span class="o">+</span> <span class="n">attrchain</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 
         <span class="c1"># split the chain into target and attribute</span>
-        <span class="k">match</span> <span class="n">attrchain</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">case</span> <span class="s2">&quot;connection&quot;</span><span class="p">:</span>
-                <span class="n">target</span><span class="p">,</span> <span class="n">attr</span> <span class="o">=</span> <span class="s2">&quot;connection&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrchain</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-            <span class="k">case</span> <span class="s2">&quot;neuron&quot;</span><span class="p">:</span>
-                <span class="n">target</span><span class="p">,</span> <span class="n">attr</span> <span class="o">=</span> <span class="s2">&quot;neuron&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrchain</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-                <span class="n">target</span><span class="p">,</span> <span class="n">attr</span> <span class="o">=</span> <span class="s2">&quot;trainable&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrchain</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">unpooled</span><span class="p">:</span>
+            <span class="n">target</span><span class="p">,</span> <span class="n">attr</span> <span class="o">=</span> <span class="s2">&quot;trainable&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrchain</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">match</span> <span class="n">attrchain</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">case</span> <span class="s2">&quot;connection&quot;</span><span class="p">:</span>
+                    <span class="n">target</span><span class="p">,</span> <span class="n">attr</span> <span class="o">=</span> <span class="s2">&quot;connection&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrchain</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                <span class="k">case</span> <span class="s2">&quot;neuron&quot;</span><span class="p">:</span>
+                    <span class="n">target</span><span class="p">,</span> <span class="n">attr</span> <span class="o">=</span> <span class="s2">&quot;neuron&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrchain</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                    <span class="n">target</span><span class="p">,</span> <span class="n">attr</span> <span class="o">=</span> <span class="s2">&quot;trainable&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrchain</span><span class="p">)</span>
 
         <span class="c1"># use layer callback to add the monitor to its pool and return</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_monitor_callback</span><span class="p">(</span><span class="n">caller</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">monitor</span><span class="p">)</span></div>

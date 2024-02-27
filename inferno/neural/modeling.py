@@ -795,7 +795,12 @@ class Trainable(Module):
             del self.trainer_state_[name]
 
     def add_monitor(
-        self, caller: str, name: str, attr: str, monitor: MonitorConstructor
+        self,
+        caller: str,
+        name: str,
+        attr: str,
+        monitor: MonitorConstructor,
+        unpooled: bool = False,
     ) -> ManagedMonitor:
         r"""Adds a managed monitor associated with a trainer.
 
@@ -826,6 +831,8 @@ class Trainable(Module):
             attr (str): dot-seperated attribute path, relative to this trainable, to
                 monitor.
             monitor (MonitorConstructor): partial constructor for the monitor to add.
+            unpooled (bool): if the monitor should not be aliased from the pool
+                regardless. Defaults to False.
 
         Raises:
             RuntimeError: attribute must be a member of this trainable.
@@ -834,6 +841,13 @@ class Trainable(Module):
 
         Returns:
             ManagedMonitor: added monitor.
+
+        Tip:
+            If the monitor's behavior for the targeted attribute may vary with
+            hyperparameters or other configuration state, ``unpooled`` should be
+            set to ``True``. This does not keep this monitor from being aliased however,
+            so the setting of ``unpooled`` should be consistent across all monitors
+            with the same name.
         """
         # check that the attribute is a valid dot-chain identifier
         _ = argtest.nestedidentifier("attr", attr)
@@ -877,13 +891,16 @@ class Trainable(Module):
         attrchain = attrsub + attrchain[1:]
 
         # split the chain into target and attribute
-        match attrchain[0]:
-            case "connection":
-                target, attr = "connection", ".".join(attrchain[1:])
-            case "neuron":
-                target, attr = "neuron", ".".join(attrchain[1:])
-            case _:
-                target, attr = "trainable", ".".join(attrchain)
+        if unpooled:
+            target, attr = "trainable", ".".join(attrchain)
+        else:
+            match attrchain[0]:
+                case "connection":
+                    target, attr = "connection", ".".join(attrchain[1:])
+                case "neuron":
+                    target, attr = "neuron", ".".join(attrchain[1:])
+                case _:
+                    target, attr = "trainable", ".".join(attrchain)
 
         # use layer callback to add the monitor to its pool and return
         return self._add_monitor_callback(caller, name, target, attr, monitor)

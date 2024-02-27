@@ -214,6 +214,7 @@ class Trainer(Module):
         name: str,
         attr: str,
         monitor: MonitorConstructor,
+        unpooled: bool = False,
         **kwargs,
     ) -> ManagedMonitor:
         r"""Adds a monitor to a trainable.
@@ -223,6 +224,8 @@ class Trainer(Module):
             name (str): name of the monitor to add (unique to the trainable).
             attr (str): dot-seperated attribute to monitor, relative to the trainable.
             monitor (MonitorConstructor): partial constructor for the monitor.
+            unpooled (bool): if the monitor should not be aliased from the pool
+                regardless. Defaults to False.
 
         Raises:
             AttributeError: specified trainable does not exist.
@@ -233,6 +236,13 @@ class Trainer(Module):
         Important:
             If the monitor exists, it will be retrieved even if the specifications
             (attribute and/or partial constructor) are different.
+
+        Tip:
+            If the monitor's behavior for the targeted attribute may vary with
+            hyperparameters or other configuration state, ``unpooled`` should be
+            set to ``True``. This does not keep this monitor from being aliased however,
+            so the setting of ``unpooled`` should be consistent across all monitors
+            with the same name.
         """
         # test if the monitor already exists and return if it does
         maybemon = self.monitors_.get(trainable, {}).get(name, None)
@@ -247,7 +257,7 @@ class Trainer(Module):
 
         # create monitor via the trainable
         monitor = self.trainables_[trainable].add_monitor(
-            self._pool_name, name, attr, monitor
+            self._pool_name, name, attr, monitor, unpooled
         )
 
         # add monitor to the trainer
@@ -393,14 +403,13 @@ class LayerwiseTrainer(Trainer):
         Trainer.__init__(self, name, **kwargs)
 
     def add_layer(
-        self, layer: Layer, prefix: str | None = None, **kwargs
+        self, prefix: str, layer: Layer, **kwargs
     ) -> dict[str, Trainable]:
         r"""Adds all trainables from a given layer.
 
         Args:
+            prefix (str): string to prepend to trainable name.
             layer (Layer): layer from which trainables should be added.
-            prefix (str | None, optional): string to prepend to trainable name.
-                Defaults to None.
 
         Returns:
             dict[str, Trainable]: names of added trainables and those trainables.
@@ -408,11 +417,10 @@ class LayerwiseTrainer(Trainer):
         Note:
             The names used are automatically generated based on the name of the input
             and name of the output in the layer. For example, with an input named
-            ``"linear"`` and an output named ``"alif"``, the trainable name will be
-            named ``"linear-alif"``. If a ``prefix`` is given, say ``"l0"``, then the
-            name will be ``"l0-linear-alif"``.
+            ``"linear"`` and an output named ``"alif"``, and a ``prefix`` of ``"l0"``,
+            the trainable name will be ``"l0:linear-alif"``.
         """
-        prefix = f"{prefix}-" if prefix else ""
+        prefix = f"{prefix}:" if prefix else ""
         return {
             n: self.add_trainable(n, t, **kwargs)
             for n, t in fzip(
