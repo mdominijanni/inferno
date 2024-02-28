@@ -1,3 +1,4 @@
+from .utils import rgetattr
 from collections.abc import Iterable, Sequence
 from types import UnionType
 from typing import Any, Callable
@@ -706,6 +707,32 @@ def members(name: str, obj: Any, *attr: str, prefix: str | None = None) -> Any:
         raise RuntimeError(
             f"{pfx}'{name}' of type {objt} is missing the attribute(s): {sa}"
         )
+
+
+def nestedmembers(name: str, obj: Any, *attr: str, prefix: str | None = None) -> Any:
+    r"""Checks if an object has given nested attributes.
+
+    Args:
+        name (str): display name of the object being tested.
+        obj (Any): object being tested.
+        attr (str): required nested attributes.
+        prefix (str | None, optional): error message prefix to display.
+            Defaults to None.
+
+    Returns:
+        Any: tested object.
+    """
+    try:
+        for a in attr:
+            lastattr = a
+            _ = rgetattr(obj, a)
+    except AttributeError:
+        objt, sa, pfx = _typename(obj), ", ".join(lastattr), _prefixstr(prefix)
+        raise RuntimeError(
+            f"{pfx}'{name}' of type {objt} is missing the attribute(s): {sa}"
+        )
+    else:
+        return obj
 
 
 def identifier(name: str, value: str, prefix: str | None = None) -> str:

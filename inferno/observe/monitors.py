@@ -108,6 +108,7 @@ class InputMonitor(Monitor):
         mapping (ManyToOne[torch.Tensor] | None, optional): modifies/selects
             which inputs to forward to reducer. Defaults to None.
 
+
     Caution:
         When implementing custom updaters, :py:class:`InputMonitor` should never be
         used. Use either :py:class:`StateMonitor` or :py:class:`DifferenceMonitor`.
@@ -350,6 +351,10 @@ class StateMonitor(ManagedMonitor):
             being monitored is in eval mode. Defaults to True.
         prepend (bool, optional): if this monitor should be called before other
             registered forward prehooks or posthooks. Defaults to False.
+        filter_ (Callable[[Any], bool] | None, optional): test if the input should be
+            passed to the reducer, ignores None values when None. Defaults to None.
+        map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the input before
+            being passed to the reduer, identity if None. Defaults to None.
 
     Note:
         The nested attribute should be specified with dot notation. For instance,
@@ -368,12 +373,20 @@ class StateMonitor(ManagedMonitor):
         train_update: bool = True,
         eval_update: bool = True,
         prepend: bool = False,
+        filter_: Callable[[Any], bool] | None = None,
+        map_: Callable[[Any], torch.Tensor] | None = None,
     ):
+        # set filter and map functions
+        filter_ = filter_ if filter_ else lambda x: x is not None
+        map_ = map_ if map_ else lambda x: x
+
         # determine arguments for superclass constructor
         if as_prehook:
 
             def prehook(module, *args):
-                reducer(rgetattr(module, attr))
+                res = rgetattr(module, attr)
+                if filter_(res):
+                    reducer(map_(res))
 
             prehook_kwargs = {"prepend": prepend}
             posthook, posthook_kwargs = None, None
@@ -381,7 +394,9 @@ class StateMonitor(ManagedMonitor):
         else:
 
             def posthook(module, *args):
-                reducer(rgetattr(module, attr))
+                res = rgetattr(module, attr)
+                if filter_(res):
+                    reducer(map_(res))
 
             posthook_kwargs = {"prepend": prepend}
             prehook, prehook_kwargs = None, None
@@ -407,6 +422,8 @@ class StateMonitor(ManagedMonitor):
         train_update: bool = True,
         eval_update: bool = True,
         prepend: bool = False,
+        filter_: Callable[[Any], bool] | None = None,
+        map_: Callable[[Any], torch.Tensor] | None = None,
     ) -> MonitorConstructor:
         r"""Returns a function with a common signature for monitor construction.
 
@@ -421,6 +438,12 @@ class StateMonitor(ManagedMonitor):
                 module being monitored is in eval mode. Defaults to True.
             prepend (bool, optional): if this monitor should be called before other
                 registered forward prehooks or posthooks. Defaults to False.
+            filter_ (Callable[[Any], bool] | None, optional): test if the input should
+                be passed to the reducer, ignores None values when None.
+                Defaults to None.
+            map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the input
+                before being passed to the reduer, identity if None.
+                Defaults to None.
 
         Returns:
             MonitorConstructor: partial constructor for monitor.
@@ -435,6 +458,8 @@ class StateMonitor(ManagedMonitor):
                 train_update=train_update,
                 eval_update=eval_update,
                 prepend=prepend,
+                filter_=filter_,
+                map_=map_,
             )
 
         return constructor
@@ -455,6 +480,12 @@ class DifferenceMonitor(ManagedMonitor):
             being monitored is in eval mode. Defaults to True.
         prepend (bool, optional): if this monitor should be called before other
             registered forward prehooks or posthooks. Defaults to False.
+        filter_ (Callable[[Any, Any], bool] | None, optional): test if the input should
+            be passed to the reducer, ignores None pre or post values when None.
+            Defaults to None.
+        map_ (Callable[[Any, Any], torch.Tensor] | None, optional): modifies the input
+            before being passed to the reduer, post minus pre if None.
+            Defaults to None.
 
     Note:
         The nested attribute should be specified with dot notation. For instance,
@@ -462,6 +493,16 @@ class DifferenceMonitor(ManagedMonitor):
         attribute ``b`` that should be monitored, then ``attr`` should be
         `'a.b'``. Even with nested attributes, the monitor's hook will be tied to
         the module with which it is registered.
+
+    Note:
+        The left-hand argument of ``filter_`` and ``map_`` is the attribute after
+        the :py:meth:`~torch.nn.Module.forward` of ``module`` is run, and the right-hand
+        argument is before it is run.
+
+        By default, ``filter_`` will only reject an input if both the pre and post
+        states are ``None``. By default, ``map_`` will subtract the pre-forward value
+        from the post-forward value. If either is ``None``, it will assume the ``None``
+        value was composed of all-zeros.
     """
 
     def __init__(
@@ -472,7 +513,17 @@ class DifferenceMonitor(ManagedMonitor):
         train_update: bool = True,
         eval_update: bool = True,
         prepend: bool = False,
+        filter_: Callable[[Any, Any], bool] | None = None,
+        map_: Callable[[Any, Any], torch.Tensor] | None = None,
     ):
+        # set filter and map functions
+        filter_ = filter_ if filter_ else lambda f, i: not (f is None and i is None)
+        map_ = (
+            map_
+            if map_
+            else lambda f, i: (0 if f is None else f) - (0 if i is None else i)
+        )
+
         # monitor state
         self.data = None
 
@@ -481,8 +532,9 @@ class DifferenceMonitor(ManagedMonitor):
             self.data = rgetattr(module, attr)
 
         def posthook(module, *args):
-            if self.data is not None:
-                reducer(rgetattr(module, attr) - self.data)
+            res = rgetattr(module, attr)
+            if filter_(res, self.data):
+                reducer(map_(res, self.data))
             self.data = None
 
         # construct superclass
@@ -505,6 +557,8 @@ class DifferenceMonitor(ManagedMonitor):
         train_update: bool = True,
         eval_update: bool = True,
         prepend: bool = False,
+        filter_: Callable[[Any, Any], bool] | None = None,
+        map_: Callable[[Any, Any], torch.Tensor] | None = None,
     ) -> MonitorConstructor:
         r"""Returns a function with a common signature for monitor construction.
 
@@ -517,6 +571,12 @@ class DifferenceMonitor(ManagedMonitor):
                 module being monitored is in eval mode. Defaults to True.
             prepend (bool, optional): if this monitor should be called before other
                 registered forward prehooks or posthooks. Defaults to False.
+            filter_ (Callable[[Any, Any], bool] | None, optional): test if the input
+                should be passed to the reducer, ignores None pre or post values when
+                None. Defaults to None.
+            map_ (Callable[[Any, Any], torch.Tensor] | None, optional): modifies the
+                input before being passed to the reduer, post minus pre if None.
+                Defaults to None.
 
         Returns:
             MonitorConstructor: partial constructor for monitor.
@@ -530,6 +590,8 @@ class DifferenceMonitor(ManagedMonitor):
                 train_update=train_update,
                 eval_update=eval_update,
                 prepend=prepend,
+                filter_=filter_,
+                map_=map_,
             )
 
         return constructor

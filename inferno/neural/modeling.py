@@ -1,11 +1,12 @@
+from __future__ import annotations
 from . import Connection, Neuron, Synapse
 from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
 from .. import Module
 from ..bounding import HalfBounding, FullBounding
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 import einops as ein
-from functools import partial
+from functools import cache, partial
 from inferno._internal import argtest, rgetattr, Proxy
 from inferno.observe import ManagedMonitor, MonitorConstructor
 import torch
@@ -13,7 +14,307 @@ import torch.nn as nn
 from typing import Any, Callable, Literal
 
 
+class Accumulator(Module):
+    r"""Used by :py:class:`Updater`, accumulated updates for a parameter."""
+
+    def __init__(self):
+        # state
+        self._pos = nn.ParameterList()
+        self._neg = nn.ParameterList()
+
+        # parameters
+        self.reduce = torch.sum
+        self.bind = lambda x, p, n: p - n
+
+        # cached state access
+        def calc_pos():
+            if len(self._pos):
+                return self.reduce(torch.stack([*self._pos], 0), 0)
+            else:
+                return None
+
+        def calc_neg():
+            if len(self._neg):
+                return self.reduce(torch.stack([*self._neg], 0), 0)
+            else:
+                return None
+
+        self._pos_cache = cache(calc_pos)
+        self._neg_cache = cache(calc_neg)
+
+    @property
+    def pos(self) -> torch.Tensor | None:
+        """Positive update component.
+
+        Args:
+            value (torch.Tensor | None): appends to update component.
+
+        Returns:
+            torch.Tensor | None: accumulated update component.
+        """
+        return self._pos_cache()
+
+    @pos.setter
+    def pos(self, value: torch.Tensor | None) -> None:
+        if value is not None:
+            self._pos.append(value)
+            self._pos_cache.cache_clear()
+
+    @pos.deleter
+    def pos(self) -> None:
+        self._pos = nn.ParameterList()
+        self._pos_cache.cache_clear()
+
+    @property
+    def neg(self) -> torch.Tensor | None:
+        """Negative update component.
+
+        Args:
+            value (torch.Tensor | None): appends to update component.
+
+        Returns:
+            torch.Tensor | None: accumulated update component.
+        """
+        return self._neg_cache()
+
+    @neg.setter
+    def neg(self, value: torch.Tensor | None) -> None:
+        if value is not None:
+            self._neg.append(value)
+            self._neg_cache.cache_clear()
+
+    @neg.deleter
+    def neg(self) -> None:
+        self._neg = nn.ParameterList()
+        self._neg_cache.cache_clear()
+
+    def reduction(
+        self, fn: Callable[[torch.Tensor, int], torch.Tensor] | None = None
+    ) -> None:
+        r"""Sets the function used for reducing multiple updates.
+
+        When ``fn`` is ``None``, it sets the default reducer, :py:func:`torch.sum`.
+
+        Args:
+            fn (Callable[[torch.Tensor, int], torch.Tensor] | None, optional):
+                function for reducing updates. Defaults to None.
+        """
+        if fn:
+            self.reduce = fn
+        else:
+            self.reduce = torch.sum
+
+    def upperbound(
+        self,
+        bound: HalfBounding | None,
+        max: float | None = None,
+        kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        r"""Sets the function used for parameter bounding on the upper limit.
+
+        When ``bound`` is ``None``, no upper bound will be applied (and will remove
+        any full bound present). When ``bound`` is not ``None``, them ``max`` cannot
+        be ``None``.
+
+        Args:
+            bound (HalfBounding | None): bounding function.
+            max (float | None, optional): upper bound. Defaults to None.
+            kwargs (dict[str, Any] | None, optional): keyword arguments for the
+                bounding function. Defaults to None.
+        """
+        # convert kwargs if required
+        kw = kwargs if kwargs else {}
+
+        # convert bounds to tuple
+        if not isinstance(self.bind, tuple):
+            self.bind = (lambda x, p: p, lambda x, n: n)
+
+        # determine bounding function
+        if bound:
+            self.bind[0] = lambda x, p, ub=max, k=kw: bound(x, p, ub, **k)
+        else:
+            self.bind[0] = lambda x, p: p
+
+    def lowerbound(
+        self,
+        bound: HalfBounding | None,
+        min: float | None = None,
+        kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        r"""Sets the function used for parameter bounding on the lower limit.
+
+        When ``bound`` is ``None``, no lower bound will be applied (and will remove
+        any full bound present). When ``bound`` is not ``None``, them ``min`` cannot
+        be ``None``.
+
+        Args:
+            bound (HalfBounding | None): bounding function.
+            min (float | None, optional): lower bound. Defaults to None.
+            kwargs (dict[str, Any] | None, optional): keyword arguments for the
+                bounding function. Defaults to None.
+        """
+        # convert kwargs if required
+        kw = kwargs if kwargs else {}
+
+        # convert bounds to tuple
+        if not isinstance(self.bind, tuple):
+            self.bind = (lambda x, p: p, lambda x, n: n)
+
+        # determine bounding function
+        if bound:
+            self.bind[1] = lambda x, n, lb=min, k=kw: bound(x, n, lb, **k)
+        else:
+            self.bind[1] = lambda x, n: n
+
+    def fullbound(
+        self,
+        bound: FullBounding | None,
+        max: float | None = None,
+        min: float | None = None,
+        kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        r"""Sets the function used for parameter bounding on the upper and lower limits.
+
+        When ``bound`` is ``None``, no full bound will be applied (and will remove
+        any upper or lower bound present). When ``bound`` is not ``None``, then
+        ``max`` or ``min`` cannot be ``None``.
+
+        Args:
+            bound (FullBounding | None): bounding function.
+            max (float | None, optional): upper bound. Defaults to None.
+            min (float | None, optional): lower bound. Defaults to None.
+            kwargs (dict[str, Any] | None, optional): keyword arguments for the
+                bounding function. Defaults to None.
+        """
+        # convert kwargs if required
+        kw = kwargs if kwargs else {}
+
+        # determine bounding function
+        if bound:
+            self.bind = lambda x, p, n, ub=max, lb=min, k=kw: bound(
+                x, p, n, ub, lb, **k
+            )
+        else:
+            self.bind = lambda x, p, n: p - n
+
+    def clear(self, keeplast: bool = True) -> None:
+        r"""Clears the accumulator's state.
+
+        Args:
+            keeplast (bool, optional): if the last update value should be preserved.
+                Defaults to True.
+        """
+        del self.pos
+        del self.neg
+        if not keeplast:
+            self._lastupdate = None
+
+    def update(self, param: torch.Tensor) -> torch.Tensor | None:
+        r"""Computes the update.
+
+        Args:
+            param (torch.Tensor): parameter being updated.
+
+        Returns:
+            torch.Tensor | None: value of the update.
+        """
+        # get partial updates
+        pos, neg = self.pos, self.neg
+
+        # ltp and ltd
+        if pos is not None and neg is not None:
+            if isinstance(self.bind, tuple):
+                return self.bind[0](param, pos) - self.bind[1](param, neg)
+            else:
+                return self.bind(param, pos, neg)
+
+        # ltp only
+        elif pos is not None:
+            if isinstance(self.bind, tuple):
+                return self.bind[0](param, pos)
+            else:
+                return self.bind(param, pos, torch.zeros_like(pos))
+
+        # ltd only
+        elif neg is not None:
+            if isinstance(self.bind, tuple):
+                return -self.bind[1](param, neg)
+            else:
+                return self.bind(param, torch.zeros_like(neg), neg)
+
+        # no update
+        else:
+            return None
+
+
+class Updatable:
+
+    def __init__(self, updater: Updater | None = None):
+        self.updater = updater
+
+    @property
+    def updatable(self) -> bool:
+        return self.updater is None
+
+    @property
+    def updater(self) -> Updater | None:
+        return self._updater
+
+    @updater.setter
+    def updater(self, value: Updater | None) -> None:
+        self._updater = value
+
+
 class Updater(Module):
+
+    def __init__(self, module: Updatable, *params: str, **kwargs):
+        # define dynamic class
+        self.__class__ = type(
+            f"{type(module).__name__}{type(self).__name__}",
+            (type(self),),
+            {p: property(lambda self, attr=p: self.updates_[p]) for p in params},
+        )
+
+        # call superclass constructor
+        Module.__init__(self, **kwargs)
+
+        # check that the module has required parameters
+        _ = argtest.members("module", module, *params)
+
+        # reference to parent, avoiding infinite recursion
+        object.__setattr__(self, "_parent", module)
+
+        # set update states and associated functions
+        self.updates_ = nn.ModuleDict({p: self.Accumulator() for p in params})
+
+    @property
+    def names(self) -> tuple[str, ...]:
+        r"""Names of updatable attributes.
+
+        Returns:
+            tuple[str, ...]: names of updatable parameters.
+        """
+        return (v for v in self.updates_.values())
+
+    def forward(self) -> None:
+        pass
+
+    @classmethod
+    def from_connection(cls, connection: Connection) -> Updater:
+        # get updatable parameters
+        params = ["weight"]
+        if connection.biased:
+            params.append("bias")
+        if connection.delayedby is not None:
+            params.append("delay")
+
+        # return updater
+        return cls(
+            connection,
+        )
+
+
+class UpdaterV1(Module):
     r"""Wraps a connection for updates and on-update hooks.
 
     This encloses a connection object and provides some top-level properties, for others
