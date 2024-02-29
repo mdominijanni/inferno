@@ -30,7 +30,7 @@ from .tensor import (
     uniform,
     normal,
     scalar,
-    tensorize,
+    astensors,
 )
 
 from . import (
@@ -66,5 +66,5 @@ __all__ = [
     "uniform",
     "normal",
     "scalar",
-    "tensorize",
+    "astensors",
 ]

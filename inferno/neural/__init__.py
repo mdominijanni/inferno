@@ -43,7 +43,12 @@ from .encoders.special import (
 )
 
 from .modeling import (
+    Accumulator,
     Updater,
+    Updatable
+)
+
+from .network import (
     Trainable,
     Layer,
     Biclique,
@@ -76,7 +81,9 @@ __all__ = [
     "LinearDirect",
     "LinearLateral",
     "Conv2D",
+    "Accumulator",
     "Updater",
+    "Updatable",
     "Trainable",
     "Layer",
     "Biclique",

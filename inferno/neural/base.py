@@ -1,5 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+from .modeling import Updatable, Updater
 from .. import DimensionalModule, HistoryModule, Module
 import math
 from functools import cached_property
@@ -385,7 +386,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         )
 
 
-class Connection(Module, ABC):
+class Connection(Module, Updatable, ABC):
     r"""Base class for representing a weighted connection between two groups of neurons.
 
     Args:
@@ -396,7 +397,7 @@ class Connection(Module, ABC):
         self,
         synapse: Synapse,
     ):
-        # superclass constructor
+        # superclass constructors
         Module.__init__(self)
 
         # register submodule
@@ -688,10 +689,11 @@ class Connection(Module, ABC):
         r"""Resets the state of the connection.
 
         Note:
-            This calls the method :py:meth:`Synapse.clear` on :py:attr:`synapse`,
-            assuming the connection itself has no clearable state. Keyword arguments
-            are passed through.
+            This calls the method :py:meth:`Synapse.clear` on :py:attr:`synapse` and
+            :py:meth:`Updater.clear` on :py:attr`updater`, assuming the connection
+            itself has no clearable state. Keyword arguments are passed through.
         """
+        Updatable.clear(self, **kwargs)
         self.synapse.clear(**kwargs)
 
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
@@ -817,6 +819,29 @@ class Connection(Module, ABC):
             f"{type(self).__name__}(Connection) must implement "
             "the method `presyn_receptive`."
         )
+
+    def defaultupdater(self) -> Updater:
+        r"""Sets the current updater to the default and returns it.
+
+        This will set and return an :py:class:`Updater` with the following trainable
+        parameters:
+        * ``weight``
+        * ``bias``, if :py:attr:`biased` is ``True``
+        * ``delay``, if :py:attr:`delayedby` is not ``None``
+
+        Returns:
+            Updater: newly set default updater.
+        """
+        # determine updatable parameters
+        params = ['weight']
+        if self.biased:
+            params.append('bias')
+        if self.delayedby is not None:
+            params.append('delay')
+
+        # create, set, and return the updater
+        self.updater = Updater(self, *params)
+        return self.updater
 
     @abstractmethod
     def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:

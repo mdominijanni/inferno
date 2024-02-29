@@ -320,7 +320,7 @@ def scalar(
     )
 
 
-def tensorize(
+def astensors(
     *values: Any, conversion: Callable[[Any], torch.Tensor] | None = None
 ) -> tuple[torch.Tensor, ...] | torch.Tensor:
     r"""Converts inputs into tensors.
