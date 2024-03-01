@@ -1,17 +1,281 @@
 from __future__ import annotations
 from . import Connection, Neuron, Synapse
+from .modeling import Updater
 from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
-from .. import Module
-from ..bounding import HalfBounding, FullBounding
+from .. import Module, ModuleDict
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 import einops as ein
-from functools import cache, partial
+from functools import partial
 from inferno._internal import argtest, rgetattr, Proxy
 from inferno.observe import ManagedMonitor, MonitorConstructor
 import torch
 import torch.nn as nn
 from typing import Any, Callable, Literal
+
+
+class Cell(Module):
+    def __init__(
+        self,
+        connection: Connection,
+        neuron: Neuron,
+        add_monitor_callback: Callable | None = None,
+        del_monitor_callback: Callable | None = None,
+        *,
+        updatable: bool = True,
+    ):
+        # call superclass constructor
+        Module.__init__(self)
+
+        # component elements
+        self.connection_ = connection
+        self.neuron_ = neuron
+
+        # conditionally add the default updater to the connection
+        if updatable and not self.connection.updatable:
+            _ = self.connection.defaultupdater()
+
+        # callbacks
+        self._add_monitor_callback = add_monitor_callback
+        self._del_monitor_callback = del_monitor_callback
+
+        # reserve state for trainers
+        self._remote_storage = ModuleDict()
+
+    def __getitem__(self, key: Module) -> Module:
+        r"""Retrieves additional storage the cell.
+
+        If the state doesn't exist, an empty :py:class:`Module` is created and set as
+        the state for the given trainer and is returned.
+
+        Args:
+            key (Module): module for which to get storage.
+
+        Returns:
+            Module: module containing the added state.
+        """
+        if key not in self._remote_storage:
+            self._remote_storage[key] = Module()
+        return self._remote_storage[key]
+
+    def __setitem__(self, key: Module, value: Module) -> None:
+        r"""Sets additional trainer storage for the cell.
+
+        Args:
+            key (Module): module for which to set storage.
+            value (Module): module containing the added state.
+        """
+        self._remote_storage[key] = value
+
+    def __delitem__(self, key: Module) -> None:
+        r"""Deletes additional trainer storage for the cell.
+
+        Args:
+            key (Module): module for which to delete storage.
+        """
+        if key in self._remote_storage:
+            del self._remote_storage[key]
+
+    def add_monitor(
+        self,
+        caller: Module,
+        name: str,
+        attr: str,
+        monitor: MonitorConstructor,
+        unpooled: bool = False,
+    ) -> ManagedMonitor:
+        r"""Adds a managed monitor associated with a trainer.
+
+        This works in conjunction with :py:class:`Layer` to ensure that the added
+        monitors are not duplicated if it is unneeded. This non-duplication is only
+        enforced across a single layer and single trainer.
+
+        For example, if a layer goes from two connections to one neuron, and both
+        resultant trainables are trained with the same trainer, both monitors have
+        equivalent attribute chains (defined by ``attr``), and the same name as
+        defined by ``name``, then rather than creating a new monitor, the existing one
+        will be returned.
+
+        Because of this, ``name`` must also capture any information which may be unique
+        to a specific trainable.
+
+        All monitor's added this way will be added to the lifecycle of the ``Layer``
+        which created them.
+
+        Args:
+            caller (Module): module which will use the monitor.
+            name (str): name of the monitor to add.
+            attr (str): dot-seperated attribute path, relative to this trainable, to
+                monitor.
+            monitor (MonitorConstructor): partial constructor for the monitor to add.
+            unpooled (bool): if the monitor should not be aliased from the pool
+                regardless. Defaults to False.
+
+        Raises:
+            RuntimeError: attribute must be a member of this trainable.
+            RuntimeError: 'updater.connection' is the only valid head of the attribute
+                chain starting with 'updater'.
+
+        Returns:
+            ManagedMonitor: added monitor.
+
+        Tip:
+            If the monitor's behavior for the targeted attribute may vary with
+            hyperparameters or other configuration state, ``unpooled`` should be
+            set to ``True``. This does not keep this monitor from being aliased however,
+            so the setting of ``unpooled`` should be consistent across all monitors
+            with the same name.
+        """
+        # check that the attribute is a valid dot-chain identifier
+        _ = argtest.nestedidentifier("attr", attr)
+
+        # split the identifier and check for ownership
+        attrchain = attr.split(".")
+
+        # ensure the top-level attribute is in this trainable
+        if not hasattr(self, attrchain[0]):
+            raise RuntimeError(
+                f"this trainable does not have an attribute '{attrchain[0]}'"
+            )
+
+        # remap the top-level target if pointing to a private attribute
+        attrchain[0] = {
+            "connection_": "connection",
+            "neuron_": "neuron",
+        }.get(attrchain[0], attrchain[0])
+
+        # test against Inferno-defined alias attributes
+        attrsub = {
+            "updater": ["connection", "updater"],
+            "synapse": ["connection", "synapse"],
+            "precurrent": ["connection", "syncurrent"],
+            "prespike": ["connection", "synspike"],
+            "postvoltage": ["neuron", "voltage"],
+            "postspike": ["neuron", "spike"],
+        }.get(attrchain[0], [attrchain[0]])
+        attrchain = attrsub + attrchain[1:]
+
+        # split the chain into target and attribute
+        if unpooled:
+            target, attr = "trainable", ".".join(attrchain)
+        else:
+            match attrchain[0]:
+                case "connection":
+                    target, attr = "connection", ".".join(attrchain[1:])
+                case "neuron":
+                    target, attr = "neuron", ".".join(attrchain[1:])
+                case _:
+                    target, attr = "trainable", ".".join(attrchain)
+
+        # use layer callback to add the monitor to its pool and return
+        return self._add_monitor_callback(caller, name, target, attr, monitor)
+
+    def del_monitor(self, caller: Module, name: str) -> None:
+        r"""Deletes a managed monitor associated with a trainer.
+
+        This "frees" a monitor from the enclosing :py:class:`Layer` that is associated
+        with this trainable.
+
+        Args:
+            caller (Module): instance of the module associated with the monitor.
+            name (str): name of the monitor to remove.
+        """
+        self._del_monitor_callback(caller, name)
+
+    @property
+    def trainable(self) -> bool:
+        """If the cell is trainable.
+
+        Returns:
+            bool: if the cell is trainable.
+        """
+        return self.connection_.updatable
+
+    @property
+    def connection(self) -> Connection:
+        r"""Connection submodule.
+
+        Returns:
+            Connection: composed connection.
+        """
+        return self.connection_
+
+    @property
+    def synapse(self) -> Synapse:
+        r"""Synapse submodule.
+
+        Returns:
+            Synapse: composed synapse.
+        """
+        return self.connection_.synapse
+
+    @property
+    def updater(self) -> Updater | None:
+        """Updater submodule.
+
+        Returns:
+            Updater | None: composed updater, if it exists.
+        """
+        return self.connection_.updater
+
+    @property
+    def neuron(self) -> Neuron:
+        r"""Neuron submodule.
+
+        Returns:
+            Neuron: composed neuron.
+        """
+        return self.neuron_
+
+    @property
+    def precurrent(self) -> torch.Tensor:
+        r"""Currents from the synapse at the time last used by the connection.
+
+        Alias for ``connection.syncurrent``.
+
+        Returns:
+            torch.Tensor: delay-offset synaptic currents.
+        """
+        return self.connection.syncurrent
+
+    @property
+    def prespike(self) -> torch.Tensor:
+        r"""Spikes to the synapse at the time last used by the connection.
+
+        Alias for ``connection.synspike``.
+
+        Returns:
+            torch.Tensor: delay-offset synaptic spikes.
+        """
+        return self.connection.synspike
+
+    @property
+    def postvoltage(self) -> torch.Tensor:
+        r"""Membrane voltages in millivolts.
+
+        Returns:
+            torch.Tensor: membrane voltages.
+        """
+        return self.neuron.voltage
+
+    @property
+    def postspike(self) -> torch.Tensor:
+        r"""Action potentials last generated.
+
+        Returns:
+            torch.Tensor: membrane voltages.
+        """
+        return self.neuron.spike
+
+    def forward(self) -> None:
+        """Forward call.
+
+        Raises:
+            RuntimeError: Cell cannot have its forward method called.
+        """
+        raise RuntimeError(
+            f"'forward' method of {type(self).__name__}(Cell) cannot be called"
+        )
 
 
 class Trainable(Module):
@@ -26,7 +290,7 @@ class Trainable(Module):
     multiple neurons and the neuron may take input from multiple connections.
 
     When implementing a new updater, the properties here should be used when
-    accessing or alering the model parameters.
+    accessing or altering the model parameters.
 
     If the connection is passed without being wrapped in an updater, it will be
     wrapped in an updater with the default constructor arguments.

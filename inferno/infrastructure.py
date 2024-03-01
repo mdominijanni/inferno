@@ -10,6 +10,7 @@ import math
 import torch
 import torch.nn as nn
 from typing import Any, Callable
+import uuid
 import warnings
 
 
@@ -20,6 +21,11 @@ class Module(nn.Module):
     similar to regular tensor state (e.g. buffers and parameters). This enables simple
     export to and import from a state dictionary.
 
+    In order to easily support :py:class:`torch.nn.ModuleDict` lookup with persistence
+    and to do so transparently with :py:class:`ModuleDict`, an string is created using
+    UUID version 4 and the :py:func:`id` of the object. This state persists through
+    :py:meth:`~torch.nn.Module.state_dict`.
+
     Note:
         Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made
         to the parent class before assignment on the child. This class's constructor
@@ -29,6 +35,18 @@ class Module(nn.Module):
     def __init__(self, *args, **kwargs):
         nn.Module.__init__(self, *args, **kwargs)
         self._extras = OrderedDict()
+        self.__inferno_persistent_id = (
+            f"{type(self).__name__}_{str(id(self))}_{uuid.uuid4().hex}"
+        )
+
+    @property
+    def pid(self) -> str:
+        r"""Persistent module identifier.
+
+        Returns:
+            str: persistent module identifier.
+        """
+        return self.__inferno_persistent_id
 
     def register_extra(self, name: str, value: Any):
         r"""Adds an extra variable to the module.
@@ -111,9 +129,20 @@ class Module(nn.Module):
         return extra
 
     def get_extra_state(self) -> dict[str, Any]:
-        return self._extras
+        return {**self._extras, "pid": self.pid}
 
     def set_extra_state(self, state: dict[str, Any]):
+        try:
+            self.__inferno_persistent_id = state.pop("pid")
+        except KeyError:
+            warnings.warn(
+                "state dictionary does not contain a persistent identifier, "
+                "creating a new one"
+            )
+            self.__inferno_persistent_id = (
+                f"{type(self).__name__}_{str(id(self))}_{uuid.uuid4().hex}"
+            )
+
         self._extras.update(state)
 
     def __setstate__(self, state):
@@ -155,6 +184,64 @@ class Module(nn.Module):
         keys = [key for key in keys if not key[0].isdigit()]
 
         return sorted(keys)
+
+
+class ModuleDict(nn.ModuleDict):
+    r"""An extension of PyTorch's Module class.
+
+    This functions almost identically to :py:class:`torch.nn.ModuleDict`, except keys
+    can be given as :py:class`Module` instead, and :py:attr:`Module.pid` will be used
+    automatically as the key. The keys are still stored as strings.
+    """
+    def __init__(self, modules: Mapping[str | Module, nn.Module] | None = None):
+        # replace modules with their pid
+        if modules is not None:
+            modules = {
+                (k.pid if isinstance(k, Module) else k): v for k, v in modules.items()
+            }
+
+        # call superclass constructor
+        nn.ModuleDict.__init__(modules)
+
+    def __getitem__(self, key: str | Module) -> nn.Module:
+        if isinstance(key, Module):
+            key = key.pid
+        return self._modules[key]
+
+    def __setitem__(self, key: str | Module, module: nn.Module) -> None:
+        if isinstance(key, Module):
+            key = key.pid
+        self.add_module(key, module)
+
+    def __delitem__(self, key: str | Module) -> None:
+        if isinstance(key, Module):
+            key = key.pid
+        del self._modules[key]
+
+    def __contains__(self, key: str | Module) -> bool:
+        if isinstance(key, Module):
+            key = key.pid
+        return key in self._modules
+
+    def pop(self, key: str | Module) -> nn.Module:
+        r"""Removes specified key and returns the corresponding value.
+
+        Args:
+            key (str | Module): key to delete and return the value of.
+        """
+        if isinstance(key, Module):
+            key = key.pid
+        return nn.ModuleDict.pop(self, key)
+
+    def update(self, modules: Mapping[str | Module, nn.Module]) -> None:
+        """Updates with new key-value pairs, overwriting existing duplicate keys.
+
+        Args:
+            modules (Mapping[str | Module, nn.Module]): added mapping.
+        """
+        nn.ModuleDict(
+            {(k.pid if isinstance(k, Module) else k): v for k, v in modules.items()}
+        )
 
 
 class Configuration(Mapping):
