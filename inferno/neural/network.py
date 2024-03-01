@@ -201,8 +201,19 @@ class Cell(Module):
         return self.connection_
 
     @property
+    def neuron(self) -> Neuron:
+        r"""Neuron submodule.
+
+        Returns:
+            Neuron: composed neuron.
+        """
+        return self.neuron_
+
+    @property
     def synapse(self) -> Synapse:
         r"""Synapse submodule.
+
+        Alias for ``connection.synapse``.
 
         Returns:
             Synapse: composed synapse.
@@ -213,19 +224,12 @@ class Cell(Module):
     def updater(self) -> Updater | None:
         """Updater submodule.
 
+        Alias for ``connection.updater``.
+
         Returns:
-            Updater | None: composed updater, if it exists.
+            Updater | None: composed updater, if any.
         """
         return self.connection_.updater
-
-    @property
-    def neuron(self) -> Neuron:
-        r"""Neuron submodule.
-
-        Returns:
-            Neuron: composed neuron.
-        """
-        return self.neuron_
 
     @property
     def precurrent(self) -> torch.Tensor:
@@ -253,6 +257,8 @@ class Cell(Module):
     def postvoltage(self) -> torch.Tensor:
         r"""Membrane voltages in millivolts.
 
+        Alias for ``neuron.voltage``.
+
         Returns:
             torch.Tensor: membrane voltages.
         """
@@ -261,6 +267,8 @@ class Cell(Module):
     @property
     def postspike(self) -> torch.Tensor:
         r"""Action potentials last generated.
+
+        Alias for ``neuron.spike``.
 
         Returns:
             torch.Tensor: membrane voltages.
@@ -278,315 +286,147 @@ class Cell(Module):
         )
 
 
-class Trainable(Module):
-    r"""A trainable connection-neuron pair.
-
-    Generally, objects of this class should never be constructed by the
-    end-user directly unless they are creating a new class like :py:class:`Layer`
-    which does not subclass it.
-
-    This is a construct used to associate a single connection and neuron object
-    for the purposes of training. The contained connection may produce output for
-    multiple neurons and the neuron may take input from multiple connections.
-
-    When implementing a new updater, the properties here should be used when
-    accessing or altering the model parameters.
-
-    If the connection is passed without being wrapped in an updater, it will be
-    wrapped in an updater with the default constructor arguments.
+class Layer(Module, ABC):
+    r"""Representation of simultaneously processed connections and neurons.
 
     Args:
-        connection (Updater | Connection): connection which produces output for the
-            neuron, optionally wrapped in an updater.
-        neuron (Neuron): neuron which takes output from the connection.
-        add_monitor_callback (Callable | None, optional): layer callback for
-            adding a monitor from this trainable. Defaults to None.
-        del_monitor_callback (Callable | None, optional): layer callback for
-            deleting a monitor from this trainable. Defaults to None.
-
-    Note:
-        The callbacks supplied are done so by :py:class:`Layer`. In general, these
-        should not be supplied by the user. If required, see the implementation of
-        :py:meth:`Layer.add_input` or :py:meth:`Layer.add_output` for the signature.
+        trainable (bool, optional): if updaters should automatically be added to
+            connections without them. Defaults to True.
     """
 
-    def __init__(
-        self,
-        connection: Updater | Connection,
-        neuron: Neuron,
-        add_monitor_callback: Callable | None = None,
-        del_monitor_callback: Callable | None = None,
-    ):
+    def __init__(self, trainable: bool = True):
         # call superclass constructor
         Module.__init__(self)
 
-        # component elements
-        if not isinstance(connection, Updater):
-            self.updater_ = Updater(connection)
-        else:
-            self.updater_ = connection
-        self.neuron_ = neuron
-
-        # callbacks
-        self._add_monitor_callback = add_monitor_callback
-        self._del_monitor_callback = del_monitor_callback
-
-        # reserve state for trainers
-        self.trainer_state_ = nn.ModuleDict()
-
-    def trainer_state(self, name: str) -> Module:
-        r"""Adds or retrieves trainer state module.
-
-        Args:
-            name (str): name of the trainer.
-
-        Returns:
-            Module: module containing trainer state
-        """
-        if name not in self.trainer_state_:
-            self.trainer_state_[name] = Module()
-        return self.trainer_state_[name]
-
-    def del_trainer_state(self, name: str) -> None:
-        r"""Deletes trainer state if it exists.
-
-        Args:
-            name (str): name of the trainer.
-        """
-        if name in self.trainer_state_:
-            del self.trainer_state_[name]
-
-    def add_monitor(
-        self,
-        caller: str,
-        name: str,
-        attr: str,
-        monitor: MonitorConstructor,
-        unpooled: bool = False,
-    ) -> ManagedMonitor:
-        r"""Adds a managed monitor associated with a trainer.
-
-        This works in conjunction with :py:class:`Layer` to ensure that the added
-        monitors are not duplicated if it is unneeded. This non-duplication is only
-        enforced across a single layer and single trainer.
-
-        For example, if a layer goes from two connections to one neuron, and both
-        resultant trainables are trained with the same trainer, both monitors have
-        equivalent attribute chains (defined by ``attr``), and the same name as
-        defined by ``name``, then rather than creating a new monitor, the existing one
-        will be returned.
-
-        The check of if two trainers are the same is based on the string passed as
-        ``caller``. Trainers should take this as a constructor argument, and as such,
-        it is possible to share monitors across trainers. This behavior is dangerous
-        and should only be done if it can be ensured this will not cause issues.
-
-        Because of this, ``name`` must also capture any information which may be unique
-        to a specific trainable.
-
-        All monitor's added this way will be added to the lifecycle of the ``Layer``
-        which created them.
-
-        Args:
-            caller (str): instance-name of the trainer which will use the monitor.
-            name (str): name of the monitor to add.
-            attr (str): dot-seperated attribute path, relative to this trainable, to
-                monitor.
-            monitor (MonitorConstructor): partial constructor for the monitor to add.
-            unpooled (bool): if the monitor should not be aliased from the pool
-                regardless. Defaults to False.
-
-        Raises:
-            RuntimeError: attribute must be a member of this trainable.
-            RuntimeError: 'updater.connection' is the only valid head of the attribute
-                chain starting with 'updater'.
-
-        Returns:
-            ManagedMonitor: added monitor.
-
-        Tip:
-            If the monitor's behavior for the targeted attribute may vary with
-            hyperparameters or other configuration state, ``unpooled`` should be
-            set to ``True``. This does not keep this monitor from being aliased however,
-            so the setting of ``unpooled`` should be consistent across all monitors
-            with the same name.
-        """
-        # check that the attribute is a valid dot-chain identifier
-        _ = argtest.nestedidentifier("attr", attr)
-
-        # split the identifier and check for ownership
-        attrchain = attr.split(".")
-
-        # ensure the top-level attribute is in this trainable
-        if not hasattr(self, attrchain[0]):
-            raise RuntimeError(
-                f"this trainable does not have an attribute '{attrchain[0]}'"
-            )
-
-        # remap the top-level target if pointing to a private attribute
-        attrchain[0] = {
-            "updater_": "updater",
-            "neuron_": "neuron",
-        }.get(attrchain[0], attrchain[0])
-
-        # special case targeting updater
-        if attrchain[0] == "updater":
-            if not attrchain[1:]:
-                raise RuntimeError(
-                    "'updater' itself cannot be the target for monitoring"
-                )
-            elif attrchain[1] in ("connection", "connection_"):
-                attrchain = ["connection"] + attrchain[2:]
-            else:
-                raise RuntimeError(
-                    "only 'connection' is a valid subtarget of 'updater'"
-                )
-
-        # test against Inferno-defined alias attributes
-        attrsub = {
-            "synapse": ["connection", "synapse"],
-            "precurrent": ["connection", "syncurrent"],
-            "prespike": ["connection", "synspike"],
-            "postvoltage": ["neuron", "voltage"],
-            "postspike": ["neuron", "spike"],
-        }.get(attrchain[0], [attrchain[0]])
-        attrchain = attrsub + attrchain[1:]
-
-        # split the chain into target and attribute
-        if unpooled:
-            target, attr = "trainable", ".".join(attrchain)
-        else:
-            match attrchain[0]:
-                case "connection":
-                    target, attr = "connection", ".".join(attrchain[1:])
-                case "neuron":
-                    target, attr = "neuron", ".".join(attrchain[1:])
-                case _:
-                    target, attr = "trainable", ".".join(attrchain)
-
-        # use layer callback to add the monitor to its pool and return
-        return self._add_monitor_callback(caller, name, target, attr, monitor)
-
-    def del_monitor(self, caller: str, name: str) -> None:
-        r"""Deletes a managed monitor associated with a trainer.
-
-        This "frees" a monitor from the enclosing :py:class:`Layer` that is associated
-        with this trainable.
-
-        Args:
-            caller (str): instance-name of the trainer which is associated with
-                the monitor.
-            name (str): name of the monitor to remove.
-        """
-        self._del_monitor_callback(caller, name)
-
-    @property
-    def updater(self) -> Updater:
-        """Updater submodule.
-
-        Returns:
-            Updater: composed updater.
-        """
-        return self.updater_
-
-    @property
-    def connection(self) -> Connection:
-        r"""Connection submodule.
-
-        Returns:
-            Connection: composed connection.
-        """
-        return self.updater.connection
-
-    @property
-    def neuron(self) -> Neuron:
-        r"""Neuron submodule.
-
-        Returns:
-            Neuron: composed neuron.
-        """
-        return self.neuron_
-
-    @property
-    def synapse(self) -> Synapse:
-        r"""Synapse submodule.
-
-        Returns:
-            Synapse: composed synapse.
-        """
-        return self.connection.synapse
-
-    @property
-    def precurrent(self) -> torch.Tensor:
-        r"""Currents from the synapse at the time last used by the connection.
-
-        Alias for ``connection.syncurrent``.
-
-        Returns:
-            torch.Tensor: delay-offset synaptic currents.
-        """
-        return self.connection.syncurrent
-
-    @property
-    def prespike(self) -> torch.Tensor:
-        r"""Spikes to the synapse at the time last used by the connection.
-
-        Alias for ``connection.synspike``.
-
-        Returns:
-            torch.Tensor: delay-offset synaptic spikes.
-        """
-        return self.connection.synspike
-
-    @property
-    def postvoltage(self) -> torch.Tensor:
-        r"""Membrane voltages in millivolts.
-
-        Returns:
-            torch.Tensor: membrane voltages.
-        """
-        return self.neuron.voltage
-
-    @property
-    def postspike(self) -> torch.Tensor:
-        r"""Action potentials last generated.
-
-        Returns:
-            torch.Tensor: membrane voltages.
-        """
-        return self.neuron.spike
-
-    def forward(self) -> None:
-        """Forward call.
-
-        Raises:
-            RuntimeError: Trainable cannot have its forward method called.
-        """
-        raise RuntimeError(
-            f"'forward' method of {type(self).__name__}(Trainable) cannot be called"
-        )
-
-
-class Layer(Module, ABC):
-    r"""Representation of simultaneously processed connections and neurons."""
-
-    def __init__(self):
-        # call superclass constructor
-        Module.__init__(self)
+        # set trainable property
+        self._trainable = trainable
 
         # inner modules
-        self.updaters_ = nn.ModuleDict()
-        self.neurons_ = nn.ModuleDict()
-        self.trainables_ = nn.ModuleDict()
-        self.monitors_ = nn.ModuleDict()
+        self.connections_ = ModuleDict()
+        self.neurons_ = ModuleDict()
+        self.cells_ = ModuleDict()
+        self.monitors_ = ModuleDict()
 
-    def add_input(self, name: str, module: Updater | Connection) -> Updater:
+    @property
+    def trainable(self) -> bool:
+        r"""If updaters will automatically be added to connections without one.
+
+        Args:
+            value (bool): if updaters will automatically be added to connections.
+
+        Returns:
+            bool: if updaters will automatically be added to connections.
+        """
+        return self._trainable
+
+    @trainable.setter
+    def trainable(self, value: bool) -> None:
+        self._trainable = value
+
+    def __getattr__(self, name: str | tuple[str, str]) -> Connection | Neuron | Cell:
+        r"""Retrieves a previously added connection, neuron, or cell.
+
+        The given ``name`` can either be a string (in which case it checks first for
+        a :py:class:`Connection` then a :py:class:`Neuron`) or a 2-tuple of strings,
+        in which case it expects the first string to be the name of a ``Connection`` and
+        the second to be the name of a ``Neuron``, and the corresponding :py:class`Cell`
+        is retrieved.
+
+        Args:
+            name (str | tuple[str, str]): name of the component module to retrieve.
+
+        Returns:
+            Connection | Neuron | Cell: retrieved module.
+        """
+        try:
+            # specifies a cell
+            if isinstance(name, tuple):
+                if name[0] in self.cells_:
+                    if name[1] in self.cells_[name[0]]:
+                        return self.cells_[name[0]][name[1]]
+                    else:
+                        raise AttributeError(
+                            f"'name' ('{name}') is not a registered neuron"
+                        )
+                else:
+                    raise AttributeError(
+                        f"'name' ('{name}') is not a registered connection"
+                    )
+            # specifies a connection or neuron
+            else:
+                if name in self.connections_:
+                    return self.connections_[name]
+                elif name in self.neurons_:
+                    return self.neurons_[name]
+                else:
+                    raise AttributeError(
+                        f"'name' ('{name}') is not a registered connection or neuron"
+                    )
+        except IndexError:
+            raise ValueError("tuple 'name' must have exactly two elements")
+
+    def __setattr__(self, name: str, module: Connection | Neuron) -> None:
+        r"""Registers a new connection or neuron.
+
+        The specified ``name`` must be a valid Python identifier, and the ``Cell``
+        must not already have a :py:class:`Connection` or :py:class:`Neuron`
+        registered with the same name.
+
+        Args:
+            name (str): attribute name for the connection or neuron.
+            module (Connection | Neuron): connection used for inputs or neuron used for
+                outputs.
+        """
+        # ensure the name is not already assigned
+        if name in self.connections_ or name in self.neurons_:
+            raise ValueError(
+                "item assignment cannot be used to reassign registered modules"
+            )
+
+        # ensure the name is a valid identifier
+        _ = argtest.identifier("name", name)
+
+        # connection
+        if isinstance(module, Connection):
+            if self.trainable and not module.updatable:
+                _ = module.defaultupdater()
+            self.connections_[name] = module
+
+            # add all possible cells (i.e. if the layer is a biclique)
+            self.cells_[name] = ModuleDict()
+            for nname in self.neurons_:
+                self.cells_[name][nname] = Cell(
+                    self.connections_[name],
+                    self.neurons_[nname],
+                    partial(self._add_monitor, inputn=name, outputn=nname),
+                    partial(self._del_monitor, inputn=name, outputn=nname),
+                )
+
+        # neuron
+        elif isinstance(module, Neuron):
+            self.neurons_[name] = module
+
+            # add all possible cells (i.e. if the layer is a biclique)
+            for cname in self.connections_:
+                self.cells_[cname][name] = ModuleDict()
+                self.cells_[cname][name] = Cell(
+                    self.connections_[cname],
+                    self.neurons_[name],
+                    partial(self._add_monitor, inputn=cname, outputn=name),
+                    partial(self._del_monitor, inputn=cname, outputn=name),
+                )
+
+        # invalid type
+        else:
+            _ = argtest.instance("module", module, (Connection, Neuron))
+
+    def add_input(
+        self, name: str, module: Connection, updatable: bool = True
+    ) -> Updater:
         r"""Adds a module that receives input from outside the layer.
 
-        This registers either a :py:class:`Connection` or :py:class:`Updater` as a
-        module that receives input from outside of the layer. If the module given is
-        not an ``Updater``, this will wrap it in one before registering. This will be
-        visible to PyTorch as a submodule.
+        This registers either a :py:class:`Connection` as a module that receives input
+        from outside of the layer.
 
         This can be accessed later as an ``Updater`` via :py:attr:`updaters`,
 
@@ -606,9 +446,9 @@ class Layer(Module, ABC):
 
             layer.synapses.name
 
-        Any :py:class:`Trainable` objects are also constructed from this input to all
+        All possible :py:class:`Cell` objects are also constructed from this input to
         existing outputs. For each output with name ``output_name``, it can be accessed
-        via :py:attr:`trainables` as follows.
+        via :py:attr:`cells` as follows.
 
         .. code-block:: python
 
@@ -617,18 +457,16 @@ class Layer(Module, ABC):
         Args:
             name (str): attribute name of the module receiving input from
                 outside the layer.
-            module (Updater | Connection): module which receives the input and
-                generates intermediate output.
+            module (Connection): module which receives the input and generates
+                intermediate output.
+            updatable (bool, optional): if an updater should be added to the connection
+                if it does not already exist. Defaults to True.
 
         Raises:
-            RuntimeError: the name must be unique amongst added inputs.
+            RuntimeError: name must be unique amongst added inputs.
 
         Returns:
             Updater: added input module.
-
-        Tip:
-            If an input module is to be added to multiple :py:class:`Layer` objects,
-            then it should be passed to all of them as the same ``Updater`` object.
         """
         # test that the name is a valid identifier
         _ = argtest.identifier("name", name)
@@ -903,7 +741,7 @@ class Layer(Module, ABC):
 
     @property
     def neurons(self) -> Proxy:
-        r"""Registred neurons.
+        r"""Registered neurons.
 
         For a given ``name`` registered with :py:meth:`add_output`, its corresponding
         :py:class:`Neuron` can be accessed as.
@@ -931,7 +769,7 @@ class Layer(Module, ABC):
 
     @property
     def synapses(self) -> Proxy:
-        r"""Registred synapses.
+        r"""Registered synapses.
 
         For a given ``name`` registered with :py:meth:`add_input`, its corresponding
         :py:class:`Synapse` can be accessed as.
