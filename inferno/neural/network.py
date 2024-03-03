@@ -2,9 +2,10 @@ from __future__ import annotations
 from . import Connection, Neuron, Synapse
 from .modeling import Updater
 from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
-from .. import Module, ModuleDict
+from .. import Module
+from ..infernotypes import OneToOne
 from abc import ABC, abstractmethod
-from collections.abc import Iterator
+from collections.abc import Iterator, Iterable
 import einops as ein
 from functools import partial
 from inferno._internal import argtest, rgetattr
@@ -37,43 +38,6 @@ class Cell(Module):
         # callbacks
         self._add_monitor_callback = add_monitor_callback
         self._del_monitor_callback = del_monitor_callback
-
-        # reserve state for trainers
-        self._remote_storage = ModuleDict()
-
-    def __getitem__(self, key: Module) -> Module:
-        r"""Retrieves additional storage the cell.
-
-        If the state doesn't exist, an empty :py:class:`Module` is created and set as
-        the state for the given trainer and is returned.
-
-        Args:
-            key (Module): module for which to get storage.
-
-        Returns:
-            Module: module containing the added state.
-        """
-        if key not in self._remote_storage:
-            self._remote_storage[key] = Module()
-        return self._remote_storage[key]
-
-    def __setitem__(self, key: Module, value: Module) -> None:
-        r"""Sets additional trainer storage for the cell.
-
-        Args:
-            key (Module): module for which to set storage.
-            value (Module): module containing the added state.
-        """
-        self._remote_storage[key] = value
-
-    def __delitem__(self, key: Module) -> None:
-        r"""Deletes additional trainer storage for the cell.
-
-        Args:
-            key (Module): module for which to delete storage.
-        """
-        if key in self._remote_storage:
-            del self._remote_storage[key]
 
     def add_monitor(
         self,
@@ -301,7 +265,7 @@ class Layer(Module, ABC):
         self.cells_ = {}
         self.monitors_ = {}
 
-    def __getattr__(self, name: str | tuple[str, str]) -> Connection | Neuron | Cell:
+    def __getitem__(self, name: str | tuple[str, str]) -> Connection | Neuron | Cell:
         r"""Retrieves a previously added connection, neuron, or cell.
 
         The given ``name`` can either be a string (in which case it checks first for
@@ -367,7 +331,7 @@ class Layer(Module, ABC):
         except IndexError:
             raise ValueError("tuple 'name' must have exactly two elements")
 
-    def __setattr__(self, name: str, module: Connection | Neuron) -> None:
+    def __setitem__(self, name: str, module: Connection | Neuron) -> None:
         r"""Registers a new connection or neuron.
 
         The specified ``name`` must be a valid Python identifier, and the ``Layer``
@@ -392,6 +356,8 @@ class Layer(Module, ABC):
         _ = argtest.identifier("name", name)
 
         if isinstance(module, Connection):
+            if not module.updatable:
+                module.updater = module.defaultupdater
             self.connections_[name] = module
 
         elif isinstance(module, Neuron):
@@ -400,7 +366,7 @@ class Layer(Module, ABC):
         else:
             _ = argtest.instance("module", module, (Connection, Neuron))
 
-    def __delattr__(self, name: str | tuple[str, str]) -> None:
+    def __delitem__(self, name: str | tuple[str, str]) -> None:
         """Deletes a connection, neuron, or cell and associated monitors and cells.
 
         Args:
@@ -700,8 +666,8 @@ class Layer(Module, ABC):
     def forward(
         self,
         inputs: dict[str, tuple[torch.Tensor, ...]],
-        inkwargs: dict[str, dict[str, Any]] | None = None,
-        outkwargs: dict[str, dict[str, Any]] | None = None,
+        connection_kwargs: dict[str, dict[str, Any]] | None = None,
+        neuron_kwargs: dict[str, dict[str, Any]] | None = None,
         capture_intermediate: bool = False,
         **kwargs: Any,
     ) -> (
@@ -710,16 +676,18 @@ class Layer(Module, ABC):
     ):
         r"""Computes a forward pass.
 
-        The keys for ``inputs`` and ``inkwargs`` are the names of registered
-        :py:class:`Updater` objects correspond to elements in :py:attr`innames`.
-        The keys for ``outkwargs`` are the names of the registered :py:class`Neuron`
-        objects and correspond to elements in :py:attr:`outnames`.
+        The keys for ``inputs`` and ``connection_kwargs`` are the names of registered
+        :py:class:`Connection` objects.
+
+        The keys for ``neuron_kwargs`` are the names of the registered :py:class`Neuron`
+        objects.
 
         Underlying :py:class:`Connection` and :py:class:`Neuron` objects are called
         using :py:meth:`~torch.nn.Module.__call__`, which in turn call
         :py:meth:`Connection.forward` and :py:meth:`Neuron.forward` respectively.
         The keyword argument dictionaries will be unpacked for each call automatically,
-        and the inputs will be unpacked as positional arguments for each call.
+        and the inputs will be unpacked as positional arguments for each ``Connection``
+        call.
 
         Only input modules which have keys in ``inputs`` will be run and added to
         the positional argument of :py:meth:`wiring`.
@@ -727,10 +695,10 @@ class Layer(Module, ABC):
         Args:
             inputs (dict[str, tuple[torch.Tensor, ...]]): inputs passed to the
                 registered connections' forward calls.
-            inkwargs (dict[str, dict[str, Any]] | None, optional): keyword arguments
-                passed to registered connections' forward calls. Defaults to None.
-            outkwargs (dict[str, dict[str, Any]] | None, optional): keyword arguments
-                passed to registered neurons' forward calls. Defaults to None.
+            connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments passed to registered connections' forward calls. Defaults to None.
+            neuron_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments passed to registered neurons' forward calls. Defaults to None.
             capture_intermediate (bool, optional): if output from the connections should
                 also be returned. Defaults to False.
             **kwargs (Any): keyword arguments passed to :py:meth:`wiring`.
@@ -738,32 +706,27 @@ class Layer(Module, ABC):
         Returns:
             dict[str, torch.Tensor] | tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
             tensors from neurons and the associated neuron names, if ``capture_intermediate``,
-            this is the second element of a tuple, the first being a tuple of tensors from
+            this is the first element of a tuple, the second being a tuple of tensors from
             connections and the associated connection names.
         """
         # replace none with empty dictionaries
-        inkwargs = inkwargs if inkwargs else {}
-        outkwargs = outkwargs if outkwargs else {}
+        ckw = connection_kwargs if connection_kwargs else {}
+        nkw = neuron_kwargs if neuron_kwargs else {}
 
         # get connection outputs
         res = {
-            k: rgetattr(self.updaters_, f"{k}.connection")(*v, **inkwargs.get(k, {}))
-            for k, v in inputs
+            k: rgetattr(self.connection_, k)(*v, **ckw.get(k, {})) for k, v in inputs
         }
 
         if capture_intermediate:
             outputs = self.wiring(res, **kwargs)
             outputs = {
-                k: rgetattr(self.neurons_, k)(*v, **outkwargs.get(k, {}))
-                for k, v in outputs
+                k: rgetattr(self.neurons_, k)(v, **nkw.get(k, {})) for k, v in outputs
             }
-            return (res, outputs)
+            return (outputs, res)
         else:
             res = self.wiring(res, **kwargs)
-            res = {
-                k: rgetattr(self.neurons_, k)(*v, **outkwargs.get(k, {}))
-                for k, v in res
-            }
+            res = {k: rgetattr(self.neurons_, k)(v, **nkw.get(k, {})) for k, v in res}
             return res
 
 
@@ -775,26 +738,28 @@ class Biclique(Layer):
     connections. These are then, for each group of neurons, optionally transformed
     and then passed in.
 
-    Each element of ``inputs`` and ``outputs`` must be a tuple with at least two
-    elements and at most three. The first of these is a name, which must be a
-    Python identifier and unique to the set of inputs or outputs respectively. The
-    second is the module representing the input or output
-    (:py:class:`Updater`/:py:class:`Connection` or :py:class:`Neuron` respectively).
-    The third is optionally a function which takes a :py:class`~torch.Tensor` and
-    returns a ``Tensor``. This will be applied to the output of, or input to, the
-    modules, respectively. This may be used, for example, to reshape or pad a tensor.
+    Each element of ``connections`` and ``c`` must be a tuple with at least two
+    elements and at most three. The first of these is a string, which must be a
+    Python identifier and unique to across the ``connections`` and ``neurons``. The
+    second is the module itself (:py:class:`Connection` or :py:class:`Neuron`
+    respectively).
 
-    Either a function to combine the tensors from the modules in ``inputs`` to be passed
-    into ``outputs`` or a string literal may be provided. These may be "sum", "mean",
+    The optional third is a function which is a callable that takes and returns a
+    :py:class:`~torch.Tensor`. If present, this will be applied to the output tensor
+    of the corresponding ``Connection`` or input tensor of the corresponding ``Neuron``.
+    This may be used, for example, to reshape or pad a tensor.
+
+    Either a function to combine the tensors from the modules in ``connections`` to be passed
+    into ``inputs`` or a string literal may be provided. These may be "sum", "mean",
     "prod", "min", "max", or "stack". All except for "stack" use ``einops`` to reduce
     them, "stack" will stack the tensors along a new final dimension. When providing
     a function, it must take a tuple of tensors (equal to the number of inputs) and
     produce a single tensor output.
 
     Args:
-        inputs (tuple[tuple[str, Updater | Connection] | tuple[str, Updater | Connection, Callable[[torch.Tensor], torch.Tensor]], ...]):
+        connections (Iterable[tuple[str, Connection] | tuple[str, Connection, OneToOne[torch.Tensor]]]):
             modules which receive inputs given to the layer.
-        outputs (tuple[tuple[str, Neuron] | tuple[str, Neuron, Callable[[torch.Tensor], torch.Tensor]], ...]):
+        neurons (Iterable[tuple[str, Neuron] | tuple[str, Neuron, OneToOne[torch.Tensor]]]):
             modules which produce output from the layer.
         combine (Callable[[dict[str, torch.Tensor]], torch.Tensor] | Literal["stack", "sum", "mean", "prod", "min", "max"], optional):
             function to combine tensors from inputs into a single tensor for ouputs.
@@ -804,19 +769,18 @@ class Biclique(Layer):
         When a string literal is used as an argument for ``combine``, especially
         important when using ``stack``, the tensors are used in "insertion order" based
         on the dictionary passed into ``inputs`` in :py:meth:`Layer.forward`.
+
+        When a custom function is given, keyword arguments passed into :py:meth:`call`,
+        other than those captured in :py:meth`forward` will be passed in.
     """
 
     def __init__(
         self,
-        inputs: tuple[
-            tuple[str, Updater | Connection]
-            | tuple[str, Updater | Connection, Callable[[torch.Tensor], torch.Tensor]],
-            ...,
+        connections: Iterable[
+            tuple[str, Connection] | tuple[str, Connection, OneToOne[torch.Tensor]]
         ],
-        outputs: tuple[
-            tuple[str, Neuron]
-            | tuple[str, Neuron, Callable[[torch.Tensor], torch.Tensor]],
-            ...,
+        neurons: Iterable[
+            tuple[str, Neuron] | tuple[str, Neuron, OneToOne[torch.Tensor]]
         ],
         combine: (
             Callable[[dict[str, torch.Tensor]], torch.Tensor]
@@ -832,14 +796,14 @@ class Biclique(Layer):
         match (combine.lower() if isinstance(combine, str) else combine):
             case "stack":
 
-                def combinefn(tensors):
+                def combinefn(tensors, **kwargs):
                     return torch.stack(list(tensors.values()), dim=-1)
 
                 self._combine = combinefn
 
             case "sum" | "mean" | "prod" | "min" | "max":
 
-                def combinefn(tensors):
+                def combinefn(tensors, **kwargs):
                     return ein.reduce(
                         list(tensors.values()), "s ... -> () ...", combine.lower()
                     )
@@ -855,57 +819,63 @@ class Biclique(Layer):
                 else:
                     self._combine = combine
 
+        # unpack arguments and ensure they are non-empty
+        connections = [*connections]
+        if not len(connections):
+            raise ValueError("'connections' cannot be empty")
+
+        neurons = [*neurons]
+        if not len(neurons):
+            raise ValueError("'neurons' cannot be empty")
+
         # add inputs
-        for idx, input_ in enumerate(inputs):
-            match len(input_):
+        for idx, c in enumerate(connections):
+            match len(c):
                 case 2:
-                    Layer.add_input(self, *input_)
-                    self.post_input[input_[0]] = lambda x: x
+                    Layer.__setitem__(self, *c)
+                    self.post_input[c[0]] = lambda x: x
                 case 3:
-                    Layer.add_input(self, *input_[:-1])
-                    self.post_input[input_[0]] = input_[2]
+                    Layer.__setitem__(self, *c[:-1])
+                    self.post_input[c[0]] = c[2]
                 case _:
                     raise ValueError(
-                        f"element at position {idx} in 'inputs' has invalid "
-                        f"number of elements {len(input_)}"
+                        f"element at position {idx} in 'connections' has invalid "
+                        f"number of elements {len(c)}"
                     )
 
         # add outputs
-        for idx, output_ in enumerate(outputs):
-            match len(output_):
+        for idx, n in enumerate(neurons):
+            match len(n):
                 case 2:
-                    Layer.add_output(self, *output_)
-                    self.pre_output[output_[0]] = lambda x: x
+                    Layer.__setitem__(self, *n)
+                    self.pre_output[n[0]] = lambda x: x
                 case 3:
-                    Layer.add_output(self, *output_[:-1])
-                    self.pre_output[output_[0]] = output_[2]
+                    Layer.__setitem__(self, *n[:-1])
+                    self.pre_output[n[0]] = n[2]
                 case _:
                     raise ValueError(
-                        f"element at position {idx} in 'outputs' has invalid "
-                        f"number of elements {len(output_)}"
+                        f"element at position {idx} in 'neurons' has invalid "
+                        f"number of elements {len(n)}"
                     )
 
-    def add_input(self, *args, **kwargs):
-        r"""Overrides function to add inputs.
+        # construct cells
+        for c in connections:
+            for n in neurons:
+                _ = self[c[0], n[0]]
 
-        Raises:
-            RuntimeError: inputs for a biclique layer are fixed on construction.
-        """
+    def __setitem__(self, *args, **kwargs) -> None:
         raise RuntimeError(
-            f"'add_input' of {type(self).__name__}(Biclique) cannot be called."
+            f"{type(self).__name__}(Biclique) does not support item assignment"
         )
 
-    def add_output(self, *args, **kwargs):
-        r"""Overrides function to add outputs.
-
-        Raises:
-            RuntimeError: outputs for a biclique layer are fixed on construction.
-        """
+    def __delitem__(self, *args, **kwargs) -> None:
         raise RuntimeError(
-            f"'add_output' of {type(self).__name__}(Biclique) cannot be called."
+            f"{type(self).__name__}(Biclique) does not support item deletion"
         )
 
-    def wiring(self, inputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+    def wiring(
+        self, inputs: dict[str, torch.Tensor], **kwargs
+    ) -> dict[str, torch.Tensor]:
         r"""Connection logic between connection outputs and neuron inputs.
 
         This implements the forward logic of the biclique topology where the tensors
@@ -914,13 +884,17 @@ class Biclique(Layer):
         be identity.
 
         Args:
-            inputs (dict[str, torch.Tensor]): dictionary of input names to tensors.
+            inputs (dict[str, torch.Tensor]): dictionary of connection names to tensors.
 
         Returns:
             dict[str, torch.Tensor]: dictionary of output names to tensors.
         """
         return {
-            k: v(self._combine({k: self.post_input[v] for k, v in inputs.items()}))
+            k: v(
+                self._combine(
+                    {k: self.post_input[k](v) for k, v in inputs.items()}, **kwargs
+                )
+            )
             for k, v in self.pre_output
         }
 
@@ -931,49 +905,41 @@ class Serial(Layer):
     This wraps :py:class:`Layer` to provid
 
     Args:
-        inputs (Updater | Connection): module which receives input to the layer.
-        outputs (Neuron): module which generates output from the layer.
-        transform (Callable[[torch.Tensor], torch.Tensor] | None, optional): function
+        connection (Connection): module which receives input to the layer.
+        neuron (Neuron): module which generates output from the layer.
+        transform (OneToOne[torch.Tensor] | None, optional): function
             to apply to connection output before passing into neurons. Defaults to None.
 
     Note:
-        When ``transform`` is not specified, the identity function is used.
+        When ``transform`` is not specified, the identity function is used. Keyword
+        arguments passed into :py:meth:`call`, other than those captured in
+        :py:meth`forward` will be passed in.
 
     Note:
-        The :py:class:`Layer` object underlying a ``Serial`` object has the input
-        and output (:py:class`Connection`/py:class:`Updater` and :py:class:`Neuron`
-        respectively) registered with the name "main".
+        The :py:class:`Layer` object underlying a ``Serial`` object has ``connection``
+        and ``neuron`` registered with names ``"serial_c"`` and ``"serial_n"``
+        respectively. Convenience properties can be used to avoid accessing manually.
     """
 
     def __init__(
         self,
-        inputs: Updater | Connection,
-        outputs: Neuron,
-        transform: Callable[[torch.Tensor], torch.Tensor] | None = None,
+        connection: Connection,
+        neuron: Neuron,
+        transform: OneToOne[torch.Tensor] | None = None,
     ):
-        """_summary_
-
-        Args:
-            inputs (Updater | Connection): _description_
-            outputs (Neuron): _description_
-            transform (Callable[[torch.Tensor], torch.Tensor] | None, optional): _description_. Defaults to None.
-
-        Returns:
-            _type_: _description_
-        """
         # call superclass constructor
         Layer.__init__(self)
 
         # add connection and neuron
-        Layer.add_input(self, "main", inputs)
-        Layer.add_output(self, "main", outputs)
+        Layer.__setitem__("serial_c", connection)
+        Layer.__setitem__("serial_n", neuron)
 
         # set transformation used
         if transform:
             self._transform = transform
         else:
 
-            def transfn(tensor):
+            def transfn(tensor, **kwargs):
                 return tensor
 
             self._transform = transfn
@@ -985,7 +951,7 @@ class Serial(Layer):
         Returns:
             Connection: registered connection.
         """
-        return self.connections.main
+        return self["serial_c"]
 
     @property
     def neuron(self) -> Neuron:
@@ -994,56 +960,38 @@ class Serial(Layer):
         Returns:
             Neuron: registered neuron.
         """
-        return self.neuron.main
+        return self["serial_n"]
 
     @property
     def synapse(self) -> Synapse:
         r"""Registered synapse.
 
         Returns:
-            Synapse: registered synapse.
+            Synapse: registered connection's synapse.
         """
-        return self.synapse.main
-
-    @property
-    def trainable(self) -> Trainable:
-        r"""Registered trainable.
-
-        Returns:
-            Trainable: registered trainable.
-        """
-        return self.trainable.main
+        return self["serial_c"].synapse
 
     @property
     def updater(self) -> Updater:
         r"""Registered updater.
 
         Returns:
-            Updater: registered updater.
+            Updater: registered connection's updater.
         """
-        return self.updater.main
+        return self["serial_c"].updater
 
-    def add_input(self, *args, **kwargs):
-        r"""Overrides function to add inputs.
+    @property
+    def cell(self) -> Cell:
+        r"""Registered cell.
 
-        Raises:
-            RuntimeError: inputs for a serial layer are fixed on construction.
+        Returns:
+            Cell: registered cell.
         """
-        raise RuntimeError(
-            f"'add_input' of {type(self).__name__}(Serial) cannot be called."
-        )
+        return self["serial_c", "serial_n"]
 
-    def add_output(self, *args, **kwargs):
-        r"""Overrides function to add outputs.
-
-        Raises:
-            RuntimeError: outputs for a serial layer are fixed on construction.
-        """
-        raise RuntimeError(
-            f"'add_output' of {type(self).__name__}(Serial) cannot be called."
-        )
-
-    def wiring(self, inputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+    def wiring(
+        self, inputs: dict[str, torch.Tensor], **kwargs
+    ) -> dict[str, torch.Tensor]:
         r"""Connection logic between connection outputs and neuron inputs.
 
         This implements the forward logic of the serial topology. The ``transform`` is
@@ -1056,42 +1004,51 @@ class Serial(Layer):
         Returns:
             dict[str, torch.Tensor]: dictionary of output names to tensors.
         """
-        return {"main": self._transform(inputs["main"])}
+        return {"serial_n": self._transform(inputs["serial_c"], **kwargs)}
 
     def forward(
         self,
         *inputs: torch.Tensor,
-        inkwargs: dict[str, dict[str, Any]] | None = None,
-        outkwargs: dict[str, dict[str, Any]] | None = None,
+        connection_kwargs: dict[str, Any] | None = None,
+        neuron_kwargs: dict[str, Any] | None = None,
         capture_intermediate: bool = False,
+        **kwargs,
     ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         r"""Computes a forward pass.
 
         Args:
             *inputs (torch.Tensor): values passed to the connection.
-            inkwargs (dict[str, dict[str, Any]] | None, optional): keyword arguments
-                for the connection's forward call. Defaults to None.
-            outkwargs (dict[str, dict[str, Any]] | None, optional): keyword arguments
-                for the neuron's forward call. Defaults to None.
+            connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments for the connection's forward call. Defaults to None.
+            neuron_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments for the neuron's forward call. Defaults to None.
             capture_intermediate (bool, optional): if output from the connections should
                 also be returned. Defaults to False.
+            **kwargs (Any): keyword arguments passed to :py:meth:`wiring`.
 
         Returns:
             torch.Tensor | tuple[torch.Tensor, torch.Tensor]: output from the neurons,
-            if ``capture_intermediate``, this is th second element of a tuple, the first
+            if ``capture_intermediate``, this is the first element of a tuple, the second
             being the output from the connection.
         """
+        # wrap non-empty dictionaries
+        ckw = (
+            {"serial_c": connection_kwargs} if connection_kwargs else connection_kwargs
+        )
+        nkw = {"serial_n": neuron_kwargs} if neuron_kwargs else neuron_kwargs
+
         # call parent forward
         res = Layer.forward(
             self,
             {"main": inputs},
-            inkwargs=inkwargs,
-            outkwargs=outkwargs,
+            connection_kwargs=ckw,
+            neuron_kwargs=nkw,
             capture_intermediate=capture_intermediate,
+            **kwargs,
         )
 
         # unpack to sensible output
         if capture_intermediate:
-            return res[0]["main"], res[1]["main"]
+            return res[0]["serial_n"], res[1]["serial_c"]
         else:
-            return res["main"]
+            return res["serial_n"]

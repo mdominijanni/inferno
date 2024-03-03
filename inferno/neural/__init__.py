@@ -49,7 +49,7 @@ from .modeling import (
 )
 
 from .network import (
-    Trainable,
+    Cell,
     Layer,
     Biclique,
     Serial,
@@ -65,8 +65,6 @@ __all__ = [
     "Synapse",
     "Connection",
     "SynapseConstructor",
-    "HomogeneousPoissonEncoder",
-    "PoissonIntervalEncoder",
     "LIF",
     "ALIF",
     "GLIF1",
@@ -81,10 +79,12 @@ __all__ = [
     "LinearDirect",
     "LinearLateral",
     "Conv2D",
+    "HomogeneousPoissonEncoder",
+    "PoissonIntervalEncoder",
     "Accumulator",
     "Updater",
     "Updatable",
-    "Trainable",
+    "Cell",
     "Layer",
     "Biclique",
     "Serial",
