@@ -420,15 +420,16 @@ class Updatable(ABC):
         if hasattr(self, "updater_"):
             del self.updater_
 
+    @property
     @abstractmethod
     def defaultupdater(self) -> Updater:
-        r"""Sets the current updater to the default and returns it.
+        r"""Default updater for this object.
 
         Raises:
             RuntimeError: ``defaultupdater`` must be implemented by the subclass.
 
         Returns:
-            Updater: newly set default updater.
+            Updater: the default updater.
         """
         raise RuntimeError(
             f"'{type(self).__name__}(Updatable) must implement "

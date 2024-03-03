@@ -821,7 +821,7 @@ class Connection(Module, Updatable, ABC):
         )
 
     def defaultupdater(self) -> Updater:
-        r"""Sets the current updater to the default and returns it.
+        r"""Default updater for this connection.
 
         This will set and return an :py:class:`Updater` with the following trainable
         parameters:
@@ -830,7 +830,11 @@ class Connection(Module, Updatable, ABC):
         * ``delay``, if :py:attr:`delayedby` is not ``None``
 
         Returns:
-            Updater: newly set default updater.
+            Updater: default updater.
+
+        Note:
+            This will not set the updater, it will only return a newly constructed
+            default updater.
         """
         # determine updatable parameters
         params = ['weight']
@@ -840,8 +844,7 @@ class Connection(Module, Updatable, ABC):
             params.append('delay')
 
         # create, set, and return the updater
-        self.updater = Updater(self, *params)
-        return self.updater
+        return Updater(self, *params)
 
     @abstractmethod
     def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
