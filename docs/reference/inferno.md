@@ -11,7 +11,6 @@
     :toctree: generated
 
     Module
-    ModuleDict
     DimensionalModule
     HistoryModule
     Configuration

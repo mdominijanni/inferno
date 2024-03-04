@@ -1,7 +1,7 @@
 from .. import LayerwiseUpdater, LayerwiseTrainer
-from .. import functional as lf
+from ... import Module
 from inferno._internal import numeric_limit, argtest
-from inferno.neural import Layer, Trainable
+from inferno.neural import Layer, Cell
 from inferno.observe import (
     StateMonitor,
     CumulativeTraceReducer,
@@ -75,7 +75,7 @@ class STDP(LayerwiseTrainer):
 
     Important:
         The constructor arguments (except for ``name``) are hyperparameters for STDP
-        and can be overridden on a trainable-by-trainable basis.
+        and can be overridden on a cell-by-cell basis.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -164,17 +164,17 @@ class STDP(LayerwiseTrainer):
 
         return d
 
-    def add_trainable(
+    def add_cell(
         self,
         name: str,
-        trainable: Trainable,
+        cell: Cell,
         **kwargs: Any,
-    ) -> Trainable:
-        r"""Adds a trainable with required state.
+    ) -> tuple[Cell, Module]:
+        r"""Adds a cell with required state.
 
         Args:
             name (str): name of the trainable to add.
-            trainable (Trainable): trainable to add.
+            cell (Cell): cell to add.
 
         Keyword Args:
             step_time (float): length of a simulation time step.
@@ -192,15 +192,15 @@ class STDP(LayerwiseTrainer):
                 function to reduce updates over the batch dimension.
 
         Returns:
-            Trainable: added trainable.
+            tuple[Cell, Module]: added cell and required state.
 
         Important:
             Any specified keyword arguments will override the default hyperparameters
             set on initialization. See :py:class:`STDP` for details.
         """
-        # add the trainable with additional hyperparameters
-        trainable = LayerwiseTrainer.add_trainable(
-            self, name, trainable, **self._hp_override(**kwargs)
+        # add the cell with additional hyperparameters
+        cell, state = LayerwiseTrainer.add_cell(
+            self, name, cell, **self._hyperparam_config(**kwargs)
         )
 
         # TODO: add appropriate monitors, unpool trace

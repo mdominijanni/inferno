@@ -13,13 +13,6 @@ from .updaters.sstdp import (
     MSTDPET,
 )
 
-
-from .updaters.bounding import (
-    WeightDependence,
-    HardWeightDependence,
-    SoftWeightDependence,
-)
-
 from .classifiers.simple import (
     MaxRateClassifier,
 )
@@ -32,7 +25,4 @@ __all__ = [
     "MSTDP",
     "MSTDPET",
     "MaxRateClassifier",
-    "WeightDependence",
-    "HardWeightDependence",
-    "SoftWeightDependence",
 ]

@@ -1,6 +1,5 @@
 from .infrastructure import (
     Module,
-    ModuleDict,
     Configuration,
     Hook,
     StateHook,
@@ -43,7 +42,6 @@ __all__ = [
     "stats",
     "bounding",
     "Module",
-    "ModuleDict",
     "Configuration",
     "Hook",
     "StateHook",

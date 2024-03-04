@@ -7,7 +7,6 @@ inferno
 neural
 neural-functional
 learn
-learn-functional
 observe
 infernotypes
 bounding

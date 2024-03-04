@@ -31,10 +31,6 @@ class Cell(Module):
         self.connection_ = connection
         self.neuron_ = neuron
 
-        # conditionally add the default updater to the connection
-        if not self.connection.updatable:
-            self.connection = self.connection.defaultupdater()
-
         # callbacks
         self._add_monitor_callback = add_monitor_callback
         self._del_monitor_callback = del_monitor_callback
@@ -136,7 +132,7 @@ class Cell(Module):
                     target, attr = "cell", ".".join(attrchain)
 
         # use layer callback to add the monitor to its pool and return
-        return self._add_monitor_callback(caller, name, target, attr, monitor)
+        return self._add_monitor_callback(f"m{id(caller)}", name, target, attr, monitor)
 
     def del_monitor(self, caller: Module, name: str) -> None:
         r"""Deletes a managed monitor associated with a trainer.
@@ -148,7 +144,7 @@ class Cell(Module):
             caller (Module): instance of the module associated with the monitor.
             name (str): name of the monitor to remove.
         """
-        self._del_monitor_callback(caller, name)
+        self._del_monitor_callback(f"m{id(caller)}", name)
 
     @property
     def connection(self) -> Connection:
@@ -356,8 +352,6 @@ class Layer(Module, ABC):
         _ = argtest.identifier("name", name)
 
         if isinstance(module, Connection):
-            if not module.updatable:
-                module.updater = module.defaultupdater
             self.connections_[name] = module
 
         elif isinstance(module, Neuron):
@@ -442,6 +436,24 @@ class Layer(Module, ABC):
             raise AttributeError(
                 f"'name' ('{name}') is not a registered connection or neuron"
             )
+
+    def __contains__(self, name: str | tuple[str, str]) -> bool:
+        r"""Checks if a connection, neuron, or cell is in the layer.
+
+        Args:
+            name (str | tuple[str, str]): name of the connection or neuron, or a tuple
+                of names specifying a cell to test for.
+
+        Returns:
+            bool: if the specified connection, neuron, or cell is in the layer.
+        """
+        if isinstance(name, tuple):
+            try:
+                return name[0] in self.cells_ and name[1] in self.cells_[name[0]]
+            except IndexError:
+                raise ValueError("tuple 'name' must have exactly two elements")
+        else:
+            return name in self.connections_ or name in self.neurons_
 
     def _add_monitor(
         self,
@@ -624,7 +636,7 @@ class Layer(Module, ABC):
         Yields:
             tuple[str, Updater]: tuple of a registered updater and its name.
         """
-        return ((k, v.updater) for k, v in self.connections_.items())
+        return ((k, v.updater) for k, v in self.connections_.items() if v.updatable)
 
     @abstractmethod
     def wiring(

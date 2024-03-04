@@ -348,7 +348,7 @@ class Updater(Module):
         r"""Clears the accumulator state for a given attribute.
 
         As a property, this is equivalent to using ``del`` on the
-        :py:attr:`~Accumulator.pos` and :py:attr:`~Accumulator.neg` properties directly,
+        :py:attr:`Accumulator.pos` and :py:attr:`Accumulator.neg` properties directly,
         which itself resets them back to their empty states.
 
         Args:
@@ -378,6 +378,10 @@ class Updater(Module):
         Args:
             module (Updatable): module to which updates will be applied.
             *params (str): parameters to update, all parameters when none are specified.
+
+        Important:
+            :py:class:`Updater` should generally not be called directly but instead
+            :py:meth:`Updatable.update` or :py:meth:`Updatable.updatesome` should be called.
         """
         if not params:
             params = self.updates_.keys()
@@ -444,12 +448,7 @@ class Updatable(ABC):
     def update(self, clear: bool = True, **kwargs) -> None:
         r"""Applies all accumulated updates.
 
-        If updates need to be applied individually to parameters, instead call
-        ``module.updater(*params)`` and clear the parameter updates manually.
-
         Args:
-            *params (str): name of the parameters to update, updates all parameters
-                when none are specified.
             clear (bool, optional): if accumulators should be cleared after updating.
                 Defaults to True.
         """
@@ -457,3 +456,16 @@ class Updatable(ABC):
             self.updater(self, **kwargs)
         if clear:
             self.updater.clear(**kwargs)
+
+    def updatesome(self, *params, clear: bool = True, **kwargs) -> None:
+        r"""Applies accumulated updates to specific parameters.
+
+        Args:
+            *params (str): parameters to update.
+            clear (bool, optional): if accumulators should be cleared after updating.
+                Defaults to True.
+        """
+        for p in params:
+            self.updater(self, p, **kwargs)
+            if clear:
+                getattr(self.updater, p).clear(**kwargs)
