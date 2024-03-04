@@ -1,10 +1,11 @@
+from __future__ import annotations
 from . import Reducer
 from .. import Module, Hook
 from abc import ABC, abstractmethod
 from inferno._internal import rgetattr
 from inferno.infernotypes import ManyToOne
 import torch
-from typing import Any, Callable, Protocol
+from typing import Any, Callable, Protocol, Type
 import weakref
 
 
@@ -223,6 +224,9 @@ class MonitorConstructor(Protocol):
         Monitor: newly constructed monitor.
     """
 
+    monitor: Type[ManagedMonitor]
+    reducer: Type[Reducer]
+
     def __call__(
         self,
         attr: str,
@@ -289,6 +293,9 @@ class ManagedMonitor(Monitor, ABC):
         if module:
             self._monitored_ref = weakref.ref(module)
 
+        # add tag data
+        self._tags = {}
+
     @classmethod
     @abstractmethod
     def partialconstructor(cls, *args, **kwargs) -> MonitorConstructor:
@@ -332,6 +339,29 @@ class ManagedMonitor(Monitor, ABC):
 
         # update stored weak reference
         self._monitored_ref = weakref.ref(module)
+
+    @property
+    def tags(self) -> dict[str, Any]:
+        r"""Saved monitor tags.
+
+        This should be used to determine which monitors are unique for the purpose of
+        creating aliases. By default, the class of monitor and reducer is used with keys
+        ``"monitor"`` and ``"reducer"`` respectively.
+
+        Returns:
+            dict[str, Any]: _description_
+        """
+        return {"monitor": type(self), "reducer": type(self.reducer), **self._tags}
+
+    def tag(self, **tags: Any) -> None:
+        r"""Set non-default tags.
+
+        Keyword Args:
+            **kwargs (Any): tags to set on the monitor, overriding existing non-default
+                tags.
+
+        """
+        self._tags = tags
 
 
 class StateMonitor(ManagedMonitor):
@@ -461,6 +491,9 @@ class StateMonitor(ManagedMonitor):
                 filter_=filter_,
                 map_=map_,
             )
+
+        constructor.monitor = cls
+        constructor.reducer = type(reducer)
 
         return constructor
 
@@ -593,6 +626,9 @@ class DifferenceMonitor(ManagedMonitor):
                 filter_=filter_,
                 map_=map_,
             )
+
+        constructor.monitor = cls
+        constructor.reducer = type(reducer)
 
         return constructor
 

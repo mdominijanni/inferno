@@ -3,9 +3,10 @@ from . import Connection, Neuron, Synapse
 from .modeling import Updater
 from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
 from .. import Module
+from .._internal import Proxy
 from ..infernotypes import OneToOne
 from abc import ABC, abstractmethod
-from collections.abc import Iterator, Iterable
+from collections.abc import Iterator, Iterable, Mapping
 import einops as ein
 from functools import partial
 from inferno._internal import argtest, rgetattr
@@ -14,15 +15,16 @@ from itertools import chain
 import torch
 import torch.nn as nn
 from typing import Any, Callable, Literal
+import weakref
 
 
 class Cell(Module):
     def __init__(
         self,
+        layer: Layer,
         connection: Connection,
         neuron: Neuron,
-        add_monitor_callback: Callable | None = None,
-        del_monitor_callback: Callable | None = None,
+        names: tuple[str, str],
     ):
         # call superclass constructor
         Module.__init__(self)
@@ -31,43 +33,28 @@ class Cell(Module):
         self.connection_ = connection
         self.neuron_ = neuron
 
-        # callbacks
-        self._add_monitor_callback = add_monitor_callback
-        self._del_monitor_callback = del_monitor_callback
+        # reference to owner and names
+        self._layer = weakref.ref(layer)
+        self._names = names
 
-    def add_monitor(
+    def get_monitor(
         self,
-        caller: Module,
         name: str,
         attr: str,
         monitor: MonitorConstructor,
-        unpooled: bool = False,
+        pool: Iterable[Cell, Mapping[str, ManagedMonitor]] | None = None,
+        **tags: Any,
     ) -> ManagedMonitor:
-        r"""Adds a managed monitor associated with a trainer.
-
-        This works in conjunction with :py:class:`Layer` to ensure that the added
-        monitors are not duplicated if it is unneeded. This non-duplication is only
-        enforced across a single layer and single trainer.
-
-        For example, if a layer goes from two connections to one neuron, and both
-        resultant cells are trained with the same trainer, both monitors have
-        equivalent attribute chains (defined by ``attr``), and the same name as
-        defined by ``name``, then rather than creating a new monitor, the existing one
-        will be returned.
-
-        Because of this, ``name`` must also capture any information which may be unique
-        to a specific trainable.
-
-        All monitor's added this way will be added to the lifecycle of the ``Layer``
-        which created them.
+        r"""Creates or alias a monitor on the owning layer.
 
         Args:
-            caller (Module): module which will use the monitor.
             name (str): name of the monitor to add.
             attr (str): dot-separated attribute path, relative to this cell, to monitor.
             monitor (MonitorConstructor): partial constructor for the monitor to add.
-            unpooled (bool): if the monitor should not be aliased from the pool
-                regardless. Defaults to False.
+            pool (Iterable[Cell, Mapping[str, ManagedMonitor]] | None, optional): pool to
+                search for compatible monitor, always creates a new one if None.
+                Defaults to None.
+            **tags (Any): tags to add to the monitor and to test for uniqueness.
 
         Raises:
             RuntimeError: attribute must be a member of this trainable.
@@ -82,13 +69,6 @@ class Cell(Module):
             owns this ``Cell`, and therefore will be associated with its ``forward``
             call. If a monitor targeting an updater should trigger on updating, it
             should be directly added to the updater.
-
-        Tip:
-            If the monitor's behavior for the targeted attribute may vary with
-            hyperparameters or other configuration state, ``unpooled`` should be
-            set to ``True``. This does not keep this monitor from being aliased however,
-            so the setting of ``unpooled`` should be consistent across all monitors
-            in the pool with the same name.
         """
         # check that the attribute is a valid dot-chain identifier
         _ = argtest.nestedidentifier("attr", attr)
@@ -96,11 +76,9 @@ class Cell(Module):
         # split the identifier and check for ownership
         attrchain = attr.split(".")
 
-        # ensure the top-level attribute is in this trainable
+        # ensure the top-level attribute is in this cell
         if not hasattr(self, attrchain[0]):
-            raise RuntimeError(
-                f"this trainable does not have an attribute '{attrchain[0]}'"
-            )
+            raise RuntimeError(f"this cell does not have an attribute '{attrchain[0]}'")
 
         # remap the top-level target if pointing to a private attribute
         attrchain[0] = {
@@ -120,31 +98,57 @@ class Cell(Module):
         attrchain = attrsub + attrchain[1:]
 
         # split the chain into target and attribute
-        if unpooled:
-            target, attr = "trainable", ".".join(attrchain)
+        match attrchain[0]:
+            case "connection":
+                target, attr = "connection", ".".join(attrchain[1:])
+            case "neuron":
+                target, attr = "neuron", ".".join(attrchain[1:])
+            case _:
+                target, attr = "cell", ".".join(attrchain)
+
+        # get resolved attribute if the layer exists
+        if not self._layer():
+            raise RuntimeError("layer is no longer in memory")
         else:
-            match attrchain[0]:
-                case "connection":
-                    target, attr = "connection", ".".join(attrchain[1:])
-                case "neuron":
-                    target, attr = "neuron", ".".join(attrchain[1:])
-                case _:
-                    target, attr = "cell", ".".join(attrchain)
+            attr = self._layer()._align_attribute(*self._names, target, attr)
 
-        # use layer callback to add the monitor to its pool and return
-        return self._add_monitor_callback(f"m{id(caller)}", name, target, attr, monitor)
+        # return new monitor if pool is undefined
+        if not pool:
+            monitor = monitor(attr, self._layer())
+            monitor.tag(**{"attr": attr, **tags})
+            return monitor
 
-    def del_monitor(self, caller: Module, name: str) -> None:
-        r"""Deletes a managed monitor associated with a trainer.
+        # get test tags
+        tagc = {
+            "monitor": monitor.monitor,
+            "reducer": monitor.reducer,
+            "attr": attr,
+            **tags,
+        }
+        found = None
 
-        This "frees" a monitor from the enclosing :py:class:`Layer` that is associated
-        with this trainable.
+        for cell, monitors in pool:
+            # skip invalid cells or cells from a different layer
+            if not (cell._layer() or id(cell._layer()) == id(self._layer())):
+                continue
 
-        Args:
-            caller (Module): instance of the module associated with the monitor.
-            name (str): name of the monitor to remove.
-        """
-        self._del_monitor_callback(f"m{id(caller)}", name)
+            # skip if the named monitor doesn't exist
+            if name not in monitors:
+                continue
+
+            # create the alias if tags match
+            if monitors[name].tags == tagc:
+                found = monitors[name]
+                if id(cell) == id(self):  # break if identical cell
+                    break
+
+        # return alias or create new monitor
+        if found:
+            return found
+        else:
+            monitor = monitor(attr, self._layer())
+            monitor.tag(**{"attr": attr, **tags})
+            return monitor
 
     @property
     def connection(self) -> Connection:
@@ -242,14 +246,7 @@ class Cell(Module):
 
 
 class Layer(Module, ABC):
-    r"""Representation of simultaneously processed connections and neurons.
-
-    Important:
-        :py:class:`ManagedMonitor` objects added through :py:meth:`Cell.add_monitor` are
-        not exported with the state dictionary. :py:class:`Cell` objects additionally
-        are not exported with the state dictionary, although their component
-        :py:class:`Connection` and :py:class:`Neuron` objects are.
-    """
+    r"""Representation of simultaneously processed connections and neurons."""
 
     def __init__(self, trainable: bool = True):
         # call superclass constructor
@@ -259,7 +256,6 @@ class Layer(Module, ABC):
         self.connections_ = nn.ModuleDict()
         self.neurons_ = nn.ModuleDict()
         self.cells_ = {}
-        self.monitors_ = {}
 
     def __getitem__(self, name: str | tuple[str, str]) -> Connection | Neuron | Cell:
         r"""Retrieves a previously added connection, neuron, or cell.
@@ -361,7 +357,7 @@ class Layer(Module, ABC):
             _ = argtest.instance("module", module, (Connection, Neuron))
 
     def __delitem__(self, name: str | tuple[str, str]) -> None:
-        """Deletes a connection, neuron, or cell and associated monitors and cells.
+        """Deletes a connection, neuron, or cell.
 
         Args:
             name (str | tuple[str, str]): name of the component module to delete.
@@ -370,10 +366,10 @@ class Layer(Module, ABC):
             AttributeError: name does not specify a registered connection, neuron, or cell.
 
         Note:
-            When ``name`` is a tuple, that cell and its monitors will be deleted but
-            the connection and neuron will not be.
+            When ``name`` is a tuple, that cell  will be deleted but the associated
+            connection and neuron will not be. Deletion of a cell will only fail if the
+            connection or neuron do not exist, even if that cell doesn't.
         """
-        pools = list(self.monitors_.keys())
         connections = []
         neurons = []
 
@@ -398,7 +394,7 @@ class Layer(Module, ABC):
 
         elif name in self.neurons_:
             del self.neurons_[name]
-            connections.extend(self.connections__.keys())
+            connections.extend(self.connections_.keys())
             neurons.append(name)
 
         else:
@@ -415,22 +411,6 @@ class Layer(Module, ABC):
 
                 if not len(self.cells_[c]):
                     del self.cells_[c]
-
-        # clean up monitors
-        for p in pools:
-
-            for c in connections:
-                if c in self.monitors_[p]:
-
-                    for n in neurons:
-                        if n in self.monitors_[p][c]:
-                            del self.monitors_[p][c][n]
-
-                    if not len(self.monitors_[p][c]):
-                        del self.monitors_[p][c]
-
-            if not len(self.monitors_[p]):
-                del self.monitors_[p]
 
         else:
             raise AttributeError(
@@ -455,140 +435,73 @@ class Layer(Module, ABC):
         else:
             return name in self.connections_ or name in self.neurons_
 
-    def _add_monitor(
-        self,
-        pool: str,
-        name: str,
-        target: str,
-        attr: str,
-        monitor: MonitorConstructor,
-        connection: str,
-        neuron: str,
-    ) -> ManagedMonitor:
-        r"""Used as a callback to add monitors from a cell.
-
-        This will create a monitor if it doesn't exist, otherwise it will create a
-        reference to the existing monitor and return it.
+    def _align_attribute(
+        self, connection: str, neuron: str, target: str, attr: str
+    ) -> str:
+        r"""Gets the attribute path for monitoring relative to the layer.
 
         Args:
-            pool (str): name of the pool to which the monitor will be added.
-            name (str): name of the monitor.
-            target (str): shorthand for the top-level attribute being targeted.
-            attr (str): dot-separated attribute to monitor.
-            monitor (MonitorConstructor): partial constructor for managed monitor.
             connection (str): name of the associated connection.
             neuron (str): name of the associated neuron.
+            target (str): layer-level top attribute to target.
+            attr (str): cell-relative dot-separated attribute to monitor.
 
         Returns:
-            ManagedMonitor: created or retrieved monitor.
-
-        Note:
-            Valid targets are "neuron", "connection", and "cell".
+            str: dot-separated layer-origin attribute to monitor.
         """
-        # check if input and output names exist
-        if connection not in self.connections_:
-            raise AttributeError(
-                f"'connection' ('{connection}') is not an added connection"
-            )
-        if neuron not in self.neurons_:
-            raise AttributeError(f"'neuron' ('{neuron}') is not an added neuron")
-
-        # create the pool if it doesn't exist
-        if pool not in self.monitors_:
-            self.monitors_[pool] = {}
-
-        # create connection group if it doesn't exist
-        if connection not in self.monitors_[pool]:
-            self.monitors_[pool][connection] = {}
-
-        # create neuron group if it doesn't exist
-        if neuron not in self.monitors_[pool][connection]:
-            self.monitors_[pool][connection][neuron] = {}
-
-        # alias the monitor
         match target:
-
             case "connection":
-                # set correct attribute relative to the layer
-                attr = f"connections_.{connection}.{attr}"
-
-                # alias the monitor if it does not exist
-                if name not in self.monitors_[pool][connection][neuron]:
-                    for n in self.monitors_[pool][connection]:
-                        if name in self.monitors_[pool][connection][n]:
-                            self.monitors_[pool][connection][neuron][name] = (
-                                self.monitors_[pool][connection][n][name]
-                            )
-                            break
-
+                if connection not in self.connections_:
+                    raise AttributeError(f"'connection' ('{connection}') is not valid")
+                else:
+                    return f"connections_.{connection}.{attr}"
             case "neuron":
-                # set correct attribute relative to the layer
-                attr = f"neurons_.{neuron}.{attr}"
-
-                # alias the monitor if it does not exist
-                if name not in self.monitors_[pool][connection][neuron]:
-                    for c in self.monitors_[pool]:
-                        if neuron in self.monitors_[pool][c]:
-                            if name in self.monitors_[pool][c][neuron]:
-                                self.monitors_[pool][connection][neuron][name] = (
-                                    self.monitors_[pool][c][neuron][name]
-                                )
-                            break
-
+                if neuron not in self.neurons_:
+                    raise AttributeError(f"'neuron' ('{neuron}') is not valid")
+                else:
+                    return f"neurons_.{neuron}.{attr}"
             case "cell":
-                # set correct attribute relative to the layer
-                attr = f"cell_.{connection}.{neuron}.{attr}"
-
+                if not self.cells_.get(connection, {}).get(neuron, None):
+                    raise AttributeError(
+                        f"cell 'connection', 'neuron' ('{connection}', '{neuron}') is not valid"
+                    )
+                else:
+                    return f"cell_.{connection}.{neuron}.{attr}"
             case _:
                 raise ValueError(
                     f"invalid 'target' ('{target}') specified, expected one of: "
                     "'neuron', 'connection', 'cell'"
                 )
 
-        # create the monitor if it does not exist and could not be aliased
-        if name not in self.monitors_[pool][connection][neuron]:
-            self.monitors_[pool][connection][neuron][name] = monitor(attr, self)
+    @property
+    def connections(self) -> Proxy:
+        r"""Registred connections.
 
-        # return the monitor
-        return self.monitors_[pool][connection][neuron][name]
+        For a given ``name`` of a :py:class:`Connection` set via
+        ``layer[name] = connection``, it can be accessed as ``layer.connections.name``.
 
-    def _del_monitor(self, pool: str, name: str, connection: str, neuron: str) -> None:
-        r"""Used as a callback to free monitors from a cell.
+        It can be modified in-place (including setting other attributes, adding
+        monitors, etc), but it can neither be deleted nor reassigned.
 
-        This will only delete the alias associated with that :py:class:`Cell`.
-        If the monitor has been aliased, that alias will persist and be accessible
-        as normal.
-
-        Args:
-            pool (str): name of the pool to which the monitor will be added.
-            name (str): name of the monitor.
-            connection (str): name of the associated connection.
-            neuron (str): name of the associated neuron.
+        Returns:
+            Proxy: safe access to registered connections.
         """
-        # check if the pool exists
-        if pool in self.monitors_:
+        return Proxy(self.connections_, "")
 
-            # check if the connection exists
-            if connection in self.monitors_[pool]:
+    @property
+    def neurons(self) -> Proxy:
+        r"""Registred neurons.
 
-                # check if the neuron exists
-                if neuron in self.monitors_[pool][connection]:
+        For a given ``name`` of a :py:class:`Neuron` set via
+        ``layer[name] = neuron``, it can be accessed as ``layer.neurons.name``.
 
-                    # delete the monitor if it exists
-                    if name in self.monitors_[pool][connection][neuron]:
-                        del self.monitors_[pool][connection][neuron][name]
+        It can be modified in-place (including setting other attributes, adding
+        monitors, etc), but it can neither be deleted nor reassigned.
 
-                    # delete neuron container if empty
-                    if not len(self.monitors_[pool][connection][neuron]):
-                        del self.monitors_[pool][connection][neuron]
-
-                # delete connection container if empty
-                if not len(self.monitors_[pool][connection]):
-                    del self.monitors_[pool][connection]
-
-            # delete pool container if empty
-            if not len(self.monitors_[pool]):
-                del self.monitors_[pool]
+        Returns:
+            Proxy: safe access to registered neurons.
+        """
+        return Proxy(self.neurons_, "")
 
     @property
     def named_connections(self) -> Iterator[tuple[str, Connection]]:
@@ -955,6 +868,16 @@ class Serial(Layer):
                 return tensor
 
             self._transform = transfn
+
+    def __setitem__(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(Biclique) does not support item assignment"
+        )
+
+    def __delitem__(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(Biclique) does not support item deletion"
+        )
 
     @property
     def connection(self) -> Connection:

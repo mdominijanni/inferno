@@ -204,7 +204,7 @@ class STDP(LayerwiseTrainer):
         )
 
         # TODO: add appropriate monitors, unpool trace
-        _ = self.add_monitor()
+        _ = self.add_monitor(name, "trace_post", "neuron.spike", StateMonitor.partialconstructor())
 
 
 class STDPv1(LayerwiseUpdater):
