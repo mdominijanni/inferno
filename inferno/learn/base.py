@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Generator, Iterator
 from .. import Module
@@ -8,7 +9,7 @@ import itertools
 from itertools import chain
 import torch  # noqa:F401, for docstrings
 import torch.nn as nn
-from typing import Any, Callable
+from typing import Any
 
 
 class CellTrainer(Module):
@@ -60,8 +61,8 @@ class CellTrainer(Module):
             (((c, n), m) for n, m in md.items()) for c, md in self.monitors_.items()
         )
 
-    def cellmonitors(self, cell: str) -> Iterator[tuple[str, ManagedMonitor]]:
-        r"""Monitors associated with a given trainable.
+    def named_monitors_of(self, cell: str) -> Iterator[tuple[str, ManagedMonitor]]:
+        r"""Monitors associated with a given cell.
 
         Args:
             cell (str): name of the cell to get associted monitors of.
@@ -107,21 +108,10 @@ class CellTrainer(Module):
         """
         return ((n, s) for n, s in self.auxiliary_.items())
 
-    def cellaux(self, cell: str) -> nn.Module | None:
-        """Auxiliary state associated with a cell, if any.
-
-        Args:
-            cell (str): name of the cell to get auxiliary state of.
-
-        Returns:
-            nn.Module | None: auxiliary state of the cell if it has any.
-        """
-        return self.auxiliary_.get(cell, None)
-
     def add_cell(
-        self, name: str, cell: Cell, aux: nn.Module | None = None, **kwargs
+        self, name: str, cell: Cell, aux: nn.Module | None = None
     ) -> tuple[Cell, nn.Module | None]:
-        r"""Adds a cell.
+        r"""Adds a cell and any auxiliary state.
 
         Args:
             name (str): name of the cell to add.
@@ -147,7 +137,7 @@ class CellTrainer(Module):
 
         # delete any existing monitors (should never occur)
         if name in self.monitors_:
-            for monitor in self.monitors_[name]:
+            for monitor in [*self.monitors_[name].keys()]:
                 self.del_monitor(name, monitor)
             del self.monitors_[name]
 
@@ -182,9 +172,8 @@ class CellTrainer(Module):
 
         # delete any existing monitors
         if name in self.monitors_:
-            for monitor in self.monitors_[name]:
+            for monitor in [*self.monitors_[name].keys()]:
                 self.del_monitor(name, monitor)
-            del self.monitors_[name]
 
         # delete any existing state
         if name in self.auxiliary_:
@@ -263,7 +252,7 @@ class CellTrainer(Module):
         if cell not in self.monitors_:
             self.monitors_[cell] = nn.ModuleDict()
 
-        # construct the pool
+        # construct the pool and prematurely return
         if unique:
             pool = None
         else:
@@ -275,6 +264,10 @@ class CellTrainer(Module):
 
         # create monitor via the cell
         monitor = self.cells_[cell].get_monitor(name, attr, monitor, pool)
+
+        # deregister if not in training mode
+        if not self.training:
+            monitor.deregister()
 
         # add monitor to the trainer
         if cell not in self.monitors_:
@@ -313,6 +306,10 @@ class CellTrainer(Module):
         self.monitors_[cell][name].deregister()
         del self.monitors_[cell][name]
 
+        # delete group if empty
+        if not len(self.monitors_[cell]):
+            del self.monitors_[cell]
+
     def get_monitor(self, cell: str, name: str) -> ManagedMonitor | None:
         r"""Gets an added monitor.
 
@@ -325,41 +322,26 @@ class CellTrainer(Module):
         """
         return self.monitors_.get(cell, {}).get(name, None)
 
-    def attach(self, clear: bool = True, **kwargs) -> None:
-        """Registers all of the monitors for the trainer.
+    def train(self, mode: bool = True) -> CellTrainer:
+        r"""Override of module's train method.
 
-        This additionally sets the trainer into training mode with ``self.train()``.
+        Automatically registers and deregisters monitors. Does not put :py:class:`Cell`
+        objects into training mode. Does not clear monitor state (call :py:meth:`clear`
+        to do so).
 
         Args:
-            clear (bool, optional): If the monitors should be cleared before registering
-                with submodules. Defaults to True.
+            mode (bool, optional): if the trainer should be set in training mode (True)
+                or evaluation mode (False). Defaults to True.
 
-        Note:
-            Keyword arguments are passed to :py:meth:`Monitor.clear` call.
+        Returns:
+            CellTrainer: self.
         """
-        self.train()
+        # call superclass function
+        Module.train(self, mode)
+
+        # attach monitors
         for monitor in self.monitors:
-            if clear:
-                monitor.clear(**kwargs)
             monitor.register()
-
-    def detach(self, clear: bool = False, **kwargs) -> None:
-        """Deregisters all of the monitors for the trainer.
-
-        This additionally sets the trainer into evaluation mode with ``self.eval()``.
-
-        Args:
-            clear (bool, optional): If the monitors should be cleared before
-                deregistering with submodules. Defaults to False.
-
-        Note:
-            Keyword arguments are passed to :py:meth:`Monitor.clear` call.
-        """
-        self.eval()
-        for monitor in self.monitors:
-            if clear:
-                monitor.clear(**kwargs)
-            monitor.deregister()
 
     def clear(self, **kwargs):
         """Clears all of the monitors for the trainer.
@@ -399,7 +381,7 @@ class CellTrainer(Module):
         )
 
 
-class LayerwiseTrainer(CellTrainer):
+class LayerwiseTrainer(CellTrainer, ABC):
     def __init__(self, **kwargs):
         r"""Trainer for update methods without inter-layer dependencies.
 
@@ -417,85 +399,89 @@ class LayerwiseTrainer(CellTrainer):
         # call superclass
         CellTrainer.__init__(self, **kwargs)
 
-    def add_layer(
+    def __iter__(
         self,
-        prefix: str,
-        layer: Layer,
-        aux_constructor: Callable[[Cell], nn.Module] | None = None,
-        **kwargs,
-    ) -> dict[str, tuple[Cell, nn.Module | None]]:
-        r"""Adds all cells from a given layer.
-
-        Args:
-            prefix (str): string to prepend to cell name.
-            layer (Layer): layer from which cells should be added.
-            aux_constructor (Callable[[Cell], nn.Module] | None, optional): function
-                to construct auxiliary state module for a cell. Defaults to None.
-
-        Returns:
-            dict[str, tuple[Cell, nn.Module | None]]: names of added cells, those cells,
-            and any auxiliary state.
-
-        Note:
-            As this calls :py:meth:`add_cell`, by default, keyword arguments are added
-            as attributes the associated state. If no constructor is given, state is
-            only added if keyword arguments are given, in which case they are added
-            to an empty Module.
-
-        Note:
-            The names used are automatically generated based on the name of the input
-            and name of the output in the layer. For example, with an input named
-            ``"linear"`` and an output named ``"alif"``, and a ``prefix`` of ``"l0"``,
-            the trainable name will be ``"l0:linear-alif"``.
-        """
-        prefix = f"{prefix}:" if prefix else ""
-        aux_constructor = aux_constructor if aux_constructor else lambda c: None
-        return {
-            n: self.add_cell(n, c, aux_constructor(c), **kwargs)
-            for n, c in fzip(
-                layer.named_cells,
-                lambda nc: f"{prefix}{nc[0][0]}-{nc[0][1]}",
-                lambda nc: nc[1],
-                identity=False,
+    ) -> Iterator[tuple[Cell, nn.Module | None, dict[str, ManagedMonitor]]]:
+        for name in self.cells_:
+            yield (
+                self.cells_.get(name),
+                self.auxiliary_.get(name),
+                {**self.monitors_.get(name, {})},
             )
-        }
 
-    def add_cell(
-        self, name: str, cell: Cell, aux: nn.Module | None = None, **kwargs
+    def _add_cell(
+        self, name: str, cell: Cell, aux: nn.Module | None = None
     ) -> tuple[Cell, nn.Module | None]:
-        r"""Adds a cell with associated state.
+        r"""Alias to CellTrainer's add_cell function.
+
+        This aliases py:meth:`CellTrainer.add_cell` for simplified access in subclasses.
 
         Args:
             name (str): name of the cell to add.
             cell (Cell): cell to add.
-            aux (nn.Module | None, optional): optional state to add, if None and
-                keyword arguments are given, an empty Module will be constructed.
-                Defaults to None.
+            aux (nn.Module | None, optional): any extra state to add. Defaults to None.
 
         Raises:
             ValueError: a cell with the specified name already exists.
             RuntimeError: given cell has no updater.
 
         Returns:
-            tuple[Cell, nn.Module | None]: added cell and additional state.
-
-        Important:
-            Keyword arguments are automatically added as non-persistant state to the
-            cell's associate state.
+            Cell: added cell.
         """
-        # determine associated state
-        if kwargs and not aux:
-            aux = Module()
+        return CellTrainer.add_cell(self, name, cell, aux)
 
-        # call superclass method
-        cell, aux = CellTrainer.add_cell(self, name, Cell, aux, **kwargs)
+    @abstractmethod
+    def add_cell(self, name: str, cell: Cell, **kwargs) -> str:
+        r"""Adds a cell with any required state.
 
-        # adds keyword arguments to state
-        if kwargs:
-            for k, v in kwargs.items():
-                setattr(aux, k, v)
+        Args:
+            name (str): name of the cell to add.
+            cell (Cell): cell to add.
 
-        return cell, aux
+        Returns:
+            str: name of the added cell.
+
+        Raises:
+            NotImplementedError: ``add_cell`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(LayerwiseTrainer) must implement "
+            "the method `add_cell`."
+        )
+
+    def add_layer(
+        self,
+        prefix: str,
+        layer: Layer,
+        **kwargs: Any,
+    ) -> tuple[str, ...]:
+        r"""Adds all cells from a given layer.
+
+        Args:
+            prefix (str): string to prepend to cell name.
+            layer (Layer): layer from which cells should be added.
+            **kwargs (Any): keyword arguments passed to each :py:meth:`add_cell` call.
+
+        Returns:
+            tuple[str, ...]: names of the added cells.
+
+        Note:
+            The names used are automatically generated based on the name of the cell in
+            the layer. For example, with a connection named ``"linear"`` and a neuron
+            named ``"alif"``, and a ``prefix`` of ``"l0"``, the cell name will be
+            ``"l0:linear-alif"``. If ``prefix`` is an empty string, the name would be
+            ``"linear-alif"``.
+        """
+        prefix = f"{prefix}:" if prefix else ""
+        return tuple(
+            self.add_cell(n, c, **kwargs)
+            for n, c in fzip(
+                layer.named_cells,
+                lambda nc: f"{prefix}{nc[0][0]}-{nc[0][1]}",
+                lambda nc: nc[1],
+                identity=False,
+            )
+        )
 
 
 class LayerwiseUpdater(Module, ABC):

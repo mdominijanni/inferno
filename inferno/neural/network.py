@@ -248,14 +248,16 @@ class Cell(Module):
 class Layer(Module, ABC):
     r"""Representation of simultaneously processed connections and neurons."""
 
-    def __init__(self, trainable: bool = True):
+    def __init__(self):
         # call superclass constructor
         Module.__init__(self)
 
         # inner modules
         self.connections_ = nn.ModuleDict()
         self.neurons_ = nn.ModuleDict()
-        self.cells_ = {}
+
+        # set cells dict so it is not part of PyTorch's state
+        object.__setattr__(self, "cells_", nn.ModuleDict())
 
     def __getitem__(self, name: str | tuple[str, str]) -> Connection | Neuron | Cell:
         r"""Retrieves a previously added connection, neuron, or cell.
@@ -278,7 +280,7 @@ class Layer(Module, ABC):
                 if name[0] in self.connections_:
                     # create cell group for connection if it does not exist
                     if name[0] not in self.cells_:
-                        self.cells_[name[0]] = {}
+                        self.cells_[name[0]] = nn.ModuleDict()
 
                     if name[1] in self.neurons_:
                         # create cell for neuron if it does not exist
@@ -483,6 +485,8 @@ class Layer(Module, ABC):
         It can be modified in-place (including setting other attributes, adding
         monitors, etc), but it can neither be deleted nor reassigned.
 
+        This is primarily used when targeting ``Connection`` objects with a monitor.
+
         Returns:
             Proxy: safe access to registered connections.
         """
@@ -498,10 +502,30 @@ class Layer(Module, ABC):
         It can be modified in-place (including setting other attributes, adding
         monitors, etc), but it can neither be deleted nor reassigned.
 
+        This is primarily used when targeting ``Neuron`` objects with a monitor.
+
         Returns:
             Proxy: safe access to registered neurons.
         """
         return Proxy(self.neurons_, "")
+
+    @property
+    def cells(self) -> Proxy:
+        r"""Registered cells.
+
+        For a given ``connection_name`` and ``neuron_name``, the :py:class:`Cell`
+        automatically constructed on ``cell = layer[connection_name, neuron_name]``,
+        it can be accessed as ``layer.cells.connection_name.neuron_name``.
+
+        It can be modified in-place (including setting other attributes, adding
+        monitors, etc), but it can neither be deleted nor reassigned.
+
+        This is primarily used when targeting ``Cell`` objects with a monitor.
+
+        Returns:
+            Proxy: safe access to registered cells.
+         """
+        return Proxy(self.cells_, "", "")
 
     @property
     def named_connections(self) -> Iterator[tuple[str, Connection]]:

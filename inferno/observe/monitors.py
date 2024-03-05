@@ -221,7 +221,10 @@ class MonitorConstructor(Protocol):
         regmodule (Module): module to register as the target for monitoring.
 
     Returns:
-        Monitor: newly constructed monitor.
+        ManagedMonitor: newly constructed monitor.
+
+    Important:
+        The monitor returned must be registered.
     """
 
     monitor: Type[ManagedMonitor]
@@ -231,7 +234,7 @@ class MonitorConstructor(Protocol):
         self,
         attr: str,
         module: Module,
-    ) -> Monitor:
+    ) -> ManagedMonitor:
         r"""Callback protocol function"""
         ...
 
