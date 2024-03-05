@@ -1,7 +1,12 @@
 from .base import FoldingReducer
 import inferno
 from inferno._internal import numeric_limit
-import inferno.neural.functional as nf
+from ... import (
+    trace_nearest,
+    trace_cumulative,
+    trace_nearest_scaled,
+    trace_cumulative_scaled,
+)
 from inferno.infernotypes import OneToOne
 import math
 import torch
@@ -57,9 +62,12 @@ class NearestTraceReducer(FoldingReducer):
             raise e
         self.target = target
         self.tolerance, e = (
-            None, None
-            if tolerance is None
-            else numeric_limit("tolerance", tolerance, 0, "gt", float)
+            None,
+            (
+                None
+                if tolerance is None
+                else numeric_limit("tolerance", tolerance, 0, "gt", float)
+            ),
         )
         if e:
             raise e
@@ -92,7 +100,7 @@ class NearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return nf.trace_nearest(
+        return trace_nearest(
             obs,
             state,
             decay=self.decay,
@@ -186,9 +194,12 @@ class CumulativeTraceReducer(FoldingReducer):
             raise e
         self.target = target
         self.tolerance, e = (
-            None, None
-            if tolerance is None
-            else numeric_limit("tolerance", tolerance, 0, "gt", float)
+            None,
+            (
+                None
+                if tolerance is None
+                else numeric_limit("tolerance", tolerance, 0, "gt", float)
+            ),
         )
         if e:
             raise e
@@ -221,7 +232,7 @@ class CumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return nf.trace_nearest(
+        return trace_cumulative(
             obs,
             state,
             decay=self.decay,
@@ -348,7 +359,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return nf.trace_nearest_scaled(
+        return trace_nearest_scaled(
             obs,
             state,
             decay=self.decay,
@@ -475,7 +486,7 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return nf.trace_cumulative_scaled(
+        return trace_cumulative_scaled(
             obs,
             state,
             decay=self.decay,

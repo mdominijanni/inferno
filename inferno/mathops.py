@@ -253,46 +253,6 @@ def holt_linear_smoothing(
     return s, b
 
 
-def upper_power_dependence(
-    data: torch.Tensor, max: float | torch.Tensor, power: float | torch.Tensor
-) -> torch.Tensor:
-    r"""Computes the multiplicative constant of upper-bound power parameter dependence.
-
-    This is sometimes also referred to in the context of "soft parameter dependence".
-
-
-
-    Args:
-        data (torch.Tensor): parameter to which an upper bound is being applied, :math:`v`.
-        max (float | torch.Tensor): value of the upper bound, :math:`v_\text{max}`.
-        power (float | torch.Tensor): exponent of parameter dependence, :math:`\mu_+`.
-
-    Returns:
-        torch.Tensor: _description_
-    """
-    pass
-
-
-def lower_power_dependence() -> torch.Tensor:
-    pass
-
-
-def upper_multiplicative_dependence() -> torch.Tensor:
-    pass
-
-
-def lower_multiplicative_dependence() -> torch.Tensor:
-    pass
-
-
-def upper_sharp_dependence() -> torch.Tensor:
-    pass
-
-
-def lower_sharp_dependence() -> torch.Tensor:
-    pass
-
-
 def isi(
     spikes: torch.Tensor, step_time: float | None = None, time_first: bool = False
 ) -> torch.Tensor:

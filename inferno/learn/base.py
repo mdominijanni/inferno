@@ -1,11 +1,10 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from collections.abc import Generator, Iterator
+from collections.abc import Iterator
 from .. import Module
 from inferno._internal import fzip, unique
 from inferno.neural import Cell, Layer
-from inferno.observe import Monitor, ManagedMonitor, MonitorConstructor
-import itertools
+from inferno.observe import Monitor, MonitorConstructor
 from itertools import chain
 import torch  # noqa:F401, for docstrings
 import torch.nn as nn
@@ -18,14 +17,14 @@ class CellTrainer(Module):
 
         Important:
             The :py:class:`Layer` object "owns" the :py:class:`Cell` objects whereas
-            the :py:class:`CellTrainer` owns the :py:class:`ManagedMonitor` objects.
+            the :py:class:`CellTrainer` owns the :py:class:`Monitor` objects.
 
             If applying a function to :py:class:`Module` objects, e.g.
             via :py:meth:`CellTrainer.to` ``Cell`` objects will not be altered but
-            ``ManagedMonitor`` objects will be.
+            ``Monitor`` objects will be.
 
             Likewise, :py:meth:`Layer.to` will alter ``Cell`` objects but not
-            ``ManagedMonitor`` objects.
+            ``Monitor`` objects.
         """
         # call superclass
         Module.__init__(self, **kwargs)
@@ -36,39 +35,38 @@ class CellTrainer(Module):
         self.monitors_ = nn.ModuleDict()
 
     @property
-    def monitors(self) -> Iterator[ManagedMonitor]:
+    def monitors(self) -> Iterator[Monitor]:
         r"""Added monitors.
 
-        Because monitors for each ``CellTrainer`` are pooled together for each trainer
-        and are managed by their :py:class:`Layer`, duplicate monitors are not created
-        where possible. The number of monitors here may be less than the number of
-        added monitors.
+        Because monitors for each ``CellTrainer`` are pooled together for each trainer,
+        duplicate monitors are not created where possible. The number of monitors here
+        may be less than the number of added monitors.
 
         Yields:
-            ManagedMonitor: added monitors.
+            Monitor: added monitors.
         """
         return unique(chain.from_iterable(m.values() for m in self.monitors_.values()))
 
     @property
-    def named_monitors(self) -> Iterator[tuple[tuple[str, str], ManagedMonitor]]:
+    def named_monitors(self) -> Iterator[tuple[tuple[str, str], Monitor]]:
         r"""Iterable of added monitors and tuples of the cell and monitor name.
 
         Yields:
-            tuple[tuple[str, str], ManagedMonitor]: tuple of an added monitor and a tuple
+            tuple[tuple[str, str], Monitor]: tuple of an added monitor and a tuple
             of the cell name and monitor name corresponding to it.
         """
         return chain.from_iterable(
             (((c, n), m) for n, m in md.items()) for c, md in self.monitors_.items()
         )
 
-    def named_monitors_of(self, cell: str) -> Iterator[tuple[str, ManagedMonitor]]:
+    def named_monitors_of(self, cell: str) -> Iterator[tuple[str, Monitor]]:
         r"""Monitors associated with a given cell.
 
         Args:
             cell (str): name of the cell to get associted monitors of.
 
         Yields:
-            tuple[str, ManagedMonitor]: associated monitors and their names.
+            tuple[str, Monitor]: associated monitors and their names.
         """
         return ((n, m) for n, m in self.monitors_.get(cell, {}).items())
 
@@ -201,7 +199,7 @@ class CellTrainer(Module):
         monitor: MonitorConstructor,
         unique: bool = False,
         **tags: Any,
-    ) -> ManagedMonitor:
+    ) -> Monitor:
         r"""Adds a monitor to a trainable.
 
         Args:
@@ -218,13 +216,12 @@ class CellTrainer(Module):
             AttributeError: specified cell does not exist.
 
         Returns:
-            ManagedMonitor: added or retrieved monitor.
+            Monitor: added or retrieved monitor.
 
         Important:
             Monitors are aliased based off of their name, resolved attribute path
-            (i.e. that which is used by the layer), class, the class of their reducer,
+            (i.e. that which is used by the layer), and any added tags.
             This attribute is added as a tag ``"attr"``.
-
 
         Tip:
             Setting ``unique`` to ``True`` will bypass any test on ``tags`` and
@@ -233,9 +230,6 @@ class CellTrainer(Module):
             this should be used. When ``True`` is also guaranteed to delete an existing
             monitor and return the new one.
         """
-        # create expanded tag set
-        tags = {"monitor": monitor.monitor, "reducer": monitor.reducer, **tags}
-
         # get underlying cell from given key
         if cell not in self.cells_:
             raise AttributeError(f"'cell' ('{cell}') is not the name of an added cell")
@@ -263,7 +257,7 @@ class CellTrainer(Module):
             )
 
         # create monitor via the cell
-        monitor = self.cells_[cell].get_monitor(name, attr, monitor, pool)
+        monitor = self.cells_[cell].get_monitor(name, attr, monitor, pool, **tags)
 
         # deregister if not in training mode
         if not self.training:
@@ -310,7 +304,7 @@ class CellTrainer(Module):
         if not len(self.monitors_[cell]):
             del self.monitors_[cell]
 
-    def get_monitor(self, cell: str, name: str) -> ManagedMonitor | None:
+    def get_monitor(self, cell: str, name: str) -> Monitor | None:
         r"""Gets an added monitor.
 
         Args:
@@ -318,7 +312,7 @@ class CellTrainer(Module):
             name (str): name of the monitor.
 
         Returns:
-            ManagedMonitor | None: specified monitor, if it exists.
+            Monitor | None: specified monitor, if it exists.
         """
         return self.monitors_.get(cell, {}).get(name, None)
 
@@ -386,22 +380,28 @@ class LayerwiseTrainer(CellTrainer, ABC):
         r"""Trainer for update methods without inter-layer dependencies.
 
         Important:
-            The :py:class:`Layer` object "owns" the :py:class:`Cell` objects but only
-            contains the :py:class:`ManagedMonitor` objects.
+            The :py:class:`Layer` object "owns" the :py:class:`Cell` objects but not
+            the :py:class:`Monitor` objects.
 
             If applying a function to :py:class:`Module` objects, e.g.
             via :py:meth:`CellTrainer.to` ``Cell`` objects will not be altered but
-            ``ManagedMonitor`` objects will be.
+            ``Monitor`` objects will be.
 
             Likewise, :py:meth:`Layer.to` will alter ``Cell`` objects but not
-            ``ManagedMonitor`` objects.
+            ``Monitor`` objects.
         """
         # call superclass
         CellTrainer.__init__(self, **kwargs)
 
     def __iter__(
         self,
-    ) -> Iterator[tuple[Cell, nn.Module | None, dict[str, ManagedMonitor]]]:
+    ) -> Iterator[tuple[Cell, nn.Module | None, dict[str, Monitor]]]:
+        r"""Iterates over trainer contents.
+
+        Yields:
+            tuple[Cell, nn.Module | None, dict[str, Monitor]]: trainable unit, containing
+            a cell, the auxiliary state for it, and a dictionary of applicable monitors.
+        """
         for name in self.cells_:
             yield (
                 self.cells_.get(name),
@@ -481,326 +481,4 @@ class LayerwiseTrainer(CellTrainer, ABC):
                 lambda nc: nc[1],
                 identity=False,
             )
-        )
-
-
-class LayerwiseUpdater(Module, ABC):
-    r"""Updater for layers without interdependencies.
-
-    Args:
-        *layers (Layer): layers to add to the updater on initialization.
-
-    Caution:
-        The property :py:attr:`training` should be managed using
-        the updater's :py:meth:`attach` and :py:meth:`detach` methods rather than
-        :py:meth:`train` and :py:meth:`eval`.
-
-    Note:
-        Registered :py:class:`Layer` and :py:class:`Monitor` objects have their
-        parameters excluded from :py:attr:`state_dict` using a hook registered with
-        :py:meth:`_register_state_dict_hook`.
-    """
-
-    def __init__(
-        self,
-        *layers: Layer,
-        **kwargs,
-    ):
-        # call superclass constructor
-        Module.__init__(self, **kwargs)
-
-        # register modules
-        self.trainables_ = nn.ModuleDict()
-        self.monitors_ = nn.ModuleDict()
-
-        # go through pairs
-        for layer in layers:
-            self.add_trainable(layer)
-
-        # add hook for removal of trainables from state_dict export
-        def state_dict_submodule_removal(
-            obj, state_dict, prefix, local_metadata
-        ) -> dict[str, Any]:
-            for key in list(state_dict.keys()):
-                match key.partition(".")[0]:
-                    case "trainables_":
-                        del state_dict[key]
-                    case "monitors_":
-                        del state_dict[key]
-
-            return state_dict
-
-        self._sd_removal_handle = self._register_state_dict_hook(
-            state_dict_submodule_removal
-        )
-
-    @property
-    def trainables(self) -> Generator[Layer]:
-        r"""Registered layers to be trained.
-
-        Yields:
-            Layer: registered trainables.
-        """
-        return (layer for layer in self.trainables_.values())
-
-    @property
-    def monitors(self) -> Generator[tuple[Monitor, Layer]]:
-        r"""Registered monitors for capturing layer state.
-
-        Yields:
-            tuple[Monitor, Layer]: registered monitors and their associated layer.
-        """
-        return itertools.chain.from_iterable(
-            ((monitor, self.trainables_[key]) for monitor in monitors.values())
-            for key, monitors in self.monitors_.items()
-        )
-
-    def add_trainable(
-        self, trainable: Layer, add_monitors: bool = True, **kwarge
-    ) -> bool:
-        r"""Registers a layer as a trainable.
-
-        Args:
-            trainable (Layer): layer to register as a trainable.
-            add_monitors (bool, optional): if default monitors should be added after
-                registring. Defaults to True.
-
-        Returns:
-            bool: if the layer was successfully registered.
-        """
-        # use hexadecimal of object id as the key
-        key = hex(id(trainable))
-
-        # add to trainables list for accessing
-        if key in self.trainables_:
-            return False
-        self.trainables_[key] = trainable
-
-        # add to mapping from layers to monitors
-        if key in self.monitors_:
-            del self.monitors_[key]
-        self.monitors_[key] = nn.ModuleDict()
-
-        # add default monitor layout to trainable
-        if add_monitors and not len(self.monitors_[key]):
-            self.add_monitors(trainable)
-
-        return True
-
-    def del_trainable(self, trainable: Layer, **kwarge) -> bool:
-        r"""Deletes a registered layer and its associated monitors.
-
-        Args:
-            trainable (Layer): trainable to delete.
-
-        Returns:
-            bool: if the layer was successfully deleted.
-        """
-        # use hexadecimal of object id as the key
-        key = hex(id(trainable))
-
-        # try to delete trainable
-        try:
-            del self.trainables_[key]
-            del self.monitors_[key]
-            return True
-        except KeyError:
-            return False
-
-    def add_monitor(
-        self, trainable: Layer, name: str, monitor: Monitor, **kwargs
-    ) -> bool:
-        r"""Adds and associates a monitor with a registered layer.
-
-        Args:
-            trainable (Layer): layer to which the monitor should be registered.
-            name (str): identifier of the monitor to add.
-            monitor (Monitor): monitor to register.
-
-        Returns:
-            bool: if the monitor was successfully added.
-        """
-        # try to get the moduledict with monitors
-        try:
-            monitors = self.monitors_[hex(id(trainable))]
-        except KeyError:
-            return False
-
-        # check if name is already associated with trainable
-        if name in monitors:
-            return False
-
-        # check if this monitor is already registered
-        if monitor in (mon for mon, _ in self.monitors):
-            return False
-
-        monitor.deregister()
-        monitors[name] = monitor
-        if self.training:
-            monitor.register(trainable)
-
-        return True
-
-    def del_monitor(self, trainable: Layer, name: str) -> bool:
-        r"""Deletes a monitor associated with a registered layer.
-
-        Args:
-            trainable (Layer): layer from which the monitor should be deleted.
-            name (str): dentifier of the monitor to delete.
-
-        Returns:
-            bool: if the monitor was successfully deleted.
-        """
-        # try to get the moduledict with monitors
-        try:
-            monitors = self.monitors_[hex(id(trainable))]
-        except KeyError:
-            return False
-
-        # try to delete monitor
-        try:
-            del monitors[name]
-            return True
-        except KeyError:
-            return False
-
-    def get_monitor(self, trainable: Layer, name: str) -> Monitor | None:
-        r"""Retrieves a monitor associated with a registered layer.
-
-        Args:
-            trainable (Layer): layer with which the monitor is associated.
-            name (str): name of the monitor to get.
-
-        Returns:
-            Monitor | None: monitor specified by ``trainable`` and name if it exists.
-        """
-        # try to get the moduledict with monitors
-        try:
-            monitors = self.monitors_[hex(id(trainable))]
-        except KeyError:
-            return None
-
-        # try to retrieve monitor
-        try:
-            return monitors[name]
-        except KeyError:
-            return None
-
-    @abstractmethod
-    def add_monitors(self, trainable: Layer) -> bool:
-        r"""Associates base layout of monitors required by the updater with the layer.
-
-        Args:
-            trainable (Layer): layer to which monitors should be added.
-
-        Returns:
-            bool: if the monitors were successfully added.
-
-        Raises:
-            NotImplementedError: ``add_monitors`` must be implemented by the subclass.
-        """
-        raise NotImplementedError(
-            f"{type(self).__name__}(LayerwiseUpdater) must implement "
-            "the method `add_monitors`."
-        )
-
-    def del_monitors(self, trainable: Layer) -> bool:
-        r"""Deletes all monitors associated with a registered layer.
-
-        Args:
-            trainable (Layer): layer from which monitors should be deleted.
-
-        Returns:
-            bool: if the monitors were successfully deleted.
-        """
-        key = hex(id(trainable))
-
-        # try to get the moduledict with monitors
-        try:
-            monitors = self.monitors_[key]
-        except KeyError:
-            return False
-
-        # remove all elements
-        monitors.clear()
-
-        return True
-
-    def get_monitors(self, trainable: Layer) -> Generator[tuple[Monitor, str]]:
-        r"""Retrieves all monitors associated with a registered layer.
-
-        Args:
-            trainable (Layer): layer for which monitors should be retrieved.
-
-        Yields:
-            tuple[Monitor, str]: registered monitors and their names.
-        """
-        # use hexadecimal of object id as the key
-        key = hex(id(trainable))
-
-        # try to get the moduledict with monitors
-        try:
-            monitors = self.monitors_[key]
-        except KeyError:
-            return None
-
-        # construct generator
-        return ((monitor, name) for name, monitor in monitors.items())
-
-    def attach(self, clear: bool = True, **kwargs) -> None:
-        """Registers all of the monitors for the updater.
-
-        Args:
-            clear (bool, optional): If the monitors should be cleared before registering
-                with submodules. Defaults to True.
-
-        Note:
-            Keyword arguments are passed to :py:meth:`Monitor.clear` call.
-        """
-        _ = self.train()
-        for monitor, layer in self.monitors:
-            if clear:
-                monitor.clear(**kwargs)
-            monitor.register(layer)
-
-    def detach(self, clear: bool = False, **kwargs) -> None:
-        """Deregisters all of the monitors for the updater.
-
-        Args:
-            clear (bool, optional): If the monitors should be cleared before
-                deregistering with submodules. Defaults to False.
-
-        Note:
-            Keyword arguments are passed to :py:meth:`Monitor.clear` call.
-        """
-        _ = self.eval()
-        for monitor, _ in self.monitors:
-            if clear:
-                monitor.clear(**kwargs)
-            monitor.deregister()
-
-    def clear(self, **kwargs):
-        """Clears all of the monitors for the updater.
-
-        Note:
-            Keyword arguments are passed to :py:meth:`Monitor.clear` call.
-
-        Note:
-            If a subclassed updater has additional state, this should be overridden
-            to delete that state as well.
-        """
-
-        for monitor, _ in self.monitors:
-            monitor.clear(**kwargs)
-
-    @abstractmethod
-    def forward(self, *inputs, **kwargs):
-        """Processes update for given layers based on current monitor stored data.
-
-        Raises:
-            NotImplementedError: ``forward`` must be implemented by the subclass.
-        """
-        raise NotImplementedError(
-            f"{type(self).__name__}(LayerwiseUpdater) must implement "
-            "the method `forward`."
         )

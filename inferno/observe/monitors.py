@@ -1,12 +1,38 @@
 from __future__ import annotations
 from . import Reducer
 from .. import Module, Hook
-from abc import ABC, abstractmethod
 from inferno._internal import rgetattr
-from inferno.infernotypes import ManyToOne
 import torch
-from typing import Any, Callable, Protocol, Type
+from typing import Any, Callable, Protocol
 import weakref
+
+
+class MonitorConstructor(Protocol):
+    r"""Common constructor for monitors, used in updaters.
+
+    Args:
+        attr (str): attribute or nested attribute to target.
+        module (Module): module to use as register base for monitoring.
+
+    Returns:
+        Monitor: newly constructed monitor.
+
+    Important:
+        The monitor returned must be registered.
+
+    Note:
+        If it makes sense to, the module to which the monitor is registered should be
+        the same as the module given. Where not sensible, it should be registered
+        in a submodule along the attribute path ``attr``.
+    """
+
+    def __call__(
+        self,
+        attr: str,
+        module: Module,
+    ) -> Monitor:
+        r"""Callback protocol function"""
+        ...
 
 
 class Monitor(Module, Hook):
@@ -59,12 +85,18 @@ class Monitor(Module, Hook):
             eval_update=eval_update,
         )
 
+        # placeholder for weak reference (created on register)
+        self._observed = None
+
         # register if as module is provided
         if module is not None:
             self.register(module)
 
         # register submodule
         self.reducer_ = reducer
+
+        # add tag data
+        self._tags = {}
 
     def clear(self, **kwargs) -> None:
         r"""Reinitializes the reducer's state."""
@@ -91,6 +123,35 @@ class Monitor(Module, Hook):
         """
         return self.reducer_
 
+    def register(self, module: Module | None = None):
+        r"""Registers the monitor as a forward hook/prehook.
+
+        Args:
+            module (Module | None, optional): module with which to register, last
+                registered if None. Defaults to None.
+
+        Raises:
+            RuntimeError: weak reference to the last referenced module is no longer
+                valid or did not exist.
+        """
+        # get module from weakref if required
+        if not module:
+            # don't duplicate register call if module is unspecified
+            if not self.registered:
+                if self._observed and self._observed():
+                    module = self._observed()
+                else:
+                    raise RuntimeError(
+                        "weak reference to monitored module does not exist, "
+                        "cannot infer argument 'module'"
+                    )
+
+        # register using superclass
+        Hook.register(self, module)
+
+        # update stored weak reference
+        self._observed = weakref.ref(module)
+
 
 class InputMonitor(Monitor):
     r"""Records the inputs passed to a Module.
@@ -106,19 +167,15 @@ class InputMonitor(Monitor):
             being monitored is in eval mode. Defaults to True.
         prepend (bool, optional): if this monitor should be called before other
             registered forward prehooks. Defaults to False.
-        mapping (ManyToOne[torch.Tensor] | None, optional): modifies/selects
-            which inputs to forward to reducer. Defaults to None.
-
-
-    Caution:
-        When implementing custom updaters, :py:class:`InputMonitor` should never be
-        used. Use either :py:class:`StateMonitor` or :py:class:`DifferenceMonitor`.
+        filter_ (Callable[[tuple[Any, ...]], bool] | None, optional): test if the input
+            should be passed to the reducer, ignores empty when None. Defaults to None.
+        map_ (Callable[[tuple[Any, ...]], torch.Tensor] | None, optional):
+            modifies the input before being passed to the reducer, 0th input if None.
+            Defaults to None.
 
     Note:
-        The inputs, which are received as a tuple, will be unpacked and sent to
-        the reducer. If there is only one input tensor, this will work as expected.
-        Otherwise a ``mapping`` must be specified which takes the unpacked inputs
-        and returns a single tensor.
+        The inputs, which are received as a tuple, will be sent to ``filter_``. If this
+        evaluates to ``True``, they are forwarded to ``map_``, then into ``reducer``.
     """
 
     def __init__(
@@ -128,18 +185,17 @@ class InputMonitor(Monitor):
         train_update: bool = True,
         eval_update: bool = True,
         prepend: bool = False,
-        mapping: ManyToOne[torch.Tensor] | None = None,
+        filter_: Callable[[tuple[Any, ...]], bool] | None = None,
+        map_: Callable[[tuple[Any, ...]], torch.Tensor] | None = None,
     ):
+        # set filter and map functions
+        filter_ = filter_ if filter_ else lambda x: bool(x)
+        map_ = map_ if map_ else lambda x: x[0]
+
         # determine arguments for superclass constructor
-        if mapping:
-
-            def prehook(module, fwdargs, *args):
-                reducer(mapping(*fwdargs))
-
-        else:
-
-            def prehook(module, fwdargs, *args):
-                reducer(*fwdargs)
+        def prehook(module, args, *_):
+            if filter_(args):
+                reducer(map_(args))
 
         # construct superclass
         Monitor.__init__(
@@ -151,6 +207,50 @@ class InputMonitor(Monitor):
             train_update=train_update,
             eval_update=eval_update,
         )
+
+    @classmethod
+    def partialconstructor(
+        cls,
+        reducer: Reducer,
+        train_update: bool = True,
+        eval_update: bool = True,
+        prepend: bool = False,
+        filter_: Callable[[tuple[Any, ...]], bool] | None = None,
+        map_: Callable[[tuple[Any, ...]], torch.Tensor] | None = None,
+    ) -> MonitorConstructor:
+        r"""Returns a function with a common signature for monitor construction.
+
+        Args:
+            reducer (Reducer): underlying means for reducing samples over time
+                and storing them.
+            train_update (bool, optional): if this monitor should be called when the
+                module being monitored is in train mode. Defaults to True.
+            eval_update (bool, optional): if this monitor should be called when the
+                module being monitored is in eval mode. Defaults to True.
+            prepend (bool, optional): if this monitor should be called before other
+                registered forward prehooks or posthooks. Defaults to False.
+            filter_ (Callable[[tuple[Any, ...]], bool] | None, optional): test if the input
+                should be passed to the reducer, ignores empty when None. Defaults to None.
+            map_ (Callable[[tuple[Any, ...]], torch.Tensor] | None, optional):
+                modifies the input before being passed to the reducer, 0th input if None.
+                Defaults to None.
+
+        Returns:
+            MonitorConstructor: partial constructor for monitor.
+        """
+
+        def constructor(attr: str, module: Module):
+            return cls(
+                reducer=reducer,
+                module=rgetattr(module, attr),
+                train_update=train_update,
+                eval_update=eval_update,
+                prepend=prepend,
+                filter_=filter_,
+                map_=map_,
+            )
+
+        return constructor
 
 
 class OutputMonitor(Monitor):
@@ -167,17 +267,15 @@ class OutputMonitor(Monitor):
             being monitored is in eval mode. Defaults to True.
         prepend (bool, optional): if this monitor should be called before other
             registered forward posthooks. Defaults to False.
-        mapping (Callable[[Any], torch.Tensor] | None, optional): modifies/selects
-            which outputs to forward to the reducer. Defaults to None.
-
-    Caution:
-        When implementing custom updaters, :py:class:`OutputMonitor` should never be
-        used. Use either :py:class:`StateMonitor` or :py:class:`DifferenceMonitor`.
+        filter_ (Callable[[Any], bool] | None, optional): test if the output should be
+            passed to the reducer, ignores None values when None. Defaults to None.
+        map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the output before
+            being passed to the reduer, identity if None. Defaults to None.
 
     Note:
         The output depends on the :py:meth:`~torch.nn.Module.forward` of the
         :py:class:`~torch.nn.Module` being called. If it a single tensor, it will
-        work as expected. Otherwise a ``mapping`` must be specified which takes the
+        work as expected. Otherwise a ``map_`` must be specified which takes the
         output and returns a single tensor.
     """
 
@@ -188,18 +286,17 @@ class OutputMonitor(Monitor):
         train_update: bool = True,
         eval_update: bool = True,
         prepend: bool = False,
-        mapping: Callable[[Any], torch.Tensor] | None = None,
+        filter_: Callable[[Any], bool] | None = None,
+        map_: Callable[[Any], torch.Tensor] | None = None,
     ):
+        # set filter and map functions
+        filter_ = filter_ if filter_ else lambda x: x is not None
+        map_ = map_ if map_ else lambda x: x
+
         # determine arguments for superclass constructor
-        if mapping:
-
-            def posthook(module, fwdargs, output, *args):
-                reducer(mapping(output))
-
-        else:
-
-            def posthook(module, fwdargs, output, *args):
-                reducer(output)
+        def posthook(module, args, output, *_):
+            if filter_(output):
+                reducer(map_(output))
 
         # construct superclass
         Monitor.__init__(
@@ -212,162 +309,51 @@ class OutputMonitor(Monitor):
             eval_update=eval_update,
         )
 
-
-class MonitorConstructor(Protocol):
-    r"""Common constructor for managed monitors, used in updaters.
-
-    Args:
-        regattr (str): attribute or nested attribute to target.
-        regmodule (Module): module to register as the target for monitoring.
-
-    Returns:
-        ManagedMonitor: newly constructed monitor.
-
-    Important:
-        The monitor returned must be registered.
-    """
-
-    monitor: Type[ManagedMonitor]
-    reducer: Type[Reducer]
-
-    def __call__(
-        self,
-        attr: str,
-        module: Module,
-    ) -> ManagedMonitor:
-        r"""Callback protocol function"""
-        ...
-
-
-class ManagedMonitor(Monitor, ABC):
-    r"""Monitors with construction which can be managed by other modules.
-
-    Args:
-        reducer (Reducer): underlying means for reducing samples over time
-            and storing them.
-        module (Module | None, optional): module to register as the target for monitoring,
-            can be modified after construction. Defaults to None.
-        prehook (Callable | None, optional): function to call before hooked's
-            :py:meth:`~torch.nn.Module.forward`. Defaults to None.
-        posthook (Callable | None, optional): function to call after hooked's
-            :py:meth:`~torch.nn.Module.forward`. Defaults to None.
-        prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
-            :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to None.
-        posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
-            :py:meth:`~torch.nn.Module.register_forward_hook`. Defaults to None.
-        train_update (bool, optional): if this monitor should be called when the module
-            being monitored is in train mode. Defaults to True.
-        eval_update (bool, optional): if this monitor should be called when the module
-            being monitored is in eval mode. Defaults to True.
-
-    Note:
-        This keeps the same constructor signature as :py:class:`Monitor` and when the
-        constructor is called directly will behave like a :py:class:`Monitor`.
-
-    See Also:
-        See :py:meth:`~torch.nn.Module.register_forward_pre_hook` and
-        :py:meth:`~torch.nn.Module.register_forward_hook` for keyword arguments that
-        can be passed with ``prehook_kwargs`` and ``posthook_kwargs`` respectively.
-    """
-
-    def __init__(
-        self,
+    @classmethod
+    def partialconstructor(
+        cls,
         reducer: Reducer,
-        module: Module | None = None,
-        prehook: Callable | None = None,
-        posthook: Callable | None = None,
-        prehook_kwargs: dict[str, Any] | None = None,
-        posthook_kwargs: dict[str, Any] | None = None,
         train_update: bool = True,
         eval_update: bool = True,
-    ):
-        Monitor.__init__(
-            self,
-            reducer=reducer,
-            module=module,
-            prehook=prehook,
-            posthook=posthook,
-            prehook_kwargs=prehook_kwargs,
-            posthook_kwargs=posthook_kwargs,
-            train_update=train_update,
-            eval_update=eval_update,
-        )
-
-        if module:
-            self._monitored_ref = weakref.ref(module)
-
-        # add tag data
-        self._tags = {}
-
-    @classmethod
-    @abstractmethod
-    def partialconstructor(cls, *args, **kwargs) -> MonitorConstructor:
+        prepend: bool = False,
+        filter_: Callable[[Any], bool] | None = None,
+        map_: Callable[[Any], torch.Tensor] | None = None,
+    ) -> MonitorConstructor:
         r"""Returns a function with a common signature for monitor construction.
 
-        Raises:
-            NotImplementedError: ``partialconstructor`` must be implemented
-                by the subclass.
-        """
-        raise NotImplementedError(
-            f"{cls.__name__}(ManagedMonitor) must implement "
-            "the method `partialconstructor`."
-        )
-
-    def register(self, module: Module | None = None):
-        r"""Registers the monitor as a forward hook/prehook.
-
         Args:
-            module (Module | None, optional): module with which to register, last
-                registered if None. Defaults to None.
-
-        Raises:
-            RuntimeError: weak reference to the last referenced module is no longer
-                valid or did not exist
-        """
-        # get module from weakref if required
-        if not module:
-            # don't duplicate register call if module is unspecified
-            if not self.registered:
-                if self._monitored_ref and self._monitored_ref():
-                    module = self._monitored_ref()
-                else:
-                    if module is None:
-                        raise RuntimeError(
-                            "weak reference to monitored module does not exist, "
-                            "cannot infer argument 'module'"
-                        )
-
-        # register using superclass
-        Monitor.register(self, module)
-
-        # update stored weak reference
-        self._monitored_ref = weakref.ref(module)
-
-    @property
-    def tags(self) -> dict[str, Any]:
-        r"""Saved monitor tags.
-
-        This should be used to determine which monitors are unique for the purpose of
-        creating aliases. By default, the class of monitor and reducer is used with keys
-        ``"monitor"`` and ``"reducer"`` respectively.
+            reducer (Reducer): underlying means for reducing samples over time
+                and storing them.
+            train_update (bool, optional): if this monitor should be called when the
+                module being monitored is in train mode. Defaults to True.
+            eval_update (bool, optional): if this monitor should be called when the
+                module being monitored is in eval mode. Defaults to True.
+            prepend (bool, optional): if this monitor should be called before other
+                registered forward prehooks or posthooks. Defaults to False.
+            filter_ (Callable[[Any], bool] | None, optional): test if the output should be
+                passed to the reducer, ignores None values when None. Defaults to None.
+            map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the output before
+                being passed to the reduer, identity if None. Defaults to None.
 
         Returns:
-            dict[str, Any]: _description_
+            MonitorConstructor: partial constructor for monitor.
         """
-        return {"monitor": type(self), "reducer": type(self.reducer), **self._tags}
 
-    def tag(self, **tags: Any) -> None:
-        r"""Set non-default tags.
+        def constructor(attr: str, module: Module):
+            return cls(
+                reducer=reducer,
+                module=rgetattr(module, attr),
+                train_update=train_update,
+                eval_update=eval_update,
+                prepend=prepend,
+                filter_=filter_,
+                map_=map_,
+            )
 
-        Keyword Args:
-            **kwargs (Any): tags to set on the monitor, overriding existing non-default
-                tags.
-
-        """
-        self._tags = tags
+        return constructor
 
 
-class StateMonitor(ManagedMonitor):
+class StateMonitor(Monitor):
     r"""Records the state of an attribute in a Module.
 
     Args:
@@ -416,7 +402,7 @@ class StateMonitor(ManagedMonitor):
         # determine arguments for superclass constructor
         if as_prehook:
 
-            def prehook(module, *args):
+            def prehook(module, *_):
                 res = rgetattr(module, attr)
                 if filter_(res):
                     reducer(map_(res))
@@ -426,7 +412,7 @@ class StateMonitor(ManagedMonitor):
 
         else:
 
-            def posthook(module, *args):
+            def posthook(module, *_):
                 res = rgetattr(module, attr)
                 if filter_(res):
                     reducer(map_(res))
@@ -435,7 +421,7 @@ class StateMonitor(ManagedMonitor):
             prehook, prehook_kwargs = None, None
 
         # construct superclass
-        ManagedMonitor.__init__(
+        Monitor.__init__(
             self,
             reducer=reducer,
             module=module,
@@ -501,7 +487,7 @@ class StateMonitor(ManagedMonitor):
         return constructor
 
 
-class DifferenceMonitor(ManagedMonitor):
+class DifferenceMonitor(Monitor):
     """Records the difference of an attribute in a Module before and after its forward call.
 
     Args:
@@ -574,7 +560,7 @@ class DifferenceMonitor(ManagedMonitor):
             self.data = None
 
         # construct superclass
-        ManagedMonitor.__init__(
+        Monitor.__init__(
             self,
             reducer=reducer,
             module=module,
@@ -639,117 +625,3 @@ class DifferenceMonitor(ManagedMonitor):
         r"""Clears monitor state and reinitializes the reducer's state."""
         self.data = None
         return self.reducer_.clear(**kwargs)
-
-
-class PreMonitor(Monitor):
-    r"""Applies a function to prehook arguments and passes the results to the reducer.
-
-    Args:
-        reducer (Reducer): underlying means for reducing samples over time
-            and storing them.
-        mapping (Callable[[Module, tuple[Any, ...]], torch.Tensor]): function
-            applied to the hook arguments with output passed to the reducer.
-        module (Module, optional): module to register as the target for monitoring,
-            can be modified after construction. Defaults to None.
-        train_update (bool, optional): if this monitor should be called when the module
-            being monitored is in train mode. Defaults to True.
-        eval_update (bool, optional): if this monitor should be called when the module
-            being monitored is in eval mode. Defaults to True.
-        prepend (bool, optional): if this monitor should be called before other
-            registered forward hooks. Defaults to False.
-        with_kwargs (bool, optional): if keyword arguments to the forward function
-            should be included in the hook call. Defaults to False.
-
-    See Also:
-        See :py:meth:`~torch.nn.Module.register_forward_pre_hook` for more information
-        on the contents of the prehook arguments.
-    """
-
-    def __init__(
-        self,
-        reducer: Reducer,
-        mapping: Callable[[Module, tuple[Any, ...]], torch.Tensor],
-        module: Module = None,
-        train_update: bool = True,
-        eval_update: bool = True,
-        prepend: bool = False,
-        with_kwargs: bool = False,
-    ):
-        # hook function
-        if with_kwargs:
-
-            def prehook(module, args, kwargs):
-                reducer(mapping(module, args, kwargs))
-
-        else:
-
-            def prehook(module, args):
-                reducer(mapping(module, args))
-
-        # construct superclass
-        Monitor.__init__(
-            self,
-            reducer=reducer,
-            module=module,
-            prehook=prehook,
-            prehook_kwargs={"prepend": prepend},
-            train_update=train_update,
-            eval_update=eval_update,
-        )
-
-
-class PostMonitor(Monitor):
-    r"""Applies a function to posthook arguments and passes the results to the reducer.
-
-    Args:
-        reducer (Reducer): underlying means for reducing samples over time
-            and storing them.
-        mapping (Callable[[Module, tuple[Any, ...], Any], torch.Tensor]): function
-            applied to the hook arguments with output passed to the reducer.
-        module (Module, optional): module to register as the target for monitoring,
-            can be modified after construction.Defaults to None.
-        train_update (bool, optional): if this monitor should be called when the module
-            being monitored is in train mode. Defaults to True.
-        eval_update (bool, optional): if this monitor should be called when the module
-            being monitored is in eval mode. Defaults to True.
-        prepend (bool, optional): if this monitor should be called before other
-            registered forward hooks. Defaults to False.
-        with_kwargs (bool, optional): if keyword arguments to the forward function
-            should be included in the hook call. Defaults to False.
-
-    See Also:
-        See :py:meth:`~torch.nn.Module.register_forward_hook` for more information
-        on the contents of the posthook arguments.
-    """
-
-    def __init__(
-        self,
-        reducer: Reducer,
-        mapping: Callable[[Module, tuple[Any, ...]], torch.Tensor],
-        module: Module = None,
-        train_update: bool = True,
-        eval_update: bool = True,
-        prepend: bool = False,
-        with_kwargs: bool = False,
-    ):
-        # hook function
-        if with_kwargs:
-
-            def posthook(module, args, kwargs, output):
-                reducer(mapping(module, args, kwargs, output))
-
-        else:
-
-            def posthook(module, args, output):
-                reducer(mapping(module, args, output))
-
-        # construct superclass
-        Monitor.__init__(
-            self,
-            reducer=reducer,
-            module=module,
-            prehook=posthook,
-            prehook_kwargs={"prepend": prepend},
-            train_update=train_update,
-            eval_update=eval_update,
-        )

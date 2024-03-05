@@ -22,6 +22,13 @@ from .mathops import (
     interp_exp_decay,
 )
 
+from .spiketrace import (
+    trace_nearest,
+    trace_cumulative,
+    trace_nearest_scaled,
+    trace_cumulative_scaled,
+)
+
 from .tensor import (
     zeros,
     ones,
@@ -59,6 +66,10 @@ __all__ = [
     "interp_exp_decay",
     "simple_exponential_smoothing",
     "holt_linear_smoothing",
+    "trace_nearest",
+    "trace_cumulative",
+    "trace_nearest_scaled",
+    "trace_cumulative_scaled",
     "zeros",
     "ones",
     "empty",

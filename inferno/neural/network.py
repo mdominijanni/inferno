@@ -10,7 +10,7 @@ from collections.abc import Iterator, Iterable, Mapping
 import einops as ein
 from functools import partial
 from inferno._internal import argtest, rgetattr
-from inferno.observe import ManagedMonitor, MonitorConstructor
+from inferno.observe import Monitor, MonitorConstructor
 from itertools import chain
 import torch
 import torch.nn as nn
@@ -42,16 +42,16 @@ class Cell(Module):
         name: str,
         attr: str,
         monitor: MonitorConstructor,
-        pool: Iterable[Cell, Mapping[str, ManagedMonitor]] | None = None,
+        pool: Iterable[Cell, Mapping[str, Monitor]] | None = None,
         **tags: Any,
-    ) -> ManagedMonitor:
+    ) -> Monitor:
         r"""Creates or alias a monitor on the owning layer.
 
         Args:
             name (str): name of the monitor to add.
             attr (str): dot-separated attribute path, relative to this cell, to monitor.
             monitor (MonitorConstructor): partial constructor for the monitor to add.
-            pool (Iterable[Cell, Mapping[str, ManagedMonitor]] | None, optional): pool to
+            pool (Iterable[Cell, Mapping[str, Monitor]] | None, optional): pool to
                 search for compatible monitor, always creates a new one if None.
                 Defaults to None.
             **tags (Any): tags to add to the monitor and to test for uniqueness.
@@ -62,13 +62,15 @@ class Cell(Module):
                 chain starting with 'updater'.
 
         Returns:
-            ManagedMonitor: added monitor.
+            Monitor: added monitor.
 
         Important:
             All monitors added this way will be hooked to the :py:class:`Layer` which
             owns this ``Cell`, and therefore will be associated with its ``forward``
             call. If a monitor targeting an updater should trigger on updating, it
-            should be directly added to the updater.
+            should be directly added to the updater. These tags are added via reflection
+            and do not persist in the state dictionary. If no pool is specified, the
+            new monitor will not have added tags, which prevents future aliasing.
         """
         # check that the attribute is a valid dot-chain identifier
         _ = argtest.nestedidentifier("attr", attr)
@@ -112,19 +114,12 @@ class Cell(Module):
         else:
             attr = self._layer()._align_attribute(*self._names, target, attr)
 
-        # return new monitor if pool is undefined
+        # return new monitor if pool is undefined (do not tag, guaranteed unique)
         if not pool:
-            monitor = monitor(attr, self._layer())
-            monitor.tag(**{"attr": attr, **tags})
-            return monitor
+            return monitor(attr, self._layer())
 
         # get test tags
-        tagc = {
-            "monitor": monitor.monitor,
-            "reducer": monitor.reducer,
-            "attr": attr,
-            **tags,
-        }
+        tags = {"attr": attr, **tags}
         found = None
 
         for cell, monitors in pool:
@@ -137,7 +132,7 @@ class Cell(Module):
                 continue
 
             # create the alias if tags match
-            if monitors[name].tags == tagc:
+            if hasattr(monitors[name], "__tags") and monitors[name].__tags == tags:
                 found = monitors[name]
                 if id(cell) == id(self):  # break if identical cell
                     break
@@ -147,7 +142,7 @@ class Cell(Module):
             return found
         else:
             monitor = monitor(attr, self._layer())
-            monitor.tag(**{"attr": attr, **tags})
+            monitor.__tags = tags
             return monitor
 
     @property
@@ -451,24 +446,25 @@ class Layer(Module, ABC):
         Returns:
             str: dot-separated layer-origin attribute to monitor.
         """
+        # con
         match target:
             case "connection":
                 if connection not in self.connections_:
                     raise AttributeError(f"'connection' ('{connection}') is not valid")
                 else:
-                    return f"connections_.{connection}.{attr}"
+                    return f"connections_.{connection}{'.' if attr else ''}{attr}"
             case "neuron":
                 if neuron not in self.neurons_:
                     raise AttributeError(f"'neuron' ('{neuron}') is not valid")
                 else:
-                    return f"neurons_.{neuron}.{attr}"
+                    return f"neurons_.{neuron}{'.' if attr else ''}{attr}"
             case "cell":
                 if not self.cells_.get(connection, {}).get(neuron, None):
                     raise AttributeError(
                         f"cell 'connection', 'neuron' ('{connection}', '{neuron}') is not valid"
                     )
                 else:
-                    return f"cell_.{connection}.{neuron}.{attr}"
+                    return f"cell_.{connection}.{neuron}{'.' if attr else ''}{attr}"
             case _:
                 raise ValueError(
                     f"invalid 'target' ('{target}') specified, expected one of: "
@@ -524,7 +520,7 @@ class Layer(Module, ABC):
 
         Returns:
             Proxy: safe access to registered cells.
-         """
+        """
         return Proxy(self.cells_, "", "")
 
     @property
@@ -858,6 +854,10 @@ class Serial(Layer):
         neuron (Neuron): module which generates output from the layer.
         transform (OneToOne[torch.Tensor] | None, optional): function
             to apply to connection output before passing into neurons. Defaults to None.
+        connection_name (str, optional): name for the connection in the layer. Defaults
+            to "serial_c".
+        neuron_name (str, optional): name for the neuron in the layer. Defaults to
+            "serial_n".
 
     Note:
         When ``transform`` is not specified, the identity function is used. Keyword
@@ -875,13 +875,19 @@ class Serial(Layer):
         connection: Connection,
         neuron: Neuron,
         transform: OneToOne[torch.Tensor] | None = None,
+        connection_name: str = "serial_c",
+        neuron_name: str = "serial_n",
     ):
         # call superclass constructor
         Layer.__init__(self)
 
+        # set names
+        self._serial_connection_name = connection_name
+        self._serial_neuron_name = neuron_name
+
         # add connection and neuron
-        Layer.__setitem__(self, "serial_c", connection)
-        Layer.__setitem__(self, "serial_n", neuron)
+        Layer.__setitem__(self, self._serial_connection_name, connection)
+        Layer.__setitem__(self, self._serial_neuron_name, neuron)
 
         # set transformation used
         if transform:
@@ -910,7 +916,7 @@ class Serial(Layer):
         Returns:
             Connection: registered connection.
         """
-        return self["serial_c"]
+        return self[self._serial_connection_name]
 
     @property
     def neuron(self) -> Neuron:
@@ -919,7 +925,7 @@ class Serial(Layer):
         Returns:
             Neuron: registered neuron.
         """
-        return self["serial_n"]
+        return self[self._serial_neuron_name]
 
     @property
     def synapse(self) -> Synapse:
@@ -928,7 +934,7 @@ class Serial(Layer):
         Returns:
             Synapse: registered connection's synapse.
         """
-        return self["serial_c"].synapse
+        return self[self._serial_connection_name].synapse
 
     @property
     def updater(self) -> Updater:
@@ -937,7 +943,7 @@ class Serial(Layer):
         Returns:
             Updater: registered connection's updater.
         """
-        return self["serial_c"].updater
+        return self[self._serial_connection_name].updater
 
     @property
     def cell(self) -> Cell:
@@ -946,7 +952,7 @@ class Serial(Layer):
         Returns:
             Cell: registered cell.
         """
-        return self["serial_c", "serial_n"]
+        return self[self._serial_connection_name, self._serial_neuron_name]
 
     def wiring(
         self, inputs: dict[str, torch.Tensor], **kwargs
@@ -963,7 +969,11 @@ class Serial(Layer):
         Returns:
             dict[str, torch.Tensor]: dictionary of output names to tensors.
         """
-        return {"serial_n": self._transform(inputs["serial_c"], **kwargs)}
+        return {
+            self._serial_neuron_name: self._transform(
+                inputs[self._serial_connection_name], **kwargs
+            )
+        }
 
     def forward(
         self,
@@ -992,9 +1002,15 @@ class Serial(Layer):
         """
         # wrap non-empty dictionaries
         ckw = (
-            {"serial_c": connection_kwargs} if connection_kwargs else connection_kwargs
+            {self._serial_connection_name: connection_kwargs}
+            if connection_kwargs
+            else connection_kwargs
         )
-        nkw = {"serial_n": neuron_kwargs} if neuron_kwargs else neuron_kwargs
+        nkw = (
+            {self._serial_neuron_name: neuron_kwargs}
+            if neuron_kwargs
+            else neuron_kwargs
+        )
 
         # call parent forward
         res = Layer.forward(
@@ -1008,6 +1024,9 @@ class Serial(Layer):
 
         # unpack to sensible output
         if capture_intermediate:
-            return res[0]["serial_n"], res[1]["serial_c"]
+            return (
+                res[0][self._serial_neuron_name],
+                res[1][self._serial_connection_name],
+            )
         else:
-            return res["serial_n"]
+            return res[self._serial_neuron_name]

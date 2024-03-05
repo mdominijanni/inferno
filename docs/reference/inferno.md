@@ -32,6 +32,18 @@
     holt_linear_smoothing
 ```
 
+## Spike Trace
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    trace_nearest
+    trace_cumulative
+    trace_nearest_scaled
+    trace_cumulative_scaled
+```
+
 ## Tensors
 ```{eval-rst}
 .. autosummary::

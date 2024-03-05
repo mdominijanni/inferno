@@ -1,5 +1,5 @@
 import torch
-from inferno.infernotypes import OneToOne
+from typing import Callable
 
 
 def trace_nearest(
@@ -56,7 +56,7 @@ def trace_nearest_scaled(
     decay: float | torch.Tensor,
     amplitude: int | float | complex | torch.Tensor,
     scale: int | float | complex | torch.Tensor,
-    matchfn: OneToOne[torch.Tensor],
+    matchfn: Callable[[torch.Tensor], torch.Tensor],
 ) -> torch.Tensor:
     r"""Performs a trace for a time step, considering the latest match, scaled by the inputs.
 
@@ -82,7 +82,7 @@ def trace_nearest_scaled(
             for matching elements, :math:`a`.
         scale (int | float | complex | torch.Tensor): value to multiply matching
             inputs by for the trace, :math:`S`.
-        matchfn (OneToOne[torch.Tensor]): test if the inputs are considered a
+        matchfn (Callable[[torch.Tensor], torch.Tensor]): test if the inputs are considered a
             match for the trace, :math:`K`.
 
     Returns:
@@ -98,9 +98,7 @@ def trace_nearest_scaled(
     # compute new state
     if trace is None:
         return (scale * observation + amplitude) * mask
-    return torch.where(
-        mask, scale * observation + amplitude, decay * trace
-    )
+    return torch.where(mask, scale * observation + amplitude, decay * trace)
 
 
 def trace_cumulative(
@@ -158,7 +156,7 @@ def trace_cumulative_scaled(
     decay: float | torch.Tensor,
     amplitude: int | float | complex | torch.Tensor,
     scale: int | float | complex | torch.Tensor,
-    matchfn: OneToOne[torch.Tensor],
+    matchfn: Callable[[torch.Tensor], torch.Tensor],
 ) -> torch.Tensor:
     r"""Performs a trace for a time step, considering all prior matches, scaled by the inputs.
 
@@ -184,7 +182,7 @@ def trace_cumulative_scaled(
             to for matching elements, :math:`a`.
         scale (int | float | complex | torch.Tensor): value to multiply matching
             inputs by for the trace, :math:`S`.
-        matchfn (OneToOne[torch.Tensor]): test if the inputs are considered a
+        matchfn (Callable[[torch.Tensor], torch.Tensor]): test if the inputs are considered a
             match for the trace, :math:`K`.
 
     Returns:
