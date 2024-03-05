@@ -880,8 +880,8 @@ class Serial(Layer):
         Layer.__init__(self)
 
         # add connection and neuron
-        Layer.__setitem__("serial_c", connection)
-        Layer.__setitem__("serial_n", neuron)
+        Layer.__setitem__(self, "serial_c", connection)
+        Layer.__setitem__(self, "serial_n", neuron)
 
         # set transformation used
         if transform:

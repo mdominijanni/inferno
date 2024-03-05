@@ -71,12 +71,10 @@ class STDP(LayerwiseTrainer):
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce updates over the batch dimension, :py:func:`torch.mean`
             when None. Defaults to None.
-        name (str | None, optional): name of the trainer, for layer monitor pooling,
-            generated uniquely when None. Defaults to None.
 
     Important:
-        The constructor arguments (except for ``name``) are hyperparameters for STDP
-        and can be overridden on a cell-by-cell basis.
+        The constructor arguments are hyperparameters for STDP and can be overridden on
+        a cell-by-cell basis.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -104,11 +102,10 @@ class STDP(LayerwiseTrainer):
         batch_reduction: (
             Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
         ) = None,
-        name: str | None = None,
         **kwargs,
     ):
         # call superclass constructor
-        LayerwiseTrainer.__init__(self, name, **kwargs)
+        LayerwiseTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
         self.step_time = argtest.gt("step_time", step_time, 0, float)

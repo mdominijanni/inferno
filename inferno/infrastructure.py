@@ -112,7 +112,7 @@ class Module(nn.Module):
         return extra
 
     def get_extra_state(self) -> dict[str, Any]:
-        return {**self._extras, "pid": self.pid}
+        return self._extras
 
     def set_extra_state(self, state: dict[str, Any]):
         self._extras.update(state)
