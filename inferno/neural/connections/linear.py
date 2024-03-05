@@ -173,7 +173,11 @@ class LinearDense(WeightBiasDelayMixin, Connection):
                 * :math:`M` is the number of elements across input dimensions.
                 * :math:`N` is the number of elements across output dimensions.
         """
-        return ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
+        if self.delayedby is not None:
+            delays = self.delay
+        else:
+            delays = torch.zeros_like(self.weight)
+        return ein.rearrange(delays, "o i -> 1 i o").expand(self.bsize, -1, -1)
 
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like synapse input to connection input.
@@ -488,7 +492,12 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
                 * :math:`B` is the batch size.
                 * :math:`N` is the number of elements across input/output dimensions.
         """
-        return ein.rearrange(self.delay, "n -> 1 n 1").expand(self.bsize, -1, -1)
+        if self.delayedby is not None:
+            delays = self.delay
+        else:
+            delays = torch.zeros_like(self.weight)
+
+        return ein.rearrange(delays, "n -> 1 n 1").expand(self.bsize, -1, -1)
 
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like synapse input to connection input.

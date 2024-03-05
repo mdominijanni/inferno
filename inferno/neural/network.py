@@ -3,12 +3,11 @@ from . import Connection, Neuron, Synapse
 from .modeling import Updater
 from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
 from .. import Module
-from .._internal import Proxy
+from .._internal import get, Proxy
 from ..infernotypes import OneToOne
 from abc import ABC, abstractmethod
 from collections.abc import Iterator, Iterable, Mapping
 import einops as ein
-from functools import partial
 from inferno._internal import argtest, rgetattr
 from inferno.observe import Monitor, MonitorConstructor
 from itertools import chain
@@ -281,18 +280,10 @@ class Layer(Module, ABC):
                         # create cell for neuron if it does not exist
                         if name[1] not in self.cells_[name[0]]:
                             self.cells_[name[0]][name[1]] = Cell(
+                                self,
                                 self.connections_[name[0]],
                                 self.neurons_[name[1]],
-                                partial(
-                                    self._add_monitor,
-                                    connection=name[0],
-                                    neuron=name[1],
-                                ),
-                                partial(
-                                    self._del_monitor,
-                                    connection=name[0],
-                                    neuron=name[1],
-                                ),
+                                name,
                             )
                         return self.cells_[name[0]][name[1]]
 
@@ -459,7 +450,7 @@ class Layer(Module, ABC):
                 else:
                     return f"neurons_.{neuron}{'.' if attr else ''}{attr}"
             case "cell":
-                if not self.cells_.get(connection, {}).get(neuron, None):
+                if not get(get(self.cells_, connection, {}), neuron, None):
                     raise AttributeError(
                         f"cell 'connection', 'neuron' ('{connection}', '{neuron}') is not valid"
                     )

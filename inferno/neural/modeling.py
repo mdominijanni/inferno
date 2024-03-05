@@ -7,12 +7,16 @@ from inferno._internal import argtest
 import torch
 import torch.nn as nn
 from typing import Any, Callable
+import weakref
 
 
 class Accumulator(Module):
     r"""Used by :py:class:`Updater`, accumulated updates for a parameter."""
 
     def __init__(self):
+        # call superclass constructor
+        Module.__init__(self)
+
         # state
         self._pos = nn.ParameterList()
         self._neg = nn.ParameterList()
@@ -121,8 +125,8 @@ class Accumulator(Module):
         kw = kwargs if kwargs else {}
 
         # convert bounds to tuple
-        if not isinstance(self.bind, tuple):
-            self.bind = (lambda x, p: p, lambda x, n: n)
+        if not isinstance(self.bind, list):
+            self.bind = [lambda x, p: p, lambda x, n: n]
 
         # determine bounding function
         if bound:
@@ -152,8 +156,8 @@ class Accumulator(Module):
         kw = kwargs if kwargs else {}
 
         # convert bounds to tuple
-        if not isinstance(self.bind, tuple):
-            self.bind = (lambda x, p: p, lambda x, n: n)
+        if not isinstance(self.bind, list):
+            self.bind = [lambda x, p: p, lambda x, n: n]
 
         # determine bounding function
         if bound:
@@ -263,6 +267,10 @@ class Updater(Module):
         module (Updatable): module with updatable parameters.
         *params (str): parameters to set as trainable.
 
+    Caution:
+        An ``Updater`` only weakly references its parent module, if its parent is
+        deleted this updater will be made invalid.
+
     Note:
         The initializer creates an object of a dynamically created type with a base
         type of ``Updater``.
@@ -289,8 +297,11 @@ class Updater(Module):
         # check that the module has required parameters
         _ = argtest.members("module", module, *params)
 
+        # set internal module (weakly referenced)
+        self._parent_module = weakref.ref(module)
+
         # set update states and associated functions
-        self.updates_ = nn.ModuleDict({p: self.Accumulator() for p in params})
+        self.updates_ = nn.ModuleDict({p: Accumulator() for p in params})
 
     @staticmethod
     def _get_(self: Updater, attr: str) -> Accumulator:
@@ -303,7 +314,7 @@ class Updater(Module):
         Returns:
             Accumulator: associated accumulator for the given parameter.
         """
-        self.updates_[attr]
+        return self.updates_[attr]
 
     @staticmethod
     def _set_(
@@ -359,6 +370,15 @@ class Updater(Module):
         del self.updates_[attr].neg
 
     @property
+    def parent(self) -> Module | None:
+        r"""Parent module, if valid.
+
+        Returns:
+            Module | None: parent module if the reference to it still exists.
+        """
+        return self._parent_module()
+
+    @property
     def names(self) -> tuple[str, ...]:
         r"""Names of updatable attributes.
 
@@ -372,19 +392,19 @@ class Updater(Module):
         for acc in self.updates_.values():
             acc.clear(**kwargs)
 
-    def forward(self, module: Updatable, *params: str, **kwargs) -> None:
+    def forward(self, *params: str, **kwargs) -> None:
         r"""Applies accumulated updates.
 
         Args:
-            module (Updatable): module to which updates will be applied.
             *params (str): parameters to update, all parameters when none are specified.
-
-        Important:
-            :py:class:`Updater` should generally not be called directly but instead
-            :py:meth:`Updatable.update` or :py:meth:`Updatable.updatesome` should be called.
         """
         if not params:
             params = self.updates_.keys()
+
+        module = self._parent_module()
+
+        if not module:
+            raise RuntimeError("'parent' module is no longer a valid reference")
 
         for p in params:
             setattr(module, p, self.updates_[p](getattr(module, p), **kwargs))
@@ -392,6 +412,9 @@ class Updater(Module):
 
 class Updatable(ABC):
     r"""Adds parameter updating functionality to a module."""
+
+    def __init__(self):
+        self.updater_: Updater | None = None
 
     @property
     def updatable(self) -> bool:
@@ -406,27 +429,19 @@ class Updatable(ABC):
     def updater(self) -> Updater | None:
         r"""Updater for the module.
 
-        Args:
-            value (Updater): new updater.
+        Deleting this attribute deletes the associated updater.
 
         Returns:
             Updater | None: current updater if it exists, otherwise None.
         """
-        if hasattr(self, "updater_"):
-            return self.updater_
-
-    @updater.setter
-    def updater(self, value: Updater) -> None:
-        self.updater_ = value
+        return self.updater_
 
     @updater.deleter
     def updater(self) -> None:
-        if hasattr(self, "updater_"):
-            del self.updater_
+        self.updater_ = None
 
-    @property
     @abstractmethod
-    def defaultupdater(self) -> Updater:
+    def setupdater(self, *args, **kwargs) -> Updater:
         r"""Default updater for this object.
 
         Raises:
@@ -453,7 +468,7 @@ class Updatable(ABC):
                 Defaults to True.
         """
         if self.updatable:
-            self.updater(self, **kwargs)
+            self.updater(**kwargs)
         if clear:
             self.updater.clear(**kwargs)
 
@@ -466,6 +481,6 @@ class Updatable(ABC):
                 Defaults to True.
         """
         for p in params:
-            self.updater(self, p, **kwargs)
+            self.updater(p, **kwargs)
             if clear:
                 getattr(self.updater, p).clear(**kwargs)

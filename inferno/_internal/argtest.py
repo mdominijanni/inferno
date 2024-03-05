@@ -175,7 +175,7 @@ def integer(name: str, value: Any, prefix: str | None = None) -> int:
                 raise ValueError(msg)
 
     # numeric test
-    if value % name == 0:
+    if value % 1 == 0:
         return int(value)
     else:
         raise ValueError(msg)
@@ -218,7 +218,7 @@ def dimensions(
             raise TypeError(f"{pfx}'{name}' ({val}) cannot be None")
 
     else:
-        match (lower is None, upper is None):
+        match (lower is not None, upper is not None):
             case (False, False):
                 func = integer
                 args, kwargs = (), {"prefix": prefix}

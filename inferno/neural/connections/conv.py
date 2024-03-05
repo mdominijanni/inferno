@@ -322,7 +322,12 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             consequentially multiple elements may reference the same underlying
             memory.
         """
-        return ein.rearrange(self.delay, "f c h w -> 1 (c h w) 1 f").expand(
+        if self.delayedby is not None:
+            delays = self.delay
+        else:
+            delays = torch.zeros_like(self.weight)
+
+        return ein.rearrange(delays, "f c h w -> 1 (c h w) 1 f").expand(
             self.bsize, -1, self.synapse.shape[-1], -1
         )
 

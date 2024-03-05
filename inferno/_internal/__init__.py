@@ -6,6 +6,7 @@ from .utils import (
     rsetattr,
     fzip,
     unique,
+    get,
 )
 
 from .exceptions import (
@@ -36,4 +37,5 @@ __all__ = [
     "attr_members",
     "fzip",
     "unique",
+    "get",
 ]
