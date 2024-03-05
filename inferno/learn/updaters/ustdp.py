@@ -129,6 +129,10 @@ class STDP(LayerwiseTrainer):
         """
 
         def __init__(self, trainer: STDP, **kwargs: Any):
+            # call superclass constructor
+            Module.__init__(self)
+
+            # map arguments
             if "step_time" in kwargs:
                 self.step_time = argtest.gt("step_time", kwargs["step_time"], 0, float)
             else:
@@ -283,7 +287,7 @@ class STDP(LayerwiseTrainer):
         self.add_monitor(
             name,
             "trace_pre",
-            "synapse.spike" if delayed else "synspike",
+            "synapse.spike" if delayed else "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=reducer_cls(
                     state.step_time,
@@ -304,7 +308,7 @@ class STDP(LayerwiseTrainer):
         self.add_monitor(
             name,
             "spike_pre",
-            "synspike",
+            "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(state.step_time, history_len=0.0),
                 **monitor_kwargs,

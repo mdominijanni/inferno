@@ -4,6 +4,7 @@ from .. import Module, Hook
 from inferno._internal import rgetattr
 import torch
 from typing import Any, Callable, Protocol
+import warnings
 import weakref
 
 
@@ -145,12 +146,17 @@ class Monitor(Module, Hook):
                         "weak reference to monitored module does not exist, "
                         "cannot infer argument 'module'"
                     )
+            else:
+                Hook.register(self, module)
 
-        # register using superclass
-        Hook.register(self, module)
-
-        # update stored weak reference
-        self._observed = weakref.ref(module)
+        # new module is given
+        else:
+            try:
+                Hook.register(self, module)
+            except RuntimeWarning as w:
+                warnings.warn(str(w), type(w))
+            else:
+                self._observed = weakref.ref(module)
 
 
 class InputMonitor(Monitor):
