@@ -144,9 +144,9 @@ def trace_cumulative(
 
     # compute new state
     if trace is None:
-        amplitude * mask
+        return amplitude * mask
     else:
-        (decay * trace) + (amplitude * mask)
+        return (decay * trace) + (amplitude * mask)
 
 
 def trace_cumulative_scaled(
