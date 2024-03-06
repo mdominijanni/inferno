@@ -22,30 +22,15 @@ from .mathops import (
     interp_exp_decay,
 )
 
-from .spiketrace import (
-    trace_nearest,
-    trace_cumulative,
-    trace_nearest_scaled,
-    trace_cumulative_scaled,
-)
-
-from .tensor import (
-    zeros,
-    ones,
-    empty,
-    full,
-    uniform,
-    normal,
-    scalar,
-    astensors,
-)
-
-from . import (
-    stats,
-    bounding,
-)
+from . import core
+from . import stats
 
 __all__ = [
+    # core imports
+    *core.__all__,
+    # submodules
+    "stats",
+    # other
     "stats",
     "bounding",
     "Module",

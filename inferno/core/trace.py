@@ -49,6 +49,54 @@ def trace_nearest(
         return torch.where(mask, amplitude, decay * trace)
 
 
+def trace_cumulative(
+    observation: torch.Tensor,
+    trace: torch.Tensor | None,
+    *,
+    decay: float | torch.Tensor,
+    amplitude: int | float | complex | torch.Tensor,
+    target: int | float | bool | complex | torch.Tensor,
+    tolerance: int | float | torch.Tensor | None = None,
+) -> torch.Tensor:
+    r"""Performs a trace for a time step, considering all prior matches.
+
+    .. math::
+        x_{t + \Delta t} =
+        \begin{cases}
+            a + x_t \exp (\Delta t / \tau) &\lvert f_{t + \Delta t} - f^* \rvert
+            \leq \epsilon \\
+            x_t \exp (\Delta t / \tau) &\text{otherwise}
+        \end{cases}
+
+    Args:
+        observation (torch.Tensor): latest state to consider for the trace, :math:`f`.
+        trace (torch.Tensor | None): current value of the trace, :math:`x`,
+            if not the inital condition.
+        decay (float | torch.Tensor): exponential decay for adaptations,
+            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
+        amplitude (int | float | complex | torch.Tensor): value to add to trace to for
+            matching elements, :math:`a`.
+        target (int | float | bool | complex | torch.Tensor): target value to set
+            trace to, :math:`f^*`.
+        tolerance (int | float | torch.Tensor | None, optional): allowable absolute
+            difference to still count as a match, :math:`\epsilon`. Defaults to None.
+
+    Returns:
+        torch.Tensor: updated trace, incorporating the new observation.
+    """
+    # construct mask
+    if tolerance is None:
+        mask = observation == target
+    else:
+        mask = torch.abs(observation - target) <= tolerance
+
+    # compute new state
+    if trace is None:
+        return amplitude * mask
+    else:
+        return (decay * trace) + (amplitude * mask)
+
+
 def trace_nearest_scaled(
     observation: torch.Tensor,
     trace: torch.Tensor | None,
@@ -99,54 +147,6 @@ def trace_nearest_scaled(
     if trace is None:
         return (scale * observation + amplitude) * mask
     return torch.where(mask, scale * observation + amplitude, decay * trace)
-
-
-def trace_cumulative(
-    observation: torch.Tensor,
-    trace: torch.Tensor | None,
-    *,
-    decay: float | torch.Tensor,
-    amplitude: int | float | complex | torch.Tensor,
-    target: int | float | bool | complex | torch.Tensor,
-    tolerance: int | float | torch.Tensor | None = None,
-) -> torch.Tensor:
-    r"""Performs a trace for a time step, considering all prior matches.
-
-    .. math::
-        x_{t + \Delta t} =
-        \begin{cases}
-            a + x_t \exp (\Delta t / \tau) &\lvert f_{t + \Delta t} - f^* \rvert
-            \leq \epsilon \\
-            x_t \exp (\Delta t / \tau) &\text{otherwise}
-        \end{cases}
-
-    Args:
-        observation (torch.Tensor): latest state to consider for the trace, :math:`f`.
-        trace (torch.Tensor | None): current value of the trace, :math:`x`,
-            if not the inital condition.
-        decay (float | torch.Tensor): exponential decay for adaptations,
-            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
-        amplitude (int | float | complex | torch.Tensor): value to add to trace to for
-            matching elements, :math:`a`.
-        target (int | float | bool | complex | torch.Tensor): target value to set
-            trace to, :math:`f^*`.
-        tolerance (int | float | torch.Tensor | None, optional): allowable absolute
-            difference to still count as a match, :math:`\epsilon`. Defaults to None.
-
-    Returns:
-        torch.Tensor: updated trace, incorporating the new observation.
-    """
-    # construct mask
-    if tolerance is None:
-        mask = observation == target
-    else:
-        mask = torch.abs(observation - target) <= tolerance
-
-    # compute new state
-    if trace is None:
-        return amplitude * mask
-    else:
-        return (decay * trace) + (amplitude * mask)
 
 
 def trace_cumulative_scaled(

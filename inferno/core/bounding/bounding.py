@@ -16,10 +16,10 @@ class HalfBounding(Protocol):
 
     See Also:
         Provided parameter half-bounding functions include
-        :py:func:`upper_power_dependence`, :py:func:`upper_lower_dependence`,
-        :py:func:`upper_multiplicative_dependence`,
-        :py:func:`lower_multiplicative_dependence`, :py:func`upper_sharp_dependence`,
-        and :py:func:`lower_sharp_dependence`.
+        :py:func:`upper_power`, :py:func:`upper_lower`,
+        :py:func:`upper_multiplicative`,
+        :py:func:`lower_multiplicative`, :py:func`upper_sharp`,
+        and :py:func:`lower_sharp`.
     """
 
     def __call__(
@@ -38,37 +38,38 @@ class FullBounding(Protocol):
 
     Args:
         param (torch.Tensor): value of the parameter being bound.
-        pos_update (torch.Tensor): value of the positive part of the update to scale.
-        neg_update (torch.Tensor): value of the negative part of the update to scale.
-        max_limit (float | torch.Tensor | None): maximum value of the updated parameter.
-        min_limit (float | torch.Tensor | None): minimum value of the updated parameter.
+        pos (torch.Tensor): value of the positive part of the update to scale.
+        neg (torch.Tensor): value of the negative part of the update to scale.
+        max (float | torch.Tensor | None): maximum value of the updated parameter.
+        min (float | torch.Tensor | None): minimum value of the updated parameter.
 
     Returns:
         torch.Tensor: bounded update.
 
     See Also:
         Provided parameter bounding functions include
-        :py:func:`power_dependence`, :py:func:`multiplicative_dependence`, and
-        :py:func:`sharp_dependence`.
+        :py:func:`power`, :py:func:`multiplicative`, and
+        :py:func:`sharp`.
     """
 
     def __call__(
         self,
         param: torch.Tensor,
-        pos_update: torch.Tensor,
-        neg_update: torch.Tensor,
-        max_limit: float | torch.Tensor | None,
-        min_limit: float | torch.Tensor | None,
+        pos: torch.Tensor,
+        neg: torch.Tensor,
+        max: float | torch.Tensor | None,
+        min: float | torch.Tensor | None,
         **kwargs,
     ) -> torch.Tensor:
         r"""Callback protocol function."""
         ...
 
 
-def upper_power_dependence(
+def upper_power(
     param: torch.Tensor,
     update: torch.Tensor,
     limit: float | torch.Tensor,
+    *,
     power: float | torch.Tensor,
     **kwargs,
 ) -> torch.Tensor:
@@ -91,10 +92,11 @@ def upper_power_dependence(
     return ((limit - param) ** power) * update
 
 
-def lower_power_dependence(
+def lower_power(
     param: torch.Tensor,
     update: torch.Tensor,
     limit: float | torch.Tensor,
+    *,
     power: float | torch.Tensor,
     **kwargs,
 ) -> torch.Tensor:
@@ -117,12 +119,13 @@ def lower_power_dependence(
     return ((param - limit) ** power) * update
 
 
-def power_dependence(
+def power(
     param: torch.Tensor,
-    pos_update: torch.Tensor,
-    neg_update: torch.Tensor,
-    max_limit: float | torch.Tensor | None,
-    min_limit: float | torch.Tensor | None,
+    pos: torch.Tensor,
+    neg: torch.Tensor,
+    max: float | torch.Tensor | None,
+    min: float | torch.Tensor | None,
+    *,
     upper_power: float | torch.Tensor,
     lower_power: float | torch.Tensor,
     **kwargs,
@@ -136,11 +139,11 @@ def power_dependence(
 
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
-        pos_update (torch.Tensor): potentiative update being applied, :math:`U_+`.
-        neg_update (torch.Tensor): depressive update being applied, :math:`U_-`.
-        max_limit (float | torch.Tensor | None): value of the upper bound,
+        pos (torch.Tensor): potentiative update being applied, :math:`U_+`.
+        neg (torch.Tensor): depressive update being applied, :math:`U_-`.
+        max (float | torch.Tensor | None): value of the upper bound,
             :math:`P_\text{max}`.
-        min_limit (float | torch.Tensor | None): value of the lower bound,
+        min (float | torch.Tensor | None): value of the lower bound,
             :math:`P_\text{min}`.
         upper_power (float | torch.Tensor): exponent of upper-bound parameter
             dependence, :math:`\mu_+`.
@@ -151,19 +154,20 @@ def power_dependence(
         torch.Tensor: bounded update.
     """
     # update subcomponents
-    if max_limit is not None:
-        pos_update = upper_power_dependence(param, pos_update, max_limit, upper_power)
-    if min_limit is not None:
-        neg_update = lower_power_dependence(param, neg_update, min_limit, lower_power)
+    if max is not None:
+        pos = upper_power(param, pos, max, upper_power)
+    if min is not None:
+        neg = lower_power(param, neg, min, lower_power)
 
     # combined update
-    return pos_update - neg_update
+    return pos - neg
 
 
-def upper_multiplicative_dependence(
+def upper_multiplicative(
     param: torch.Tensor,
     update: torch.Tensor,
     limit: float | torch.Tensor,
+    **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of upper-bound multiplicative parameter dependence.
 
@@ -184,10 +188,11 @@ def upper_multiplicative_dependence(
     return (limit - param) * update
 
 
-def lower_multiplicative_dependence(
+def lower_multiplicative(
     param: torch.Tensor,
     update: torch.Tensor,
     limit: float | torch.Tensor,
+    **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of lower-bound multiplicative parameter dependence.
 
@@ -208,12 +213,12 @@ def lower_multiplicative_dependence(
     return (param - limit) * update
 
 
-def multiplicative_dependence(
+def multiplicative(
     param: torch.Tensor,
-    pos_update: torch.Tensor,
-    neg_update: torch.Tensor,
-    max_limit: float | torch.Tensor | None,
-    min_limit: float | torch.Tensor | None,
+    pos: torch.Tensor,
+    neg: torch.Tensor,
+    max: float | torch.Tensor | None,
+    min: float | torch.Tensor | None,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of multiplicative parameter dependence.
@@ -226,30 +231,31 @@ def multiplicative_dependence(
 
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
-        pos_update (torch.Tensor): potentiative update being applied, :math:`U_+`.
-        neg_update (torch.Tensor): depressive update being applied, :math:`U_-`.
-        max_limit (float | torch.Tensor | None): value of the upper bound,
+        pos (torch.Tensor): potentiative update being applied, :math:`U_+`.
+        neg (torch.Tensor): depressive update being applied, :math:`U_-`.
+        max (float | torch.Tensor | None): value of the upper bound,
             :math:`P_\text{max}`.
-        min_limit (float | torch.Tensor | None): value of the lower bound,
+        min (float | torch.Tensor | None): value of the lower bound,
             :math:`P_\text{min}`.
 
     Returns:
         torch.Tensor: bounded update.
     """
     # update subcomponents
-    if max_limit is not None:
-        pos_update = upper_multiplicative_dependence(param, pos_update, max_limit)
-    if min_limit is not None:
-        neg_update = lower_multiplicative_dependence(param, neg_update, min_limit)
+    if max is not None:
+        pos = upper_multiplicative(param, pos, max)
+    if min is not None:
+        neg = lower_multiplicative(param, neg, min)
 
     # combined update
-    return pos_update - neg_update
+    return pos - neg
 
 
-def upper_sharp_dependence(
+def upper_sharp(
     param: torch.Tensor,
     update: torch.Tensor,
     limit: float | torch.Tensor,
+    **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of upper-bound sharp parameter dependence.
 
@@ -279,10 +285,11 @@ def upper_sharp_dependence(
     return torch.heaviside(diff, inferno.zeros(diff, shape=())) * update
 
 
-def lower_sharp_dependence(
+def lower_sharp(
     param: torch.Tensor,
     update: torch.Tensor,
     limit: float | torch.Tensor,
+    **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of lower-bound sharp parameter dependence.
 
@@ -312,12 +319,12 @@ def lower_sharp_dependence(
     return torch.heaviside(diff, inferno.zeros(diff, shape=())) * update
 
 
-def sharp_dependence(
+def sharp(
     param: torch.Tensor,
-    pos_update: torch.Tensor,
-    neg_update: torch.Tensor,
-    max_limit: float | torch.Tensor | None,
-    min_limit: float | torch.Tensor | None,
+    pos: torch.Tensor,
+    neg: torch.Tensor,
+    max: float | torch.Tensor | None,
+    min: float | torch.Tensor | None,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of sharp parameter dependence.
@@ -339,21 +346,21 @@ def sharp_dependence(
 
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
-        pos_update (torch.Tensor): potentiative update being applied, :math:`U_+`.
-        neg_update (torch.Tensor): depressive update being applied, :math:`U_-`.
-        max_limit (float | torch.Tensor | None): value of the upper bound,
+        pos (torch.Tensor): potentiative update being applied, :math:`U_+`.
+        neg (torch.Tensor): depressive update being applied, :math:`U_-`.
+        max (float | torch.Tensor | None): value of the upper bound,
             :math:`P_\text{max}`.
-        min_limit (float | torch.Tensor | None): value of the lower bound,
+        min (float | torch.Tensor | None): value of the lower bound,
             :math:`P_\text{min}`.
 
     Returns:
         torch.Tensor: bounded update.
     """
     # update subcomponents
-    if max_limit is not None:
-        pos_update = upper_sharp_dependence(param, pos_update, max_limit)
-    if min_limit is not None:
-        neg_update = lower_sharp_dependence(param, neg_update, min_limit)
+    if max is not None:
+        pos = upper_sharp(param, pos, max)
+    if min is not None:
+        neg = lower_sharp(param, neg, min)
 
     # combined update
-    return pos_update - neg_update
+    return pos - neg
