@@ -1,11 +1,12 @@
 from __future__ import annotations
-from .._internal import argtest
+from .interpolation import Interpolation
+from .._internal import argtest, rsetattr
 from abc import ABC, abstractmethod
-import attrs
 from collections import OrderedDict
-from collections.abc import Mapping
+from collections.abc import Iterable
 from functools import cache
 from itertools import chain
+import math
 import torch
 import torch.nn as nn
 from typing import Any, Callable
@@ -173,14 +174,43 @@ class Module(nn.Module):
 
 class DimensionalModule(Module):
     def __init__(self, *constraints: tuple[int, int], live: bool = False):
+        r"""Module with support for dimensionally constrained buffers and parameters.
+
+        Args:
+            *constraints (tuple[int, int]): tuple of (dim, size) dimensional constraints
+                for constrained buffers and parameters.
+            live (bool, optional): if constraints should be evaluated on constrained
+                attribute set. Defaults to False.
+
+        Raises:
+            ValueError: size specified by each constraint must be positive.
+            RuntimeError: two or more constraints have the same dimension.
+
+        Caution:
+            The names of constrained buffers and parameters will persist via the
+            state dictionary but the constraints themselves will not.
+
+        Important:
+            The constraints given must refer to unique elements. For example, if a
+            constraint is placed on the dim ``1`` and dim ``-1``, a tensor must be at
+            least three-dimensional, since in a tensor with two dimensions, ``1`` and
+            ``-1`` refer to the same dimension.
+
+        Important:
+            Constrained values which are either ``None``, scalar (i.e. have zero
+            dimensions), or have no elements (i.e. have a zero-dimension) are
+            automatically ignored.
+        """
         # call superclass constructor
         Module.__init__(self)
 
-        # register state
+        # transient state
         self.__constraints = dict()
-        self.__constrained_buffers = set()
-        self.__constrained_params = set()
-        self.__live_assert = True
+        self.__live_assert = live
+
+        # persistent state
+        self.register_extra("_constrained_buffers", set())
+        self.register_extra("_constrained_params", set())
 
         # cached values
         self.__constraint_cache = cache(self.__calc_constraints)
@@ -201,9 +231,27 @@ class DimensionalModule(Module):
                 )
             self.__constraints[dim] = size
 
+    @staticmethod
+    def _ignore_tensor(tensor: torch.Tensor | nn.Parameter | None) -> bool:
+        r"""Checks if a tensor should be ignored for constraints.
+
+        Args:
+            tensor (torch.Tensor | nn.Parameter | None): tensor to check.
+
+        Returns:
+            bool: if the tensor should be ignored.
+        """
+        return tensor is None or not tensor.ndim or not tensor.numel()
+
     def __setattr__(self, name: str, value: Any) -> None:
-        if self.live and name in self.__constrained:
-            pass
+        if self.live and name in self._constrained and isinstance(value, torch.Tensor):
+            if self._ignore_tensor(value) or self.compatible(value):
+                super().__setattr__(name, value)
+            else:
+                raise RuntimeError(
+                    f"tensor of shape {tuple(value.shape)} being assigned to '{name}' "
+                    f"is not compatible with constraints ({self.__extra_repr_cache()})"
+                )
         else:
             super().__setattr__(name, value)
 
@@ -243,6 +291,69 @@ class DimensionalModule(Module):
                 return False
 
         return True
+
+    @classmethod
+    def compatible_like_(
+        cls,
+        value: torch.Tensor | nn.Parameter | Iterable[int],
+        constraints: dict[int, int],
+    ) -> torch.Tensor | nn.Parameter | tuple[int, ...]:
+        r"""Creates a shape or new tensor like the input compatible with a set of constraints.
+
+        Args:
+            value (torch.Tensor | nn.Parameter | Iterable[int]): _description_
+            constraints (dict[int, int]): constraint dictionary of (dim, size).
+
+        Raises:
+            RuntimeError: given shape does not have sufficient dimensionality to be
+                made compatible with constraints.
+            ValueError: size specified by each constraint must be positive.
+
+        Returns:
+            torch.Tensor | nn.Parameter | tuple[int, ...]: new tensor or parameter like
+            the input, or the new compatible shape if not given a tensor.
+        """
+        # put original shape into a mutable
+        shape = list(value.shape) if isinstance(value, torch.Tensor) else list(value)
+
+        # ensure minimum dimensionality
+        if len(shape) < cls.dims_(constraints):
+            raise RuntimeError(
+                f"'value' of shape {tuple(shape)} with {len(shape)} dims cannot be made "
+                f"compatible, requires a minimum dimensionality of {cls.dims_(constraints)}"
+            )
+
+        # set new sizes via constraints
+        for d, s in constraints.items():
+            if s < 1:
+                raise ValueError(
+                    f"'constraints' specifies nonpositive sized constraint {(d, s)}"
+                )
+            else:
+                shape[d] = s
+
+        # create a zero-valued tensor or parameter like the input if given a tensor
+        if isinstance(value, nn.Parameter):
+            return nn.Parameter(
+                torch.zeros(
+                    shape,
+                    dtype=value.dtype,
+                    layout=value.layout,
+                    device=value.device,
+                    requires_grad=value.data.requires_grad,
+                ),
+                requires_grad=value.requires_grad,
+            )
+        elif isinstance(value, torch.Tensor):
+            return torch.zeros(
+                shape,
+                dtype=value.dtype,
+                layout=value.layout,
+                device=value.device,
+                requires_grad=value.requires_grad,
+            )
+        else:
+            return tuple(shape)
 
     @property
     def constraints(self) -> dict[int, int]:
@@ -286,7 +397,7 @@ class DimensionalModule(Module):
         return "\n".join(
             (
                 f"constraints=({self.__extra_repr_cache()})",
-                f"constrained=({','.join(self.__constrained)})",
+                f"constrained=({','.join(self._constrained)})",
             )
         )
 
@@ -347,6 +458,38 @@ class DimensionalModule(Module):
 
         return ", ".join(elems)
 
+    def _trim_constrained(self) -> None:
+        r"""Deletes constrained buffers and parameters which no longer exist."""
+        # remove deleted buffers from constrained set
+        for name in tuple(self._constrained_buffers):
+            try:
+                _ = self.get_buffer(name)
+            except AttributeError:
+                self.deregister_constrained(name)
+
+        # remove deleted parameters from constrained set
+        for name in tuple(self._constrained_params):
+            try:
+                _ = self.get_parameter(name)
+            except AttributeError:
+                self.deregister_constrained(name)
+
+    def _test_constrained(self) -> None:
+        r"""Validates constraints."""
+        # ensure constrained buffers have valid shape
+        for name, b in map(
+            lambda n: (n, self.get_buffer(n)), self._constrained_buffers
+        ):
+            if not self._ignore_tensor(b) or not self.compatible(b):
+                raise RuntimeError(f"constrained buffer '{name}' is invalid")
+
+        # ensure constrained parameters have valid shape
+        for name, p in map(
+            lambda n: (n, self.get_parameter(n)), self._constrained_params
+        ):
+            if not self._ignore_tensor(p) or not self.compatible(p):
+                raise RuntimeError(f"constrained parameter '{name}' is invalid")
+
     def compatible(self, tensor: torch.Tensor) -> bool:
         r"""Test if a tensor is compatible with the constraints.
 
@@ -358,24 +501,52 @@ class DimensionalModule(Module):
         """
         return self.compatible_(tensor, self.__constraints)
 
+    def compatible_like(
+        self,
+        value: torch.Tensor | nn.Parameter | Iterable[int],
+    ) -> torch.Tensor | nn.Parameter | tuple[int, ...]:
+        r"""Creates a shape or new tensor like the input compatible with the constraints.
+
+        Args:
+            value (torch.Tensor | nn.Parameter | Iterable[int]): _description_
+
+        Returns:
+            torch.Tensor | nn.Parameter | tuple[int, ...]: new tensor or parameter like
+            the input, or the new compatible shape if not given a tensor.
+        """
+        return self.compatible_like_(value, **self.__constraints)
+
     def reconstrain(self, dim: int, size: int | None) -> DimensionalModule:
+        r"""Modifies constraints.
+
+        Adding constraints will not modify the constrained tensors, whereas modifying
+        an existing constraint will create a new zero-tensor with the shape of that
+        dimension modified.
+
+        If the tensor was modified to be compatible with the new constraint ahead
+        of time (i.e. if :py:attr:`live` is ``False`` and was set with its new value),
+        then reallocation will not occur.
+
+        Args:
+            dim (int): dimension to which a constraint should be added, removed,
+                or modified.
+            size (int | None): size of the new constraint, None if the constraint is
+                to be removed.
+
+        Raises:
+            RuntimeError: constrained buffer or parameter is no longer a compatible shape.
+            RuntimeError: constrained buffer or parameter would not be valid after the
+                change in constraints.
+
+        Returns:
+            DimensionalModule: self.
+        """
         # clear cached values
         self.__constraint_cache.cache_clear()
         self.__extra_repr_cache.cache_clear()
 
-        # remove deleted buffers from constrained set
-        for name in tuple(self.__constrained_buffers):
-            try:
-                _ = self.get_buffer(name)
-            except AttributeError:
-                self.deregister_constrained(name)
-
-        # remove deleted parameters from constrained set
-        for name in tuple(self.__constrained_params):
-            try:
-                _ = self.get_parameter(name)
-            except AttributeError:
-                self.deregister_constrained(name)
+        # remove deleted buffers and parameters from constrained set
+        self._trim_constrained()
 
         # cast and validate arguments
         dim = int(dim)
@@ -383,21 +554,83 @@ class DimensionalModule(Module):
 
         # removes constraint
         if dim in self.__constraints and not size:
-            # deletes constraint (always safe to do so)
+            # removes constraint
             del self.__constraints[dim]
 
-            # ensures constrained values are still valid
-            self.validate()
+            # tests if constrained buffers and parameters are still valid
+            self._test_constrained()
 
+            # returns self
             return self
 
         # creates constraint
         if dim not in self.__constraints and size:
             # ensures constrained values are still valid
-            self.validate()
+            self._test_constrained()
 
+            # tests if buffers and parameters will be valid with new constraints
+            cns = {**self.__constraints, dim: size}
 
+            for name, b in map(
+                lambda n: (n, self.get_buffer(n)), self._constrained_buffers
+            ):
+                if not self._ignore_tensor(b) and not self.compatible_(b, cns):
+                    raise RuntimeError(
+                        f"constrained buffer '{name}' would be invalidated by the "
+                        f"addition of constraint {(dim, size)}"
+                    )
 
+            for name, p in map(
+                lambda n: (n, self.get_parameter(n)), self._constrained_params
+            ):
+                if not self._ignore_tensor(p) and not self.compatible_(p, cns):
+                    raise RuntimeError(
+                        f"constrained parameter '{name}' would be invalidated by the "
+                        f"addition of constraint {(dim, size)}"
+                    )
+
+            # adds constraint
+            self.__constraints[dim] = size
+
+            # returns self
+            return self
+
+        # alters constraint
+        if dim in self.__constraints and size:
+            # check that all tensors have minimum required dimensionality
+            ndim = self.dims
+
+            for name, b in map(
+                lambda n: (n, self.get_buffer(n)), self._constrained_buffers
+            ):
+                if not self._ignore_tensor(b) and not b.ndim > ndim:
+                    raise RuntimeError(
+                        f"constrained buffer '{name}' with {b.ndim} dims cannot be made "
+                        f"compatible, requires a minimum dimensionality of {ndim}"
+                    )
+
+            for name, p in map(
+                lambda n: (n, self.get_parameter(n)), self._constrained_params
+            ):
+                if not self._ignore_tensor(p) and not p.ndim > ndim:
+                    raise RuntimeError(
+                        f"constrained parameter '{name}' with {p.ndim} dims cannot be made "
+                        f"compatible, requires a minimum dimensionality of {ndim}"
+                    )
+
+            # edit constraint
+            self.__constraints[dim] = size
+
+            # reassign incompatible parameters
+            for name, value in chain(
+                map(lambda n: (n, self.get_buffer(n)), self._constrained_buffers),
+                map(lambda n: (n, self.get_parameter(n)), self._constrained_params),
+            ):
+                if not self._ignore_tensor(value) and not self.compatible(value):
+                    rsetattr(self, name, self.compatible_like(value))
+
+            # returns self
+            return self
 
     def register_constrained(self, name: str) -> None:
         r"""Registers an existing buffer or parameter as constrained.
@@ -421,7 +654,7 @@ class DimensionalModule(Module):
         except AttributeError:
             pass
         else:
-            if b is not None and b.numel() > 0 and not self.compatible(b):
+            if not self._ignore_tensor(b) and not self.compatible(b):
                 raise RuntimeError(
                     f"buffer '{name}' has shape of {tuple(b.shape)} "
                     f"incompatible with constrained shape ({self.__extra_repr_cache()}), "
@@ -429,7 +662,7 @@ class DimensionalModule(Module):
                     f"{self.dims} dimensions"
                 )
             else:
-                self.__constrained_buffers.add(name)
+                self._constrained_buffers.add(name)
             return
 
         # attempts to register parameter
@@ -438,7 +671,7 @@ class DimensionalModule(Module):
         except AttributeError:
             pass
         else:
-            if p is not None and p.numel() > 0 and not self.compatible(p):
+            if not self._ignore_tensor(p) and not self.compatible(p):
                 raise RuntimeError(
                     f"parameter '{name}' has shape of {tuple(p.shape)} "
                     f"incompatible with constrained shape ({self.__extra_repr_cache()}), "
@@ -446,13 +679,214 @@ class DimensionalModule(Module):
                     f"{self.dims} dimensions"
                 )
             else:
-                self.__constrained_params.add(name)
+                self._constrained_params.add(name)
             return
 
         # invalid name
         raise AttributeError(
             f"'nam'` ('{name}') does not specify a registered buffer or parameter"
         )
+
+    def deregister_constrained(self, name: str) -> None:
+        r"""Deregisters a buffer or parameter as constrained.
+
+        If the name given isn't a constrained buffer or parameter, calling this does
+        nothing.
+
+        Args:
+            name (str): fully-qualified string name of the buffer or
+                parameter to register.
+        """
+        # remove if in buffers
+        if name in self._constrained_buffers:
+            self._constrained_buffers.remove(name)
+
+        # remove if in parameters
+        if name in self._constrained_params:
+            self._constrained_params.remove(name)
+
+    def get_constrained(self, name: str) -> torch.Tensor | nn.Parameter:
+        # retrieve from buffers
+        if name in self._constrained_buffers:
+            return self.get_buffer(name)
+
+        # retrieve from parameters
+        if name in self._constrained_params:
+            return self.get_parameter(name)
+
+        raise AttributeError(
+            f"'name' ('{name}') is not a constrained buffer or parameter"
+        )
+
+    def validate(self) -> None:
+        r"""Validates constraints.
+
+        Along with testing constrained buffers and parameters, if a registered
+        constrained name no longer points at a buffer or parameter, that name is removed.
+
+        Raises:
+            RuntimeError: constrained buffer or parameter is no longer valid.
+        """
+        self._trim_constrained()
+        self._test_constrained()
+
+
+class RecordModule(DimensionalModule):
+    r"""_summary_
+
+    Args:
+        step_time (float): length of time between stored values in the record.
+        duration (float): length of time over which prior values are stored.
+
+    Caution:
+        When restoring from a state dictionary, the "pointer" to the next time slice to
+        overwrite is preserved along with the names of added constrained buffers and
+        parameters, but the step time and duration are not.
+    """
+
+    def __init__(
+        self,
+        step_time: float,
+        duration: float,
+    ):
+        # argument validation
+        step_time = argtest.gt("step_time", step_time, 0, float)
+        duration = argtest.gte("duration", duration, 0, float)
+
+        # size of the history dimension
+        size = math.ceil(duration / step_time) + 1
+
+        # call superclass constructor
+        DimensionalModule.__init__(self, (-1, size))
+
+        # transient state
+        self.__step_time = step_time
+        self.__duration = duration
+
+        # persistent state
+        self.register_extra("_pointers", dict())
+
+    @property
+    def dt(self) -> float:
+        r"""Length of time between stored values in history.
+
+        In the same units as :py:attr:`self.duration`.
+
+        Args:
+            value (float): new time step length.
+
+        Returns:
+            float: length of the time step.
+
+        Note:
+            If a :py:meth:`reconstrain` operation needs to be performed, all state will
+            be overwritten with zeros.
+        """
+        return self.__step_time
+
+    @dt.setter
+    def dt(self, value: float) -> None:
+        # cast value as float and validate
+        value = argtest.gt("value", value, 0, float)
+
+        # recompute size of the history dimension
+        size = math.ceil(self.__duration / value) + 1
+
+        # reconstrain if required
+        if size != self.self.recordsz:
+            DimensionalModule.reconstrain(self, -1, size)
+
+        # set revised step time
+        self.__step_time = value
+
+    @property
+    def duration(self) -> float:
+        r"""Length of time over which prior values are stored.
+
+        In the same units as :py:attr:`self.dt`.
+
+        Args:
+            value (float): new length of the history to store.
+
+        Returns:
+            float: length of the record.
+
+        Note:
+            If a :py:meth:`reconstrain` operation needs to be performed, all state will
+            be overwritten with zeros.
+        """
+        return self.__duration
+
+    @duration.setter
+    def duration(self, value: float) -> None:
+        # cast value as float and validate
+        value = argtest.gte("value", value, 0, float)
+
+        # recompute size of the history dimension
+        size = math.ceil(value / self.__step_time) + 1
+
+        # reconstrain if required
+        if size != self.recordsz:
+            DimensionalModule.reconstrain(self, -1, size)
+
+        # set revised history length
+        self.__duration = value
+
+    @property
+    def recordsz(self) -> int:
+        r"""Number of stored time slices for each record tensor.
+
+        Returns:
+            int: length of the record, in number of slices.
+        """
+        return self.constraints.get(-1)
+
+    def get_constrained_record(self, name: str) -> torch.Tensor | nn.Parameter:
+        r"""Gets the value of a constraint which is a record.
+
+        Args:
+            name (str): name of the buffer or parameter.
+
+        Raises:
+            RuntimeError: the name specifies a buffer or parameter which was not
+                constrained by :py:class:`RecordModule`.
+            RuntimeError: the name specifies an uninitialized attribute, i.e. one which
+                is ``None``, has no elements, or is a scalar (a 0-dimensional tensor).
+
+        Returns:
+            torch.Tensor | nn.Parameter: constrained record tensor.
+        """
+        data = self.get_constrained(name)
+
+        if name not in self._pointers:
+            raise RuntimeError(
+                f"'name' ('{name}') specifies an improperly constrained attribute"
+            )
+
+        if self._ignore_tensor(data):
+            raise RuntimeError(
+                f"'name' ('{name}') specifies an uninitialized attribute"
+            )
+
+    def register_constrained(self, name: str) -> None:
+        r"""Registers an existing buffer or parameter as constrained.
+
+        Args:
+            name (str): fully-qualified string name of the buffer or
+                parameter to register.
+
+        Raises:
+            RuntimeError: shape of the buffer or parameter is invalid.
+            AttributeError: attribute is not a registered buffer or parameter.
+
+        Caution:
+            A registered :py:class:`~torch.nn.Parameter` with a value of ``None``
+            cannot be constrained as it is not returned by
+            :py:meth:`~torch.nn.Module.get_parameter`.
+        """
+        DimensionalModule.register_constrained(self, name)
+        if name not in self._pointers:
+            self._pointers[name] = 0
 
     def deregister_constrained(self, name: str):
         r"""Deregisters a buffer or parameter as constrained.
@@ -464,50 +898,211 @@ class DimensionalModule(Module):
             name (str): fully-qualified string name of the buffer or
                 parameter to register.
         """
-        # remove if in buffers
-        if name in self.__constrained_buffers:
-            self.__constrained_buffers.remove(name)
+        DimensionalModule.deregister_constrained(self, name)
+        if name in self._pointers:
+            del self._pointers[name]
 
-        # remove if in parameters
-        if name in self.__constrained_params:
-            self.__constrained_params.remove(name)
+    def reconstrain(self, dim: int, size: int | None) -> RecordModule:
+        r"""Modifies constraints.
 
-    def validate(self) -> None:
-        r"""Validates constraints.
+        Adding constraints will not modify the constrained tensors, whereas modifying
+        an existing constraint will create a new zero-tensor with the shape of that
+        dimension modified.
 
-        Along with testing constrained buffers and parameters, if a registered
-        constrained name no longer points at a buffer or parameter, that name is removed.
+        If the tensor was modified to be compatible with the new constraint ahead
+        of time (i.e. if :py:attr:`live` is ``False`` and was set with its new value),
+        then reallocation will not occur.
+
+        Args:
+            dim (int): dimension to which a constraint should be added, removed,
+                or modified.
+            size (int | None): size of the new constraint, None if the constraint is
+                to be removed.
 
         Raises:
-            RuntimeError: constrained buffer or parameter is no longer valid.
+            RuntimeError: constrained buffer or parameter is no longer a compatible shape.
+            RuntimeError: constrained buffer or parameter would not be valid after the
+                change in constraints.
+
+        Returns:
+            RecordModule: self.
         """
-        # remove deleted buffers from constrained set
-        for name in tuple(self.__constrained_buffers):
-            try:
-                _ = self.get_buffer(name)
-            except AttributeError:
-                self.deregister_constrained(name)
+        if dim == -1:
+            raise RuntimeError(
+                f"{type(self).__name__}(RecordModule) cannot reconstrain the record "
+                "dimension (-1)"
+            )
+        else:
+            return RecordModule.reconstrain(self, dim, size)
 
-        # remove deleted parameters from constrained set
-        for name in tuple(self.__constrained_params):
-            try:
-                _ = self.get_parameter(name)
-            except AttributeError:
-                self.deregister_constrained(name)
+    def latest(self, name: str, offset: int = 1) -> torch.Tensor:
+        r"""Retrieves the most recent slice of a constrained attribute.
 
-        # ensure constrained buffers have valid shape
-        for name, b in map(
-            lambda n: (n, self.get_buffer(n)), self.__constrained_buffers
-        ):
-            if b is not None and b.numel() > 0 and not self.compatible(b):
-                raise RuntimeError(f"constrained buffer '{name}' is invalid")
+        Args:
+            name (str): name of the attribute to target.
+            offset (int, optional): number of steps before present to select from.
+                Defaults to 1.
 
-        # ensure constrained parameters have valid shape
-        for name, p in map(
-            lambda n: (n, self.get_parameter(n)), self.__constrained_params
-        ):
-            if p is not None and p.numel() > 0 and not self.compatible(p):
-                raise RuntimeError(f"constrained parameter '{name}' is invalid")
+        Returns:
+            torch.Tensor: most recent slice of the tensor selected.
+        """
+        data = self.get_constrained_record(name)
+        return data[..., (self._pointers[name] - int(offset)) % self.recordsz]
+
+    def record(self, name: str, value: torch.Tensor, offset: int = 0) -> None:
+        """Overwrites the record at the current slice and increments the pointer.
+
+        Args:
+            name (str): name of the attribute to target.
+            value (torch.Tensor): value to write into the current time step.
+            offset (int, optional): number of steps before present to update.
+                Defaults to 0.
+        """
+        data = self.get_constrained_record(name)
+        if value.shape != data.shape[:-1]:
+            raise ValueError(
+                f"'value' has shape of {tuple(value.shape)} which does not match the "
+                f"required shape of {tuple(data.shape[:-1])}"
+            )
+        data[..., (self._pointers[name] - int(offset)) % self.recordsz] = value
+        self._pointers[name] = (self._pointers[name] + 1) % self.recordsz
+
+    def select(
+        self,
+        name: str,
+        time: float | torch.Tensor,
+        interp: Interpolation,
+        *,
+        tolerance: float = 1e-7,
+        offset: int = 1,
+    ) -> torch.Tensor:
+        r"""Selects elements of a constrained attribute based on prior time.
+
+        If ``time`` is a scalar and is within tolerance of an integer index, then
+        a slice will be returned without ever attempting interpolation.
+
+        If ``time`` is a tensor, interpolation will be called regardless, and the time
+        passed into the interpolation call will be set to either ``0`` or
+        :py:attr:`self.dt`. Interpolation results are then overwritten with exact values
+        before returning.
+
+        Args:
+            name (str): name of the attribute from which to select.
+            time (float | torch.Tensor): time(s) before present to select from.
+            interp (Interpolation): method to interpolate between discrete time steps.
+            tolerance (float, optional): maximum difference in time from a discrete
+                sample to consider a time co-occuring with the sample. Defaults to 1e-7.
+            offset (int, optional): window index offset as number of steps prior to the
+                location of the next time slice to overwrite. Defaults to 1.
+
+        Returns:
+            torch.Tensor: interpolated values selected at a prior time(s).
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``time``:
+
+            :math:`N_0 \times \cdots \times [D]`
+
+            ``return``:
+
+            :math:`N_0 \times \cdots \times [D]`
+
+            Where:
+                * :math:`N_0, \ldots` are the dimensions of the constrained tensor.
+                * :math:`D` is the number of times for each value to select.
+
+        Tip:
+            Mimicing the behavior of :py:func:`torch.gather`, if ``time`` is out of the
+            valid range, a :py:class:`ValueError` will be thrown. To avoid this, clamp
+            ``time`` like ``time.clamp(0, module.duration)``.
+        """
+        # get underlying data
+        data = self.get_constrained_record(name)
+
+        # apply offset to pointer
+        pointer = (self._pointers[name] - int(offset)) % self.recordsz
+
+        # tensor selector
+        if isinstance(time, torch.Tensor):
+            # cast values and test
+            time = time.to(device=data.device)
+            if not time.is_floating_point():
+                time = time.to(dtype=torch.float32)
+            _ = argtest.gte("time", time.amin(), -tolerance)
+            _ = argtest.lte(
+                "time", time.amax(), self.dt * (self.recordsz - 1) + tolerance
+            )
+
+            # check if the output should be squeezed
+            if time.ndim == data.ndim - 1:
+                squeeze = True
+                time = time.unsqueeze(-1)
+            elif time.ndim == data.ndim:
+                squeeze = False
+            else:
+                raise RuntimeError(
+                    f"'time' has incompatible number of dimensions {time.ndim}, "
+                    f"must have either {data.ndim} or {data.ndim - 1} dimensions"
+                )
+
+            # compute continuous index
+            index = time / self.dt
+            rindex = index.round()
+            index = torch.where(
+                (self.dt * rindex - time).abs() < tolerance, rindex, index
+            )
+
+            # access data by index and interpolate
+            prev_idx = (pointer - index.ceil().long()) % self.recordsz
+            prev_data = torch.gather(data, -1, prev_idx)
+
+            next_idx = (pointer - index.floor().long()) % self.recordsz
+            next_data = torch.gather(data, -1, next_idx)
+
+            res = interp(prev_data, next_data, self.dt * (index % 1), self.dt)
+
+            # bypass interpolation for exact indices
+            res = torch.where(prev_idx == next_idx, prev_data, res)
+
+            # conditionally squeeze
+            return res.squeeze(-1) if squeeze else res
+
+        # scalar selector
+        else:
+            # cast values and test
+            time = argtest.minmax_incl(
+                "time",
+                time,
+                -tolerance,
+                self.dt * (self.recordsz - 1) + tolerance,
+                float,
+            )
+
+            # compute continuous index
+            index = time / self.dt
+            rindex = round(index)
+            if abs(self.dt * rindex - time) < tolerance:
+                index = rindex
+
+            # integer index (no interpolation)
+            if isinstance(index, int):
+                return data[(pointer - index) % self.recordsz]
+
+            # float index (interpolation)
+            else:
+                return interp(
+                    data[..., (pointer - int(index + 1)) % self.recordsz].unsqueeze(-1),
+                    data[..., (pointer - int(index)) % self.recordsz].unsqueeze(-1),
+                    torch.full(
+                        (*data.shape[:-1], 1),
+                        self.dt * (index % 1),
+                        dtype=data.dtype,
+                        device=data.device,
+                    ),
+                    self.dt,
+                ).squeeze(-1)
 
 
 class Hook:
@@ -820,38 +1415,3 @@ class StateHook(Module, Hook, ABC):
                 self.hook(self.module)
             elif self.evalexec and not self.module.training:
                 self.hook(self.module)
-
-
-class Configuration(Mapping):
-    r"""Class which provides unpacking functionality when used in conjunction with the
-    attrs library.
-
-    When defining configuration classes which are to be wrapped by
-    :py:func:`attrs.define`, if this is subclassed, then it can be unpacked with ``**``.
-
-    .. automethod:: _asadict_
-    """
-
-    def _asadict_(self) -> dict[str, Any]:
-        r"""Controls how the fields of this class are convereted into a dictionary.
-
-        This will flatten any nested :py:class:`Configuration` objects using their own
-        :py:meth:`_asadict_` method. If there are naming conflicts, i.e. if a nested
-        configuration has a field with the same name, only one will be preserved.
-        This can be overridden to change its behavior.
-
-        Returns:
-            dict[str, Any]: dictionary of field names to the objects they represent.
-
-        Note:
-            This only packages those attributes which were registered via
-            :py:func:`attrs.field`.
-        """
-        d = []
-        for k in attrs.fields_dict(type(self)):
-            v = getattr(self, k)
-            if isinstance(v, Configuration):
-                d.extend(v._asadict_().items())
-            else:
-                d.append((k, v))
-        return dict(d)
