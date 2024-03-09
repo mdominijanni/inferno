@@ -39,7 +39,7 @@ class BatchMixin:
             )
 
         # register new constraint
-        self.reconstrain(dim=0, size=batch_size)
+        self.reconstrain(0, batch_size)
 
     @property
     def bsize(self) -> int:

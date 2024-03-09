@@ -260,13 +260,13 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         Returns:
             float: maximum supported delay.
         """
-        return self.hlen
+        return self.duration
 
     @delay.setter
     def delay(self, value: float) -> None:
-        hsize = self.hsize
-        self.hlen = value
-        if hsize != self.hsize:
+        recordsz = self.recordsz
+        self.duration = value
+        if recordsz != self.recordsz:
             self.clear()
 
     @property

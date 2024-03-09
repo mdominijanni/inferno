@@ -24,7 +24,7 @@ class EMAReducer(FoldingReducer):
     Args:
         alpha (float): exponential smoothing factor, :math:`\alpha`.
         step_time (float): length of time between observations, :math:`\Delta t`.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
@@ -37,10 +37,10 @@ class EMAReducer(FoldingReducer):
         alpha: float,
         step_time: float,
         *,
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
         # set state
         self.alpha, e = numeric_interval("alpha", alpha, 0, 1, "closed", float)

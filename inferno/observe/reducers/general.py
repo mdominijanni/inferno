@@ -12,7 +12,7 @@ class EventReducer(FoldingReducer):
         step_time (float): length of time between observation.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             matches for it to be considered an event.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as ``step_time``. Defaults to 0.0.
 
     Important:
@@ -24,10 +24,10 @@ class EventReducer(FoldingReducer):
         self,
         step_time: float,
         criterion: OneToOne[torch.Tensor],
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
         # set non-persistent function
         self.criterion = criterion
@@ -86,16 +86,16 @@ class PassthroughReducer(FoldingReducer):
 
     Args:
         step_time (float): length of time between observation.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as ``step_time``. Defaults to 0.0.
     """
     def __init__(
         self,
         step_time: float,
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of passthrough.

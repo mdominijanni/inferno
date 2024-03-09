@@ -269,7 +269,7 @@ def _synparam_at(
         transform = lambda x: x  # noqa: E731
 
     # undelayed access
-    if module.hsize == 1:
+    if module.recordsz == 1:
         # bounded selector for overbounding
         bounded_selector = 0
 
@@ -279,7 +279,7 @@ def _synparam_at(
     # delayed access
     else:
         # bound the selector
-        bounded_selector = selector.clamp(min=0, max=module.hlen)
+        bounded_selector = selector.clamp(min=0, max=module.duration)
 
         # select values using HistoryModule
         res = transform(

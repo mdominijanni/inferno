@@ -1,8 +1,8 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod
-import inferno
-from ... import HistoryModule
+from ... import HistoryModule, empty
+from ...core import interpolation
 from ...core.types import OneToOne
+from abc import ABC, abstractmethod
 import torch
 from typing import Callable
 
@@ -10,8 +10,8 @@ from typing import Callable
 class Reducer(HistoryModule, ABC):
     r"""Abstract base class for the recording of inputs over time."""
 
-    def __init__(self, step_time, history_len):
-        HistoryModule.__init__(self, step_time, history_len)
+    def __init__(self, step_time, duration):
+        HistoryModule.__init__(self, step_time, duration)
 
     @abstractmethod
     def clear(self, **kwargs) -> None:
@@ -69,10 +69,10 @@ class FoldReducer(Reducer):
             between the new input (left) and current state (right),
             returning the new state.
         step_time (float): length of time between observations.
-        history_len (float): length of time for which observations should be stored.
-        interpolation (inferno.Interpolation, optional): interpolation function to use
-            when retrieving data between observations.
-            Defaults to :py:func:`inferno.interp_nearest`.
+        duration (float): length of time for which observations should be stored.
+        interp (interpolation.Interpolation, optional): interpolation function
+            to use when retrieving data between observations.
+            Defaults to :py:func:`interpolation.nearest`.
         initializer (OneToOne[torch.Tensor] | None, optional): function to set the
             initial state, zeroes when None. Defaults to None.
 
@@ -90,17 +90,17 @@ class FoldReducer(Reducer):
         self,
         fold_fn: Callable[[torch.Tensor | None, torch.Tensor], torch.Tensor],
         step_time: float,
-        history_len: float,
+        duration: float,
         *,
-        interpolation: inferno.Interpolation = inferno.interp_nearest,
+        interp: interpolation.Interpolation = interpolation.nearest,
         initializer: OneToOne[torch.Tensor] | None = None,
     ):
         # call superclass constructor
-        Reducer.__init__(self, step_time, history_len)
+        Reducer.__init__(self, step_time, duration)
 
         # set non-persistant functions
         self.fold_ = fold_fn
-        self.interpolate_ = interpolation
+        self.interpolate_ = interp
         self.initialize_ = initializer if initializer else lambda x: x.fill_(0)
 
         # register data buffer and helpers
@@ -113,7 +113,7 @@ class FoldReducer(Reducer):
         r"""Length of the simulation time step, in milliseconds.
 
         Args:
-            value (torch.Tensor): new data storage tensor.
+                value (torch.Tensor): new data storage tensor.
 
         Returns:
             torch.Tensor: data storage tensor.
@@ -152,7 +152,7 @@ class FoldReducer(Reducer):
             Altering this property will reset the reducer.
 
         Note:
-            In the same units as :py:attr:`self.hlen`.
+            In the same units as :py:attr:`self.duration`.
         """
         return Reducer.dt.fget(self)
 
@@ -162,7 +162,7 @@ class FoldReducer(Reducer):
         self.clear(keepshape=True)
 
     @property
-    def hlen(self) -> float:
+    def duration(self) -> float:
         r"""Length of time over which prior values are stored.
 
         Args:
@@ -177,11 +177,11 @@ class FoldReducer(Reducer):
         Note:
             In the same units as :py:attr:`self.dt`.
         """
-        return Reducer.hlen.fget(self)
+        return Reducer.duration.fget(self)
 
-    @hlen.setter
-    def hlen(self, value: float):
-        Reducer.hlen.fset(self, value)
+    @duration.setter
+    def duration(self, value: float):
+        Reducer.duration.fset(self, value)
         self.clear(keepshape=True)
 
     def clear(self, keepshape=False, **kwargs) -> None:
@@ -196,7 +196,7 @@ class FoldReducer(Reducer):
             self.data = self.initialize_(self.data)
         else:
             self.deregister_constrained("_data")
-            self._data = inferno.empty(self.data, shape=(0,))
+            self._data = empty(self.data, shape=(0,))
             self.register_constrained("_data")
         self._initial = True
 
@@ -294,7 +294,7 @@ class FoldReducer(Reducer):
         """
         # initialize data iff uninitialized
         if self.data.numel() == 0:
-            self._data = inferno.empty(self._data, shape=(*inputs.shape, self.hsize))
+            self._data = empty(self._data, shape=(*inputs.shape, self.recordsz))
             self.data = self.initialize_(self.data)
 
         # integrate inputs
@@ -310,16 +310,16 @@ class FoldingReducer(FoldReducer, ABC):
 
     Args:
         step_time (float): length of time between observations.
-        history_len (float): length of time for which observations should be stored.
+        duration (float): length of time for which observations should be stored.
     """
 
-    def __init__(self, step_time: float, history_len: float):
+    def __init__(self, step_time: float, duration: float):
         FoldReducer.__init__(
             self,
             fold_fn=self.fold,
             step_time=step_time,
-            history_len=history_len,
-            interpolation=self.interpolate,
+            duration=duration,
+            interp=self.interpolate,
             initializer=self.initialize,
         )
 

@@ -33,7 +33,7 @@ class NearestTraceReducer(FoldingReducer):
             if an input is a match, :math:`f^*`.
         tolerance (int | float | None, optional): allowable absolute difference to
             still count as a match, :math:`\epsilon`. Defaults to None.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
     """
 
@@ -45,10 +45,10 @@ class NearestTraceReducer(FoldingReducer):
         target: int | float | bool | complex,
         tolerance: int | float | None = None,
         *,
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
         # reducer attributes
         self.time_constant, e = numeric_limit(
@@ -165,7 +165,7 @@ class CumulativeTraceReducer(FoldingReducer):
             if an input is a match, :math:`f^*`.
         tolerance (int | float | None, optional): allowable absolute difference to
             still count as a match, :math:`\epsilon`. Defaults to None.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
     """
 
@@ -177,10 +177,10 @@ class CumulativeTraceReducer(FoldingReducer):
         target: int | float | bool | complex,
         tolerance: int | float | None = None,
         *,
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
         # reducer attributes
         self.time_constant, e = numeric_limit(
@@ -297,7 +297,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
             :math:`S`.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             a match for the purpose of tracing, :math:`K`.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
@@ -313,10 +313,10 @@ class ScaledNearestTraceReducer(FoldingReducer):
         scale: int | float | complex,
         criterion: OneToOne[torch.Tensor],
         *,
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
         # reducer attributes
         self.time_constant, e = numeric_limit(
@@ -424,7 +424,7 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
             :math:`S`.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             a match for the purpose of tracing, :math:`K`.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
@@ -440,10 +440,10 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         scale: int | float | complex,
         criterion: OneToOne[torch.Tensor],
         *,
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
         # register state
         self.time_constant, e = numeric_limit(
