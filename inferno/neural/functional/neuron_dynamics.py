@@ -1,5 +1,5 @@
 import inferno
-from inferno.infernotypes import OneToOne
+from ...core.types import OneToOne
 import torch
 
 

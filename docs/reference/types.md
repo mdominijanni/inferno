@@ -1,7 +1,7 @@
-# inferno.infernotypes
+# inferno.types
 
 ```{eval-rst}
-.. currentmodule:: inferno.infernotypes
+.. currentmodule:: inferno.types
 ```
 
 ## Callable Types

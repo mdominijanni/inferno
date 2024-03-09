@@ -8,7 +8,8 @@ neural
 neural-functional
 learn
 observe
-infernotypes
 bounding
+interpolation
 stats
+types
 ```

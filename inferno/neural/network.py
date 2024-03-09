@@ -4,7 +4,7 @@ from .modeling import Updater
 from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
 from .. import Module
 from .._internal import get, Proxy
-from ..infernotypes import OneToOne
+from ..core.types import OneToOne
 from abc import ABC, abstractmethod
 from collections.abc import Iterator, Iterable, Mapping
 import einops as ein

@@ -12,8 +12,7 @@
 
     Module
     DimensionalModule
-    HistoryModule
-    Configuration
+    RecordModule
     Hook
     StateHook
 ```
@@ -28,20 +27,9 @@
     sqrt
     normalize
     rescale
-    simple_exponential_smoothing
+    exponential_smoothing
     holt_linear_smoothing
-```
-
-## Spike Trace
-```{eval-rst}
-.. autosummary::
-    :nosignatures:
-    :toctree: generated
-
-    trace_nearest
-    trace_cumulative
-    trace_nearest_scaled
-    trace_cumulative_scaled
+    isi
 ```
 
 ## Tensors
@@ -60,15 +48,14 @@
     astensors
 ```
 
-## Interpolation
+## Spike Trace
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
     :toctree: generated
 
-    Interpolation
-    interp_previous
-    interp_nearest
-    interp_linear
-    interp_exp_decay
+    trace_nearest
+    trace_cumulative
+    trace_nearest_scaled
+    trace_cumulative_scaled
 ```

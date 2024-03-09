@@ -7,7 +7,7 @@ from ... import (
     trace_nearest_scaled,
     trace_cumulative_scaled,
 )
-from inferno.infernotypes import OneToOne
+from ...core.types import OneToOne
 import math
 import torch
 

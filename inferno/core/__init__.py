@@ -1,5 +1,14 @@
 from . import bounding
 from . import interpolation
+from . import types
+
+from .infrastructure import (
+    Module,
+    DimensionalModule,
+    RecordModule,
+    Hook,
+    StateHook,
+)
 
 from .math import (
     exp,
@@ -33,6 +42,13 @@ __all__ = [
     # submodules
     "bounding",
     "interpolation",
+    "types",
+    # infrastructure
+    "Module",
+    "DimensionalModule",
+    "RecordModule",
+    "Hook",
+    "StateHook",
     # math
     "exp",
     "sqrt",
