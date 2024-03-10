@@ -124,7 +124,7 @@ class Monitor(Module, Hook):
         """
         return self.reducer_
 
-    def register(self, module: Module | None = None):
+    def register(self, module: Module | None = None) -> None:
         r"""Registers the monitor as a forward hook/prehook.
 
         Args:
@@ -135,28 +135,26 @@ class Monitor(Module, Hook):
             RuntimeError: weak reference to the last referenced module is no longer
                 valid or did not exist.
         """
-        # get module from weakref if required
-        if not module:
-            # don't duplicate register call if module is unspecified
-            if not self.registered:
-                if self._observed and self._observed():
-                    module = self._observed()
-                else:
-                    raise RuntimeError(
-                        "weak reference to monitored module does not exist, "
-                        "cannot infer argument 'module'"
-                    )
-            else:
-                Hook.register(self, module)
-
-        # new module is given
-        else:
+        # module from function arguments
+        if module:
             try:
                 Hook.register(self, module)
             except RuntimeWarning as w:
                 warnings.warn(str(w), type(w))
             else:
                 self._observed = weakref.ref(module)
+
+        # module from weakref and is unregistered
+        elif not self.registered:
+            # try to get the referenced module
+            if self._observed and self._observed():
+                module = self._observed()
+                Hook.register(self, module)
+            else:
+                raise RuntimeError(
+                    "weak reference to monitored module does not exist, "
+                    "cannot infer argument 'module'"
+                )
 
 
 class InputMonitor(Monitor):

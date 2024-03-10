@@ -21,11 +21,6 @@ class Module(nn.Module):
     similar to regular tensor state (e.g. buffers and parameters). This enables simple
     export to and import from a state dictionary.
 
-    Unlike PyTorch's native :py:class:`~torch.nn.Module`, the overrides for
-    :py:meth:`__getattr__`, :py:meth:`__setattr__`, and :py:meth:`__delattr__` will
-    check if an attribute is a property on the class and if it is, will use the base
-    :py:class:`object` methods.
-
     Note:
         Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made
         to the parent class before assignment on the child. This class's constructor
@@ -129,15 +124,12 @@ class Module(nn.Module):
         return super().__setstate__(state)
 
     def __getattr__(self, name: str) -> Any:
-        if isinstance(getattr(type(self), name, None), property):
-            return object.__getattr__(self, name)
-        else:
-            if "_extras" in self.__dict__:
-                _extras = self.__dict__["_extras"]
-                if name in _extras:
-                    return _extras[name]
+        if "_extras" in self.__dict__:
+            _extras = self.__dict__["_extras"]
+            if name in _extras:
+                return _extras[name]
 
-            return super().__getattr__(name)
+        return super().__getattr__(name)
 
     def __setattr__(self, name: str, value: Any) -> None:
         if isinstance(getattr(type(self), name, None), property):
@@ -201,20 +193,22 @@ class DimensionalModule(Module):
             dimensions), or have no elements (i.e. have a zero-dimension) are
             automatically ignored.
         """
+        # setter-dependent attribute
+        Module.__setattr__(self, "_live_assert", live)
+
         # call superclass constructor
         Module.__init__(self)
 
         # transient state
-        self.__constraints = dict()
-        self.__live_assert = live
+        self._constraints = dict()
 
         # persistent state
         self.register_extra("_constrained_buffers", set())
         self.register_extra("_constrained_params", set())
 
         # cached values
-        self.__constraint_cache = cache(self.__calc_constraints)
-        self.__extra_repr_cache = cache(self.__calc_extra_repr)
+        self._constraint_cache = cache(self._calc_constraints)
+        self._extra_repr_cache = cache(self._calc_extra_repr)
 
         # check for consistent constraints
         for d, s in constraints:
@@ -224,12 +218,12 @@ class DimensionalModule(Module):
                     f"constraint {(d, s)} specifies an invalid (nonpositive) "
                     "number of elements"
                 )
-            if dim in self.__constraints:
+            if dim in self._constraints:
                 raise RuntimeError(
                     f"constraint {(dim, size)} conflicts with constraint "
-                    f"{(dim, self.__constraints[dim])}."
+                    f"{(dim, self._constraints[dim])}."
                 )
-            self.__constraints[dim] = size
+            self._constraints[dim] = size
 
     @staticmethod
     def _ignore_tensor(tensor: torch.Tensor | nn.Parameter | None) -> bool:
@@ -244,13 +238,17 @@ class DimensionalModule(Module):
         return tensor is None or not tensor.ndim or not tensor.numel()
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if self.live and name in self._constrained and isinstance(value, torch.Tensor):
+        if (
+            self.liveconstrain
+            and (name in self._constrained_buffers or name in self._constrained_params)
+            and isinstance(value, torch.Tensor)
+        ):
             if self._ignore_tensor(value) or self.compatible(value):
                 super().__setattr__(name, value)
             else:
                 raise RuntimeError(
                     f"tensor of shape {tuple(value.shape)} being assigned to '{name}' "
-                    f"is not compatible with constraints ({self.__extra_repr_cache()})"
+                    f"is not compatible with constraints ({self._extra_repr_cache()})"
                 )
         else:
             super().__setattr__(name, value)
@@ -366,7 +364,7 @@ class DimensionalModule(Module):
         Returns:
             dict[int, int]: active constraints, represented as a dictionary.
         """
-        return self.__constraint_cache()
+        return self._constraint_cache()
 
     @property
     def dims(self) -> int:
@@ -375,10 +373,10 @@ class DimensionalModule(Module):
         Returns:
             int: minimum required number of dimensions.
         """
-        return self.dims_(self.__constraints)
+        return self.dims_(self._constraints)
 
     @property
-    def live(self) -> bool:
+    def liveconstrain(self) -> bool:
         r"""If constraints should be enforced on attribute assignment.
 
         Args:
@@ -387,33 +385,34 @@ class DimensionalModule(Module):
         Returns:
             bool: if constraints should be enforced on attribute assignment.
         """
-        return self.__live_assert
+        return self._live_assert
 
-    @live.setter
-    def live(self, value: bool) -> None:
-        self.__live_assert = bool(value)
+    @liveconstrain.setter
+    def liveconstrain(self, value: bool) -> None:
+        self._live_assert = bool(value)
 
     def extra_repr(self) -> str:
         return "\n".join(
             (
-                f"constraints=({self.__extra_repr_cache()})",
-                f"constrained=({','.join(self._constrained)})",
+                f"constraints=({self._extra_repr_cache()})",
+                f"constrained_buffers=({','.join(self._constrained_buffers)})",
+                f"constrained_parameters=({','.join(self._constrained_params)})",
             )
         )
 
-    def __calc_constraints(self) -> dict[int, int]:
+    def _calc_constraints(self) -> dict[int, int]:
         r"""Calculates sorted constraints for the cache.
 
         Returns:
             dict[int, int]: active constraints, represented as a dictionary.
         """
         fwd, rev = [], []
-        for dim, size in sorted(self.__constraints.items()):
+        for dim, size in sorted(self._constraints.items()):
             rev.append((dim, size)) if dim < 0 else fwd.append((dim, size))
 
         return dict(fwd + rev)
 
-    def __calc_extra_repr(self) -> str:
+    def _calc_extra_repr(self) -> str:
         r"""Calculates the extra representation layout of constraints.
 
         Returns:
@@ -421,7 +420,7 @@ class DimensionalModule(Module):
         """
         # split constraints into forward and reverse (negative) indices, sorted
         fwd, rev = [], []
-        for dim, size in sorted(self.__constraints.items()):
+        for dim, size in sorted(self._constraints.items()):
             rev.append((dim, size)) if dim < 0 else fwd.append((dim, size))
 
         # representation elements
@@ -499,7 +498,7 @@ class DimensionalModule(Module):
         Returns:
             bool: if the tensor is compatible.
         """
-        return self.compatible_(tensor, self.__constraints)
+        return self.compatible_(tensor, self._constraints)
 
     def compatible_like(
         self,
@@ -514,7 +513,7 @@ class DimensionalModule(Module):
             torch.Tensor | nn.Parameter | tuple[int, ...]: new tensor or parameter like
             the input, or the new compatible shape if not given a tensor.
         """
-        return self.compatible_like_(value, **self.__constraints)
+        return self.compatible_like_(value, self._constraints)
 
     def reconstrain(self, dim: int, size: int | None) -> DimensionalModule:
         r"""Modifies constraints.
@@ -524,7 +523,7 @@ class DimensionalModule(Module):
         dimension modified.
 
         If the tensor was modified to be compatible with the new constraint ahead
-        of time (i.e. if :py:attr:`live` is ``False`` and was set with its new value),
+        of time (i.e. if :py:attr:`liveconstrain` is ``False`` and was set with its new value),
         then reallocation will not occur.
 
         Args:
@@ -542,8 +541,8 @@ class DimensionalModule(Module):
             DimensionalModule: self.
         """
         # clear cached values
-        self.__constraint_cache.cache_clear()
-        self.__extra_repr_cache.cache_clear()
+        self._constraint_cache.cache_clear()
+        self._extra_repr_cache.cache_clear()
 
         # remove deleted buffers and parameters from constrained set
         self._trim_constrained()
@@ -553,9 +552,9 @@ class DimensionalModule(Module):
         size = None if size is None else argtest.gt("size", size, 0, int)
 
         # removes constraint
-        if dim in self.__constraints and not size:
+        if dim in self._constraints and not size:
             # removes constraint
-            del self.__constraints[dim]
+            del self._constraints[dim]
 
             # tests if constrained buffers and parameters are still valid
             self._test_constrained()
@@ -564,12 +563,12 @@ class DimensionalModule(Module):
             return self
 
         # creates constraint
-        if dim not in self.__constraints and size:
+        if dim not in self._constraints and size:
             # ensures constrained values are still valid
             self._test_constrained()
 
             # tests if buffers and parameters will be valid with new constraints
-            cns = {**self.__constraints, dim: size}
+            cns = {**self._constraints, dim: size}
 
             for name, b in map(
                 lambda n: (n, self.get_buffer(n)), self._constrained_buffers
@@ -590,13 +589,13 @@ class DimensionalModule(Module):
                     )
 
             # adds constraint
-            self.__constraints[dim] = size
+            self._constraints[dim] = size
 
             # returns self
             return self
 
         # alters constraint
-        if dim in self.__constraints and size:
+        if dim in self._constraints and size:
             # check that all tensors have minimum required dimensionality
             ndim = self.dims
 
@@ -619,7 +618,7 @@ class DimensionalModule(Module):
                     )
 
             # edit constraint
-            self.__constraints[dim] = size
+            self._constraints[dim] = size
 
             # reassign incompatible parameters
             for name, value in chain(
@@ -657,7 +656,7 @@ class DimensionalModule(Module):
             if not self._ignore_tensor(b) and not self.compatible(b):
                 raise RuntimeError(
                     f"buffer '{name}' has shape of {tuple(b.shape)} "
-                    f"incompatible with constrained shape ({self.__extra_repr_cache()}), "
+                    f"incompatible with constrained shape ({self._extra_repr_cache()}), "
                     f"dimensions must match and '{name}' must have at least "
                     f"{self.dims} dimensions"
                 )
@@ -674,7 +673,7 @@ class DimensionalModule(Module):
             if not self._ignore_tensor(p) and not self.compatible(p):
                 raise RuntimeError(
                     f"parameter '{name}' has shape of {tuple(p.shape)} "
-                    f"incompatible with constrained shape ({self.__extra_repr_cache()}), "
+                    f"incompatible with constrained shape ({self._extra_repr_cache()}), "
                     f"dimensions must match and '{name}' must have at least "
                     f"{self.dims} dimensions"
                 )
@@ -760,8 +759,8 @@ class RecordModule(DimensionalModule):
         DimensionalModule.__init__(self, (-1, size))
 
         # transient state
-        self.__step_time = step_time
-        self.__duration = duration
+        self._step_time = step_time
+        self._duration = duration
 
         # persistent state
         self.register_extra("_pointers", dict())
@@ -782,7 +781,7 @@ class RecordModule(DimensionalModule):
             If a :py:meth:`reconstrain` operation needs to be performed, all state will
             be overwritten with zeros.
         """
-        return self.__step_time
+        return self._step_time
 
     @dt.setter
     def dt(self, value: float) -> None:
@@ -790,14 +789,14 @@ class RecordModule(DimensionalModule):
         value = argtest.gt("value", value, 0, float)
 
         # recompute size of the history dimension
-        size = math.ceil(self.__duration / value) + 1
+        size = math.ceil(self._duration / value) + 1
 
         # reconstrain if required
         if size != self.self.recordsz:
             DimensionalModule.reconstrain(self, -1, size)
 
         # set revised step time
-        self.__step_time = value
+        self._step_time = value
 
     @property
     def duration(self) -> float:
@@ -815,7 +814,7 @@ class RecordModule(DimensionalModule):
             If a :py:meth:`reconstrain` operation needs to be performed, all state will
             be overwritten with zeros.
         """
-        return self.__duration
+        return self._duration
 
     @duration.setter
     def duration(self, value: float) -> None:
@@ -823,14 +822,14 @@ class RecordModule(DimensionalModule):
         value = argtest.gte("value", value, 0, float)
 
         # recompute size of the history dimension
-        size = math.ceil(value / self.__step_time) + 1
+        size = math.ceil(value / self._step_time) + 1
 
         # reconstrain if required
         if size != self.recordsz:
             DimensionalModule.reconstrain(self, -1, size)
 
         # set revised history length
-        self.__duration = value
+        self._duration = value
 
     @property
     def recordsz(self) -> int:
@@ -912,7 +911,7 @@ class RecordModule(DimensionalModule):
         dimension modified.
 
         If the tensor was modified to be compatible with the new constraint ahead
-        of time (i.e. if :py:attr:`live` is ``False`` and was set with its new value),
+        of time (i.e. if :py:attr:`liveconstrain` is ``False`` and was set with its new value),
         then reallocation will not occur.
 
         Args:
@@ -935,7 +934,16 @@ class RecordModule(DimensionalModule):
                 "dimension (-1)"
             )
         else:
-            return RecordModule.reconstrain(self, dim, size)
+            return DimensionalModule.reconstrain(self, dim, size)
+
+    def reset(self, name: str, data: Any) -> None:
+        r"""Resets a constrained attribute to some value or values.
+
+        Args:
+            name (str): name of the attribute to target.
+            data (Any): data to insert.
+        """
+        self._get_constrained_record(name)[:] = data
 
     def latest(self, name: str, offset: int = 1) -> torch.Tensor:
         r"""Retrieves the most recent slice of a constrained attribute.
@@ -1288,7 +1296,7 @@ class Hook:
         Returns:
             bool: if a module to which this hook is registred.
         """
-        return self.__prehook_handle or self.__posthook_handle
+        return self.__prehook_handle is not None or self.__posthook_handle is not None
 
     def register(self, module: nn.Module) -> None:
         r"""Registers the hook as a forward hook and/or prehook.
@@ -1319,6 +1327,7 @@ class Hook:
                     self.__posthook, **self.__posthook_kwargs
                 )
         else:
+            raise RuntimeError()
             warnings.warn(
                 f"this {type(self).__name__} is already registered to a module "
                 "so new `register()` was ignored",

@@ -215,21 +215,21 @@ class Accumulator(Module):
 
         # ltp and ltd
         if pos is not None and neg is not None:
-            if isinstance(self.bind, tuple):
+            if isinstance(self.bind, list):
                 return self.bind[0](param, pos) - self.bind[1](param, neg)
             else:
                 return self.bind(param, pos, neg)
 
         # ltp only
         elif pos is not None:
-            if isinstance(self.bind, tuple):
+            if isinstance(self.bind, list):
                 return self.bind[0](param, pos)
             else:
                 return self.bind(param, pos, torch.zeros_like(pos))
 
         # ltd only
         elif neg is not None:
-            if isinstance(self.bind, tuple):
+            if isinstance(self.bind, list):
                 return -self.bind[1](param, neg)
             else:
                 return self.bind(param, torch.zeros_like(neg), neg)

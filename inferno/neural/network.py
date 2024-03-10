@@ -651,18 +651,23 @@ class Layer(Module, ABC):
 
         # get connection outputs
         res = {
-            k: rgetattr(self.connection_, k)(*v, **ckw.get(k, {})) for k, v in inputs
+            k: rgetattr(self.connections_, k)(*v, **ckw.get(k, {}))
+            for k, v in inputs.items()
         }
 
         if capture_intermediate:
             outputs = self.wiring(res, **kwargs)
             outputs = {
-                k: rgetattr(self.neurons_, k)(v, **nkw.get(k, {})) for k, v in outputs
+                k: rgetattr(self.neurons_, k)(v, **nkw.get(k, {}))
+                for k, v in outputs.items()
             }
             return (outputs, res)
         else:
             res = self.wiring(res, **kwargs)
-            res = {k: rgetattr(self.neurons_, k)(v, **nkw.get(k, {})) for k, v in res}
+            res = {
+                k: rgetattr(self.neurons_, k)(v, **nkw.get(k, {}))
+                for k, v in res.items()
+            }
             return res
 
 
@@ -831,7 +836,7 @@ class Biclique(Layer):
                     {k: self.post_input[k](v) for k, v in inputs.items()}, **kwargs
                 )
             )
-            for k, v in self.pre_output
+            for k, v in self.pre_output.items()
         }
 
 
@@ -1006,7 +1011,7 @@ class Serial(Layer):
         # call parent forward
         res = Layer.forward(
             self,
-            {"main": inputs},
+            {self._serial_connection_name: inputs},
             connection_kwargs=ckw,
             neuron_kwargs=nkw,
             capture_intermediate=capture_intermediate,
