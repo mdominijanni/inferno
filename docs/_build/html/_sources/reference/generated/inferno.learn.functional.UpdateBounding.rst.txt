@@ -1,8 +1,0 @@
-﻿UpdateBounding
-==============
-
-.. currentmodule:: inferno.learn.functional
-
-.. autoclass:: UpdateBounding
-    :members:
-    :show-inheritance:

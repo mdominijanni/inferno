@@ -1,8 +1,8 @@
-﻿HalfBounding
-============
+﻿bounding.HalfBounding
+=====================
 
-.. currentmodule:: inferno.bounding
+.. currentmodule:: inferno
 
-.. autoclass:: HalfBounding
+.. autoclass:: bounding.HalfBounding
     :members:
     :show-inheritance:

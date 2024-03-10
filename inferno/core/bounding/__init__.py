@@ -1,7 +1,10 @@
-from .bounding import (
+from .types import (
     # types
     HalfBounding,
     FullBounding,
+)
+
+from .functions import (
     # power half bounding
     upper_power,
     lower_power,

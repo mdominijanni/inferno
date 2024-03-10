@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="inferno.learn.functional" href="../learn-functional.html" /><link rel="prev" title="HardWeightDependence" href="inferno.learn.HardWeightDependence.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="inferno.observe" href="../observe.html" /><link rel="prev" title="STDP" href="inferno.learn.STDP.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>MaxRateClassifier - Inferno</title>
@@ -163,10 +163,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -225,7 +222,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.learn.MaxRateClassifier">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MaxRateClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proportional</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/learn/classifiers/simple.html#MaxRateClassifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.MaxRateClassifier" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.core.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
 <p>Classifies spikes by maximum per-class rates.</p>
 <p>The classifier uses an internal parameter <a class="reference internal" href="#inferno.learn.MaxRateClassifier.rates" title="inferno.learn.MaxRateClassifier.rates"><code class="xref py py-attr docutils literal notranslate"><span class="pre">rates</span></code></a> for other
 calculations. When learning, the existing rates are decayed, multiplying them by
@@ -536,23 +533,23 @@ for each neuron, per class.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../learn-functional.html">
+          <a class="next-page" href="../observe.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">inferno.learn.functional</div>
+                <div class="title">inferno.observe</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.learn.HardWeightDependence.html">
+          <a class="prev-page" href="inferno.learn.STDP.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">HardWeightDependence</div>
+                <div class="title">STDP</div>
                 
               </div>
             </a>

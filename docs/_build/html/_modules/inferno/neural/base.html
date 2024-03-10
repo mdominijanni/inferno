@@ -162,10 +162,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -221,7 +218,8 @@
           <h1>Source code for inferno.neural.base</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">DimensionalModule</span><span class="p">,</span> <span class="n">HistoryModule</span><span class="p">,</span> <span class="n">Module</span>
+<span class="kn">from</span> <span class="nn">.modeling</span> <span class="kn">import</span> <span class="n">Updatable</span><span class="p">,</span> <span class="n">Updater</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">DimensionalModule</span><span class="p">,</span> <span class="n">RecordModule</span><span class="p">,</span> <span class="n">Module</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -434,7 +432,7 @@
 
 <div class="viewcode-block" id="Synapse">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse">[docs]</a>
-<span class="k">class</span> <span class="nc">Synapse</span><span class="p">(</span><span class="n">ShapeMixin</span><span class="p">,</span> <span class="n">HistoryModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Synapse</span><span class="p">(</span><span class="n">ShapeMixin</span><span class="p">,</span> <span class="n">RecordModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing the input synapses for a connection.</span>
 
 <span class="sd">    Args:</span>
@@ -453,7 +451,7 @@
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># superclass constructors</span>
-        <span class="n">HistoryModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
+        <span class="n">RecordModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
         <span class="n">ShapeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Synapse.partialconstructor">
@@ -486,11 +484,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            float: present simulation time step length.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">HistoryModule</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">RecordModule</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="n">HistoryModule</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">RecordModule</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
     <span class="nd">@property</span>
@@ -500,13 +498,13 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            float: maximum supported delay.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hlen</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span>
 
     <span class="nd">@delay</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">hsize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hsize</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hlen</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="k">if</span> <span class="n">hsize</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hsize</span><span class="p">:</span>
+        <span class="n">recordsz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">recordsz</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
     <span class="nd">@property</span>
@@ -641,7 +639,7 @@
 
 <div class="viewcode-block" id="Connection">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection">[docs]</a>
-<span class="k">class</span> <span class="nc">Connection</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Connection</span><span class="p">(</span><span class="n">Updatable</span><span class="p">,</span> <span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing a weighted connection between two groups of neurons.</span>
 
 <span class="sd">    Args:</span>
@@ -652,8 +650,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">synapse</span><span class="p">:</span> <span class="n">Synapse</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="c1"># superclass constructor</span>
+        <span class="c1"># superclass constructors</span>
         <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">Updatable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># register submodule</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="s2">&quot;synapse_&quot;</span><span class="p">,</span> <span class="n">synapse</span><span class="p">)</span>
@@ -753,7 +752,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of inputs to the connection.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">binshape</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">inshape</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">boutshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
@@ -946,10 +945,11 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets the state of the connection.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This calls the method :py:meth:`Synapse.clear` on :py:attr:`synapse`,</span>
-<span class="sd">            assuming the connection itself has no clearable state. Keyword arguments</span>
-<span class="sd">            are passed through.</span>
+<span class="sd">            This calls the method :py:meth:`Synapse.clear` on :py:attr:`synapse` and</span>
+<span class="sd">            :py:meth:`Updater.clear` on :py:attr`updater`, assuming the connection</span>
+<span class="sd">            itself has no clearable state. Keyword arguments are passed through.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Updatable</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
@@ -1087,6 +1087,49 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Connection) must implement &quot;</span>
             <span class="s2">&quot;the method `presyn_receptive`.&quot;</span>
         <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Connection.setupdater">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.setupdater">[docs]</a>
+    <span class="k">def</span> <span class="nf">setupdater</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">includes</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">exclude_weight</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">exclude_bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">exclude_delay</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Updater</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the updater for this connection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *includes (str): additional instance-specific parameters to include.</span>
+<span class="sd">            exclude_weight (bool, optional): if weight should not be an updatable</span>
+<span class="sd">                parameter. Defaults to False.</span>
+<span class="sd">            exclude_bias (bool, optional): if bias should not be an updatable</span>
+<span class="sd">                parameter. Defaults to False.</span>
+<span class="sd">            exclude_delay (bool, optional): if delay should not be an updatable</span>
+<span class="sd">                parameter. Defaults to False.</span>
+
+<span class="sd">        This will set and return an :py:class:`Updater` with the following trainable</span>
+<span class="sd">        parameters:</span>
+
+<span class="sd">        * ``weight``</span>
+<span class="sd">        * ``bias``, if :py:attr:`biased` is ``True``</span>
+<span class="sd">        * ``delay``, if :py:attr:`delayedby` is not ``None``</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Updater: newly set updater.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># determine updatable parameters</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exclude_weight</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">biased</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">exclude_bias</span><span class="p">:</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;bias&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">exclude_delay</span><span class="p">:</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;delay&quot;</span><span class="p">)</span>
+
+        <span class="c1"># create, set, and return the updater</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updater_</span> <span class="o">=</span> <span class="n">Updater</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">params</span><span class="p">,</span> <span class="o">*</span><span class="n">includes</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">updater_</span></div>
 
 
 <div class="viewcode-block" id="Connection.forward">

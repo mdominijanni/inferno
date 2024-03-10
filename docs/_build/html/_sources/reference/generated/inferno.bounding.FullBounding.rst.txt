@@ -1,0 +1,8 @@
+﻿bounding.FullBounding
+=====================
+
+.. currentmodule:: inferno
+
+.. autoclass:: bounding.FullBounding
+    :members:
+    :show-inheritance:

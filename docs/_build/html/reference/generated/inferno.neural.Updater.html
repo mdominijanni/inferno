@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Neuron" href="inferno.neural.Neuron.html" /><link rel="prev" title="Trainable" href="inferno.neural.Trainable.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Updatable" href="inferno.neural.Updatable.html" /><link rel="prev" title="Cell" href="inferno.neural.Cell.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>Updater - Inferno</title>
@@ -163,10 +163,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -224,500 +221,75 @@
 <h1>Updater<a class="headerlink" href="#updater" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.neural.Updater">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Updater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.base.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay_reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
-<p>Wraps a connection for updates and on-update hooks.</p>
-<p>This encloses a connection object and provides some top-level properties, for others
-the enclosed connection can be called through <a class="reference internal" href="#inferno.neural.Updater.connection" title="inferno.neural.Updater.connection"><code class="xref py py-attr docutils literal notranslate"><span class="pre">connection</span></code></a>.</p>
-<p>Specifically, this is used to accumulate multiple updates through different
-trainers, perform any additional logic on the updates, the apply them. It also
-allows for hooks like <a class="reference internal" href="inferno.neural.Normalization.html#inferno.neural.Normalization" title="inferno.neural.Normalization"><code class="xref py py-class docutils literal notranslate"><span class="pre">Normalization</span></code></a> and <a class="reference internal" href="inferno.neural.Clamping.html#inferno.neural.Clamping" title="inferno.neural.Clamping"><code class="xref py py-class docutils literal notranslate"><span class="pre">Clamping</span></code></a> to be
-tied to updates rather than inference steps.</p>
-<p>Updaters should call the <code class="xref py py-meth docutils literal notranslate"><span class="pre">update_weight()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">update_bias()</span></code>, and
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">update_delay()</span></code> functions to add their own updates. Hooks which target
-updates (such as bounding hooks) should target the properties ending in <code class="docutils literal notranslate"><span class="pre">_update</span></code>.
-Once these are altered, no more updates can be accumulated until after the next call.</p>
-<p>The arguments ending in <code class="docutils literal notranslate"><span class="pre">_reduction</span></code> should have a signature as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reduction</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
-</pre></div>
-</div>
-<p>and examples include <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.mean.html#torch.mean" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.mean()</span></code></a>, <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.sum.html#torch.sum" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.sum()</span></code></a>,
-:py:func`torch.amin`, and :py:func`torch.amax`.</p>
-<p>The reduced potentiative updates are added to the value and the depressive updates
-are subtracted from the value.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>connection</strong> (<a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><em>Connection</em></a>) – wrapped connection.</p>
-</dd>
-<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>weight_reduction</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><em>None</em></a><em>, </em><em>optional</em>) – function to reduce weights from multiple trainers. Defaults to None.</p></li>
-<li><p><strong>bias_reduction</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><em>None</em></a><em>, </em><em>optional</em>) – function to reduce biases from multiple trainers. Defaults to None.</p></li>
-<li><p><strong>delay_reduction</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><em>None</em></a><em>, </em><em>optional</em>) – function to reduce delays from multiple trainers. Defaults to None.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.bias_bounding">
-<span class="sig-name descname"><span class="pre">bias_bounding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FullBounding</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.bias_bounding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.bias_bounding" title="Link to this definition">#</a></dt>
-<dd><p>Adds full bounding to biases.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Updater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Updatable.html#inferno.neural.Updatable" title="inferno.neural.modeling.Updatable"><span class="pre">Updatable</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.core.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
+<p>Managed accumulated updates for module parameters.</p>
+<p>The added parameters are all set as properties which return an
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Accumulator</span></code> corresponding to that parameter. Care must be taken to
+avoid naming collisions, although the number of attributes in <code class="docutils literal notranslate"><span class="pre">Updater</span></code> not in
+<code class="docutils literal notranslate"><span class="pre">Module</span></code> are small. See the methods <code class="xref py py-meth docutils literal notranslate"><span class="pre">_get_()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">_set_()</span></code>, and
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">_del_()</span></code> for more information.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>bounding</strong> (<em>FullBounding</em>) – bounding function to use.</p></li>
-<li><p><strong>max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – upper bound of biases.</p></li>
-<li><p><strong>min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – lower bound of biases</p></li>
-<li><p><strong>**kwargs</strong> (<em>Any</em>) – passed as keyword arguments to <code class="docutils literal notranslate"><span class="pre">bounding</span></code>.</p></li>
+<li><p><strong>module</strong> (<a class="reference internal" href="inferno.neural.Updatable.html#inferno.neural.Updatable" title="inferno.neural.Updatable"><em>Updatable</em></a>) – module with updatable parameters.</p></li>
+<li><p><strong>*params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – parameters to set as trainable.</p></li>
 </ul>
 </dd>
 </dl>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>An <code class="docutils literal notranslate"><span class="pre">Updater</span></code> only weakly references its parent module, if its parent is
+deleted this updater will be made invalid.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This clears away anything set by <a class="reference internal" href="#inferno.neural.Updater.bias_upper_bounding" title="inferno.neural.Updater.bias_upper_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">bias_upper_bounding()</span></code></a> and
-<a class="reference internal" href="#inferno.neural.Updater.bias_lower_bounding" title="inferno.neural.Updater.bias_lower_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">bias_lower_bounding()</span></code></a>.</p>
+<p>The initializer creates an object of a dynamically created type with a base
+type of <code class="docutils literal notranslate"><span class="pre">Updater</span></code>.</p>
 </div>
-</dd></dl>
-
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.bias_lower_bounding">
-<span class="sig-name descname"><span class="pre">bias_lower_bounding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><span class="pre">HalfBounding</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.bias_lower_bounding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.bias_lower_bounding" title="Link to this definition">#</a></dt>
-<dd><p>Adds lower bounding to biases.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>bounding</strong> (<a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><em>HalfBounding</em></a>) – bounding function to use.</p></li>
-<li><p><strong>min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – lower bound of biases</p></li>
-<li><p><strong>**kwargs</strong> (<em>Any</em>) – passed as keyword arguments to <code class="docutils literal notranslate"><span class="pre">bounding</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This clears away anything set by <a class="reference internal" href="#inferno.neural.Updater.bias_bounding" title="inferno.neural.Updater.bias_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">bias_bounding()</span></code></a>.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Updater.bias_reduction">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bias_reduction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Updater.bias_reduction" title="Link to this definition">#</a></dt>
-<dd><p>Reduction used for multiple bias updates, positive and negative.</p>
-<p>This function should have the following signature.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reduction</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
-</pre></div>
-</div>
-<p>The argument <code class="docutils literal notranslate"><span class="pre">dim</span></code> can also take a tuple of integers as with most appropriate
-functions in PyTorch but is never given a tuple here. Dimensions reduced along
-should not be kept by default. Valid PyTorch functions include byt are not
-limited to <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.mean.html#torch.mean" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.mean()</span></code></a>, <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.sum.html#torch.sum" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.sum()</span></code></a>, :py:func`torch.amin`,
-and :py:func`torch.amax`.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – function for
-reducing bias updates.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>function for reducing
-bias updates.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Callable[[<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>], <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.bias_update">
-<span class="sig-name descname"><span class="pre">bias_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">neg_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.bias_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.bias_update" title="Link to this definition">#</a></dt>
-<dd><p>Adds bias update terms.</p>
-<p>The bias updates are applied in the following manner.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bias</span> <span class="o">=</span> <span class="n">bias</span> <span class="o">+</span> <span class="n">pos_update</span> <span class="o">-</span> <span class="n">neg_update</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pos_update</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – positive bias update component.</p></li>
-<li><p><strong>neg_update</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – negative bias update component.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.bias_upper_bounding">
-<span class="sig-name descname"><span class="pre">bias_upper_bounding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><span class="pre">HalfBounding</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.bias_upper_bounding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.bias_upper_bounding" title="Link to this definition">#</a></dt>
-<dd><p>Adds upper bounding to biases.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>bounding</strong> (<a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><em>HalfBounding</em></a>) – bounding function to use.</p></li>
-<li><p><strong>max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – upper bound of biases</p></li>
-<li><p><strong>**kwargs</strong> (<em>Any</em>) – passed as keyword arguments to <code class="docutils literal notranslate"><span class="pre">bounding</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This clears away anything set by <a class="reference internal" href="#inferno.neural.Updater.bias_bounding" title="inferno.neural.Updater.bias_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">bias_bounding()</span></code></a>.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Updater.connection">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connection</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.base.Connection"><span class="pre">Connection</span></a></em><a class="headerlink" href="#inferno.neural.Updater.connection" title="Link to this definition">#</a></dt>
-<dd><p>Connection submodule.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>existing connection.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection">Connection</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.delay_bounding">
-<span class="sig-name descname"><span class="pre">delay_bounding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FullBounding</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.delay_bounding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.delay_bounding" title="Link to this definition">#</a></dt>
-<dd><p>Adds full bounding to delays.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>bounding</strong> (<em>FullBounding</em>) – bounding function to use.</p></li>
-<li><p><strong>max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – upper bound of delays.</p></li>
-<li><p><strong>min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – lower bound of delays</p></li>
-<li><p><strong>**kwargs</strong> (<em>Any</em>) – passed as keyword arguments to <code class="docutils literal notranslate"><span class="pre">bounding</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This clears away anything set by <a class="reference internal" href="#inferno.neural.Updater.delay_upper_bounding" title="inferno.neural.Updater.delay_upper_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delay_upper_bounding()</span></code></a> and
-<a class="reference internal" href="#inferno.neural.Updater.delay_lower_bounding" title="inferno.neural.Updater.delay_lower_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delay_lower_bounding()</span></code></a>.</p>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.delay_lower_bounding">
-<span class="sig-name descname"><span class="pre">delay_lower_bounding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><span class="pre">HalfBounding</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.delay_lower_bounding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.delay_lower_bounding" title="Link to this definition">#</a></dt>
-<dd><p>Adds lower bounding to delays.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>bounding</strong> (<a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><em>HalfBounding</em></a>) – bounding function to use.</p></li>
-<li><p><strong>min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – lower bound of delays</p></li>
-<li><p><strong>**kwargs</strong> (<em>Any</em>) – passed as keyword arguments to <code class="docutils literal notranslate"><span class="pre">bounding</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This clears away anything set by <a class="reference internal" href="#inferno.neural.Updater.delay_bounding" title="inferno.neural.Updater.delay_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delay_bounding()</span></code></a>.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Updater.delay_reduction">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delay_reduction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Updater.delay_reduction" title="Link to this definition">#</a></dt>
-<dd><p>Reduction used for multiple delay updates, positive and negative.</p>
-<p>This function should have the following signature.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reduction</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
-</pre></div>
-</div>
-<p>The argument <code class="docutils literal notranslate"><span class="pre">dim</span></code> can also take a tuple of integers as with most appropriate
-functions in PyTorch but is never given a tuple here. Dimensions reduced along
-should not be kept by default. Valid PyTorch functions include byt are not
-limited to <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.mean.html#torch.mean" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.mean()</span></code></a>, <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.sum.html#torch.sum" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.sum()</span></code></a>, :py:func`torch.amin`,
-and :py:func`torch.amax`.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – function for
-reducing delay updates.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>function for reducing
-delay updates.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Callable[[<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>], <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.delay_update">
-<span class="sig-name descname"><span class="pre">delay_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">neg_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.delay_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.delay_update" title="Link to this definition">#</a></dt>
-<dd><p>Adds delay update terms.</p>
-<p>The delay updates are applied in the following manner.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">delay</span> <span class="o">=</span> <span class="n">delay</span> <span class="o">+</span> <span class="n">pos_update</span> <span class="o">-</span> <span class="n">neg_update</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pos_update</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – positive delay update component.</p></li>
-<li><p><strong>neg_update</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – negative delay update component.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.delay_upper_bounding">
-<span class="sig-name descname"><span class="pre">delay_upper_bounding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><span class="pre">HalfBounding</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.delay_upper_bounding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.delay_upper_bounding" title="Link to this definition">#</a></dt>
-<dd><p>Adds upper bounding to delays.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>bounding</strong> (<a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><em>HalfBounding</em></a>) – bounding function to use.</p></li>
-<li><p><strong>max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – upper bound of delays</p></li>
-<li><p><strong>**kwargs</strong> (<em>Any</em>) – passed as keyword arguments to <code class="docutils literal notranslate"><span class="pre">bounding</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This clears away anything set by <a class="reference internal" href="#inferno.neural.Updater.delay_bounding" title="inferno.neural.Updater.delay_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delay_bounding()</span></code></a>.</p>
-</div>
+<dt class="sig sig-object py" id="inferno.neural.Updater.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.clear" title="Link to this definition">#</a></dt>
+<dd><p>Clears all of the accumulators’ states.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Updater.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.forward" title="Link to this definition">#</a></dt>
-<dd><p>Applies stored updates and resets for the next set.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This does not check if a connection has a trainable bias or trainable delay
-before performing the update. If the updates are not manually set nor added
-by a trainer, this behaves normally. If they are, the included connections
-will silently not update parameters they don’t have, but this isn’t
-guaranteed behavior for 3rd party ones.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Updater.neg_bias_update">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">neg_bias_update</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.Updater.neg_bias_update" title="Link to this definition">#</a></dt>
-<dd><p>Negative component of bias updates.</p>
-<p>If this value hasn’t been overridden with a setter call, it will reduce the
-stored updates and return that. Otherwise it will return the value used to
-override. This is reset upon applying updates.</p>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.forward" title="Link to this definition">#</a></dt>
+<dd><p>Applies accumulated updates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – overwrite value of negative bias updates.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>current positive negative updates.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a> | None</p>
+<dd class="field-odd"><p><strong>*params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – parameters to update, all parameters when none are specified.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Updater.neg_delay_update">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">neg_delay_update</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.Updater.neg_delay_update" title="Link to this definition">#</a></dt>
-<dd><p>Negative component of delay updates.</p>
-<p>If this value hasn’t been overridden with a setter call, it will reduce the
-stored updates and return that. Otherwise it will return the value used to
-override. This is reset upon applying updates.</p>
+<dt class="sig sig-object py" id="inferno.neural.Updater.names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Updater.names" title="Link to this definition">#</a></dt>
+<dd><p>Names of updatable attributes.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – overwrite value of negative delay updates.</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>names of updatable parameters.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>current positive negative updates.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a> | None</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Updater.neg_weight_update">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">neg_weight_update</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.Updater.neg_weight_update" title="Link to this definition">#</a></dt>
-<dd><p>Negative component of weight updates.</p>
-<p>If this value hasn’t been overridden with a setter call, it will reduce the
-stored updates and return that. Otherwise it will return the value used to
-override. This is reset upon applying updates.</p>
+<dt class="sig sig-object py" id="inferno.neural.Updater.parent">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.core.infrastructure.Module"><span class="pre">Module</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.Updater.parent" title="Link to this definition">#</a></dt>
+<dd><p>Parent module, if valid.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – overwrite value of negative weight updates.</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>parent module if the reference to it still exists.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>current positive negative updates.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a> | None</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.Module">Module</a> | None</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Updater.pos_bias_update">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pos_bias_update</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.Updater.pos_bias_update" title="Link to this definition">#</a></dt>
-<dd><p>Positive component of bias updates.</p>
-<p>If this value hasn’t been overridden with a setter call, it will reduce the
-stored updates and return that. Otherwise it will return the value used to
-override. This is reset upon applying updates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – overwrite value of positive bias updates.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>current positive bias updates.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a> | None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Updater.pos_delay_update">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pos_delay_update</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.Updater.pos_delay_update" title="Link to this definition">#</a></dt>
-<dd><p>Positive component of delay updates.</p>
-<p>If this value hasn’t been overridden with a setter call, it will reduce the
-stored updates and return that. Otherwise it will return the value used to
-override. This is reset upon applying updates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – overwrite value of positive delay updates.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>current positive delay updates.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a> | None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Updater.pos_weight_update">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pos_weight_update</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.Updater.pos_weight_update" title="Link to this definition">#</a></dt>
-<dd><p>Positive component of weight updates.</p>
-<p>If this value hasn’t been overridden with a setter call, it will reduce the
-stored updates and return that. Otherwise it will return the value used to
-override. This is reset upon applying updates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – overwrite value of positive weight updates.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>current positive weight updates.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a> | None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.weight_bounding">
-<span class="sig-name descname"><span class="pre">weight_bounding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FullBounding</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.weight_bounding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.weight_bounding" title="Link to this definition">#</a></dt>
-<dd><p>Adds full bounding to weights.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>bounding</strong> (<em>FullBounding</em>) – bounding function to use.</p></li>
-<li><p><strong>max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – upper bound of weights.</p></li>
-<li><p><strong>min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – lower bound of weights</p></li>
-<li><p><strong>**kwargs</strong> (<em>Any</em>) – passed as keyword arguments to <code class="docutils literal notranslate"><span class="pre">bounding</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This clears away anything set by <a class="reference internal" href="#inferno.neural.Updater.weight_upper_bounding" title="inferno.neural.Updater.weight_upper_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">weight_upper_bounding()</span></code></a> and
-<a class="reference internal" href="#inferno.neural.Updater.weight_lower_bounding" title="inferno.neural.Updater.weight_lower_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">weight_lower_bounding()</span></code></a>.</p>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.weight_lower_bounding">
-<span class="sig-name descname"><span class="pre">weight_lower_bounding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><span class="pre">HalfBounding</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.weight_lower_bounding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.weight_lower_bounding" title="Link to this definition">#</a></dt>
-<dd><p>Adds lower bounding to weights.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>bounding</strong> (<a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><em>HalfBounding</em></a>) – bounding function to use.</p></li>
-<li><p><strong>min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – lower bound of weights</p></li>
-<li><p><strong>**kwargs</strong> (<em>Any</em>) – passed as keyword arguments to <code class="docutils literal notranslate"><span class="pre">bounding</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This clears away anything set by <a class="reference internal" href="#inferno.neural.Updater.weight_bounding" title="inferno.neural.Updater.weight_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">weight_bounding()</span></code></a>.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Updater.weight_reduction">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">weight_reduction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Updater.weight_reduction" title="Link to this definition">#</a></dt>
-<dd><p>Reduction used for multiple weight updates, positive and negative.</p>
-<p>This function should have the following signature.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reduction</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
-</pre></div>
-</div>
-<p>The argument <code class="docutils literal notranslate"><span class="pre">dim</span></code> can also take a tuple of integers as with most appropriate
-functions in PyTorch but is never given a tuple here. Dimensions reduced along
-should not be kept by default. Valid PyTorch functions include byt are not
-limited to <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.mean.html#torch.mean" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.mean()</span></code></a>, <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.sum.html#torch.sum" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.sum()</span></code></a>, :py:func`torch.amin`,
-and :py:func`torch.amax`.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – function for
-reducing weight updates.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>function for reducing
-weight updates.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Callable[[<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>], <a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.weight_update">
-<span class="sig-name descname"><span class="pre">weight_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">neg_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.weight_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.weight_update" title="Link to this definition">#</a></dt>
-<dd><p>Adds weight update terms.</p>
-<p>The weight updates are applied in the following manner.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">+</span> <span class="n">pos_update</span> <span class="o">-</span> <span class="n">neg_update</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pos_update</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – positive weight update component.</p></li>
-<li><p><strong>neg_update</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – negative weight update component.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updater.weight_upper_bounding">
-<span class="sig-name descname"><span class="pre">weight_upper_bounding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><span class="pre">HalfBounding</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updater.weight_upper_bounding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updater.weight_upper_bounding" title="Link to this definition">#</a></dt>
-<dd><p>Adds upper bounding to weights.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>bounding</strong> (<a class="reference internal" href="inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><em>HalfBounding</em></a>) – bounding function to use.</p></li>
-<li><p><strong>max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – upper bound of weights</p></li>
-<li><p><strong>**kwargs</strong> (<em>Any</em>) – passed as keyword arguments to <code class="docutils literal notranslate"><span class="pre">bounding</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This clears away anything set by <a class="reference internal" href="#inferno.neural.Updater.weight_bounding" title="inferno.neural.Updater.weight_bounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">weight_bounding()</span></code></a>.</p>
-</div>
 </dd></dl>
 
 </dd></dl>
@@ -729,23 +301,23 @@ weight updates.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.neural.Neuron.html">
+          <a class="next-page" href="inferno.neural.Updatable.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Neuron</div>
+                <div class="title">Updatable</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.neural.Trainable.html">
+          <a class="prev-page" href="inferno.neural.Cell.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Trainable</div>
+                <div class="title">Cell</div>
                 
               </div>
             </a>
@@ -781,29 +353,10 @@ weight updates.</p>
             <ul>
 <li><a class="reference internal" href="#">Updater</a><ul>
 <li><a class="reference internal" href="#inferno.neural.Updater"><code class="docutils literal notranslate"><span class="pre">Updater</span></code></a><ul>
-<li><a class="reference internal" href="#inferno.neural.Updater.bias_bounding"><code class="docutils literal notranslate"><span class="pre">Updater.bias_bounding()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.bias_lower_bounding"><code class="docutils literal notranslate"><span class="pre">Updater.bias_lower_bounding()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.bias_reduction"><code class="docutils literal notranslate"><span class="pre">Updater.bias_reduction</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.bias_update"><code class="docutils literal notranslate"><span class="pre">Updater.bias_update()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.bias_upper_bounding"><code class="docutils literal notranslate"><span class="pre">Updater.bias_upper_bounding()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.connection"><code class="docutils literal notranslate"><span class="pre">Updater.connection</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.delay_bounding"><code class="docutils literal notranslate"><span class="pre">Updater.delay_bounding()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.delay_lower_bounding"><code class="docutils literal notranslate"><span class="pre">Updater.delay_lower_bounding()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.delay_reduction"><code class="docutils literal notranslate"><span class="pre">Updater.delay_reduction</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.delay_update"><code class="docutils literal notranslate"><span class="pre">Updater.delay_update()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.delay_upper_bounding"><code class="docutils literal notranslate"><span class="pre">Updater.delay_upper_bounding()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Updater.clear"><code class="docutils literal notranslate"><span class="pre">Updater.clear()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Updater.forward"><code class="docutils literal notranslate"><span class="pre">Updater.forward()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.neg_bias_update"><code class="docutils literal notranslate"><span class="pre">Updater.neg_bias_update</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.neg_delay_update"><code class="docutils literal notranslate"><span class="pre">Updater.neg_delay_update</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.neg_weight_update"><code class="docutils literal notranslate"><span class="pre">Updater.neg_weight_update</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.pos_bias_update"><code class="docutils literal notranslate"><span class="pre">Updater.pos_bias_update</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.pos_delay_update"><code class="docutils literal notranslate"><span class="pre">Updater.pos_delay_update</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.pos_weight_update"><code class="docutils literal notranslate"><span class="pre">Updater.pos_weight_update</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.weight_bounding"><code class="docutils literal notranslate"><span class="pre">Updater.weight_bounding()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.weight_lower_bounding"><code class="docutils literal notranslate"><span class="pre">Updater.weight_lower_bounding()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.weight_reduction"><code class="docutils literal notranslate"><span class="pre">Updater.weight_reduction</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.weight_update"><code class="docutils literal notranslate"><span class="pre">Updater.weight_update()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updater.weight_upper_bounding"><code class="docutils literal notranslate"><span class="pre">Updater.weight_upper_bounding()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Updater.names"><code class="docutils literal notranslate"><span class="pre">Updater.names</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Updater.parent"><code class="docutils literal notranslate"><span class="pre">Updater.parent</span></code></a></li>
 </ul>
 </li>
 </ul>

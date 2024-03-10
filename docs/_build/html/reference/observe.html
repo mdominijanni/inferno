@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Monitor" href="generated/inferno.observe.Monitor.html" /><link rel="prev" title="mult_lower_bounding" href="generated/inferno.learn.functional.mult_lower_bounding.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Monitor" href="generated/inferno.observe.Monitor.html" /><link rel="prev" title="MaxRateClassifier" href="generated/inferno.learn.MaxRateClassifier.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>inferno.observe - Inferno</title>
@@ -163,10 +163,7 @@
 <li class="toctree-l2"><a class="reference internal" href="neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -234,8 +231,8 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.observe.Monitor.html#inferno.observe.Monitor" title="inferno.observe.Monitor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Monitor</span></code></a></p></td>
 <td><p>Base class for recording input, output, or state of a Module.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.observe.ManagedMonitor.html#inferno.observe.ManagedMonitor" title="inferno.observe.ManagedMonitor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ManagedMonitor</span></code></a></p></td>
-<td><p>Monitors with construction which can be managed by other modules.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.observe.MonitorConstructor.html#inferno.observe.MonitorConstructor" title="inferno.observe.MonitorConstructor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MonitorConstructor</span></code></a></p></td>
+<td><p>Common constructor for monitors, used in updaters.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.observe.Reducer.html#inferno.observe.Reducer" title="inferno.observe.Reducer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reducer</span></code></a></p></td>
 <td><p>Abstract base class for the recording of inputs over time.</p></td>
@@ -264,12 +261,6 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor" title="inferno.observe.DifferenceMonitor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DifferenceMonitor</span></code></a></p></td>
 <td><p>Records the difference of an attribute in a Module before and after its forward call.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.observe.PreMonitor.html#inferno.observe.PreMonitor" title="inferno.observe.PreMonitor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PreMonitor</span></code></a></p></td>
-<td><p>Applies a function to prehook arguments and passes the results to the reducer.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.observe.PostMonitor.html#inferno.observe.PostMonitor" title="inferno.observe.PostMonitor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PostMonitor</span></code></a></p></td>
-<td><p>Applies a function to posthook arguments and passes the results to the reducer.</p></td>
 </tr>
 </tbody>
 </table>
@@ -315,12 +306,6 @@
 </table>
 </div>
 </section>
-<section id="types">
-<h2>Types<a class="headerlink" href="#types" title="Link to this heading">#</a></h2>
-<blockquote>
-<div><p>MonitorConstructor</p>
-</div></blockquote>
-</section>
 </section>
 
         </article>
@@ -337,14 +322,14 @@
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="generated/inferno.learn.functional.mult_lower_bounding.html">
+          <a class="prev-page" href="generated/inferno.learn.MaxRateClassifier.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">mult_lower_bounding</div>
+                <div class="title">MaxRateClassifier</div>
                 
               </div>
             </a>
@@ -388,7 +373,6 @@
 <li><a class="reference internal" href="#reducers">Reducers</a><ul class="simple">
 </ul>
 </li>
-<li><a class="reference internal" href="#types">Types</a></li>
 </ul>
 </li>
 </ul>

@@ -1,6 +1,9 @@
-from .interpolation import (
+from .types import (
     # types
     Interpolation,
+)
+
+from .functions import (
     # interpolation functions
     previous,
     nearest,

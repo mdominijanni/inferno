@@ -1,8 +1,0 @@
-﻿ManagedMonitor
-==============
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: ManagedMonitor
-    :members:
-    :show-inheritance:

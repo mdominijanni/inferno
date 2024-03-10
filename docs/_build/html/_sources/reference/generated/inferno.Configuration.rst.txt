@@ -1,8 +1,0 @@
-﻿Configuration
-=============
-
-.. currentmodule:: inferno
-
-.. autoclass:: Configuration
-    :members:
-    :show-inheritance:

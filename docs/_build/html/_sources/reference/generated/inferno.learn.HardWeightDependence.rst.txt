@@ -1,8 +1,0 @@
-﻿HardWeightDependence
-====================
-
-.. currentmodule:: inferno.learn
-
-.. autoclass:: HardWeightDependence
-    :members:
-    :show-inheritance:

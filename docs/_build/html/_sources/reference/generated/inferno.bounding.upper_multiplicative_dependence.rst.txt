@@ -1,6 +1,0 @@
-﻿upper\_multiplicative\_dependence
-=================================
-
-.. currentmodule:: inferno.bounding
-
-.. autofunction:: upper_multiplicative_dependence

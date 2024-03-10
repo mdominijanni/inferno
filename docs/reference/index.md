@@ -8,8 +8,5 @@ neural
 neural-functional
 learn
 observe
-bounding
-interpolation
 stats
-types
 ```

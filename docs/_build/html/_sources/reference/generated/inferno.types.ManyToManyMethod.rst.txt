@@ -1,0 +1,8 @@
+﻿types.ManyToManyMethod
+======================
+
+.. currentmodule:: inferno
+
+.. autoclass:: types.ManyToManyMethod
+    :members:
+    :show-inheritance:

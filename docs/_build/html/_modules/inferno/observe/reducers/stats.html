@@ -162,10 +162,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -247,7 +244,7 @@
 <span class="sd">    Args:</span>
 <span class="sd">        alpha (float): exponential smoothing factor, :math:`\alpha`.</span>
 <span class="sd">        step_time (float): length of time between observations, :math:`\Delta t`.</span>
-<span class="sd">        history_len (float, optional): length of time over which results should be</span>
+<span class="sd">        duration (float, optional): length of time over which results should be</span>
 <span class="sd">            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.</span>
 
 <span class="sd">    Note:</span>
@@ -260,10 +257,10 @@
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">history_len</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
-        <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
+        <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 
         <span class="c1"># set state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_interval</span><span class="p">(</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;closed&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>

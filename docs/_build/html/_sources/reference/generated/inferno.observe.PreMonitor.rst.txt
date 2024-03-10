@@ -1,8 +1,0 @@
-﻿PreMonitor
-==========
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: PreMonitor
-    :members:
-    :show-inheritance:

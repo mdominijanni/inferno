@@ -1,5 +1,5 @@
 from __future__ import annotations
-from ... import HistoryModule, empty
+from ... import RecordModule, empty
 from ...core import interpolation
 from ...core.types import OneToOne
 from abc import ABC, abstractmethod
@@ -7,11 +7,11 @@ import torch
 from typing import Callable
 
 
-class Reducer(HistoryModule, ABC):
+class Reducer(RecordModule, ABC):
     r"""Abstract base class for the recording of inputs over time."""
 
     def __init__(self, step_time, duration):
-        HistoryModule.__init__(self, step_time, duration)
+        RecordModule.__init__(self, step_time, duration)
 
     @abstractmethod
     def clear(self, **kwargs) -> None:
@@ -113,7 +113,7 @@ class FoldReducer(Reducer):
         r"""Length of the simulation time step, in milliseconds.
 
         Args:
-                value (torch.Tensor): new data storage tensor.
+            value (torch.Tensor): new data storage tensor.
 
         Returns:
             torch.Tensor: data storage tensor.
@@ -260,7 +260,7 @@ class FoldReducer(Reducer):
             last dimension.
         """
         if not self._initial:
-            return self.history("_data", latest_first=True)
+            return self.aligned("_data", latest_first=True)
 
     def peek(self, **kwargs) -> torch.Tensor | None:
         r"""Returns the reducer's current state.
@@ -281,7 +281,7 @@ class FoldReducer(Reducer):
         Args:
             inputs (torch.Tensor): new observation to incorporate into state.
         """
-        self.pushto("_data", inputs)
+        self.record("_data", inputs)
 
     def forward(self, inputs: torch.Tensor, **kwargs) -> None:
         """Initializes state and incorporates inputs into the reducer's state.

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from .modeling import Updatable, Updater
-from .. import DimensionalModule, HistoryModule, Module
+from .. import DimensionalModule, RecordModule, Module
 import math
 from functools import cached_property
 import torch
@@ -197,7 +197,7 @@ class SynapseConstructor(Protocol):
         ...
 
 
-class Synapse(ShapeMixin, HistoryModule, ABC):
+class Synapse(ShapeMixin, RecordModule, ABC):
     r"""Base class for representing the input synapses for a connection.
 
     Args:
@@ -216,7 +216,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         batch_size: int,
     ):
         # superclass constructors
-        HistoryModule.__init__(self, step_time, delay)
+        RecordModule.__init__(self, step_time, delay)
         ShapeMixin.__init__(self, shape, batch_size)
 
     @classmethod
@@ -246,11 +246,11 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         Returns:
             float: present simulation time step length.
         """
-        return HistoryModule.dt.fget(self)
+        return RecordModule.dt.fget(self)
 
     @dt.setter
     def dt(self, value: float):
-        HistoryModule.dt.fset(self, value)
+        RecordModule.dt.fset(self, value)
         self.clear()
 
     @property

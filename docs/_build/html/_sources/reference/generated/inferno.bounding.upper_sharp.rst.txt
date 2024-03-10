@@ -1,0 +1,6 @@
+﻿upper\_sharp
+============
+
+.. currentmodule:: inferno
+
+.. autofunction:: upper_sharp

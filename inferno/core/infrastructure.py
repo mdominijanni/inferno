@@ -841,7 +841,7 @@ class RecordModule(DimensionalModule):
         """
         return self.constraints.get(-1)
 
-    def get_constrained_record(self, name: str) -> torch.Tensor | nn.Parameter:
+    def _get_constrained_record(self, name: str) -> torch.Tensor | nn.Parameter:
         r"""Gets the value of a constraint which is a record.
 
         Args:
@@ -867,6 +867,8 @@ class RecordModule(DimensionalModule):
             raise RuntimeError(
                 f"'name' ('{name}') specifies an uninitialized attribute"
             )
+
+        return data
 
     def register_constrained(self, name: str) -> None:
         r"""Registers an existing buffer or parameter as constrained.
@@ -946,7 +948,7 @@ class RecordModule(DimensionalModule):
         Returns:
             torch.Tensor: most recent slice of the tensor selected.
         """
-        data = self.get_constrained_record(name)
+        data = self._get_constrained_record(name)
         return data[..., (self._pointers[name] - int(offset)) % self.recordsz]
 
     def record(self, name: str, value: torch.Tensor, offset: int = 0) -> None:
@@ -958,7 +960,7 @@ class RecordModule(DimensionalModule):
             offset (int, optional): number of steps before present to update.
                 Defaults to 0.
         """
-        data = self.get_constrained_record(name)
+        data = self._get_constrained_record(name)
         if value.shape != data.shape[:-1]:
             raise ValueError(
                 f"'value' has shape of {tuple(value.shape)} which does not match the "
@@ -1019,7 +1021,7 @@ class RecordModule(DimensionalModule):
             ``time`` like ``time.clamp(0, module.duration)``.
         """
         # get underlying data
-        data = self.get_constrained_record(name)
+        data = self._get_constrained_record(name)
 
         # apply offset to pointer
         pointer = (self._pointers[name] - int(offset)) % self.recordsz
@@ -1103,6 +1105,37 @@ class RecordModule(DimensionalModule):
                     ),
                     self.dt,
                 ).squeeze(-1)
+
+    def aligned(
+        self, name: str, latest_first: bool = True, offset: int = 1
+    ) -> torch.Tensor:
+        r"""Full aligned record of a recorded tensor.
+
+        The native storage order is latest data at the last index (after being aligned
+        with :py:func:`torch.roll`). By default this will return the latest data at
+        the first index.
+
+        Args:
+            name (str): name of the attribute to target.
+            latest_first (bool, optional): if the most recent slice should be at the
+                zeroth index. Defaults to True.
+            offset (int, optional): window index offset as number of steps prior to the
+                location of the next time slice to overwrite. Defaults to 1.
+
+        Returns:
+            torch.Tensor: _description_
+        """
+        # access raw data
+        data = self._get_constrained_record(name)
+
+        # align based on pointer and offset (latest is last, native ordering)
+        data = torch.roll(data, offset - self._pointers[name] - 1, -1)
+
+        # reverse if latest is first
+        if latest_first:
+            data = data.flip(-1)
+
+        return data
 
 
 class Hook:

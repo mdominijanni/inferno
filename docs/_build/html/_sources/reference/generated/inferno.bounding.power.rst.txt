@@ -1,0 +1,6 @@
+﻿power
+=====
+
+.. currentmodule:: inferno
+
+.. autofunction:: power

@@ -1,0 +1,6 @@
+﻿sharp
+=====
+
+.. currentmodule:: inferno
+
+.. autofunction:: sharp

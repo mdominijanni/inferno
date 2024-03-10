@@ -1,6 +1,0 @@
-﻿hard\_lower\_bounding
-=====================
-
-.. currentmodule:: inferno.learn.functional
-
-.. autofunction:: hard_lower_bounding

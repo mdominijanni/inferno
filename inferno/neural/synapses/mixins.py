@@ -1,5 +1,6 @@
-from ... import HistoryModule, Interpolation
-from inferno._internal import instance_of, numeric_limit, attr_members
+from ... import RecordModule
+from ..._internal import argtest
+from ...core.interpolation import Interpolation
 from ...core.types import OneToOne
 import torch
 import torch.nn as nn
@@ -16,7 +17,7 @@ class CurrentMixin:
 
     Caution:
         This must be added to a class which inherits from
-        :py:class:`HistoryModule`, and the constructor for this
+        :py:class:`RecordModule`, and the constructor for this
         mixin must be called after the module constructor.
 
     Note:
@@ -28,9 +29,7 @@ class CurrentMixin:
         currents: torch.Tensor,
         requires_grad=False,
     ):
-        e = instance_of("self", self, HistoryModule)
-        if e:
-            raise e
+        _ = argtest.instance("self", self, RecordModule)
         self.register_parameter("current_", nn.Parameter(currents, requires_grad))
         self.register_constrained("current_")
 
@@ -48,7 +47,7 @@ class CurrentMixin:
 
     @current.setter
     def current(self, value: torch.Tensor) -> None:
-        self.pushto("current_", value)
+        self.record("current_", value)
 
 
 class SpikeMixin:
@@ -61,7 +60,7 @@ class SpikeMixin:
 
     Caution:
         This must be added to a class which inherits from
-        :py:class:`HistoryModule`, and the constructor for this
+        :py:class:`RecordModule`, and the constructor for this
         mixin must be called after the module constructor.
 
     Note:
@@ -73,9 +72,7 @@ class SpikeMixin:
         spikes: torch.Tensor,
         requires_grad=False,
     ):
-        e = instance_of("self", self, HistoryModule)
-        if e:
-            raise e
+        _ = argtest.instance("self", self, RecordModule)
         self.register_parameter(
             "spike_", nn.Parameter(spikes.to(dtype=torch.bool), requires_grad)
         )
@@ -95,7 +92,7 @@ class SpikeMixin:
 
     @spike.setter
     def spike(self, value: torch.Tensor) -> None:
-        self.pushto("spike_", value)
+        self.record("spike_", value)
 
 
 class CurrentDerivedSpikeMixin(CurrentMixin):
@@ -108,7 +105,7 @@ class CurrentDerivedSpikeMixin(CurrentMixin):
 
     Caution:
         This must be added to a class which inherits from
-        :py:class:`HistoryModule`, and the constructor for this
+        :py:class:`RecordModule`, and the constructor for this
         mixin must be called after the module constructor.
 
     Important:
@@ -125,9 +122,7 @@ class CurrentDerivedSpikeMixin(CurrentMixin):
         requires_grad=False,
     ):
         # test for members
-        e = attr_members("self", self, "_to_spike")
-        if e:
-            raise e
+        _ = argtest.members("self", self, "_to_spike")
 
         # call superclass mixin constructor
         CurrentMixin.__init__(self, currents=currents, requires_grad=requires_grad)
@@ -162,7 +157,7 @@ class SpikeDerivedCurrentMixin(SpikeMixin):
 
     Caution:
         This must be added to a class which inherits from
-        :py:class:`HistoryModule`, and the constructor for this
+        :py:class:`RecordModule`, and the constructor for this
         mixin must be called after the module constructor.
 
     Important:
@@ -179,9 +174,7 @@ class SpikeDerivedCurrentMixin(SpikeMixin):
         requires_grad=False,
     ):
         # test for members
-        e = attr_members("self", self, "_to_current")
-        if e:
-            raise e
+        _ = argtest.members("self", self, "_to_current")
 
         # call superclass mixin constructor
         SpikeMixin.__init__(self, spikes=spikes, requires_grad=requires_grad)
@@ -217,7 +210,7 @@ class SpikeCurrentMixin(CurrentMixin, SpikeMixin):
 
     Caution:
         This must be added to a class which inherits from
-        :py:class:`HistoryModule`, and the constructor for this
+        :py:class:`RecordModule`, and the constructor for this
         mixin must be called after the module constructor.
 
     Note:
@@ -237,7 +230,7 @@ class SpikeCurrentMixin(CurrentMixin, SpikeMixin):
 
 
 def _synparam_at(
-    module: HistoryModule,
+    module: RecordModule,
     dataloc: str,
     selector: torch.Tensor,
     interpolation: Interpolation,
@@ -248,7 +241,7 @@ def _synparam_at(
     r"""Internal, generalized selector function for synaptic parameters.
 
     Args:
-        module (HistoryModule): module from which to access parameters.
+        module (RecordModule): module from which to access parameters.
         dataloc (str): attribute name of the underlying data from which to select.
         selector (torch.Tensor): time before present for which synaptic parameters
             should be retrieved, in :math:`\text{ms}`.
@@ -281,12 +274,12 @@ def _synparam_at(
         # bound the selector
         bounded_selector = selector.clamp(min=0, max=module.duration)
 
-        # select values using HistoryModule
+        # select values using RecordModule
         res = transform(
             module.select(
                 name=dataloc,
                 time=bounded_selector,
-                interpolation=interpolation,
+                interp=interpolation,
                 tolerance=tolerance,
             )
         )
@@ -322,7 +315,7 @@ class DelayedSpikeCurrentAccessorMixin:
 
     Caution:
         This must be added to a class which inherits from
-        :py:class:`HistoryModule`, and the constructor for this
+        :py:class:`RecordModule`, and the constructor for this
         mixin must be called after the module constructor.
 
     Important:
@@ -379,9 +372,7 @@ class DelayedSpikeCurrentAccessorMixin:
             None if current_overval is None else float(current_overval)
         )
         self._spike_ob_val = None if spike_overval is None else bool(spike_overval)
-        self._interp_tol, e = numeric_limit("tolerance", tolerance, 0, "gte", float)
-        if e:
-            raise e
+        self._interp_tol = argtest.gte("tolerance", tolerance, 0,  float)
 
     def current_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Retrieves previous synaptic currents, in nanoamperes.

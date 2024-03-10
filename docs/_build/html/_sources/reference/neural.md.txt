@@ -13,8 +13,9 @@
     Layer
     Biclique
     Serial
-    Trainable
+    Cell
     Updater
+    Updatable
 ```
 
 ## Components

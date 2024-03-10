@@ -1,0 +1,8 @@
+﻿types.ManyToOneMethod
+=====================
+
+.. currentmodule:: inferno
+
+.. autoclass:: types.ManyToOneMethod
+    :members:
+    :show-inheritance:

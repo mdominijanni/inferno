@@ -25,3 +25,7 @@ Because Inferno performs simulations over discrete units of time, there are rele
 
 ### Refractory Periods
 Refractory periods are specified using some length of time, given in milliseconds. On each simulation step, the amount of time that has elapsed is subtracted from the remaining time in the neurons will be in their refractory period (inclusive minimum bound of zero). When equal to zero, a neuron is considered to be out of its refractory period. Therefore, if the refractory period is not evenly divisible by the length of the simualted step time, the practical length of the refractory period is "rounded up" to the next integer multiple of the step time.
+
+
+## Model Saving and Restoring
+Because batch size affects not only the data passed through a model, but the model itself, special consideratin must be taken when saving and loading models. The batch size of a model saved must match the batch size of the model loaded. This same principle extends to modules which record state over time (e.g. reducers and synapses). While a step time and duration are specified, this changes the underlying structure of the data and therefore should match on load and restore. Note that the included property setters can be used to modify this state after loading.

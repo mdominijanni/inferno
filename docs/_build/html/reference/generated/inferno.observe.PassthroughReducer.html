@@ -163,10 +163,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -224,14 +221,14 @@
 <h1>PassthroughReducer<a class="headerlink" href="#passthroughreducer" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.observe.PassthroughReducer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PassthroughReducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">history_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/observe/reducers/general.html#PassthroughReducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.PassthroughReducer" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PassthroughReducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/observe/reducers/general.html#PassthroughReducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.PassthroughReducer" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="inferno.observe.FoldingReducer.html#inferno.observe.FoldingReducer" title="inferno.observe.reducers.base.FoldingReducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoldingReducer</span></code></a></p>
 <p>Directly stores prior observations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of time between observation.</p></li>
-<li><p><strong>history_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – length of time over which results should be
+<li><p><strong>duration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – length of time over which results should be
 stored, in the same units as <code class="docutils literal notranslate"><span class="pre">step_time</span></code>. Defaults to 0.0.</p></li>
 </ul>
 </dd>

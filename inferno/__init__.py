@@ -1,11 +1,9 @@
-# submodules
-from . import stats
-
 # core module
 from .core import (
     # submodules
     bounding,
     interpolation,
+    types,
     # infrastructure
     Module,
     DimensionalModule,

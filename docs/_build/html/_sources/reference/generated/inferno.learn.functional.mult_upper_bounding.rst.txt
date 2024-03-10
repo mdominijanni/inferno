@@ -1,6 +1,0 @@
-﻿mult\_upper\_bounding
-=====================
-
-.. currentmodule:: inferno.learn.functional
-
-.. autofunction:: mult_upper_bounding

@@ -1,0 +1,6 @@
+﻿lower\_power
+============
+
+.. currentmodule:: inferno
+
+.. autofunction:: lower_power

@@ -163,10 +163,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -224,7 +221,7 @@
 <h1>LinearDense<a class="headerlink" href="#lineardense" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.neural.LinearDense">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LinearDense</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synapse</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.SynapseConstructor.html#inferno.neural.SynapseConstructor" title="inferno.neural.base.SynapseConstructor"><span class="pre">SynapseConstructor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.infernotypes.OneToOne.html#inferno.infernotypes.OneToOne" title="inferno.infernotypes.functional.OneToOne"><span class="pre">OneToOne</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.infernotypes.OneToOne.html#inferno.infernotypes.OneToOne" title="inferno.infernotypes.functional.OneToOne"><span class="pre">OneToOne</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.infernotypes.OneToOne.html#inferno.infernotypes.OneToOne" title="inferno.infernotypes.functional.OneToOne"><span class="pre">OneToOne</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/connections/linear.html#LinearDense"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.LinearDense" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LinearDense</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synapse</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.SynapseConstructor.html#inferno.neural.SynapseConstructor" title="inferno.neural.base.SynapseConstructor"><span class="pre">SynapseConstructor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OneToOne</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OneToOne</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OneToOne</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/connections/linear.html#LinearDense"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.LinearDense" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="inferno.neural.connections.mixins.WeightBiasDelayMixin.html#inferno.neural.connections.mixins.WeightBiasDelayMixin" title="inferno.neural.connections.mixins.WeightBiasDelayMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">WeightBiasDelayMixin</span></code></a>, <a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.base.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a></p>
 <p>Linear all-to-all connection.</p>
 <div class="math-wrapper docutils container">
@@ -245,11 +242,11 @@ learnable additive bias. Defaults to False.</p></li>
 <li><p><strong>delay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – maximum supported delay length, in
 <span class="math notranslate nohighlight">\(\text{ms}\)</span>, excludes delays when None. Defaults to None.</p></li>
 <li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – size of input batches for simualtion. Defaults to 1.</p></li>
-<li><p><strong>weight_init</strong> (<a class="reference internal" href="inferno.infernotypes.OneToOne.html#inferno.infernotypes.OneToOne" title="inferno.infernotypes.OneToOne"><em>OneToOne</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – initializer for weights.
+<li><p><strong>weight_init</strong> (<em>OneToOne</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – initializer for weights.
 Defaults to None.</p></li>
-<li><p><strong>bias_init</strong> (<a class="reference internal" href="inferno.infernotypes.OneToOne.html#inferno.infernotypes.OneToOne" title="inferno.infernotypes.OneToOne"><em>OneToOne</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – initializer for biases.
+<li><p><strong>bias_init</strong> (<em>OneToOne</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – initializer for biases.
 Defaults to None.</p></li>
-<li><p><strong>delay_init</strong> (<a class="reference internal" href="inferno.infernotypes.OneToOne.html#inferno.infernotypes.OneToOne" title="inferno.infernotypes.OneToOne"><em>OneToOne</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – initializer for delays.
+<li><p><strong>delay_init</strong> (<em>OneToOne</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – initializer for delays.
 Defaults to None.</p></li>
 </ul>
 </dd>
@@ -283,26 +280,13 @@ respectively, initialized as uniform random values over the interval
 <p>If <code class="docutils literal notranslate"><span class="pre">delay_init</span></code> is None, <code class="docutils literal notranslate"><span class="pre">delay</span></code> is initialized as zeros using
 <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.rand.html#torch.rand" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.rand()</span></code></a>.</p>
 </div>
-<p class="rubric">Methods</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.clear">
-<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#inferno.neural.LinearDense.clear" title="Link to this definition">#</a></dt>
-<dd><p>Resets the state of the connection.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This calls the method <a class="reference internal" href="inferno.neural.Synapse.html#inferno.neural.Synapse.clear" title="inferno.neural.Synapse.clear"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Synapse.clear()</span></code></a> on <code class="xref py py-attr docutils literal notranslate"><span class="pre">synapse</span></code>,
-assuming the connection itself has no clearable state. Keyword arguments
-are passed through.</p>
-</div>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.LinearDense.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/connections/linear.html#LinearDense.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.LinearDense.forward" title="Link to this definition">#</a></dt>
 <dd><p>Generates connection output from inputs, after passing through the synapse.</p>
 <p>Outputs are determined as the learned linear transformation applied to synaptic
 currents, after new input is applied to the synapse, then reshaped to match
-<a class="reference internal" href="#inferno.neural.LinearDense.boutshape" title="inferno.neural.LinearDense.boutshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">boutshape</span></code></a>.</p>
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">boutshape</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>*inputs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – inputs to the connection.</p>
@@ -335,6 +319,20 @@ currents, after new input is applied to the synapse, then reshaped to match
 py:meth:<cite>Synapse.forward</cite> of <code class="xref py py-attr docutils literal notranslate"><span class="pre">synapse</span></code>. Keyword arguments are
 also passed through.</p>
 </div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.LinearDense.inshape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.LinearDense.inshape" title="Link to this definition">#</a></dt>
+<dd><p>Shape of inputs to the connection, excluding the batch dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>shape of inputs to the connection.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -399,6 +397,20 @@ also passed through.</p>
 </dd>
 </dl>
 </div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.LinearDense.outshape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.LinearDense.outshape" title="Link to this definition">#</a></dt>
+<dd><p>Shape of outputs from the connection, excluding the batch dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>shape of outputs from the connection.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -467,214 +479,6 @@ also passed through.</p>
 </div>
 </dd></dl>
 
-<p class="rubric">Properties</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.bias">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bias</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.bias" title="Link to this definition">#</a></dt>
-<dd><p>Learnable connection biases.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – new biases.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present biases, if any.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a> | None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.biased">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">biased</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.biased" title="Link to this definition">#</a></dt>
-<dd><p>If the connection has learnable biases.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>if the connection has learnable biases.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.binshape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">binshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.LinearDense.binshape" title="Link to this definition">#</a></dt>
-<dd><p>Shape of inputs to the connection, including the batch dimension.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>shape of inputs to the connection.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.boutshape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">boutshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.LinearDense.boutshape" title="Link to this definition">#</a></dt>
-<dd><p>Shape of outputs from the connection, including the batch dimension.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>shape of outputs from the connection.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.bsize">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bsize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.bsize" title="Link to this definition">#</a></dt>
-<dd><p>Batch size of the connection.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – new batch size.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>current batch size.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This calls the property <code class="xref py py-attr docutils literal notranslate"><span class="pre">Synapse.bsize</span></code> on <code class="xref py py-attr docutils literal notranslate"><span class="pre">synapse</span></code>,
-assuming the connection has no batch size dependent state.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.delay">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delay</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.delay" title="Link to this definition">#</a></dt>
-<dd><p>Learnable connection delays.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – new delays.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present delays, if any.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a> | None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.delayedby">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delayedby</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.delayedby" title="Link to this definition">#</a></dt>
-<dd><p>Maxmimum valid learned delay, in milliseconds.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>maxmimum valid learned delays.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This calls the property <a class="reference internal" href="inferno.neural.Synapse.html#inferno.neural.Synapse.delay" title="inferno.neural.Synapse.delay"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Synapse.delay</span></code></a> on <code class="xref py py-attr docutils literal notranslate"><span class="pre">synapse</span></code>
-if the connections has delays, otherwise returns None.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.dt">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.dt" title="Link to this definition">#</a></dt>
-<dd><p>Length of the simulation time step, in milliseconds.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – new length of the simulation time step.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>current length of the simulation time step.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This calls the property <code class="xref py py-attr docutils literal notranslate"><span class="pre">dt</span></code> on <code class="xref py py-attr docutils literal notranslate"><span class="pre">synapse</span></code>,
-assuming the connection has no step time dependent state.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.inshape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.LinearDense.inshape" title="Link to this definition">#</a></dt>
-<dd><p>Shape of inputs to the connection, excluding the batch dimension.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>shape of inputs to the connection.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.insize">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">insize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.insize" title="Link to this definition">#</a></dt>
-<dd><p>Number of inputs to the connection, excluding the batch dimension.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>number of inputs to the connection.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
-</dd>
-</dl>
-<div class="admonition caution">
-<p class="admonition-title">Caution</p>
-<p>This is a cached property based on <a class="reference internal" href="#inferno.neural.LinearDense.inshape" title="inferno.neural.LinearDense.inshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">inshape</span></code></a>. When subclassing,
-if the computed value for <code class="docutils literal notranslate"><span class="pre">inshape</span></code> is changed, <code class="docutils literal notranslate"><span class="pre">insize</span></code> must be
-deleted to refresh the cache.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.outshape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.LinearDense.outshape" title="Link to this definition">#</a></dt>
-<dd><p>Shape of outputs from the connection, excluding the batch dimension.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>shape of outputs from the connection.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.outsize">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outsize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.outsize" title="Link to this definition">#</a></dt>
-<dd><p>Number of outputs from the connection, excluding the batch dimension.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>number of outputs from the connection.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
-</dd>
-</dl>
-<div class="admonition caution">
-<p class="admonition-title">Caution</p>
-<p>This is a cached property based on <a class="reference internal" href="#inferno.neural.LinearDense.outshape" title="inferno.neural.LinearDense.outshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">outshape</span></code></a>. When subclassing,
-if the computed value for <code class="docutils literal notranslate"><span class="pre">outshape</span></code> is changed, <code class="docutils literal notranslate"><span class="pre">outsize</span></code> must be
-deleted to refresh the cache.</p>
-</div>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.LinearDense.selector">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">selector</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.selector" title="Link to this definition">#</a></dt>
@@ -699,56 +503,6 @@ deleted to refresh the cache.</p>
 </dd>
 </dl>
 </div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.syncurrent">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">syncurrent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.syncurrent" title="Link to this definition">#</a></dt>
-<dd><p>Currents from the synapse at the time last used by the connection.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>delay-offset synaptic currents.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">delayed</span></code> is None, this should return the most recent synaptic
-currents, otherwise it should return those indexed by <a class="reference internal" href="#inferno.neural.LinearDense.delay" title="inferno.neural.LinearDense.delay"><code class="xref py py-attr docutils literal notranslate"><span class="pre">delay</span></code></a>.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.synspike">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">synspike</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.synspike" title="Link to this definition">#</a></dt>
-<dd><p>Spikes to the synapse at the time last used by the connection.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>delay-offset synaptic spikes.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.LinearDense.weight">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">weight</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.LinearDense.weight" title="Link to this definition">#</a></dt>
-<dd><p>Learnable connection weights.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – new weights.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present weights.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
@@ -812,28 +566,14 @@ currents, otherwise it should return those indexed by <a class="reference intern
             <ul>
 <li><a class="reference internal" href="#">LinearDense</a><ul>
 <li><a class="reference internal" href="#inferno.neural.LinearDense"><code class="docutils literal notranslate"><span class="pre">LinearDense</span></code></a><ul>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.clear"><code class="docutils literal notranslate"><span class="pre">LinearDense.clear()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.LinearDense.forward"><code class="docutils literal notranslate"><span class="pre">LinearDense.forward()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.LinearDense.inshape"><code class="docutils literal notranslate"><span class="pre">LinearDense.inshape</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.LinearDense.like_input"><code class="docutils literal notranslate"><span class="pre">LinearDense.like_input()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.LinearDense.like_synaptic"><code class="docutils literal notranslate"><span class="pre">LinearDense.like_synaptic()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.LinearDense.outshape"><code class="docutils literal notranslate"><span class="pre">LinearDense.outshape</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.LinearDense.postsyn_receptive"><code class="docutils literal notranslate"><span class="pre">LinearDense.postsyn_receptive()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.LinearDense.presyn_receptive"><code class="docutils literal notranslate"><span class="pre">LinearDense.presyn_receptive()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.bias"><code class="docutils literal notranslate"><span class="pre">LinearDense.bias</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.biased"><code class="docutils literal notranslate"><span class="pre">LinearDense.biased</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.binshape"><code class="docutils literal notranslate"><span class="pre">LinearDense.binshape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.boutshape"><code class="docutils literal notranslate"><span class="pre">LinearDense.boutshape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.bsize"><code class="docutils literal notranslate"><span class="pre">LinearDense.bsize</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.delay"><code class="docutils literal notranslate"><span class="pre">LinearDense.delay</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.delayedby"><code class="docutils literal notranslate"><span class="pre">LinearDense.delayedby</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.dt"><code class="docutils literal notranslate"><span class="pre">LinearDense.dt</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.inshape"><code class="docutils literal notranslate"><span class="pre">LinearDense.inshape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.insize"><code class="docutils literal notranslate"><span class="pre">LinearDense.insize</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.outshape"><code class="docutils literal notranslate"><span class="pre">LinearDense.outshape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.outsize"><code class="docutils literal notranslate"><span class="pre">LinearDense.outsize</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.LinearDense.selector"><code class="docutils literal notranslate"><span class="pre">LinearDense.selector</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.syncurrent"><code class="docutils literal notranslate"><span class="pre">LinearDense.syncurrent</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.synspike"><code class="docutils literal notranslate"><span class="pre">LinearDense.synspike</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.LinearDense.weight"><code class="docutils literal notranslate"><span class="pre">LinearDense.weight</span></code></a></li>
 </ul>
 </li>
 </ul>

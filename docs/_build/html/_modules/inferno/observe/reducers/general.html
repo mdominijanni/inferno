@@ -162,10 +162,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -222,7 +219,7 @@
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">FoldingReducer</span>
 <span class="kn">import</span> <span class="nn">inferno</span>
-<span class="kn">from</span> <span class="nn">inferno.infernotypes</span> <span class="kn">import</span> <span class="n">OneToOne</span>
+<span class="kn">from</span> <span class="nn">...core.types</span> <span class="kn">import</span> <span class="n">OneToOne</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
@@ -235,7 +232,7 @@
 <span class="sd">        step_time (float): length of time between observation.</span>
 <span class="sd">        criterion (OneToOne[torch.Tensor]): function to test if the input is considered</span>
 <span class="sd">            matches for it to be considered an event.</span>
-<span class="sd">        history_len (float, optional): length of time over which results should be</span>
+<span class="sd">        duration (float, optional): length of time over which results should be</span>
 <span class="sd">            stored, in the same units as ``step_time``. Defaults to 0.0.</span>
 
 <span class="sd">    Important:</span>
@@ -247,10 +244,10 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">criterion</span><span class="p">:</span> <span class="n">OneToOne</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-        <span class="n">history_len</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
-        <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
+        <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 
         <span class="c1"># set non-persistent function</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
@@ -321,16 +318,16 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        step_time (float): length of time between observation.</span>
-<span class="sd">        history_len (float, optional): length of time over which results should be</span>
+<span class="sd">        duration (float, optional): length of time over which results should be</span>
 <span class="sd">            stored, in the same units as ``step_time``. Defaults to 0.0.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">history_len</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
-        <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
+        <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PassthroughReducer.fold">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.observe.PassthroughReducer.html#inferno.observe.PassthroughReducer.fold">[docs]</a>

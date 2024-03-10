@@ -162,10 +162,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -220,21 +217,21 @@
         <article role="main">
           <h1>Source code for inferno.observe.reducers.base</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">RecordModule</span><span class="p">,</span> <span class="n">empty</span>
+<span class="kn">from</span> <span class="nn">...core</span> <span class="kn">import</span> <span class="n">interpolation</span>
+<span class="kn">from</span> <span class="nn">...core.types</span> <span class="kn">import</span> <span class="n">OneToOne</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">import</span> <span class="nn">inferno</span>
-<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">HistoryModule</span>
-<span class="kn">from</span> <span class="nn">inferno.infernotypes</span> <span class="kn">import</span> <span class="n">OneToOne</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 
 <div class="viewcode-block" id="Reducer">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer">[docs]</a>
-<span class="k">class</span> <span class="nc">Reducer</span><span class="p">(</span><span class="n">HistoryModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Reducer</span><span class="p">(</span><span class="n">RecordModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Abstract base class for the recording of inputs over time.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">):</span>
-        <span class="n">HistoryModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
+        <span class="n">RecordModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Reducer.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.clear">[docs]</a>
@@ -313,10 +310,10 @@
 <span class="sd">            between the new input (left) and current state (right),</span>
 <span class="sd">            returning the new state.</span>
 <span class="sd">        step_time (float): length of time between observations.</span>
-<span class="sd">        history_len (float): length of time for which observations should be stored.</span>
-<span class="sd">        interpolation (inferno.Interpolation, optional): interpolation function to use</span>
-<span class="sd">            when retrieving data between observations.</span>
-<span class="sd">            Defaults to :py:func:`inferno.interp_nearest`.</span>
+<span class="sd">        duration (float): length of time for which observations should be stored.</span>
+<span class="sd">        interp (interpolation.Interpolation, optional): interpolation function</span>
+<span class="sd">            to use when retrieving data between observations.</span>
+<span class="sd">            Defaults to :py:func:`interpolation.nearest`.</span>
 <span class="sd">        initializer (OneToOne[torch.Tensor] | None, optional): function to set the</span>
 <span class="sd">            initial state, zeroes when None. Defaults to None.</span>
 
@@ -334,17 +331,17 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">fold_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">history_len</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">interpolation</span><span class="p">:</span> <span class="n">inferno</span><span class="o">.</span><span class="n">Interpolation</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">interp_nearest</span><span class="p">,</span>
+        <span class="n">interp</span><span class="p">:</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">Interpolation</span> <span class="o">=</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">nearest</span><span class="p">,</span>
         <span class="n">initializer</span><span class="p">:</span> <span class="n">OneToOne</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
-        <span class="n">Reducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">history_len</span><span class="p">)</span>
+        <span class="n">Reducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 
         <span class="c1"># set non-persistant functions</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fold_</span> <span class="o">=</span> <span class="n">fold_fn</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interpolate_</span> <span class="o">=</span> <span class="n">interpolation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interpolate_</span> <span class="o">=</span> <span class="n">interp</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initialize_</span> <span class="o">=</span> <span class="n">initializer</span> <span class="k">if</span> <span class="n">initializer</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># register data buffer and helpers</span>
@@ -396,7 +393,7 @@
 <span class="sd">            Altering this property will reset the reducer.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            In the same units as :py:attr:`self.hlen`.</span>
+<span class="sd">            In the same units as :py:attr:`self.duration`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">Reducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
@@ -406,7 +403,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="n">keepshape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">hlen</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of time over which prior values are stored.</span>
 
 <span class="sd">        Args:</span>
@@ -421,11 +418,11 @@
 <span class="sd">        Note:</span>
 <span class="sd">            In the same units as :py:attr:`self.dt`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">Reducer</span><span class="o">.</span><span class="n">hlen</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Reducer</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-    <span class="nd">@hlen</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">hlen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="n">Reducer</span><span class="o">.</span><span class="n">hlen</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="nd">@duration</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">Reducer</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="n">keepshape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FoldReducer.clear">
@@ -442,7 +439,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">deregister_constrained</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span> <span class="o">=</span> <span class="kc">True</span></div>
 
@@ -512,7 +509,7 @@
 <span class="sd">            last dimension.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="n">latest_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">aligned</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="n">latest_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="FoldReducer.peek">
@@ -539,7 +536,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): new observation to incorporate into state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pushto</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="FoldReducer.forward">
@@ -555,7 +552,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># initialize data iff uninitialized</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hsize</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
         <span class="c1"># integrate inputs</span>
@@ -575,16 +572,16 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        step_time (float): length of time between observations.</span>
-<span class="sd">        history_len (float): length of time for which observations should be stored.</span>
+<span class="sd">        duration (float): length of time for which observations should be stored.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">history_len</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="n">FoldReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">fold_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="p">,</span>
             <span class="n">step_time</span><span class="o">=</span><span class="n">step_time</span><span class="p">,</span>
-            <span class="n">history_len</span><span class="o">=</span><span class="n">history_len</span><span class="p">,</span>
-            <span class="n">interpolation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">,</span>
+            <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span>
+            <span class="n">interp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">,</span>
             <span class="n">initializer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">,</span>
         <span class="p">)</span>
 

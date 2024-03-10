@@ -163,10 +163,7 @@
 <li class="toctree-l2"><a class="reference internal" href="neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -235,57 +232,23 @@
 <td><p>An extension of PyTorch's Module class.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.DimensionalModule.html#inferno.DimensionalModule" title="inferno.DimensionalModule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DimensionalModule</span></code></a></p></td>
-<td><p>Module with support for dimensionally constrained buffers and parameters.</p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.HistoryModule.html#inferno.HistoryModule" title="inferno.HistoryModule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HistoryModule</span></code></a></p></td>
-<td><p>Module which keeps track of previous attribute values.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.RecordModule.html#inferno.RecordModule" title="inferno.RecordModule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordModule</span></code></a></p></td>
+<td><p>_summary_</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.Configuration.html#inferno.Configuration" title="inferno.Configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Configuration</span></code></a></p></td>
-<td><p>Class which provides unpacking functionality when used in conjunction with the attrs library.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.Hook.html#inferno.Hook" title="inferno.Hook"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Hook</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.Hook.html#inferno.Hook" title="inferno.Hook"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Hook</span></code></a></p></td>
 <td><p>Provides forward hook and prehook functionality for subclasses.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.StateHook.html#inferno.StateHook" title="inferno.StateHook"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StateHook</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.StateHook.html#inferno.StateHook" title="inferno.StateHook"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StateHook</span></code></a></p></td>
 <td><p>Interactable hook which only acts on module state.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 </section>
-<section id="general-math">
-<h2>General Math<a class="headerlink" href="#general-math" title="Link to this heading">#</a></h2>
-<div class="table-wrapper autosummary longtable colwidths-given docutils container">
-<table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10.0%" />
-<col style="width: 90.0%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.exp.html#inferno.exp" title="inferno.exp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exp</span></code></a></p></td>
-<td><p>Type agnostic exponential function.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.sqrt.html#inferno.sqrt" title="inferno.sqrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sqrt</span></code></a></p></td>
-<td><p>Type agnostic square root function.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.normalize.html#inferno.normalize" title="inferno.normalize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize</span></code></a></p></td>
-<td><p>Normalizes a tensor.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.rescale.html#inferno.rescale" title="inferno.rescale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rescale</span></code></a></p></td>
-<td><p>Rescales a tensor (min-max normalization).</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.simple_exponential_smoothing.html#inferno.simple_exponential_smoothing" title="inferno.simple_exponential_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_exponential_smoothing</span></code></a></p></td>
-<td><p>Performs simple exponential smoothing for a time step.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.holt_linear_smoothing.html#inferno.holt_linear_smoothing" title="inferno.holt_linear_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">holt_linear_smoothing</span></code></a></p></td>
-<td><p>Performs Holt linear smoothing for a time step.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="tensors">
-<h2>Tensors<a class="headerlink" href="#tensors" title="Link to this heading">#</a></h2>
+<section id="tensor-creation">
+<h2>Tensor Creation<a class="headerlink" href="#tensor-creation" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -314,8 +277,67 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.scalar.html#inferno.scalar" title="inferno.scalar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scalar</span></code></a></p></td>
 <td><p>Returns a scalar tensor based on input with specified value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.tensorize.html#inferno.tensorize" title="inferno.tensorize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tensorize</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.astensors.html#inferno.astensors" title="inferno.astensors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">astensors</span></code></a></p></td>
 <td><p>Converts inputs into tensors.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="math-operations">
+<h2>Math Operations<a class="headerlink" href="#math-operations" title="Link to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable colwidths-given docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.exp.html#inferno.exp" title="inferno.exp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exp</span></code></a></p></td>
+<td><p>Type agnostic exponential function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.sqrt.html#inferno.sqrt" title="inferno.sqrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sqrt</span></code></a></p></td>
+<td><p>Type agnostic square root function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.normalize.html#inferno.normalize" title="inferno.normalize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize</span></code></a></p></td>
+<td><p>Normalizes a tensor.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.rescale.html#inferno.rescale" title="inferno.rescale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rescale</span></code></a></p></td>
+<td><p>Rescales a tensor (min-max normalization).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.exponential_smoothing.html#inferno.exponential_smoothing" title="inferno.exponential_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exponential_smoothing</span></code></a></p></td>
+<td><p>Performs simple exponential smoothing for a time step.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.holt_linear_smoothing.html#inferno.holt_linear_smoothing" title="inferno.holt_linear_smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">holt_linear_smoothing</span></code></a></p></td>
+<td><p>Performs Holt linear smoothing for a time step.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.isi.html#inferno.isi" title="inferno.isi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isi</span></code></a></p></td>
+<td><p>Transforms spike trains into inter-spike intervals.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="spike-trace">
+<h2>Spike Trace<a class="headerlink" href="#spike-trace" title="Link to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable colwidths-given docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.trace_nearest.html#inferno.trace_nearest" title="inferno.trace_nearest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_nearest</span></code></a></p></td>
+<td><p>Performs a trace for a time step, considering the latest match.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.trace_cumulative.html#inferno.trace_cumulative" title="inferno.trace_cumulative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_cumulative</span></code></a></p></td>
+<td><p>Performs a trace for a time step, considering all prior matches.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.trace_nearest_scaled.html#inferno.trace_nearest_scaled" title="inferno.trace_nearest_scaled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_nearest_scaled</span></code></a></p></td>
+<td><p>Performs a trace for a time step, considering the latest match, scaled by the inputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.trace_cumulative_scaled.html#inferno.trace_cumulative_scaled" title="inferno.trace_cumulative_scaled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_cumulative_scaled</span></code></a></p></td>
+<td><p>Performs a trace for a time step, considering all prior matches, scaled by the inputs.</p></td>
 </tr>
 </tbody>
 </table>
@@ -330,20 +352,106 @@
 <col style="width: 90.0%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.Interpolation.html#inferno.Interpolation" title="inferno.Interpolation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Interpolation</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.Interpolation</span></code></p></td>
 <td><p>Callable used to interpolate in time between two tensors.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interp_previous.html#inferno.interp_previous" title="inferno.interp_previous"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_previous</span></code></a></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.previous</span></code></p></td>
 <td><p>Interpolates by selecting the previous state.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interp_nearest.html#inferno.interp_nearest" title="inferno.interp_nearest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_nearest</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.nearest</span></code></p></td>
 <td><p>Interpolates by selecting the nearest state.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interp_linear.html#inferno.interp_linear" title="inferno.interp_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_linear</span></code></a></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.linear</span></code></p></td>
 <td><p>Interpolates between previous and next states linearlly.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interp_exp_decay.html#inferno.interp_exp_decay" title="inferno.interp_exp_decay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_exp_decay</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.expdecay</span></code></p></td>
 <td><p>Interpolates by exponentially decaying value from previous state.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.expratedecay</span></code></p></td>
+<td><p>Interpolates by exponentially decaying value from previous state.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="parameter-bounding">
+<h2>Parameter Bounding<a class="headerlink" href="#parameter-bounding" title="Link to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable colwidths-given docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.FullBounding</span></code></p></td>
+<td><p>Callable used to apply bounding to the lower and upper limit of a parameter.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.HalfBounding</span></code></p></td>
+<td><p>Callable used to apply bounding to the lower or upper limit of a parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.power</span></code></p></td>
+<td><p>Computes the scaled update of power parameter dependence.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.upper_power</span></code></p></td>
+<td><p>Computes the scaled update of upper-bound power parameter dependence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.lower_power</span></code></p></td>
+<td><p>Computes the scaled update of lower-bound power parameter dependence.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.multiplicative</span></code></p></td>
+<td><p>Computes the scaled update of multiplicative parameter dependence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.upper_multiplicative</span></code></p></td>
+<td><p>Computes the scaled update of upper-bound multiplicative parameter dependence.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.lower_multiplicative</span></code></p></td>
+<td><p>Computes the scaled update of lower-bound multiplicative parameter dependence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.sharp</span></code></p></td>
+<td><p>Computes the scaled update of sharp parameter dependence.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.upper_sharp</span></code></p></td>
+<td><p>Computes the scaled update of upper-bound sharp parameter dependence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.lower_sharp</span></code></p></td>
+<td><p>Computes the scaled update of lower-bound sharp parameter dependence.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="types">
+<h2>Types<a class="headerlink" href="#types" title="Link to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable colwidths-given docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">types.OneToOne</span></code></p></td>
+<td><p>Callable type taking one input of a type and returning one output of the same type.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">types.ManyToOne</span></code></p></td>
+<td><p>Callable type taking an arbitrary number of inputs of a type and returning one output of the same type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">types.OneToMany</span></code></p></td>
+<td><p>Callable type taking one input of a type and returning an arbitrary number of outputs of the same type.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">types.ManyToMany</span></code></p></td>
+<td><p>Callable type taking an arbitrary number of inputs of a type and returning the same number of outputs of the same type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">types.OneToOneMethod</span></code></p></td>
+<td><p>Callable type taking a module and one input of a type and returning one output of the same type.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">types.ManyToOneMethod</span></code></p></td>
+<td><p>Callable type taking a module and an arbitrary number of inputs of a type and returning one output of the same type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">types.OneToManyMethod</span></code></p></td>
+<td><p>Callable type taking a module and one input of a type and returning an arbitrary number of outputs of the same type.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">types.ManyToManyMethod</span></code></p></td>
+<td><p>Callable type taking a module and an arbitrary number of inputs of a type and returning the same number of outputs of the same type.</p></td>
 </tr>
 </tbody>
 </table>
@@ -410,13 +518,22 @@
 <li><a class="reference internal" href="#infrastructure">Infrastructure</a><ul class="simple">
 </ul>
 </li>
-<li><a class="reference internal" href="#general-math">General Math</a><ul class="simple">
+<li><a class="reference internal" href="#tensor-creation">Tensor Creation</a><ul class="simple">
 </ul>
 </li>
-<li><a class="reference internal" href="#tensors">Tensors</a><ul class="simple">
+<li><a class="reference internal" href="#math-operations">Math Operations</a><ul class="simple">
+</ul>
+</li>
+<li><a class="reference internal" href="#spike-trace">Spike Trace</a><ul class="simple">
 </ul>
 </li>
 <li><a class="reference internal" href="#interpolation">Interpolation</a><ul class="simple">
+</ul>
+</li>
+<li><a class="reference internal" href="#parameter-bounding">Parameter Bounding</a><ul class="simple">
+</ul>
+</li>
+<li><a class="reference internal" href="#types">Types</a><ul class="simple">
 </ul>
 </li>
 </ul>

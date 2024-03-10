@@ -162,10 +162,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/infernotypes.html">inferno.infernotypes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../reference/bounding.html">inferno.bounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
@@ -224,7 +221,7 @@
 <span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">WeightBiasDelayMixin</span>
 <span class="kn">import</span> <span class="nn">einops</span> <span class="k">as</span> <span class="nn">ein</span>
 <span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span><span class="p">,</span> <span class="n">regroup</span>
-<span class="kn">from</span> <span class="nn">inferno.infernotypes</span> <span class="kn">import</span> <span class="n">OneToOne</span>
+<span class="kn">from</span> <span class="nn">...core.types</span> <span class="kn">import</span> <span class="n">OneToOne</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
@@ -545,7 +542,12 @@
 <span class="sd">            consequentially multiple elements may reference the same underlying</span>
 <span class="sd">            memory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> <span class="s2">&quot;f c h w -&gt; 1 (c h w) 1 f&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">delays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">delays</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">delays</span><span class="p">,</span> <span class="s2">&quot;f c h w -&gt; 1 (c h w) 1 f&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span>
         <span class="p">)</span>
 

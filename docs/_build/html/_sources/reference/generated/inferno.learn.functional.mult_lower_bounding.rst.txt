@@ -1,6 +1,0 @@
-﻿mult\_lower\_bounding
-=====================
-
-.. currentmodule:: inferno.learn.functional
-
-.. autofunction:: mult_lower_bounding
