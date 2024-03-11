@@ -33,26 +33,6 @@ def fzip(
         yield tuple(fn(e) for fn in fns)
 
 
-def get(obj: Mapping[Any, Any], key: Any, default: Any = None) -> Any:
-    r"""Safe mapping getter.
-
-    Like ``dict.get``, use for :py:class:`~torch.nn.ModuleDict` which doesn't
-    have this.
-
-    Args:
-        obj (Mapping[Any, Any]): map from which to get element.
-        key (Any): key to retrieve.
-        default (Any, optional): value if key isn't in the map. Defaults to None.
-
-    Returns:
-        Any: map value at key if found, otherwise the default.
-    """
-    if key in obj:
-        return obj[key]
-    else:
-        return default
-
-
 def unique(seq: Iterable[T], ids: bool = True) -> Iterator[T]:
     r"""Filters non-unique elements in an iterable.
 
@@ -121,7 +101,7 @@ class Proxy:
 
         # optionally chain proxies
         if self.otheracc:
-            return Proxy(res, self.otheracc[0], self.otheracc[1:])
+            return Proxy(res, self.otheracc[0], *self.otheracc[1:])
         else:
             return res
 

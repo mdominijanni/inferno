@@ -31,7 +31,7 @@ class CellTrainer(Module):
 
         # interal storage for cells and monitors
         self.cells_ = {}
-        self.auxiliary_ = nn.ModuleDict()
+        self.aux_state_ = nn.ModuleDict()
         self.monitors_ = nn.ModuleDict()
 
     @property
@@ -71,40 +71,24 @@ class CellTrainer(Module):
         return ((n, m) for n, m in getitem(self.monitors_, cell, {}).items())
 
     @property
-    def cells(self) -> Iterator[Cell]:
-        r"""Added cells.
+    def cells(self) -> Iterator[tuple[Cell, nn.Module | None]]:
+        r"""Added cells and their auxiliary states.
 
         Yields:
-            Cell: added cells.
+            Cell: added cells and their auxiliary states.
         """
-        return (c for c in self.cells_.values())
+        return ((c, getattr(self.aux_state_, n, None)) for n, c in self.cells_.items())
 
     @property
-    def named_cells(self) -> Iterator[tuple[str, Cell]]:
-        r"""Added cells and their names.
+    def named_cells(self) -> Iterator[tuple[str, tuple[Cell, nn.Module | None]]]:
+        r"""Added cell, their auxiliary states, and their names.
 
         Yields:
-            tuple[str, Cell]: tuple of an added cell and its name.
+            tuple[str, Cell]: tuple of an added cell, their auxiliary states, and its name.
         """
-        return ((n, c) for n, c in self.cells_.items())
-
-    @property
-    def aux(self) -> Iterator[nn.Module]:
-        r"""Auxiliary state associated with cells.
-
-        Yields:
-            nn.Module: tuple of added state and the associated cell name.
-        """
-        return (s for s in self.auxiliary_.values())
-
-    @property
-    def named_aux(self) -> Iterator[tuple[str, nn.Module]]:
-        r"""Auxiliary state associated with cells and their names.
-
-        Yields:
-            tuple[str, nn.Module]: tuple of added state and the associated cell name.
-        """
-        return ((n, s) for n, s in self.auxiliary_.items())
+        return (
+            (n, (c, getattr(self.aux_state_, n, None))) for n, c in self.cells_.items()
+        )
 
     def add_cell(
         self, name: str, cell: Cell, aux: nn.Module | None = None
@@ -121,7 +105,7 @@ class CellTrainer(Module):
             RuntimeError: given cell has no updater.
 
         Returns:
-            Cell: added cell.
+            tuple[Cell | None, nn.Module | None]: added cell and auxiliary state.
         """
         # ensure a trainable with the given name does not exist
         if name in self.cells_:
@@ -140,15 +124,15 @@ class CellTrainer(Module):
             del self.monitors_[name]
 
         # delete any existing state (should never occur)
-        if name in self.auxiliary_:
-            del self.auxiliary_[name]
+        if name in self.aux_state_:
+            del self.aux_state_[name]
 
         # add the cell
         self.cells_[name] = cell
         if aux is not None:
-            self.auxiliary_[name] = aux
+            self.aux_state_[name] = aux
 
-        return getitem(self.cells_, name), getitem(self.auxiliary_, name)
+        return getitem(self.cells_, name), getitem(self.aux_state_, name)
 
     def del_cell(self, name: str) -> None:
         r"""Deletes an added cell.
@@ -174,8 +158,8 @@ class CellTrainer(Module):
                 self.del_monitor(name, monitor)
 
         # delete any existing state
-        if name in self.auxiliary_:
-            del self.auxiliary_[name]
+        if name in self.aux_state_:
+            del self.aux_state_[name]
 
         # delete the cell
         del self.cells_[name]
@@ -187,9 +171,9 @@ class CellTrainer(Module):
             name (str): name of the trainable to get.
 
         Returns:
-            Trainable | None: specified trainable, if it exists.
+            tuple[Cell | None, nn.Module | None]: specified trainable, if it exists.
         """
-        return getitem(self.cells_, name), getitem(self.auxiliary_, name)
+        return getitem(self.cells_, name), getitem(self.aux_state_, name)
 
     def add_monitor(
         self,
@@ -333,9 +317,13 @@ class CellTrainer(Module):
         # call superclass function
         Module.train(self, mode)
 
-        # attach monitors
-        for monitor in self.monitors:
-            monitor.register()
+        # attach/detach monitors
+        if mode:
+            for monitor in self.monitors:
+                monitor.register()
+        else:
+            for monitor in self.monitors:
+                monitor.deregister()
 
     def clear(self, **kwargs):
         """Clears all of the monitors for the trainer.
@@ -405,7 +393,7 @@ class LayerwiseTrainer(CellTrainer, ABC):
         for name in self.cells_:
             yield (
                 getitem(self.cells_, name),
-                getitem(self.auxiliary_, name),
+                getitem(self.aux_state_, name),
                 {**getitem(self.monitors_, name, {})},
             )
 

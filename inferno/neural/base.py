@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 from .modeling import Updatable, Updater
 from .. import DimensionalModule, RecordModule, Module
 import math
-from functools import cached_property
 import torch
 from typing import Protocol
 from .mixins import ShapeMixin
@@ -510,7 +509,6 @@ class Connection(Updatable, Module, ABC):
         """
         return (self.bsize,) + self.outshape
 
-    @cached_property
     def insize(self) -> int:
         r"""Number of inputs to the connection, excluding the batch dimension.
 
@@ -524,7 +522,6 @@ class Connection(Updatable, Module, ABC):
         """
         return math.prod(self.inshape)
 
-    @cached_property
     def outsize(self) -> int:
         r"""Number of outputs from the connection, excluding the batch dimension.
 
@@ -821,14 +818,14 @@ class Connection(Updatable, Module, ABC):
             "the method `presyn_receptive`."
         )
 
-    def setupdater(
+    def defaultupdater(
         self,
         *includes: str,
         exclude_weight: bool = False,
         exclude_bias: bool = False,
         exclude_delay: bool = False,
     ) -> Updater:
-        r"""Sets the updater for this connection.
+        r"""Default updater for this connection.
 
         Args:
             *includes (str): additional instance-specific parameters to include.
@@ -857,9 +854,8 @@ class Connection(Updatable, Module, ABC):
         if self.delayedby is not None and not exclude_delay:
             params.append("delay")
 
-        # create, set, and return the updater
-        self.updater_ = Updater(self, *(*params, *includes))
-        return self.updater_
+        # return the updater
+        return Updater(self, *(*params, *includes))
 
     @abstractmethod
     def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:

@@ -236,7 +236,7 @@ class STDP(LayerwiseTrainer):
             case "_":
                 raise RuntimeError(
                     f"an invalid trace mode of '{state.trace}' has been set, expected "
-                    "one of: 'cumulative', 'nearest'."
+                    "one of: 'cumulative', 'nearest'"
                 )
 
         monitor_kwargs = {

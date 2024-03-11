@@ -21,6 +21,9 @@ class Module(nn.Module):
     similar to regular tensor state (e.g. buffers and parameters). This enables simple
     export to and import from a state dictionary.
 
+    Additionally, attribute assignment will check if the name refers to a property in
+    the class and if so, uses ``object.__setattr__``.
+
     Note:
         Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made
         to the parent class before assignment on the child. This class's constructor
@@ -731,7 +734,7 @@ class DimensionalModule(Module):
 
 
 class RecordModule(DimensionalModule):
-    r"""_summary_
+    r"""Module with support for buffers and parameters with time-based indexing.
 
     Args:
         step_time (float): length of time between stored values in the record.

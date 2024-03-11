@@ -263,9 +263,14 @@ class Updater(Module):
     ``Module`` are small. See the methods :py:meth:`_get_`, :py:meth:`_set_`, and
     :py:meth:`_del_` for more information.
 
+    When a ``reduction`` is not specified, the default from
+    :py:attr:`Accumulator.reduction` is used.
+
     Args:
         module (Updatable): module with updatable parameters.
         *params (str): parameters to set as trainable.
+        reduction (Callable[[torch.Tensor, int], torch.Tensor] | None, optional):
+                function for reducing updates. Defaults to None.
 
     Caution:
         An ``Updater`` only weakly references its parent module, if its parent is
@@ -276,7 +281,13 @@ class Updater(Module):
         type of ``Updater``.
     """
 
-    def __init__(self, module: Updatable, *params: str, **kwargs):
+    def __init__(
+        self,
+        module: Updatable,
+        *params: str,
+        reduction: Callable[[torch.Tensor, int], torch.Tensor] | None = None,
+        **kwargs,
+    ):
         # define dynamic class
         self.__class__ = type(
             f"{type(module).__name__}{type(self).__name__}",
@@ -302,6 +313,9 @@ class Updater(Module):
 
         # set update states and associated functions
         self.updates_ = nn.ModuleDict({p: Accumulator() for p in params})
+        if reduction:
+            for acc in self.updates_.values:
+                acc.reduction = reduction
 
     @staticmethod
     def _get_(self: Updater, attr: str) -> Accumulator:
@@ -431,18 +445,28 @@ class Updatable(ABC):
 
         Deleting this attribute deletes the associated updater.
 
+        Args:
+            Updater: new updater to set.
+
         Returns:
             Updater | None: current updater if it exists, otherwise None.
         """
         return self.updater_
+
+    @updater.setter
+    def updater(self, value: Updater) -> None:
+        self.updater_ = value
 
     @updater.deleter
     def updater(self) -> None:
         self.updater_ = None
 
     @abstractmethod
-    def setupdater(self, *args, **kwargs) -> Updater:
+    def defaultupdater(self, *includes: str, **kwargs) -> Updater:
         r"""Default updater for this object.
+
+        Args:
+            *includes (str): additional instance-specific parameters to include.
 
         Raises:
             RuntimeError: ``defaultupdater`` must be implemented by the subclass.
