@@ -1,7 +1,7 @@
+from .mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
 from .. import Neuron
 from .. import functional as nf
-from .mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
-from inferno._internal import numeric_limit, numeric_relative
+from ..._internal import argtest
 from itertools import zip_longest
 import torch
 from typing import Callable
@@ -58,35 +58,13 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         Neuron.__init__(self, shape, batch_size)
 
         # dynamics attributes
-        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
-        if e:
-            raise e
-
-        self.time_constant, e = numeric_limit(
-            "time_constant", time_constant, 0, "gt", float
-        )
-        if e:
-            raise e
-
-        self.rest_v, self.thresh_v, e = numeric_relative(
-            "rest_v", rest_v, "thresh_v", thresh_v, "lt", float
-        )
-        if e:
-            raise e
-
-        self.reset_v, _, e = numeric_relative(
-            "reset_v", reset_v, "thresh_v", thresh_v, "lt", float
-        )
-        if e:
-            raise e
-
-        self.refrac_t, e = numeric_limit("refrac_t", refrac_t, 0, "gte", float)
-        if e:
-            raise e
-
-        self.resistance, e = numeric_limit("resistance", resistance, 0, "neq", float)
-        if e:
-            raise
+        self.step_time = argtest.gt("step_time", step_time, 0, float)
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
+        self.rest_v = argtest.lt("rest_v", rest_v, thresh_v, float, "thresh_v")
+        self.reset_v = argtest.lt("reset_v", reset_v, thresh_v, float, "thresh_v")
+        self.thresh_v = float(thresh_v)
+        self.refrac_t = argtest.gte("refrac_t", refrac_t, 0, float)
+        self.resistance = argtest.neq("resistance", resistance, 0, float)
 
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
@@ -117,9 +95,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
 
     @dt.setter
     def dt(self, value: float):
-        self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
-        if e:
-            raise e
+        self.step_time = argtest.gt("dt", value, 0, float)
 
     def clear(self, **kwargs):
         r"""Resets neurons to their resting state."""
@@ -245,56 +221,33 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             spike_increment = (spike_increment,)
 
         # prepare converted lists
-        tcL, siL = [], []
+        tc_list, si_list = [], []
 
         # test values
-        for idx, (tcA, siA) in enumerate(zip_longest(tc_adaptation, spike_increment)):
+        for idx, (tc, si) in enumerate(zip_longest(tc_adaptation, spike_increment)):
             # time constant of adaptation
-            if tcA is None:
-                tcL.append(tcL[-1])
+            if tc is None:
+                tc_list.append(tc_list[-1])
             else:
-                v, e = numeric_limit(f"tc_adaptation[{idx}]", tcA, 0, "gt", float)
-                if e:
-                    raise e
-                tcL.append(v)
+                tc_list.append(argtest.gt("tc_adaptation[{idx}]", tc, 0, float))
 
             # threshold spike increment
-            if siL is None:
-                siL.append(siL[-1])
+            if si_list is None:
+                si_list.append(si_list[-1])
             else:
-                siL.append(float(siA))
+                si_list.append(float(si))
 
         # reassign
-        tc_adaptation, spike_increment = tcL, siL
+        tc_adaptation, spike_increment = tc_list, si_list
 
         # dynamics attributes
-        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
-        if e:
-            raise e
-
-        self.tc_membrane, e = numeric_limit("tc_membrane", tc_membrane, 0, "gt", float)
-        if e:
-            raise e
-
-        self.rest_v, self.thresh_eq_v, e = numeric_relative(
-            "rest_v", rest_v, "thresh_eq_v", thresh_eq_v, "lt", float
-        )
-        if e:
-            raise e
-
-        self.reset_v, _, e = numeric_relative(
-            "reset_v", reset_v, "thresh_eq_v", thresh_eq_v, "lt", float
-        )
-        if e:
-            raise e
-
-        self.refrac_t, e = numeric_limit("refrac_t", refrac_t, 0, "gte", float)
-        if e:
-            raise e
-
-        self.resistance, e = numeric_limit("resistance", resistance, 0, "neq", float)
-        if e:
-            raise
+        self.step_time = argtest.gt("step_time", step_time, 0, float)
+        self.tc_membrane = argtest.gt("tc_membrane", tc_membrane, 0, float)
+        self.rest_v = argtest.lt("rest_v", rest_v, thresh_eq_v, float, "thresh_eq_v")
+        self.reset_v = argtest.lt("reset_v", reset_v, thresh_eq_v, float, "thresh_eq_v")
+        self.thresh_eq_v = float(thresh_eq_v)
+        self.refrac_t = argtest.gte("refrac_t", refrac_t, 0, float)
+        self.resistance = argtest.neq("resistance", resistance, 0, float)
 
         # register adaptation attributes as buffers (for tensor ops and compatibility)
         self.register_buffer(
@@ -339,9 +292,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
 
     @dt.setter
     def dt(self, value: float):
-        self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
-        if e:
-            raise e
+        self.step_time = argtest.gt("dt", value, 0, float)
 
     def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
@@ -578,53 +529,34 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             spike_increment = (spike_increment,)
 
         # prepare converted lists
-        rcL, siL = [], []
+        rc_list, si_list = [], []
 
         # test values
-        for idx, (rcA, siA) in enumerate(zip_longest(rc_adaptation, spike_increment)):
+        for idx, (rc, si) in enumerate(zip_longest(rc_adaptation, spike_increment)):
             # time constant of adaptation
-            if rcA is None:
-                rcL.append(rcL[-1])
+            if rc is None:
+                rc_list.append(rc_list[-1])
             else:
-                v, e = numeric_limit(f"rc_adaptation[{idx}]", rcA, 0, "gt", float)
-                if e:
-                    raise e
-                rcL.append(v)
+                rc_list.append(argtest.gt(f"rc_adaptation[{idx}]", rc, 0, float))
 
             # threshold spike increment
-            if siL is None:
-                siL.append(siL[-1])
+            if si_list is None:
+                si_list.append(si_list[-1])
             else:
-                siL.append(float(siA))
+                si_list.append(float(si))
 
         # reassign
-        rc_adaptation, spike_increment = rcL, siL
+        rc_adaptation, spike_increment = rc_list, si_list
 
         # dynamics attributes
-        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
-        if e:
-            raise e
-
-        self.tc_membrane, e = numeric_limit("tc_membrane", tc_membrane, 0, "gt", float)
-        if e:
-            raise e
-
-        self.rest_v, self.thresh_eq_v, e = numeric_relative(
-            "rest_v", rest_v, "thresh_eq_v", thresh_eq_v, "lt", float
-        )
-        if e:
-            raise e
-
+        self.step_time = argtest.gt("step_time", step_time, 0, float)
+        self.tc_membrane = argtest.gt("tc_membrane", tc_membrane, 0, float)
+        self.rest_v = argtest.lt("rest_v", rest_v, thresh_eq_v, float, "thresh_eq_v")
+        self.thresh_eq_v = float(thresh_eq_v)
         self.reset_v_add = float(reset_v_add)
         self.reset_v_mul = float(reset_v_mul)
-
-        self.refrac_t, e = numeric_limit("refrac_t", refrac_t, 0, "gte", float)
-        if e:
-            raise e
-
-        self.resistance, e = numeric_limit("resistance", resistance, 0, "neq", float)
-        if e:
-            raise
+        self.refrac_t = argtest.gte("refrac_t", refrac_t, 0, float)
+        self.resistance = argtest.neq("resistance", resistance, 0, float)
 
         # register adaptation attributes as buffers (for tensor ops and compatibility)
         self.register_buffer(
@@ -669,9 +601,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
 
     @dt.setter
     def dt(self, value: float):
-        self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
-        if e:
-            raise e
+        self.step_time = argtest.gt("dt", value, 0, float)
 
     def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.

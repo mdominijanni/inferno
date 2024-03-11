@@ -1,4 +1,4 @@
-import inferno
+from ... import exp
 import torch
 
 
@@ -301,7 +301,7 @@ def adaptive_thresholds_linear_spike(
         :ref:`zoo/neurons-adaptation:Adaptive Threshold, Linear Spike-Dependent` in the zoo.
     """
     # decay adaptations over time
-    decayed = adaptations * inferno.exp(-step_time / time_constant)
+    decayed = adaptations * exp(-step_time / time_constant)
     if refracs is None:
         adaptations = decayed
     else:

@@ -1,13 +1,13 @@
 from . import constraints
 from .base import DiscreteDistribution, ContinuousDistribution
+from .. import astensors
 from functools import partial
-import inferno
 import math
 import torch
 
 
 _astensorsfloat = partial(
-    inferno.astensors, conversion=lambda x: torch.tensor(x).float()
+    astensors, conversion=lambda x: torch.tensor(x).float()
 )
 
 
@@ -699,7 +699,7 @@ class LogNormal(ContinuousDistribution):
         Returns:
             torch.Tensor: variance of the distribution with given parameters.
         """
-        loc, scale = inferno.astensors(
+        loc, scale = astensors(
             loc, scale, conversion=lambda x: torch.tensor(x).float()
         )
         scalesq = scale**2

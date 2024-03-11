@@ -1,6 +1,6 @@
 from __future__ import annotations
 from .base import FoldingReducer
-import inferno
+from ... import interpolation
 from ...core.types import OneToOne
 import torch
 
@@ -140,4 +140,4 @@ class PassthroughReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return inferno.interp_previous(prev_data, next_data, sample_at, step_time)
+        return interpolation.previous(prev_data, next_data, sample_at, step_time)

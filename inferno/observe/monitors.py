@@ -1,7 +1,7 @@
 from __future__ import annotations
 from . import Reducer
 from .. import Module, Hook
-from inferno._internal import rgetattr
+from .._internal import rgetattr
 import torch
 from typing import Any, Callable, Protocol
 import warnings

@@ -1,8 +1,8 @@
 from __future__ import annotations
+from .. import Module
+from .._internal import fzip, getitem, rgetitem, unique
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
-from .. import Module
-from inferno._internal import getitem, fzip, rgetitem, unique
 from inferno.neural import Cell, Layer
 from inferno.observe import Monitor, MonitorConstructor
 from itertools import chain

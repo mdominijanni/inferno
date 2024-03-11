@@ -3,13 +3,12 @@ from . import Connection, Neuron, Synapse
 from .modeling import Updater
 from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
 from .. import Module
-from .._internal import Proxy, rgetitem
+from .._internal import Proxy, argtest, rgetattr, rgetitem
 from ..core.types import OneToOne
+from ..observe import Monitor, MonitorConstructor
 from abc import ABC, abstractmethod
 from collections.abc import Iterator, Iterable, Mapping
 import einops as ein
-from inferno._internal import argtest, rgetattr
-from inferno.observe import Monitor, MonitorConstructor
 from itertools import chain
 import torch
 import torch.nn as nn

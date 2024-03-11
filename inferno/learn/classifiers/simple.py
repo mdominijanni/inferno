@@ -1,6 +1,6 @@
 import einops as ein
 from ... import Module
-from inferno._internal import numeric_limit, multiple_numeric_limit
+from ..._internal import argtest
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -37,17 +37,11 @@ class MaxRateClassifier(Module):
 
         # validate parameters
         try:
-            shape, e = numeric_limit("shape", shape, 0, "gt", int)
-            if e:
-                raise e
+            shape = (argtest.gt("shape", shape, 0, int),)
         except TypeError:
-            shape, e = multiple_numeric_limit("shape", shape, 0, "gt", int, False)
-            if e:
-                raise e
+            shape = argtest.ofsequence("shape", shape, argtest.gt, 0, int)
 
-        num_classes, e = numeric_limit("num_classes", num_classes, 0, "gt", int)
-        if e:
-            raise e
+        num_classes = argtest.gt("num_classes", num_classes, 0, int)
 
         # class attributes
         self._proportional = proportional
@@ -69,9 +63,7 @@ class MaxRateClassifier(Module):
         )
 
         # class attribute
-        self.decay, e = numeric_limit("decay", decay, 0, "gte", float)
-        if e:
-            raise e
+        self.decay = argtest.gte("decay", decay, 0, float)
 
         # run after loading state_dict to recompute non-persistent buffers
         def sdhook(module, incompatible_keys) -> None:

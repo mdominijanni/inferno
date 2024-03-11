@@ -1,22 +1,11 @@
 from .utils import (
     Proxy,
-    regroup,
-    newtensor,
     rgetattr,
     rsetattr,
     fzip,
     unique,
     rgetitem,
     getitem,
-)
-
-from .exceptions import (
-    numeric_limit,
-    multiple_numeric_limit,
-    numeric_relative,
-    numeric_interval,
-    instance_of,
-    attr_members,
 )
 
 from . import (
@@ -26,16 +15,8 @@ from . import (
 __all__ = [
     "argtest",
     "Proxy",
-    "regroup",
-    "newtensor",
     "rgetattr",
     "rsetattr",
-    "numeric_limit",
-    "multiple_numeric_limit",
-    "numeric_relative",
-    "numeric_interval",
-    "instance_of",
-    "attr_members",
     "fzip",
     "unique",
     "rgetitem",

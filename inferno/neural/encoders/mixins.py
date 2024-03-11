@@ -1,4 +1,4 @@
-from inferno._internal import numeric_limit
+from ..._internal import argtest
 import torch
 
 
@@ -11,9 +11,7 @@ class StepTimeMixin:
 
     def __init__(self, step_time: float):
         # encoder attributes
-        self.step_time, e = numeric_limit("step_time", step_time, 0, "gt", float)
-        if e:
-            raise e
+        self.step_time = argtest.gt("step_time", step_time, 0, float)
 
     @property
     def dt(self) -> float:
@@ -29,9 +27,7 @@ class StepTimeMixin:
 
     @dt.setter
     def dt(self, value: float) -> None:
-        self.step_time, e = numeric_limit("dt", value, 0, "gt", float)
-        if e:
-            raise e
+        self.step_time = argtest.gt("dt", value, 0, float)
 
 
 class StepMixin(StepTimeMixin):
@@ -47,9 +43,7 @@ class StepMixin(StepTimeMixin):
         StepTimeMixin.__init__(self, step_time)
 
         # encoder attributes
-        self.num_steps, e = numeric_limit("steps", steps, 0, "gt", int)
-        if e:
-            raise e
+        self.num_steps = argtest.gt("steps", steps, 0, int)
 
     @property
     def steps(self) -> int:
@@ -65,9 +59,7 @@ class StepMixin(StepTimeMixin):
 
     @steps.setter
     def steps(self, value: int) -> None:
-        self.num_steps, e = numeric_limit("steps", value, 0, "gt", int)
-        if e:
-            raise e
+        self.num_steps = argtest.gt("steps", value, 0, int)
 
     @property
     def duration(self) -> float:
@@ -98,9 +90,7 @@ class RefractoryStepMixin(StepMixin):
             self.interval_min = self.dt
         else:
             self.autorefrac = False
-            self.interval_min, e = numeric_limit("refrac", refrac, 0, "gte", float)
-            if e:
-                raise e
+            self.interval_min = argtest.gte("refrac", refrac, 0, float)
 
     @property
     def dt(self) -> float:
@@ -140,9 +130,7 @@ class RefractoryStepMixin(StepMixin):
             self.interval_min = self.dt
         else:
             self.autorefrac = False
-            self.interval_min, e = numeric_limit("refrac", value, 0, "gte", float)
-            if e:
-                raise e
+            self.interval_min = argtest.gte("refrac", value, 0, float)
 
 
 class GeneratorMixin:

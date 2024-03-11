@@ -1,6 +1,6 @@
 from .base import FoldingReducer
-import inferno
-from inferno._internal import numeric_interval
+from ... import exponential_smoothing, interpolation
+from ..._internal import argtest
 import torch
 
 
@@ -43,9 +43,7 @@ class EMAReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, duration)
 
         # set state
-        self.alpha, e = numeric_interval("alpha", alpha, 0, 1, "closed", float)
-        if e:
-            raise e
+        self.alpha = argtest.minmax_incl("alpha", alpha, 0, 1, float)
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of exponential smoothing.
@@ -58,7 +56,7 @@ class EMAReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return inferno.simple_exponential_smoothing(obs, state, alpha=self.alpha)
+        return exponential_smoothing(obs, state, alpha=self.alpha)
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to zero.
@@ -90,4 +88,4 @@ class EMAReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return inferno.interp_linear(prev_data, next_data, sample_at, step_time)
+        return interpolation.linear(prev_data, next_data, sample_at, step_time)

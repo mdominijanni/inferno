@@ -1,7 +1,7 @@
-from .. import functional as nf
 from .mixins import GeneratorMixin, StepMixin
+from .. import functional as nf
 from ... import Module
-from inferno._internal import numeric_limit
+from ..._internal import argtest
 import torch
 from typing import Iterator
 
@@ -35,9 +35,7 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
         Module.__init__(self)
 
         # set encoder attributes
-        self.freqscale, e = numeric_limit("frequency", frequency, 0, "gte", float)
-        if e:
-            raise e
+        self.freqscale = argtest.gte("frequency", frequency, 0, float)
 
         # call mixin constructors
         StepMixin.__init__(self, step_time=step_time, steps=steps)
@@ -57,14 +55,7 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
 
     @frequency.setter
     def frequency(self, value: float) -> None:
-        self.freqscale, e = numeric_limit("value", value, 0, "gte", float)
-        if e:
-            raise e
-
-        # test that the state is still valid
-        e = self.valid
-        if e:
-            raise e
+        self.freqscale = argtest.gte("value", value, 0, float)
 
     def forward(
         self, inputs: torch.Tensor, online: bool = False

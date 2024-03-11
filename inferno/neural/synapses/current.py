@@ -1,11 +1,11 @@
+from .mixins import SpikeCurrentMixin, SpikeDerivedCurrentMixin
+from .mixins import DelayedSpikeCurrentAccessorMixin
+from .. import Synapse, SynapseConstructor
 from ... import interpolation
 from ..._internal import argtest
 import functools
 import torch
 from typing import Literal
-from .mixins import SpikeCurrentMixin, SpikeDerivedCurrentMixin
-from .mixins import DelayedSpikeCurrentAccessorMixin
-from .. import Synapse, SynapseConstructor
 
 
 class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, Synapse):

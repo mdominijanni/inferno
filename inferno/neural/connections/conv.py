@@ -1,9 +1,9 @@
+from .mixins import WeightBiasDelayMixin
 from ..base import Connection, SynapseConstructor
 from ..base import Synapse  # noqa:F401, for docstrings
-from .mixins import WeightBiasDelayMixin
-import einops as ein
-from inferno._internal import numeric_limit, regroup
+from ..._internal import argtest
 from ...core.types import OneToOne
+import einops as ein
 import math
 import torch
 import torch.nn.functional as F
@@ -96,113 +96,53 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         delay_init: OneToOne[torch.Tensor] | None = None,
     ):
         # connection attributes
-        self.height, e = numeric_limit("height", height, 0, "gt", int)
-        if e:
-            raise e
-        self.width, e = numeric_limit("width", width, 0, "gt", int)
-        if e:
-            raise e
-        self.channels, e = numeric_limit("channels", channels, 0, "gt", int)
-        if e:
-            raise e
-        self.filters, e = numeric_limit("filters", filters, 0, "gt", int)
-        if e:
-            raise e
+        self.height = argtest.gt("height", height, 0, int)
+        self.width = argtest.gt("width", width, 0, int)
+        self.channels = argtest.gt("channels", channels, 0, int)
+        self.filters = argtest.gt("filters", filters, 0, int)
 
         try:
-            self.kernel, e1, e2 = regroup(
-                (
-                    *numeric_limit("kernel[0]", kernel[0], 0, "gt", int),
-                    *numeric_limit("kernel[1]", kernel[1], 0, "gt", int),
-                ),
-                ((0, 2), 1, 3),
-            )
-            if e1:
-                raise e1
-            if e2:
-                raise e2
+            self.kernel = argtest.ofsequence("kernel", kernel, argtest.gt, 0, int)
         except TypeError:
-            self.kernel, e = regroup(
-                numeric_limit("kernel", kernel, 0, "gt", int), ((0, 0), 1)
-            )
-            if e:
-                raise e
+            k = argtest.gt("kernel", kernel, 0, int)
+            self.kernel = (k, k)
         except IndexError:
             raise ValueError(
                 "nonscalar 'kernel' must be of length 2, is of "
-                f"length {len(kernel)}."
+                f"length {len(kernel)}"
             )
 
         try:
-            self.stride, e1, e2 = regroup(
-                (
-                    numeric_limit("stride[0]", stride[0], 0, "gt", int),
-                    numeric_limit("stride[1]", stride[1], 0, "gt", int),
-                ),
-                ((0, 2), 3, 3),
-            )
-            if e1:
-                raise e1
-            if e2:
-                raise e2
+            self.stride = argtest.ofsequence("stride", stride, argtest.gt, 0, int)
         except TypeError:
-            self.stride, e = regroup(
-                numeric_limit("stride", stride, 0, "gt", int), ((0, 0), 1)
-            )
-            if e:
-                raise e
+            s = argtest.gt("stride", stride, 0, int)
+            self.stride = (s, s)
         except IndexError:
             raise ValueError(
                 "nonscalar 'stride' must be of length 2, is of "
-                f"length {len(stride)}."
+                f"length {len(stride)}"
             )
 
         try:
-            self.padding, e1, e2 = regroup(
-                (
-                    numeric_limit("padding[0]", padding[0], 0, "gte", int),
-                    numeric_limit("padding[1]", padding[1], 0, "gte", int),
-                ),
-                ((0, 2), 3, 3),
-            )
-            if e1:
-                raise e1
-            if e2:
-                raise e2
+            self.padding = argtest.ofsequence("padding", padding, argtest.gte, 0, int)
         except TypeError:
-            self.padding, e = regroup(
-                numeric_limit("padding", padding, 0, "gte", int), ((0, 0), 1)
-            )
-            if e:
-                raise e
+            p = argtest.gt("padding", padding, 0, int)
+            self.padding = (p, p)
         except IndexError:
             raise ValueError(
                 "nonscalar 'padding' must be of length 2, is of "
-                f"length {len(padding)}."
+                f"length {len(padding)}"
             )
 
         try:
-            self.dilation, e1, e2 = regroup(
-                (
-                    numeric_limit("dilation[0]", dilation[0], 0, "gt", int),
-                    numeric_limit("dilation[1]", dilation[1], 0, "gt", int),
-                ),
-                ((0, 2), 3, 3),
-            )
-            if e1:
-                raise e1
-            if e2:
-                raise e2
+            self.dilation = argtest.ofsequence("dilation", dilation, argtest.gt, 0, int)
         except TypeError:
-            self.dilation, e = regroup(
-                numeric_limit("dilation", dilation, 0, "gt", int), ((0, 0), 1)
-            )
-            if e:
-                raise e
+            d = argtest.gt("dilation", dilation, 0, int)
+            self.dilation = (d, d)
         except IndexError:
             raise ValueError(
                 "nonscalar 'dilation' must be of length 2, is of "
-                f"length {len(dilation)}."
+                f"length {len(dilation)}"
             )
 
         self.outheight, self.outwidth = (

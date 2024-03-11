@@ -1,9 +1,9 @@
 from __future__ import annotations
 from .. import LayerwiseTrainer
 from ... import Module
-from inferno._internal import argtest
-from inferno.neural import Cell
-from inferno.observe import (
+from ..._internal import argtest
+from ...neural import Cell
+from ...observe import (
     StateMonitor,
     CumulativeTraceReducer,
     NearestTraceReducer,

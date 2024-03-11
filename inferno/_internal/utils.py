@@ -1,6 +1,5 @@
 from collections.abc import Iterable, Iterator, Mapping
 from functools import reduce
-import torch
 from typing import Any, Callable, TypeVar
 
 T = TypeVar("T")
@@ -104,29 +103,6 @@ class Proxy:
             return Proxy(res, self.otheracc[0], *self.otheracc[1:])
         else:
             return res
-
-
-def regroup(
-    flatseq: tuple[Any, ...], groups: tuple[int | tuple, ...]
-) -> tuple[Any, ...]:
-    return tuple(
-        flatseq[g] if isinstance(g, int) else regroup(flatseq, g) for g in groups
-    )
-
-
-def newtensor(obj: Any) -> torch.Tensor:
-    r"""Creates a new tensor from an existing object, tensor or otherwise.
-
-    Args:
-        obj (Any): object off of which new tensor should be constructed.
-
-    Returns:
-       torch.Tensor: newly constructed tensor.
-    """
-    try:
-        return obj.clone().detach()
-    except AttributeError:
-        return torch.tensor(obj)
 
 
 def rgetattr(obj: object, attr: str, *default) -> Any:

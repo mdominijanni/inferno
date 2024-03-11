@@ -1,11 +1,11 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod
+from .mixins import ShapeMixin
 from .modeling import Updatable, Updater
 from .. import DimensionalModule, RecordModule, Module
+from abc import ABC, abstractmethod
 import math
 import torch
 from typing import Protocol
-from .mixins import ShapeMixin
 
 
 class Neuron(ShapeMixin, DimensionalModule, ABC):
@@ -218,6 +218,12 @@ class Synapse(ShapeMixin, RecordModule, ABC):
         RecordModule.__init__(self, step_time, delay)
         ShapeMixin.__init__(self, shape, batch_size)
 
+    def extra_repr(self) -> str:
+        r"""Returns extra information on this module."""
+        return (
+            f"shape={self.shape}, bsize={self.bsize}, dt={self.dt}, delay={self.delay}"
+        )
+
     @classmethod
     @abstractmethod
     def partialconstructor(cls, *args, **kwargs) -> SynapseConstructor:
@@ -402,6 +408,12 @@ class Connection(Updatable, Module, ABC):
 
         # register submodule
         self.register_module("synapse_", synapse)
+
+    def extra_repr(self) -> str:
+        r"""Returns extra information on this module."""
+        return (
+            f"inshape={self.inshape}, outshape={self.outshape}, delay={self.delayedby}"
+        )
 
     @property
     def synapse(self) -> Synapse:

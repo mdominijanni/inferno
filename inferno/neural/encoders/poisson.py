@@ -1,7 +1,7 @@
 from .. import functional as nf
 from .mixins import GeneratorMixin, RefractoryStepMixin
 from ... import Module
-from inferno._internal import numeric_limit
+from ..._internal import argtest
 import torch
 from typing import Iterator
 
@@ -47,10 +47,7 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         Module.__init__(self)
 
         # set encoder attributes
-        self.freqscale, e = numeric_limit("frequency", frequency, 0, "gte", float)
-        if e:
-            raise e
-
+        self.freqscale = argtest.gte("frequency", frequency, 0, float)
         self.refrac_compensated = bool(compensate)
 
         # call mixin constructors
@@ -75,11 +72,9 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
     def compensated(self, value: bool) -> None:
         # refrac-frequency compatibility test
         if value:
-            _, e = numeric_limit(
-                "frequency * refrac", self.frequency * self.refrac, 1000, "lt", float
+            _ = argtest.lt(
+                "frequency * refrac", self.frequency * self.refrac, 1000, float
             )
-            if e:
-                raise e
 
         self.refrac_compensated = bool(value)
 
@@ -99,15 +94,9 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
     def frequency(self, value: float) -> None:
         # refrac-frequency compatibility test
         if self.compensated:
-            _, e = numeric_limit(
-                "frequency * refrac", value * self.refrac, 1000, "lt", float
-            )
-            if e:
-                raise e
+            _ = argtest.lt("frequency * refrac", value * self.refrac, 1000, float)
 
-        self.freqscale, e = numeric_limit("frequency", value, 0, "gte", float)
-        if e:
-            raise e
+        self.freqscale = argtest.gte("frequency", value, 0, float)
 
     @property
     def refrac(self) -> float:
@@ -127,11 +116,9 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         # refrac-frequency compatibility test
         if self.compensated:
             newrefrac = self.dt if value is None else value
-            _, e = numeric_limit(
-                "refrac * frequency ", newrefrac * self.frequency, 1000, "lt", float
+            _ = argtest.lt(
+                "refrac * frequency ", newrefrac * self.frequency, 1000, float
             )
-            if e:
-                raise e
 
         return RefractoryStepMixin.refrac.fset(self, value)
 

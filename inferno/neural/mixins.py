@@ -1,6 +1,5 @@
-from functools import cached_property
 from .. import DimensionalModule
-from inferno._internal import instance_of, numeric_limit, multiple_numeric_limit
+from .._internal import argtest
 import math
 
 
@@ -24,12 +23,8 @@ class BatchMixin:
         self,
         batch_size: int,
     ):
-        e = instance_of("self", self, DimensionalModule)
-        if e:
-            raise e
-        batch_size, e = numeric_limit("batch_size", batch_size, 0, "gt", int)
-        if e:
-            raise e
+        _ = argtest.instance("self", self, DimensionalModule)
+        batch_size = argtest.gt("batch_size", batch_size, 0, int)
 
         # check that a conflicting constraint doesn't exist
         if 0 in self.constraints:
@@ -55,9 +50,7 @@ class BatchMixin:
 
     @bsize.setter
     def bsize(self, value: int) -> None:
-        value, e = numeric_limit("bsize", value, 0, "gt", int)
-        if e:
-            raise e
+        value = argtest.gt("bsize", value, 0, int)
         if value != self.bsize:
             self.reconstrain(0, value)
 
@@ -80,7 +73,7 @@ class ShapeMixin(BatchMixin):
         Do not manually change this constraint, it is managed through :py:attr:`bsize`.
 
     Note:
-        This sets an attribute ``_shape`` which is managed internally.
+        This sets an attribute ``__shape`` which is managed internally.
     """
 
     def __init__(self, shape: tuple[int, ...] | int, batch_size: int):
@@ -89,32 +82,9 @@ class ShapeMixin(BatchMixin):
 
         # validate and set shape
         try:
-            self._shape, e = numeric_limit("shape", shape, 0, "gt", int)
-            if e:
-                raise e
-            self._shape = (self._shape,)
+            self.__shape = (argtest.gt("shape", shape, 0, int),)
         except TypeError:
-            self._shape, e = multiple_numeric_limit("shape", shape, 0, "gt", int, False)
-            if e:
-                raise e
-
-    @property
-    def bsize(self) -> int:
-        r"""Batch size of the module.
-
-        Args:
-            value (int): new batch size.
-
-        Returns:
-            int: present batch size.
-        """
-        return BatchMixin.bsize.fget(self)
-
-    @bsize.setter
-    def bsize(self, value: int) -> None:
-        BatchMixin.bsize.fset(self, value)
-        if hasattr(self, "bshape"):
-            del self.bshape
+            self.__shape = argtest.ofsequence("shape", shape, argtest.gt, 0, int)
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -123,22 +93,22 @@ class ShapeMixin(BatchMixin):
         Returns:
             tuple[int, ...]: Shape of the module.
         """
-        return self._shape
+        return self.__shape
 
-    @cached_property
+    @property
     def bshape(self) -> tuple[int, ...]:
         r"""Batch shape of the module
 
         Returns:
             tuple[int, ...]: Shape of the module, including the batch dimension.
         """
-        return (self.bsize,) + self.shape
+        return (self.bsize,) + self.__shape
 
-    @cached_property
+    @property
     def count(self) -> int:
         r"""Number of elements in the module, excluding replication along the batch dim.
 
         Returns:
             int: number of elements in the module.
         """
-        return math.prod(self._shape)
+        return math.prod(self.__shape)
