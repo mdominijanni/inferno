@@ -4,6 +4,7 @@ import torch
 from typing import Any, Callable, TypeVar
 
 T = TypeVar("T")
+K, V = TypeVar("K"), TypeVar("V")
 
 
 def fzip(
@@ -198,3 +199,61 @@ def rsetattr(obj: object, attr: str, val: Any):
     """
     pre, _, post = attr.rpartition(".")
     return setattr(rgetattr(obj, pre) if pre else obj, post, val)
+
+
+def getitem(data: Mapping[K, V], key: Iterable[K], *default: V) -> V:
+    r"""Provides a safe general accessor for mappings.
+
+    Like :py:meth:`dict.get` except for mappings without that supported method,
+    such as :py:class:`~torch.nn.ModuleDict`.
+
+    Args:
+        data (Mapping[K, V]): mapping from which to retrieve the value.
+        key (Iterable[K]): keys to access.
+        *default (V, optional): if specified, including with None, it will be
+            returned if attr is not found.
+
+    Returns:
+        V: found value, or if not found and a default was specified, the default.
+    """
+    if key in data:
+        return data[key]
+    elif default:
+        return default[0]
+    else:
+        raise KeyError(key)
+
+
+def rgetitem(data: Mapping[K, V], keyseq: Iterable[K], *default: V) -> V:
+    r"""Gets value from a map given a hierarchicial sequence of keys.
+
+    Args:
+        data (Mapping[K, V]): mapping from which to retrieve the nested value.
+        keyseq (Iterable[K]): sequence of keys to access.
+        *default (V, optional): if specified, including with None, it will be
+            returned if attr is not found.
+
+    Raises:
+        KeyError: at some point in the key chain, the key was not found and no
+        default was specified.
+
+    Returns:
+        V: found value, or if not found and a default was specified, the default.
+
+    Note:
+        If a default is specified, it will be returned if at any point in the chain,
+        the attribute is not found. If multiple values are passed with ``*default``,
+        only the first will be used.
+    """
+    d = data
+
+    for depth, key in enumerate(keyseq):
+        if key in d:
+            d = d[key]
+        elif default:
+            d = default[0]
+            break
+        else:
+            raise KeyError(key, f"depth={depth}")
+
+    return d

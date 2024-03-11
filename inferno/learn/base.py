@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from .. import Module
-from inferno._internal import get, fzip, unique
+from inferno._internal import getitem, fzip, rgetitem, unique
 from inferno.neural import Cell, Layer
 from inferno.observe import Monitor, MonitorConstructor
 from itertools import chain
@@ -68,7 +68,7 @@ class CellTrainer(Module):
         Yields:
             tuple[str, Monitor]: associated monitors and their names.
         """
-        return ((n, m) for n, m in get(self.monitors_, cell, {}).items())
+        return ((n, m) for n, m in getitem(self.monitors_, cell, {}).items())
 
     @property
     def cells(self) -> Iterator[Cell]:
@@ -148,7 +148,7 @@ class CellTrainer(Module):
         if aux is not None:
             self.auxiliary_[name] = aux
 
-        return get(self.cells_, name), get(self.auxiliary_, name)
+        return getitem(self.cells_, name), getitem(self.auxiliary_, name)
 
     def del_cell(self, name: str) -> None:
         r"""Deletes an added cell.
@@ -189,7 +189,7 @@ class CellTrainer(Module):
         Returns:
             Trainable | None: specified trainable, if it exists.
         """
-        return get(self.cells_, name), get(self.auxiliary_, name)
+        return getitem(self.cells_, name), getitem(self.auxiliary_, name)
 
     def add_monitor(
         self,
@@ -235,12 +235,12 @@ class CellTrainer(Module):
             raise AttributeError(f"'cell' ('{cell}') is not the name of an added cell")
 
         # test if the monitor already exists and return if it does, delete if unique
-        qmon = get(get(self.monitors_, cell, {}), name, None)
-        if qmon:
+        mon = rgetitem(self.monitors_, (cell, name), None)
+        if mon:
             if unique:
                 del self.monitors_[cell][name]
             else:
-                return qmon
+                return mon
 
         # create monitor group if it doesn't exist
         if cell not in self.monitors_:
@@ -314,7 +314,7 @@ class CellTrainer(Module):
         Returns:
             Monitor | None: specified monitor, if it exists.
         """
-        return get(get(self.monitors_, cell, {}), name, None)
+        return rgetitem(self.monitors_, (cell, name), None)
 
     def train(self, mode: bool = True) -> CellTrainer:
         r"""Override of module's train method.
@@ -404,9 +404,9 @@ class LayerwiseTrainer(CellTrainer, ABC):
         """
         for name in self.cells_:
             yield (
-                get(self.cells_, name),
-                get(self.auxiliary_, name),
-                {**get(self.monitors_, name, {})},
+                getitem(self.cells_, name),
+                getitem(self.auxiliary_, name),
+                {**getitem(self.monitors_, name, {})},
             )
 
     def _add_cell(

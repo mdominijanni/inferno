@@ -3,7 +3,7 @@ from . import Connection, Neuron, Synapse
 from .modeling import Updater
 from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
 from .. import Module
-from .._internal import get, Proxy
+from .._internal import Proxy, rgetitem
 from ..core.types import OneToOne
 from abc import ABC, abstractmethod
 from collections.abc import Iterator, Iterable, Mapping
@@ -450,7 +450,7 @@ class Layer(Module, ABC):
                 else:
                     return f"neurons_.{neuron}{'.' if attr else ''}{attr}"
             case "cell":
-                if not get(get(self.cells_, connection, {}), neuron, None):
+                if not rgetitem(self._cells, (connection, neuron), None):
                     raise AttributeError(
                         f"cell 'connection', 'neuron' ('{connection}', '{neuron}') is not valid"
                     )
