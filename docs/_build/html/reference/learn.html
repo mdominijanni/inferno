@@ -2,8 +2,8 @@
 <html class="no-js" lang="en" data-content_root="../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="LayerwiseUpdater" href="generated/inferno.learn.LayerwiseUpdater.html" /><link rel="prev" title="trace_cumulative_scaled" href="generated/inferno.neural.functional.trace_cumulative_scaled.html" />
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="CellTrainer" href="generated/inferno.learn.CellTrainer.html" /><link rel="prev" title="voltage_thresholding_slope_intercept" href="generated/inferno.neural.functional.voltage_thresholding_slope_intercept.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>inferno.learn - Inferno</title>
@@ -163,10 +163,8 @@
 <li class="toctree-l2"><a class="reference internal" href="neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="typing.html">inferno.typing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="stats.html">inferno.dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stats.html">inferno.stats</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -226,12 +224,15 @@
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.LayerwiseUpdater.html#inferno.learn.LayerwiseUpdater" title="inferno.learn.LayerwiseUpdater"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LayerwiseUpdater</span></code></a></p></td>
-<td><p>Updater for layers without interdependencies.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer" title="inferno.learn.CellTrainer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CellTrainer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.learn.LayerwiseTrainer.html#inferno.learn.LayerwiseTrainer" title="inferno.learn.LayerwiseTrainer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LayerwiseTrainer</span></code></a></p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -242,34 +243,12 @@
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.STDP.html#inferno.learn.STDP" title="inferno.learn.STDP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">STDP</span></code></a></p></td>
 <td><p>Spike-timing dependent plasticity updater.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="parameter-update-bounding">
-<h2>Parameter Update Bounding<a class="headerlink" href="#parameter-update-bounding" title="Link to this heading">#</a></h2>
-<div class="table-wrapper autosummary longtable colwidths-given docutils container">
-<table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.WeightDependence.html#inferno.learn.WeightDependence" title="inferno.learn.WeightDependence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WeightDependence</span></code></a></p></td>
-<td><p>Modifies update magnitudes with LTP/LTD to bound weights.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.learn.SoftWeightDependence.html#inferno.learn.SoftWeightDependence" title="inferno.learn.SoftWeightDependence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SoftWeightDependence</span></code></a></p></td>
-<td><p>Modifies weight updates using soft weight dependence.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.HardWeightDependence.html#inferno.learn.HardWeightDependence" title="inferno.learn.HardWeightDependence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HardWeightDependence</span></code></a></p></td>
-<td><p>Modifies weight updates using hard weight dependence.</p></td>
 </tr>
 </tbody>
 </table>
@@ -280,8 +259,8 @@
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier" title="inferno.learn.MaxRateClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaxRateClassifier</span></code></a></p></td>
@@ -298,23 +277,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="generated/inferno.learn.LayerwiseUpdater.html">
+          <a class="next-page" href="generated/inferno.learn.CellTrainer.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">LayerwiseUpdater</div>
+                <div class="title">CellTrainer</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="generated/inferno.neural.functional.trace_cumulative_scaled.html">
+          <a class="prev-page" href="generated/inferno.neural.functional.voltage_thresholding_slope_intercept.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">trace_cumulative_scaled</div>
+                <div class="title">voltage_thresholding_slope_intercept</div>
                 
               </div>
             </a>
@@ -353,9 +332,6 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#updaters-spike-timing-dependent-plasticity">Updaters, Spike-Timing Dependent Plasticity</a><ul class="simple">
-</ul>
-</li>
-<li><a class="reference internal" href="#parameter-update-bounding">Parameter Update Bounding</a><ul class="simple">
 </ul>
 </li>
 <li><a class="reference internal" href="#classifiers">Classifiers</a><ul class="simple">

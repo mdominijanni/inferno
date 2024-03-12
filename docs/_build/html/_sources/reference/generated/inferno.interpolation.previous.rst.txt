@@ -1,0 +1,6 @@
+﻿previous
+========
+
+.. currentmodule:: inferno
+
+.. autofunction:: previous

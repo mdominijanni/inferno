@@ -1,6 +1,0 @@
-﻿trace\_nearest\_scaled
-======================
-
-.. currentmodule:: inferno.neural.functional
-
-.. autofunction:: trace_nearest_scaled

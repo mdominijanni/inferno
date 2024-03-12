@@ -1,11 +1,11 @@
 from __future__ import annotations
+from .mixins import ShapeMixin
+from .modeling import Updatable, Updater
+from .. import DimensionalModule, RecordModule, Module
 from abc import ABC, abstractmethod
-from inferno import DimensionalModule, HistoryModule, Module
 import math
-from functools import cached_property
 import torch
 from typing import Protocol
-from .mixins import ShapeMixin
 
 
 class Neuron(ShapeMixin, DimensionalModule, ABC):
@@ -172,7 +172,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
 
 
 class SynapseConstructor(Protocol):
-    """Common constructor for synapses, used by :py:class:`Connection` objects.
+    r"""Common constructor for synapses, used by :py:class:`Connection` objects.
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of synapses,
@@ -196,7 +196,7 @@ class SynapseConstructor(Protocol):
         ...
 
 
-class Synapse(ShapeMixin, HistoryModule, ABC):
+class Synapse(ShapeMixin, RecordModule, ABC):
     r"""Base class for representing the input synapses for a connection.
 
     Args:
@@ -215,12 +215,18 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         batch_size: int,
     ):
         # superclass constructors
-        HistoryModule.__init__(self, step_time, delay)
+        RecordModule.__init__(self, step_time, delay)
         ShapeMixin.__init__(self, shape, batch_size)
+
+    def extra_repr(self) -> str:
+        r"""Returns extra information on this module."""
+        return (
+            f"shape={self.shape}, bsize={self.bsize}, dt={self.dt}, delay={self.delay}"
+        )
 
     @classmethod
     @abstractmethod
-    def partialconstructor(self, *args, **kwargs) -> SynapseConstructor:
+    def partialconstructor(cls, *args, **kwargs) -> SynapseConstructor:
         r"""Returns a function with a common signature for synapse construction.
 
         Raises:
@@ -231,7 +237,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
            SynapseConstructor: partial constructor for synapses of a given class.
         """
         raise NotImplementedError(
-            f"{type(self).__name__}(Synapse) must implement "
+            f"{cls.__name__}(Synapse) must implement "
             "the method `partialconstructor`."
         )
 
@@ -245,11 +251,11 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         Returns:
             float: present simulation time step length.
         """
-        return HistoryModule.dt.fget(self)
+        return RecordModule.dt.fget(self)
 
     @dt.setter
     def dt(self, value: float):
-        HistoryModule.dt.fset(self, value)
+        RecordModule.dt.fset(self, value)
         self.clear()
 
     @property
@@ -259,13 +265,13 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         Returns:
             float: maximum supported delay.
         """
-        return self.hlen
+        return self.duration
 
     @delay.setter
     def delay(self, value: float) -> None:
-        hsize = self.hsize
-        self.hlen = value
-        if hsize != self.hsize:
+        recordsz = self.recordsz
+        self.duration = value
+        if recordsz != self.recordsz:
             self.clear()
 
     @property
@@ -385,7 +391,7 @@ class Synapse(ShapeMixin, HistoryModule, ABC):
         )
 
 
-class Connection(Module, ABC):
+class Connection(Updatable, Module, ABC):
     r"""Base class for representing a weighted connection between two groups of neurons.
 
     Args:
@@ -396,11 +402,18 @@ class Connection(Module, ABC):
         self,
         synapse: Synapse,
     ):
-        # superclass constructor
+        # superclass constructors
         Module.__init__(self)
+        Updatable.__init__(self)
 
         # register submodule
         self.register_module("synapse_", synapse)
+
+    def extra_repr(self) -> str:
+        r"""Returns extra information on this module."""
+        return (
+            f"inshape={self.inshape}, outshape={self.outshape}, delay={self.delayedby}"
+        )
 
     @property
     def synapse(self) -> Synapse:
@@ -497,7 +510,7 @@ class Connection(Module, ABC):
         Returns:
             tuple[int]: shape of inputs to the connection.
         """
-        return (self.bsize,) + self.binshape
+        return (self.bsize,) + self.inshape
 
     @property
     def boutshape(self) -> tuple[int, ...]:
@@ -508,7 +521,6 @@ class Connection(Module, ABC):
         """
         return (self.bsize,) + self.outshape
 
-    @cached_property
     def insize(self) -> int:
         r"""Number of inputs to the connection, excluding the batch dimension.
 
@@ -522,7 +534,6 @@ class Connection(Module, ABC):
         """
         return math.prod(self.inshape)
 
-    @cached_property
     def outsize(self) -> int:
         r"""Number of outputs from the connection, excluding the batch dimension.
 
@@ -661,7 +672,7 @@ class Connection(Module, ABC):
         r"""Currents from the synapse at the time last used by the connection.
 
         Returns:
-            torch.Tensor: last used  synaptic currents.
+            torch.Tensor: delay-offset synaptic currents.
 
         Note:
             If :py:attr:`delayed` is None, this should return the most recent synaptic
@@ -688,10 +699,11 @@ class Connection(Module, ABC):
         r"""Resets the state of the connection.
 
         Note:
-            This calls the method :py:meth:`Synapse.clear` on :py:attr:`synapse`,
-            assuming the connection itself has no clearable state. Keyword arguments
-            are passed through.
+            This calls the method :py:meth:`Synapse.clear` on :py:attr:`synapse` and
+            :py:meth:`Updater.clear` on :py:attr`updater`, assuming the connection
+            itself has no clearable state. Keyword arguments are passed through.
         """
+        Updatable.clear(self, **kwargs)
         self.synapse.clear(**kwargs)
 
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
@@ -817,6 +829,45 @@ class Connection(Module, ABC):
             f"{type(self).__name__}(Connection) must implement "
             "the method `presyn_receptive`."
         )
+
+    def defaultupdater(
+        self,
+        *includes: str,
+        exclude_weight: bool = False,
+        exclude_bias: bool = False,
+        exclude_delay: bool = False,
+    ) -> Updater:
+        r"""Default updater for this connection.
+
+        Args:
+            *includes (str): additional instance-specific parameters to include.
+            exclude_weight (bool, optional): if weight should not be an updatable
+                parameter. Defaults to False.
+            exclude_bias (bool, optional): if bias should not be an updatable
+                parameter. Defaults to False.
+            exclude_delay (bool, optional): if delay should not be an updatable
+                parameter. Defaults to False.
+
+        This will set and return an :py:class:`Updater` with the following trainable
+        parameters:
+
+        * ``weight``
+        * ``bias``, if :py:attr:`biased` is ``True``
+        * ``delay``, if :py:attr:`delayedby` is not ``None``
+
+        Returns:
+            Updater: newly set updater.
+        """
+        # determine updatable parameters
+        if not exclude_weight:
+            params = ["weight"]
+        if self.biased and not exclude_bias:
+            params.append("bias")
+        if self.delayedby is not None and not exclude_delay:
+            params.append("delay")
+
+        # return the updater
+        return Updater(self, *(*params, *includes))
 
     @abstractmethod
     def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:

@@ -1,6 +1,0 @@
-﻿power\_lower\_bounding
-======================
-
-.. currentmodule:: inferno.learn.functional
-
-.. autofunction:: power_lower_bounding

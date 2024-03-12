@@ -1,0 +1,6 @@
+﻿lower\_multiplicative
+=====================
+
+.. currentmodule:: inferno
+
+.. autofunction:: lower_multiplicative

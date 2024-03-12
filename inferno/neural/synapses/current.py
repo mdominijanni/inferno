@@ -1,11 +1,11 @@
-import functools
-import inferno
-from inferno._internal import numeric_limit
-import torch
-from typing import Literal
 from .mixins import SpikeCurrentMixin, SpikeDerivedCurrentMixin
 from .mixins import DelayedSpikeCurrentAccessorMixin
 from .. import Synapse, SynapseConstructor
+from ... import interpolation
+from ..._internal import argtest
+import functools
+import torch
+from typing import Literal
 
 
 class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, Synapse):
@@ -55,15 +55,13 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
         Synapse.__init__(self, shape, step_time, delay, batch_size)
 
         # synapse attributes
-        self.spike_q, e = numeric_limit("spike_q", spike_q, 0, "neq", float)
-        if e:
-            raise e
+        self.spike_q = argtest.neq("spike_q", spike_q, 0, float)
 
         match interp_mode.lower():
             case "nearest":
-                interp = inferno.interp_nearest
+                interp = interpolation.nearest
             case "previous":
-                interp = inferno.interp_previous
+                interp = interpolation.previous
             case _:
                 raise RuntimeError(
                     f"invalid interp_mode '{interp_mode}' received, must be one of "
@@ -72,7 +70,7 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
 
         # call mixin constructors
         SpikeDerivedCurrentMixin.__init__(
-            self, torch.zeros(*self.bshape, self.hsize, dtype=torch.bool), False
+            self, torch.zeros(*self.bshape, self.recordsz, dtype=torch.bool), False
         )
         DelayedSpikeCurrentAccessorMixin.__init__(
             self,
@@ -210,15 +208,13 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
         Synapse.__init__(self, shape, step_time, delay, batch_size)
 
         # synapse attributes
-        self.spike_q, e = numeric_limit("spike_q", spike_q, 0, "neq", float)
-        if e:
-            raise e
+        self.spike_q = argtest.neq("spike_q", spike_q, 0, float)
 
         match interp_mode.lower():
             case "nearest":
-                interp = inferno.interp_nearest
+                interp = interpolation.nearest
             case "previous":
-                interp = inferno.interp_previous
+                interp = interpolation.previous
             case _:
                 raise RuntimeError(
                     f"invalid interp_mode '{interp_mode}' received, must be one of "
@@ -228,8 +224,8 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
         # call mixin constructors
         SpikeCurrentMixin.__init__(
             self,
-            torch.zeros(*self.bshape, self.hsize),
-            torch.zeros(*self.bshape, self.hsize, dtype=torch.bool),
+            torch.zeros(*self.bshape, self.recordsz),
+            torch.zeros(*self.bshape, self.recordsz, dtype=torch.bool),
             False,
         )
         DelayedSpikeCurrentAccessorMixin.__init__(

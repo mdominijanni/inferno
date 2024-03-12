@@ -10,7 +10,8 @@
     :nosignatures:
     :toctree: generated
 
-    LayerwiseUpdater
+    CellTrainer
+    LayerwiseTrainer
 ```
 
 ## Updaters, Spike-Timing Dependent Plasticity
@@ -20,17 +21,6 @@
     :toctree: generated
 
     STDP
-```
-
-## Parameter Update Bounding
-```{eval-rst}
-.. autosummary::
-    :nosignatures:
-    :toctree: generated
-
-    WeightDependence
-    SoftWeightDependence
-    HardWeightDependence
 ```
 
 ## Classifiers

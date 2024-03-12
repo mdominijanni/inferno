@@ -1,0 +1,8 @@
+﻿types.OneToOneMethod
+====================
+
+.. currentmodule:: inferno
+
+.. autoclass:: types.OneToOneMethod
+    :members:
+    :show-inheritance:

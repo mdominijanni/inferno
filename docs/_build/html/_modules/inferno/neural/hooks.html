@@ -162,10 +162,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/typing.html">inferno.typing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/stats.html">inferno.dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -218,8 +216,8 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.neural.hooks</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">StateHook</span><span class="p">,</span> <span class="n">normalize</span>
-<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span><span class="p">,</span> <span class="n">rgetattr</span><span class="p">,</span> <span class="n">rsetattr</span>
+<span></span><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">StateHook</span><span class="p">,</span> <span class="n">normalize</span>
+<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">argtest</span><span class="p">,</span> <span class="n">rgetattr</span><span class="p">,</span> <span class="n">rsetattr</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
@@ -231,12 +229,14 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        module (nn.Module): module to which the hook should be registered.</span>
-<span class="sd">        name (str): fully-qualified string name of attribute to normalize.</span>
+<span class="sd">        attr (str): fully-qualified string name of attribute to normalize.</span>
 <span class="sd">        order (int | float): order of :math:`p`-norm by which to normalize.</span>
 <span class="sd">        scale (float | complex): desired :math:`p`-norm of elements along</span>
 <span class="sd">            specified dimensions.</span>
-<span class="sd">        dims (int | tuple[int] | None): dimensions along which to normalize,</span>
+<span class="sd">        dim (int | tuple[int] | None): dimension(s) along which to normalize,</span>
 <span class="sd">            all dimensions if None.</span>
+<span class="sd">        epsilon (float, optional): value added to the demoninator in case of</span>
+<span class="sd">            zero-valued norms. Defaults to 1e-12.</span>
 <span class="sd">        train_update (bool, optional): if normalization should be performed when</span>
 <span class="sd">            hooked module is in train mode. Defaults to True.</span>
 <span class="sd">        eval_update (bool, optional): if normalization should be performed when</span>
@@ -252,10 +252,11 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span><span class="p">,</span>
-        <span class="n">dims</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -264,30 +265,43 @@
         <span class="n">always_call</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># sanity check arguments</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="c1"># inner hook function</span>
-        <span class="k">def</span> <span class="nf">hook</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
-            <span class="n">rsetattr</span><span class="p">(</span>
-                <span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">normalize</span><span class="p">(</span><span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">order</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">dims</span><span class="p">)</span>
-            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attribute</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">nestedidentifier</span><span class="p">(</span><span class="s2">&quot;attr&quot;</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">dimensions</span><span class="p">(</span><span class="s2">&quot;dim&quot;</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">permit_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span>
 
         <span class="c1"># call superclass constructor</span>
         <span class="n">StateHook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">hook</span><span class="p">,</span>
             <span class="n">module</span><span class="p">,</span>
             <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
             <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
             <span class="n">as_prehook</span><span class="o">=</span><span class="n">as_prehook</span><span class="p">,</span>
             <span class="n">prepend</span><span class="o">=</span><span class="n">prepend</span><span class="p">,</span>
             <span class="n">always_call</span><span class="o">=</span><span class="n">always_call</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Normalization.hook">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Normalization.html#inferno.neural.Normalization.hook">[docs]</a>
+    <span class="k">def</span> <span class="nf">hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to be called on the registered module&#39;s call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            module (nn.Module): registered module.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rsetattr</span><span class="p">(</span>
+            <span class="n">module</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attribute</span><span class="p">,</span>
+            <span class="n">normalize</span><span class="p">(</span>
+                <span class="n">rgetattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribute</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span>
+                <span class="n">epsilon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span>
+            <span class="p">),</span>
         <span class="p">)</span></div>
+</div>
 
 
 
@@ -298,7 +312,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        module (nn.Module): module to which the hook should be registered.</span>
-<span class="sd">        name (str): fully-qualified string name of attribute to normalize.</span>
+<span class="sd">        attr (str): fully-qualified string name of attribute to clamp.</span>
 <span class="sd">        min (int | float | None, optional): inclusive lower-bound of the clamped range.</span>
 <span class="sd">            Defaults to None.</span>
 <span class="sd">        max (int | float | None, optional): inclusive upper-bound of the clamped range.</span>
@@ -318,7 +332,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="nb">min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="nb">max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -329,30 +343,40 @@
         <span class="n">always_call</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># sanity check arguments</span>
-        <span class="k">if</span> <span class="nb">min</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;`min` and `max` cannot both be None.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">min</span> <span class="o">&gt;=</span> <span class="nb">max</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;received `max` of </span><span class="si">{</span><span class="nb">max</span><span class="si">}</span><span class="s2"> not greater than `min` of </span><span class="si">{</span><span class="nb">min</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># inner hook function</span>
-        <span class="k">def</span> <span class="nf">hook</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
-            <span class="n">rsetattr</span><span class="p">(</span>
-                <span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="nb">max</span><span class="p">)</span>
-            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attribute</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">nestedidentifier</span><span class="p">(</span><span class="s2">&quot;attr&quot;</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clampmin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">clampmax</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">onedefined</span><span class="p">((</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lte</span><span class="p">(</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">limit_name</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
 
         <span class="c1"># call superclass constructor</span>
         <span class="n">StateHook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">hook</span><span class="p">,</span>
             <span class="n">module</span><span class="p">,</span>
             <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
             <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
             <span class="n">as_prehook</span><span class="o">=</span><span class="n">as_prehook</span><span class="p">,</span>
             <span class="n">prepend</span><span class="o">=</span><span class="n">prepend</span><span class="p">,</span>
             <span class="n">always_call</span><span class="o">=</span><span class="n">always_call</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Clamping.hook">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Clamping.html#inferno.neural.Clamping.hook">[docs]</a>
+    <span class="k">def</span> <span class="nf">hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to be called on the registered module&#39;s call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            module (nn.Module): registered module.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rsetattr</span><span class="p">(</span>
+            <span class="n">module</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attribute</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+                <span class="n">rgetattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribute</span><span class="p">),</span>
+                <span class="nb">min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clampmin</span><span class="p">,</span>
+                <span class="nb">max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clampmax</span><span class="p">,</span>
+            <span class="p">),</span>
         <span class="p">)</span></div>
+</div>
 
 </pre></div>
         </article>

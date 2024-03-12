@@ -4,6 +4,20 @@
 .. automodule:: inferno.neural
 ```
 
+## Modeling
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    Layer
+    Biclique
+    Serial
+    Cell
+    Updater
+    Updatable
+```
+
 ## Components
 ```{eval-rst}
 .. autosummary::
@@ -13,7 +27,6 @@
     Neuron
     Synapse
     Connection
-    Layer
 ```
 
 ## Neurons
@@ -70,8 +83,8 @@
     :nosignatures:
     :toctree: generated
 
-    Normalization
     Clamping
+    Normalization
 ```
 
 ## Types

@@ -1,0 +1,6 @@
+﻿upper\_power
+============
+
+.. currentmodule:: inferno
+
+.. autofunction:: upper_power

@@ -1,8 +1,0 @@
-﻿WeightDependence
-================
-
-.. currentmodule:: inferno.learn
-
-.. autoclass:: WeightDependence
-    :members:
-    :show-inheritance:

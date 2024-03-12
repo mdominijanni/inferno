@@ -1,5 +1,5 @@
-import inferno
-from inferno.typing import OneToOne
+from ... import exp
+from ...core.types import OneToOne
 import torch
 
 
@@ -187,7 +187,7 @@ def voltage_integration_linear(
     Returns:
         torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.
     """
-    decay = inferno.exp(-step_time / time_constant)
+    decay = exp(-step_time / time_constant)
     extvoltage = resistance * masked_inputs
     return rest_v + (voltages - rest_v - extvoltage) * decay + extvoltage
 

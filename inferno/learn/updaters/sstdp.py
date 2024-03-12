@@ -1,11 +1,11 @@
-from .. import LayerwiseUpdater
+from .. import LayerwiseTrainer
 
 
-class MSTDP(LayerwiseUpdater):
+class MSTDP(LayerwiseTrainer):
     def __init__(self, *pairs, **kwargs):
         pass
 
 
-class MSTDPET(LayerwiseUpdater):
+class MSTDPET(LayerwiseTrainer):
     def __init__(self, *pairs, **kwargs):
         pass

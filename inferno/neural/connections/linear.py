@@ -1,9 +1,9 @@
+from .mixins import WeightBiasDelayMixin
 from ..base import Connection, SynapseConstructor
 from ..base import Synapse  # noqa:F401, for docstrings
-from .mixins import WeightBiasDelayMixin
+from ..._internal import argtest
+from ...core.types import OneToOne
 import einops as ein
-from inferno._internal import numeric_limit, multiple_numeric_limit, regroup
-from inferno.typing import OneToOne
 import math
 import torch
 import torch.nn.functional as F
@@ -80,30 +80,16 @@ class LinearDense(WeightBiasDelayMixin, Connection):
     ):
         # connection attributes
         try:
-            self.in_shape, e = multiple_numeric_limit(
-                "in_shape", in_shape, 0, "gt", int, False
-            )
-            if e:
-                raise e
+            self.in_shape = argtest.ofsequence("in_shape", in_shape, argtest.gt, 0, int)
         except TypeError:
-            self.in_shape, e = regroup(
-                numeric_limit("in_shape", in_shape, 0, "gt", int), ((0,), 1)
-            )
-            if e:
-                raise e
+            self.in_shape = (argtest.gt("in_shape", in_shape, 0, int),)
 
         try:
-            self.out_shape, e = multiple_numeric_limit(
-                "out_shape", out_shape, 0, "gt", int, False
+            self.out_shape = argtest.ofsequence(
+                "out_shape", out_shape, argtest.gt, 0, int
             )
-            if e:
-                raise e
         except TypeError:
-            self.out_shape, e = regroup(
-                numeric_limit("out_shape", out_shape, 0, "gt", int), ((0,), 1)
-            )
-            if e:
-                raise e
+            self.out_shape = (argtest.gt("out_shape", out_shape, 0, int),)
 
         # intermediate values
         in_size, out_size = math.prod(self.in_shape), math.prod(self.out_shape)
@@ -173,7 +159,11 @@ class LinearDense(WeightBiasDelayMixin, Connection):
                 * :math:`M` is the number of elements across input dimensions.
                 * :math:`N` is the number of elements across output dimensions.
         """
-        return ein.rearrange(self.delay, "o i -> 1 i o").expand(self.bsize, -1, -1)
+        if self.delayedby is not None:
+            delays = self.delay
+        else:
+            delays = torch.zeros_like(self.weight)
+        return ein.rearrange(delays, "o i -> 1 i o").expand(self.bsize, -1, -1)
 
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like synapse input to connection input.
@@ -411,15 +401,9 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
     ):
         # connection attribute
         try:
-            self.shape, e = multiple_numeric_limit("shape", shape, 0, "gt", int, False)
-            if e:
-                raise e
+            self.shape = argtest.ofsequence("shape", shape, argtest.gt, 0, int)
         except TypeError:
-            self.shape, e = regroup(
-                numeric_limit("shape", shape, 0, "gt", int), ((0,), 1)
-            )
-            if e:
-                raise e
+            self.shape = (argtest.gt("shape", shape, 0, int),)
 
         # intermediate value
         size = math.prod(self.shape)
@@ -488,7 +472,12 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
                 * :math:`B` is the batch size.
                 * :math:`N` is the number of elements across input/output dimensions.
         """
-        return ein.rearrange(self.delay, "n -> 1 n 1").expand(self.bsize, -1, -1)
+        if self.delayedby is not None:
+            delays = self.delay
+        else:
+            delays = torch.zeros_like(self.weight)
+
+        return ein.rearrange(delays, "n -> 1 n 1").expand(self.bsize, -1, -1)
 
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like synapse input to connection input.
@@ -709,15 +698,9 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
     ):
         # connection attribute
         try:
-            self.shape, e = multiple_numeric_limit("shape", shape, 0, "gt", int, False)
-            if e:
-                raise e
+            self.shape = argtest.ofsequence("shape", shape, argtest.gt, 0, int)
         except TypeError:
-            self.shape, e = regroup(
-                numeric_limit("shape", shape, 0, "gt", int), ((0,), 1)
-            )
-            if e:
-                raise e
+            self.shape = (argtest.gt("shape", shape, 0, int),)
 
         # intermediate value
         size = math.prod(self.shape)

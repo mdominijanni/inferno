@@ -1,8 +1,0 @@
-﻿OneToOne
-========
-
-.. currentmodule:: inferno.typing
-
-.. autoclass:: OneToOne
-    :members:
-    :show-inheritance:

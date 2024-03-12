@@ -1,5 +1,5 @@
-from inferno import DimensionalModule, Module
-from inferno._internal import attr_members, instance_of
+from ... import DimensionalModule, Module
+from ..._internal import argtest
 import torch
 import torch.nn as nn
 from typing import Callable
@@ -40,9 +40,7 @@ class AdaptationMixin:
             Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
         ) = None,
     ):
-        e = instance_of("self", self, Module)
-        if e:
-            raise e
+        _ = argtest.instance("self", self, Module)
         self.register_parameter("adaptation_", nn.Parameter(data, requires_grad))
 
         self.adapt_batchreduce = batch_reduction if batch_reduction else torch.mean
@@ -92,9 +90,7 @@ class CurrentMixin:
     """
 
     def __init__(self, data: torch.Tensor, requires_grad: bool = False):
-        e = instance_of("self", self, DimensionalModule)
-        if e:
-            raise e
+        _ = argtest.instance("self", self, DimensionalModule)
         self.register_parameter("current_", nn.Parameter(data, requires_grad))
         self.register_constrained("current_")
 
@@ -133,9 +129,7 @@ class VoltageMixin:
     """
 
     def __init__(self, data: torch.Tensor, requires_grad: bool = False):
-        e = instance_of("self", self, DimensionalModule)
-        if e:
-            raise e
+        _ = argtest.instance("self", self, DimensionalModule)
         self.register_parameter("voltage_", nn.Parameter(data, requires_grad))
         self.register_constrained("voltage_")
 
@@ -174,9 +168,7 @@ class RefractoryMixin:
     """
 
     def __init__(self, refrac: torch.Tensor, requires_grad: bool = False):
-        e = instance_of("self", self, DimensionalModule)
-        if e:
-            raise e
+        _ = argtest.instance("self", self, DimensionalModule)
         self.register_parameter("refrac_", nn.Parameter(refrac, requires_grad))
         self.register_constrained("refrac_")
 
@@ -219,9 +211,7 @@ class SpikeRefractoryMixin(RefractoryMixin):
     """
 
     def __init__(self, refrac: torch.Tensor, requires_grad: bool = False):
-        e = attr_members("self", self, "refrac_t")
-        if e:
-            raise e
+        _ = argtest.members("self", self, "refrac_t")
         RefractoryMixin.__init__(self, refrac, requires_grad)
 
     @property

@@ -1,0 +1,6 @@
+﻿expratedecay
+============
+
+.. currentmodule:: inferno
+
+.. autofunction:: expratedecay

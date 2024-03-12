@@ -2,8 +2,8 @@
 <html class="no-js" lang="en" data-content_root="../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Neuron" href="generated/inferno.neural.Neuron.html" /><link rel="prev" title="interp_exp_decay" href="generated/inferno.interp_exp_decay.html" />
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Layer" href="generated/inferno.neural.Layer.html" /><link rel="prev" title="types.ManyToManyMethod" href="generated/inferno.types.ManyToManyMethod.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>inferno.neural - Inferno</title>
@@ -163,10 +163,8 @@
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="typing.html">inferno.typing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="stats.html">inferno.dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stats.html">inferno.stats</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -221,13 +219,44 @@
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="module-inferno.neural">
 <span id="inferno-neural"></span><h1>inferno.neural<a class="headerlink" href="#module-inferno.neural" title="Link to this heading">#</a></h1>
+<section id="modeling">
+<h2>Modeling<a class="headerlink" href="#modeling" title="Link to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable colwidths-given docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Layer</span></code></a></p></td>
+<td><p>Representation of simultaneously processed connections and neurons.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.Biclique.html#inferno.neural.Biclique" title="inferno.neural.Biclique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Biclique</span></code></a></p></td>
+<td><p>Layer structured as a complete bipartite graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.Serial.html#inferno.neural.Serial" title="inferno.neural.Serial"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Serial</span></code></a></p></td>
+<td><p>Layer with a single connection and single neuron group.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.Cell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Cell</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Updater</span></code></a></p></td>
+<td><p>Managed accumulated updates for module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.Updatable.html#inferno.neural.Updatable" title="inferno.neural.Updatable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Updatable</span></code></a></p></td>
+<td><p>Adds parameter updating functionality to a module.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="components">
 <h2>Components<a class="headerlink" href="#components" title="Link to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Neuron</span></code></a></p></td>
@@ -239,9 +268,6 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Connection</span></code></a></p></td>
 <td><p>Base class for representing a weighted connection between two groups of neurons.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Layer</span></code></a></p></td>
-<td><p>Container for sequential Connection and Neuron objects.</p></td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -251,8 +277,8 @@
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.LIF.html#inferno.neural.LIF" title="inferno.neural.LIF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LIF</span></code></a></p></td>
@@ -288,8 +314,8 @@
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.DeltaCurrent.html#inferno.neural.DeltaCurrent" title="inferno.neural.DeltaCurrent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DeltaCurrent</span></code></a></p></td>
@@ -307,8 +333,8 @@
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense" title="inferno.neural.LinearDense"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinearDense</span></code></a></p></td>
@@ -332,8 +358,8 @@
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.HomogeneousPoissonEncoder.html#inferno.neural.HomogeneousPoissonEncoder" title="inferno.neural.HomogeneousPoissonEncoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HomogeneousPoissonEncoder</span></code></a></p></td>
@@ -351,15 +377,15 @@
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.Normalization.html#inferno.neural.Normalization" title="inferno.neural.Normalization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Normalization</span></code></a></p></td>
-<td><p>Normalizes attribute of registered module on call.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.Clamping.html#inferno.neural.Clamping" title="inferno.neural.Clamping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Clamping</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.Clamping.html#inferno.neural.Clamping" title="inferno.neural.Clamping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Clamping</span></code></a></p></td>
 <td><p>Clamps attribute of registered module on call.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.Normalization.html#inferno.neural.Normalization" title="inferno.neural.Normalization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Normalization</span></code></a></p></td>
+<td><p>Normalizes attribute of registered module on call.</p></td>
 </tr>
 </tbody>
 </table>
@@ -370,8 +396,8 @@
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.SynapseConstructor.html#inferno.neural.SynapseConstructor" title="inferno.neural.SynapseConstructor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SynapseConstructor</span></code></a></p></td>
@@ -386,8 +412,8 @@
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.mixins.BatchMixin.html#inferno.neural.mixins.BatchMixin" title="inferno.neural.mixins.BatchMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mixins.BatchMixin</span></code></a></p></td>
@@ -449,23 +475,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="generated/inferno.neural.Neuron.html">
+          <a class="next-page" href="generated/inferno.neural.Layer.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Neuron</div>
+                <div class="title">Layer</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="generated/inferno.interp_exp_decay.html">
+          <a class="prev-page" href="generated/inferno.types.ManyToManyMethod.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">interp_exp_decay</div>
+                <div class="title">types.ManyToManyMethod</div>
                 
               </div>
             </a>
@@ -500,6 +526,9 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">inferno.neural</a><ul>
+<li><a class="reference internal" href="#modeling">Modeling</a><ul class="simple">
+</ul>
+</li>
 <li><a class="reference internal" href="#components">Components</a><ul class="simple">
 </ul>
 </li>

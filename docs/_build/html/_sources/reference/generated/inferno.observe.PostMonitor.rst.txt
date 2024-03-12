@@ -1,8 +1,0 @@
-﻿PostMonitor
-===========
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: PostMonitor
-    :members:
-    :show-inheritance:

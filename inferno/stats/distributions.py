@@ -1,13 +1,13 @@
 from . import constraints
 from .base import DiscreteDistribution, ContinuousDistribution
+from .. import astensors
 from functools import partial
-import inferno
 import math
 import torch
 
 
-_tensorizefloat = partial(
-    inferno.tensorize, conversion=lambda x: torch.tensor(x).float()
+_astensorsfloat = partial(
+    astensors, conversion=lambda x: torch.tensor(x).float()
 )
 
 
@@ -77,7 +77,7 @@ class Poisson(DiscreteDistribution):
             This calls :py:func:`torch.poisson` which as of PyTorch 2.1 does not support
             computation on Metal Performance Shaders. Compensate accordingly.
         """
-        rate = _tensorizefloat(rate)
+        rate = _astensorsfloat(rate)
         return torch.poisson(rate, generator=generator)
 
     @classmethod
@@ -114,7 +114,7 @@ class Poisson(DiscreteDistribution):
         Returns:
             torch.Tensor: log of the resulting point probabilities.
         """
-        support, rate = _tensorizefloat(support, rate)
+        support, rate = _astensorsfloat(support, rate)
         return torch.special.xlogy(support, rate) - rate - torch.lgamma(rate + 1)
 
     @classmethod
@@ -134,7 +134,7 @@ class Poisson(DiscreteDistribution):
         Returns:
             torch.Tensor: resulting cumulative probabilities.
         """
-        support, rate = _tensorizefloat(support, rate)
+        support, rate = _astensorsfloat(support, rate)
         return torch.special.gammaincc(torch.floor(support + 1), rate)
 
     @classmethod
@@ -169,7 +169,7 @@ class Poisson(DiscreteDistribution):
         Returns:
             torch.Tensor: mean of the distribution with given parameters.
         """
-        rate = _tensorizefloat(rate)
+        rate = _astensorsfloat(rate)
         return rate
 
     @classmethod
@@ -185,7 +185,7 @@ class Poisson(DiscreteDistribution):
         Returns:
             torch.Tensor: variance of the distribution with given parameters.
         """
-        rate = _tensorizefloat(rate)
+        rate = _astensorsfloat(rate)
         return rate
 
 
@@ -250,7 +250,7 @@ class Normal(ContinuousDistribution):
         Returns:
             tuple[torch.Tensor, torch.Tensor]: tuple of the corresponding ``loc`` and ``scale``.
         """
-        mean, variance = _tensorizefloat(mean, variance)
+        mean, variance = _astensorsfloat(mean, variance)
         return mean, torch.sqrt(variance)
 
     @classmethod
@@ -275,7 +275,7 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: resulting random variates :math:`X`.
         """
-        loc, scale = _tensorizefloat(loc, scale)
+        loc, scale = _astensorsfloat(loc, scale)
         return torch.normal(loc, scale, generator=generator)
 
     @classmethod
@@ -323,7 +323,7 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: resulting relative likelihoods.
         """
-        support, loc, scale = _tensorizefloat(support, loc, scale)
+        support, loc, scale = _astensorsfloat(support, loc, scale)
         return (1 / (scale * math.sqrt(math.tau))) * torch.exp(
             -0.5 * ((support - loc) / scale) ** 2
         )
@@ -374,7 +374,7 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: resulting cumulative probabilities.
         """
-        support, loc, scale = _tensorizefloat(support, loc, scale)
+        support, loc, scale = _astensorsfloat(support, loc, scale)
         return 0.5 * (1 + torch.special.erf((support - loc) / (scale * math.sqrt(2))))
 
     @classmethod
@@ -414,7 +414,7 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: mean of the distribution with given parameters.
         """
-        loc = _tensorizefloat(loc)
+        loc = _astensorsfloat(loc)
         return loc
 
     @classmethod
@@ -431,7 +431,7 @@ class Normal(ContinuousDistribution):
         Returns:
             torch.Tensor: variance of the distribution with given parameters.
         """
-        scale = _tensorizefloat(scale)
+        scale = _astensorsfloat(scale)
         return scale**2
 
 
@@ -498,7 +498,7 @@ class LogNormal(ContinuousDistribution):
         Returns:
             tuple[torch.Tensor, torch.Tensor]: tuple of the corresponding ``loc`` and ``scale``.
         """
-        mean, variance = _tensorizefloat(mean, variance)
+        mean, variance = _astensorsfloat(mean, variance)
 
         meansq = mean**2
         loc = torch.log(meansq / torch.sqrt(meansq + variance))
@@ -603,7 +603,7 @@ class LogNormal(ContinuousDistribution):
         Returns:
             torch.Tensor: log of the resulting relative likelihoods.
         """
-        support, loc, scale = _tensorizefloat(support, loc, scale)
+        support, loc, scale = _astensorsfloat(support, loc, scale)
 
         logsupport = torch.log(support)
         return (
@@ -634,7 +634,7 @@ class LogNormal(ContinuousDistribution):
         Returns:
             torch.Tensor: resulting cumulative probabilities.
         """
-        support, loc, scale = _tensorizefloat(support, loc, scale)
+        support, loc, scale = _astensorsfloat(support, loc, scale)
         return Normal.cdf(torch.log(support), loc, scale)
 
     @classmethod
@@ -678,7 +678,7 @@ class LogNormal(ContinuousDistribution):
         Returns:
             torch.Tensor: mean of the distribution with given parameters.
         """
-        loc, scale = _tensorizefloat(loc, scale)
+        loc, scale = _astensorsfloat(loc, scale)
         return torch.exp(loc + scale**2 / 2)
 
     @classmethod
@@ -699,7 +699,7 @@ class LogNormal(ContinuousDistribution):
         Returns:
             torch.Tensor: variance of the distribution with given parameters.
         """
-        loc, scale = inferno.tensorize(
+        loc, scale = astensors(
             loc, scale, conversion=lambda x: torch.tensor(x).float()
         )
         scalesq = scale**2

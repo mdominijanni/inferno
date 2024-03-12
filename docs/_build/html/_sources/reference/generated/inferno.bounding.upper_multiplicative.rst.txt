@@ -1,0 +1,6 @@
+﻿upper\_multiplicative
+=====================
+
+.. currentmodule:: inferno
+
+.. autofunction:: upper_multiplicative

@@ -1,8 +1,14 @@
 from .base import FoldingReducer
-import inferno
-from inferno._internal import numeric_limit
-import inferno.neural.functional as nf
-from inferno.typing import OneToOne
+from ... import (
+    exp,
+    interpolation,
+    trace_nearest,
+    trace_cumulative,
+    trace_nearest_scaled,
+    trace_cumulative_scaled,
+)
+from ..._internal import argtest
+from ...core.types import OneToOne
 import math
 import torch
 
@@ -28,7 +34,7 @@ class NearestTraceReducer(FoldingReducer):
             if an input is a match, :math:`f^*`.
         tolerance (int | float | None, optional): allowable absolute difference to
             still count as a match, :math:`\epsilon`. Defaults to None.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
     """
 
@@ -40,29 +46,19 @@ class NearestTraceReducer(FoldingReducer):
         target: int | float | bool | complex,
         tolerance: int | float | None = None,
         *,
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
         # reducer attributes
-        self.time_constant, e = numeric_limit(
-            "time_constant", time_constant, 0, "gt", float
-        )
-        if e:
-            raise e
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude, e = numeric_limit("amplitude", amplitude, 0, "neq", None)
-        if e:
-            raise e
+        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
         self.target = target
-        self.tolerance, e = (
-            None, None
-            if tolerance is None
-            else numeric_limit("tolerance", tolerance, 0, "gt", float)
+        self.tolerance = (
+            None if tolerance is None else argtest.gt("tolerance", tolerance, 0, float)
         )
-        if e:
-            raise e
 
     @property
     def dt(self) -> float:
@@ -79,7 +75,7 @@ class NearestTraceReducer(FoldingReducer):
     @dt.setter
     def dt(self, value: float):
         FoldingReducer.dt.fset(self, value)
-        self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        self.decay = torch.tensor(exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of nearest trace.
@@ -92,7 +88,7 @@ class NearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return nf.trace_nearest(
+        return trace_nearest(
             obs,
             state,
             decay=self.decay,
@@ -131,7 +127,7 @@ class NearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return inferno.interp_exp_decay(
+        return interpolation.expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )
 
@@ -157,7 +153,7 @@ class CumulativeTraceReducer(FoldingReducer):
             if an input is a match, :math:`f^*`.
         tolerance (int | float | None, optional): allowable absolute difference to
             still count as a match, :math:`\epsilon`. Defaults to None.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
     """
 
@@ -169,29 +165,19 @@ class CumulativeTraceReducer(FoldingReducer):
         target: int | float | bool | complex,
         tolerance: int | float | None = None,
         *,
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
         # reducer attributes
-        self.time_constant, e = numeric_limit(
-            "time_constant", time_constant, 0, "gt", float
-        )
-        if e:
-            raise e
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude, e = numeric_limit("amplitude", amplitude, 0, "neq", None)
-        if e:
-            raise e
+        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
         self.target = target
-        self.tolerance, e = (
-            None, None
-            if tolerance is None
-            else numeric_limit("tolerance", tolerance, 0, "gt", float)
+        self.tolerance = (
+            None if tolerance is None else argtest.gt("tolerance", tolerance, 0, float)
         )
-        if e:
-            raise e
 
     @property
     def dt(self) -> float:
@@ -208,7 +194,7 @@ class CumulativeTraceReducer(FoldingReducer):
     @dt.setter
     def dt(self, value: float):
         FoldingReducer.dt.fset(self, value)
-        self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        self.decay = torch.tensor(exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of cumulative trace.
@@ -221,7 +207,7 @@ class CumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return nf.trace_nearest(
+        return trace_cumulative(
             obs,
             state,
             decay=self.decay,
@@ -260,7 +246,7 @@ class CumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return inferno.interp_exp_decay(
+        return interpolation.expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )
 
@@ -282,11 +268,11 @@ class ScaledNearestTraceReducer(FoldingReducer):
         time_constant (float): time constant of exponential decay, :math:`\tau`.
         amplitude (int | float | complex): value to set trace to for matching elements,
             :math:`a`.
-        scale (int | float | complex): multiplicitive scale for contributions to trace,
+        scale (int | float | complex): multiplicative scale for contributions to trace,
             :math:`S`.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             a match for the purpose of tracing, :math:`K`.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
@@ -302,21 +288,15 @@ class ScaledNearestTraceReducer(FoldingReducer):
         scale: int | float | complex,
         criterion: OneToOne[torch.Tensor],
         *,
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
         # reducer attributes
-        self.time_constant, e = numeric_limit(
-            "time_constant", time_constant, 0, "gt", float
-        )
-        if e:
-            raise e
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude, e = numeric_limit("amplitude", amplitude, 0, "neq", None)
-        if e:
-            raise e
+        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
         self.scale = scale
         self.criterion = criterion
 
@@ -335,7 +315,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
     @dt.setter
     def dt(self, value: float):
         FoldingReducer.dt.fset(self, value)
-        self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        self.decay = torch.tensor(exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of scaled nearest trace.
@@ -348,7 +328,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return nf.trace_nearest_scaled(
+        return trace_nearest_scaled(
             obs,
             state,
             decay=self.decay,
@@ -387,7 +367,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return inferno.interp_exp_decay(
+        return interpolation.expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )
 
@@ -409,11 +389,11 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         time_constant (float): time constant of exponential decay, :math:`\tau`.
         amplitude (int | float | complex): value to add to trace for matching elements,
             :math:`a`.
-        scale (int | float | complex): multiplicitive scale for contributions to trace,
+        scale (int | float | complex): multiplicative scale for contributions to trace,
             :math:`S`.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             a match for the purpose of tracing, :math:`K`.
-        history_len (float, optional): length of time over which results should be
+        duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
 
     Note:
@@ -429,21 +409,15 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         scale: int | float | complex,
         criterion: OneToOne[torch.Tensor],
         *,
-        history_len: float = 0.0,
+        duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, history_len)
+        FoldingReducer.__init__(self, step_time, duration)
 
         # register state
-        self.time_constant, e = numeric_limit(
-            "time_constant", time_constant, 0, "gt", float
-        )
-        if e:
-            raise e
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude, e = numeric_limit("amplitude", amplitude, 0, "neq", None)
-        if e:
-            raise e
+        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
         self.scale = scale
         self.criterion = criterion
 
@@ -462,7 +436,7 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
     @dt.setter
     def dt(self, value: float):
         FoldingReducer.dt.fset(self, value)
-        self.decay = torch.tensor(inferno.exp(-self.dt / self.time_constant))
+        self.decay = torch.tensor(exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of scaled cumulative trace.
@@ -475,7 +449,7 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return nf.trace_cumulative_scaled(
+        return trace_cumulative_scaled(
             obs,
             state,
             decay=self.decay,
@@ -514,6 +488,6 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return inferno.interp_exp_decay(
+        return interpolation.expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )

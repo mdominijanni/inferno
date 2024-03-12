@@ -1,5 +1,6 @@
 from .base import (
-    LayerwiseUpdater,
+    CellTrainer,
+    LayerwiseTrainer,
 )
 
 from .updaters.ustdp import (
@@ -11,31 +12,15 @@ from .updaters.sstdp import (
     MSTDPET,
 )
 
-
-from .updaters.bounding import (
-    WeightDependence,
-    HardWeightDependence,
-    SoftWeightDependence,
-)
-
 from .classifiers.simple import (
     MaxRateClassifier,
 )
 
-from .hooks import (
-    WeightNormalization,
-    WeightClamping,
-)
-
 __all__ = [
-    "LayerwiseUpdater",
+    "CellTrainer",
+    "LayerwiseTrainer",
     "STDP",
     "MSTDP",
     "MSTDPET",
     "MaxRateClassifier",
-    "WeightNormalization",
-    "WeightClamping",
-    "WeightDependence",
-    "HardWeightDependence",
-    "SoftWeightDependence",
 ]

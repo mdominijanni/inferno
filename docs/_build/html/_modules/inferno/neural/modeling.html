@@ -162,10 +162,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/typing.html">inferno.typing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/stats.html">inferno.dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -218,171 +216,514 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.neural.modeling</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">,</span> <span class="n">Synapse</span>
-<span class="kn">import</span> <span class="nn">functools</span>
-<span class="kn">from</span> <span class="nn">inferno</span> <span class="kn">import</span> <span class="n">Module</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Module</span>
+<span class="kn">from</span> <span class="nn">..core.bounding</span> <span class="kn">import</span> <span class="n">HalfBounding</span><span class="p">,</span> <span class="n">FullBounding</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span><span class="p">,</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">argtest</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">import</span> <span class="nn">weakref</span>
 
 
-<div class="viewcode-block" id="Layer">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer">[docs]</a>
-<span class="k">class</span> <span class="nc">Layer</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Container for sequential Connection and Neuron objects.</span>
+<span class="k">class</span> <span class="nc">Accumulator</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Used by :py:class:`Updater`, accumulated updates for a parameter.&quot;&quot;&quot;</span>
 
-<span class="sd">    This is used as the base building block of spiking neural networks in Inferno,</span>
-<span class="sd">    and is used for training models.</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># call superclass constructor</span>
+        <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ParameterList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_neg</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ParameterList</span><span class="p">()</span>
+
+        <span class="c1"># parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduce</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bind</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">p</span> <span class="o">-</span> <span class="n">n</span>
+
+        <span class="c1"># cached state access</span>
+        <span class="k">def</span> <span class="nf">calc_pos</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">def</span> <span class="nf">calc_neg</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_neg</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_neg</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos_cache</span> <span class="o">=</span> <span class="n">cache</span><span class="p">(</span><span class="n">calc_pos</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_neg_cache</span> <span class="o">=</span> <span class="n">cache</span><span class="p">(</span><span class="n">calc_neg</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Positive update component.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor | None): appends to update component.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor | None: accumulated update component.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos_cache</span><span class="p">()</span>
+
+    <span class="nd">@pos</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pos_cache</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+
+    <span class="nd">@pos</span><span class="o">.</span><span class="n">deleter</span>
+    <span class="k">def</span> <span class="nf">pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ParameterList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos_cache</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">neg</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Negative update component.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor | None): appends to update component.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor | None: accumulated update component.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_neg_cache</span><span class="p">()</span>
+
+    <span class="nd">@neg</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">neg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_neg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_neg_cache</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+
+    <span class="nd">@neg</span><span class="o">.</span><span class="n">deleter</span>
+    <span class="k">def</span> <span class="nf">neg</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_neg</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ParameterList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_neg_cache</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">reduction</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for reducing multiple updates.</span>
+
+<span class="sd">        When ``fn`` is ``None``, it sets the default reducer, :py:func:`torch.sum`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fn (Callable[[torch.Tensor, int], torch.Tensor] | None, optional):</span>
+<span class="sd">                function for reducing updates. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">fn</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reduce</span> <span class="o">=</span> <span class="n">fn</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reduce</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span>
+
+    <span class="k">def</span> <span class="nf">upperbound</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bound</span><span class="p">:</span> <span class="n">HalfBounding</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for parameter bounding on the upper limit.</span>
+
+<span class="sd">        When ``bound`` is ``None``, no upper bound will be applied (and will remove</span>
+<span class="sd">        any full bound present). When ``bound`` is not ``None``, them ``max`` cannot</span>
+<span class="sd">        be ``None``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bound (HalfBounding | None): bounding function.</span>
+<span class="sd">            max (float | None, optional): upper bound. Defaults to None.</span>
+<span class="sd">            kwargs (dict[str, Any] | None, optional): keyword arguments for the</span>
+<span class="sd">                bounding function. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># convert kwargs if required</span>
+        <span class="n">kw</span> <span class="o">=</span> <span class="n">kwargs</span> <span class="k">if</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="c1"># convert bounds to tuple</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bind</span> <span class="o">=</span> <span class="p">[</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="p">]</span>
+
+        <span class="c1"># determine bounding function</span>
+        <span class="k">if</span> <span class="n">bound</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="nb">max</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">kw</span><span class="p">:</span> <span class="n">bound</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="o">**</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span>
+
+    <span class="k">def</span> <span class="nf">lowerbound</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bound</span><span class="p">:</span> <span class="n">HalfBounding</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for parameter bounding on the lower limit.</span>
+
+<span class="sd">        When ``bound`` is ``None``, no lower bound will be applied (and will remove</span>
+<span class="sd">        any full bound present). When ``bound`` is not ``None``, them ``min`` cannot</span>
+<span class="sd">        be ``None``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bound (HalfBounding | None): bounding function.</span>
+<span class="sd">            min (float | None, optional): lower bound. Defaults to None.</span>
+<span class="sd">            kwargs (dict[str, Any] | None, optional): keyword arguments for the</span>
+<span class="sd">                bounding function. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># convert kwargs if required</span>
+        <span class="n">kw</span> <span class="o">=</span> <span class="n">kwargs</span> <span class="k">if</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="c1"># convert bounds to tuple</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bind</span> <span class="o">=</span> <span class="p">[</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="p">]</span>
+
+        <span class="c1"># determine bounding function</span>
+        <span class="k">if</span> <span class="n">bound</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="nb">min</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">kw</span><span class="p">:</span> <span class="n">bound</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="o">**</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span>
+
+    <span class="k">def</span> <span class="nf">fullbound</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bound</span><span class="p">:</span> <span class="n">FullBounding</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for parameter bounding on the upper and lower limits.</span>
+
+<span class="sd">        When ``bound`` is ``None``, no full bound will be applied (and will remove</span>
+<span class="sd">        any upper or lower bound present). When ``bound`` is not ``None``, then</span>
+<span class="sd">        ``max`` or ``min`` cannot be ``None``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bound (FullBounding | None): bounding function.</span>
+<span class="sd">            max (float | None, optional): upper bound. Defaults to None.</span>
+<span class="sd">            min (float | None, optional): lower bound. Defaults to None.</span>
+<span class="sd">            kwargs (dict[str, Any] | None, optional): keyword arguments for the</span>
+<span class="sd">                bounding function. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># convert kwargs if required</span>
+        <span class="n">kw</span> <span class="o">=</span> <span class="n">kwargs</span> <span class="k">if</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="c1"># determine bounding function</span>
+        <span class="k">if</span> <span class="n">bound</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bind</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="nb">max</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="nb">min</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">kw</span><span class="p">:</span> <span class="n">bound</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="o">**</span><span class="n">k</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bind</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">p</span> <span class="o">-</span> <span class="n">n</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears the accumulator&#39;s state.&quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">neg</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the update.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            param (torch.Tensor): parameter being updated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor | None: value of the update.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get partial updates</span>
+        <span class="n">pos</span><span class="p">,</span> <span class="n">neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">neg</span>
+
+        <span class="c1"># ltp and ltd</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">neg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="n">param</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">[</span><span class="mi">1</span><span class="p">](</span><span class="n">param</span><span class="p">,</span> <span class="n">neg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">neg</span><span class="p">)</span>
+
+        <span class="c1"># ltp only</span>
+        <span class="k">elif</span> <span class="n">pos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="n">param</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pos</span><span class="p">))</span>
+
+        <span class="c1"># ltd only</span>
+        <span class="k">elif</span> <span class="n">neg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">[</span><span class="mi">1</span><span class="p">](</span><span class="n">param</span><span class="p">,</span> <span class="n">neg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">neg</span><span class="p">),</span> <span class="n">neg</span><span class="p">)</span>
+
+        <span class="c1"># no update</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the update and returns a tensor with it applied.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            param (torch.Tensor): parameter being updated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: parameter with the update applied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">update</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">update</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">param</span> <span class="o">+</span> <span class="n">update</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">param</span>
+
+
+<div class="viewcode-block" id="Updater">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updater.html#inferno.neural.Updater">[docs]</a>
+<span class="k">class</span> <span class="nc">Updater</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Managed accumulated updates for module parameters.</span>
+
+<span class="sd">    The added parameters are all set as properties which return an</span>
+<span class="sd">    :py:class:`Accumulator` corresponding to that parameter. Care must be taken to</span>
+<span class="sd">    avoid naming collisions, although the number of attributes in ``Updater`` not in</span>
+<span class="sd">    ``Module`` are small. See the methods :py:meth:`_get_`, :py:meth:`_set_`, and</span>
+<span class="sd">    :py:meth:`_del_` for more information.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        connection (Connection): connection between the layer inputs and the neurons.</span>
-<span class="sd">        neuron (Neuron): neurons which take their input from the connection and their</span>
-<span class="sd">            output is returned.</span>
-<span class="sd">        connection_kwargs (dict[str, str] | None, optional): keyword argument</span>
-<span class="sd">                mapping for connection methods. Defaults to None.</span>
-<span class="sd">        neuron_kwargs (dict[str, str] | None, optional): keyword argument</span>
-<span class="sd">                mapping for neuron methods. Defaults to None.</span>
+<span class="sd">        module (Updatable): module with updatable parameters.</span>
+<span class="sd">        *params (str): parameters to set as trainable.</span>
+
+<span class="sd">    Caution:</span>
+<span class="sd">        An ``Updater`` only weakly references its parent module, if its parent is</span>
+<span class="sd">        deleted this updater will be made invalid.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The keyword argument mappings are a dictionary, where the key is a</span>
-<span class="sd">        kwarg in a :py:class:`Layer` method, and the corresponding value is</span>
-<span class="sd">        the name for that kwarg which will be passed to the dependent method in</span>
-<span class="sd">        in the :py:class:`Connection` or :py:meth:`Neuron`.</span>
-
-<span class="sd">        When None, *all kwargs* are passed in. Included classes in Inferno are</span>
-<span class="sd">        written to avoid conflicts, but that is not always guaranteed.</span>
-
-<span class="sd">    Tip:</span>
-<span class="sd">        The composed :py:class:`Neuron` does not need to be unique to this layer, and</span>
-<span class="sd">        some architectures explicitly have multiple connections going to the same</span>
-<span class="sd">        group of neurons. The uniqueness of the composed :py:class:`Connection` is</span>
-<span class="sd">        not enforced, but unexpected behavior may occur if it is not unique.</span>
+<span class="sd">        The initializer creates an object of a dynamically created type with a base</span>
+<span class="sd">        type of ``Updater``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">connection</span><span class="p">:</span> <span class="n">Connection</span><span class="p">,</span>
-        <span class="n">neuron</span><span class="p">:</span> <span class="n">Neuron</span><span class="p">,</span>
-        <span class="n">connection_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">neuron_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-        <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="c1"># warn if connection and neuron are inconsistent</span>
-        <span class="k">if</span> <span class="n">connection</span><span class="o">.</span><span class="n">dt</span> <span class="o">!=</span> <span class="n">neuron</span><span class="o">.</span><span class="n">dt</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;inconsistent step times, </span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;for connection and </span><span class="si">{</span><span class="n">neuron</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2"> for neuron.&quot;</span>
-            <span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Updatable</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># define dynamic class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">module</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),),</span>
+            <span class="p">{</span>
+                <span class="n">p</span><span class="p">:</span> <span class="nb">property</span><span class="p">(</span>
+                    <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="n">p</span><span class="p">),</span>
+                    <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_set_</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="n">p</span><span class="p">),</span>
+                    <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_del_</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="n">p</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
 
-        <span class="c1"># error if incompatible</span>
-        <span class="k">if</span> <span class="n">connection</span><span class="o">.</span><span class="n">bsize</span> <span class="o">!=</span> <span class="n">neuron</span><span class="o">.</span><span class="n">bsize</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;incompatible batch sizes, </span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">bsize</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;for connection and </span><span class="si">{</span><span class="n">neuron</span><span class="o">.</span><span class="n">bsize</span><span class="si">}</span><span class="s2"> for neuron.&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># call superclass constructor</span>
+        <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">connection</span><span class="o">.</span><span class="n">outshape</span> <span class="o">!=</span> <span class="n">neuron</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;incompatible shapes, </span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">outshape</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;for connection output and </span><span class="si">{</span><span class="n">neuron</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> for neuron.&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># check that the module has required parameters</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">members</span><span class="p">(</span><span class="s2">&quot;module&quot;</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span>
 
-        <span class="c1"># register submodules</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="s2">&quot;connection_&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="s2">&quot;neuron_&quot;</span><span class="p">,</span> <span class="n">neuron</span><span class="p">)</span>
+        <span class="c1"># set internal module (weakly referenced)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent_module</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
 
-        <span class="c1"># keyword argument mapping functions</span>
-        <span class="k">def</span> <span class="nf">filterkwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">kwamap</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]):</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="n">kwamap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">arg</span><span class="p">):</span> <span class="n">val</span> <span class="k">for</span> <span class="n">arg</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">kwamap</span>
-            <span class="p">}</span>
+        <span class="c1"># set update states and associated functions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">({</span><span class="n">p</span><span class="p">:</span> <span class="n">Accumulator</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">})</span>
 
-        <span class="c1"># kwarg mapping for connection</span>
-        <span class="k">if</span> <span class="n">connection_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_c</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Updater</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Accumulator</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets the accumulator for a given attribute.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            self (Updater): updater, self via the associated property.</span>
+<span class="sd">            attr (str): parameter name to target.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Accumulator: associated accumulator for the given parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_set_</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Updater</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Updates the accumulator values for a given attribute.</span>
+
+<span class="sd">        As a property, setting with a 2-tuple assumes the first term is the positive</span>
+<span class="sd">        portion of the update and the second term is the negative portion. If instead</span>
+<span class="sd">        a tensor is given, it assumes this update is only the positive portion.</span>
+<span class="sd">        Any None values are ignored. The following blocks shows equivalent statements.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            updater.attr = pos_update, neg_update</span>
+<span class="sd">            updater.attr.pos, updater.attr.neg = pos_update, neg_update</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            updater.attr = pos_update</span>
+<span class="sd">            updater.attr.pos = pos_update</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            self (Updater): updater, self via the associated property.</span>
+<span class="sd">            value (tuple[torch.Tensor | None, torch.Tensor | None] | torch.Tensor | None):</span>
+<span class="sd">                value of the update to assign.</span>
+<span class="sd">            attr (str): parameter name to target.</span>
+
+<span class="sd">        Important:</span>
+<span class="sd">            The negative portions of updates should still be positively valued as they</span>
+<span class="sd">            will be subtracted from the positive portion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_c</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">filterkwargs</span><span class="p">,</span> <span class="n">connection_kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span><span class="o">.</span><span class="n">neg</span> <span class="o">=</span> <span class="n">value</span>
 
-        <span class="c1"># kwarg mapping for neuron</span>
-        <span class="k">if</span> <span class="n">neuron_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_n</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_n</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">filterkwargs</span><span class="p">,</span> <span class="n">neuron_kwargs</span><span class="p">)</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_del_</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Updater</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears the accumulator state for a given attribute.</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">connection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Connection</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Connection submodule.</span>
+<span class="sd">        As a property, this is equivalent to using ``del`` on the</span>
+<span class="sd">        :py:attr:`Accumulator.pos` and :py:attr:`Accumulator.neg` properties directly,</span>
+<span class="sd">        which itself resets them back to their empty states.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (Connection): replacement connection.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Connection: existing connection.</span>
+<span class="sd">            self (Updater): updater, self via the associated property.</span>
+<span class="sd">            attr (str): parameter name to target.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection_</span>
-
-    <span class="nd">@connection</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Neuron</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection_</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span><span class="o">.</span><span class="n">neg</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neuron</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Neuron submodule.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (Neuron): replacement neuron.</span>
+    <span class="k">def</span> <span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parent module, if valid.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Neuron: existing neuron.</span>
+<span class="sd">            Module | None: parent module if the reference to it still exists.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron_</span>
-
-    <span class="nd">@neuron</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Connection</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">neuron_</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent_module</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">synapse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Synapse</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Synapse submodule.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (Synapse): replacement synapse.</span>
+    <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Names of updatable attributes.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Synapse: existing synapse.</span>
+<span class="sd">            tuple[str, ...]: names of updatable parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection_</span><span class="o">.</span><span class="n">synapse</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
-    <span class="nd">@synapse</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">synapse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Synapse</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection_</span><span class="o">.</span><span class="n">synapse</span> <span class="o">=</span> <span class="n">value</span>
+<div class="viewcode-block" id="Updater.clear">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.clear">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears all of the accumulators&#39; states.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">acc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">acc</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Layer.clear">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.clear">[docs]</a>
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets connections and neurons to their resting state.</span>
 
-<span class="sd">        Keyword arguments are filtered and then passed to :py:meth:`Connection.clear`</span>
-<span class="sd">        and :py:meth:`Neuron.clear`.</span>
+<div class="viewcode-block" id="Updater.forward">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies accumulated updates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *params (str): parameters to update, all parameters when none are specified.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_c</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_n</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+        <span class="n">module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent_module</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">module</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;&#39;parent&#39; module is no longer a valid reference&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="p">[</span><span class="n">p</span><span class="p">](</span><span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Layer.forward">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the connection and then the neurons.</span>
 
-<span class="sd">        Keyword arguments are filtered and then passed to :py:meth:`Connection.forward`</span>
-<span class="sd">        and :py:meth:`Neuron.forward`. It is expected that :py:meth:`Connection.forward`</span>
-<span class="sd">        outputs a single tensor and :py:meth:`Neuron.forward` and takes a single</span>
-<span class="sd">        positional argument. The output of the former is used for the input of the</span>
-<span class="sd">        latter.</span>
+<div class="viewcode-block" id="Updatable">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable">[docs]</a>
+<span class="k">class</span> <span class="nc">Updatable</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds parameter updating functionality to a module.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updater_</span><span class="p">:</span> <span class="n">Updater</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">updatable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;If the module is updatable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if the module is updatable.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_c</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)),</span>
-            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargmap_n</span><span class="p">(</span><span class="n">kwargs</span><span class="p">),</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">updater</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">updater</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Updater</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Updater for the module.</span>
+
+<span class="sd">        Deleting this attribute deletes the associated updater.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Updater | None: current updater if it exists, otherwise None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">updater_</span>
+
+    <span class="nd">@updater</span><span class="o">.</span><span class="n">deleter</span>
+    <span class="k">def</span> <span class="nf">updater</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updater_</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Updatable.setupdater">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.setupdater">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">setupdater</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Updater</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Default updater for this object.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: ``defaultupdater`` must be implemented by the subclass.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Updater: the default updater.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Updatable) must implement &quot;</span>
+            <span class="s2">&quot;the method &#39;defaultupdater&#39;&quot;</span>
         <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Updatable.clear">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.clear">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears the updater&#39;s state.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatable</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Updatable.update">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.update">[docs]</a>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies all accumulated updates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            clear (bool, optional): if accumulators should be cleared after updating.</span>
+<span class="sd">                Defaults to True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatable</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Updatable.updatesome">
+<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.updatesome">[docs]</a>
+    <span class="k">def</span> <span class="nf">updatesome</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies accumulated updates to specific parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *params (str): parameters to update.</span>
+<span class="sd">            clear (bool, optional): if accumulators should be cleared after updating.</span>
+<span class="sd">                Defaults to True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

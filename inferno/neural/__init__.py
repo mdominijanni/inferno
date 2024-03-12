@@ -43,7 +43,16 @@ from .encoders.special import (
 )
 
 from .modeling import (
+    Accumulator,
+    Updater,
+    Updatable
+)
+
+from .network import (
+    Cell,
     Layer,
+    Biclique,
+    Serial,
 )
 
 from .hooks import (
@@ -56,8 +65,6 @@ __all__ = [
     "Synapse",
     "Connection",
     "SynapseConstructor",
-    "HomogeneousPoissonEncoder",
-    "PoissonIntervalEncoder",
     "LIF",
     "ALIF",
     "GLIF1",
@@ -72,7 +79,15 @@ __all__ = [
     "LinearDirect",
     "LinearLateral",
     "Conv2D",
+    "HomogeneousPoissonEncoder",
+    "PoissonIntervalEncoder",
+    "Accumulator",
+    "Updater",
+    "Updatable",
+    "Cell",
     "Layer",
+    "Biclique",
+    "Serial",
     "Normalization",
     "Clamping",
 ]

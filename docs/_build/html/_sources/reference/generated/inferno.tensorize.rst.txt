@@ -1,6 +1,0 @@
-﻿tensorize
-=========
-
-.. currentmodule:: inferno
-
-.. autofunction:: tensorize

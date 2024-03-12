@@ -162,10 +162,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/learn-functional.html">inferno.learn.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/observe.html">inferno.observe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/typing.html">inferno.typing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../reference/stats.html">inferno.dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/stats.html">inferno.stats</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../guide/index.html">Guidebook</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Guidebook</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -226,8 +224,8 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
-<span class="n">_tensorizefloat</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
-    <span class="n">inferno</span><span class="o">.</span><span class="n">tensorize</span><span class="p">,</span> <span class="n">conversion</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+<span class="n">_astensorsfloat</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+    <span class="n">inferno</span><span class="o">.</span><span class="n">astensors</span><span class="p">,</span> <span class="n">conversion</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
 <span class="p">)</span>
 
 
@@ -304,7 +302,7 @@
 <span class="sd">            This calls :py:func:`torch.poisson` which as of PyTorch 2.1 does not support</span>
 <span class="sd">            computation on Metal Performance Shaders. Compensate accordingly.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">rate</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">)</span></div>
 
 
@@ -347,7 +345,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: log of the resulting point probabilities.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">support</span><span class="p">,</span> <span class="n">rate</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span>
+        <span class="n">support</span><span class="p">,</span> <span class="n">rate</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">xlogy</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span> <span class="o">-</span> <span class="n">rate</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">lgamma</span><span class="p">(</span><span class="n">rate</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
 
 
@@ -370,7 +368,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: resulting cumulative probabilities.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">support</span><span class="p">,</span> <span class="n">rate</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span>
+        <span class="n">support</span><span class="p">,</span> <span class="n">rate</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaincc</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">support</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">rate</span><span class="p">)</span></div>
 
 
@@ -411,7 +409,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: mean of the distribution with given parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">rate</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">rate</span></div>
 
 
@@ -430,7 +428,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: variance of the distribution with given parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">rate</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">rate</span></div>
 </div>
 
@@ -504,7 +502,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[torch.Tensor, torch.Tensor]: tuple of the corresponding ``loc`` and ``scale``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">mean</span><span class="p">,</span> <span class="n">variance</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">variance</span><span class="p">)</span>
+        <span class="n">mean</span><span class="p">,</span> <span class="n">variance</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">variance</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">variance</span><span class="p">)</span></div>
 
 
@@ -532,7 +530,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: resulting random variates :math:`X`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">)</span></div>
 
 
@@ -586,7 +584,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: resulting relative likelihoods.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">scale</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">tau</span><span class="p">)))</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
             <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">support</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
         <span class="p">)</span></div>
@@ -643,7 +641,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: resulting cumulative probabilities.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
         <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">erf</span><span class="p">((</span><span class="n">support</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">scale</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))))</span></div>
 
 
@@ -689,7 +687,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: mean of the distribution with given parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">loc</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">loc</span></div>
 
 
@@ -709,7 +707,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: variance of the distribution with given parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">scale</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">scale</span><span class="o">**</span><span class="mi">2</span></div>
 </div>
 
@@ -785,7 +783,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[torch.Tensor, torch.Tensor]: tuple of the corresponding ``loc`` and ``scale``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">mean</span><span class="p">,</span> <span class="n">variance</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">variance</span><span class="p">)</span>
+        <span class="n">mean</span><span class="p">,</span> <span class="n">variance</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">variance</span><span class="p">)</span>
 
         <span class="n">meansq</span> <span class="o">=</span> <span class="n">mean</span><span class="o">**</span><span class="mi">2</span>
         <span class="n">loc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">meansq</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">meansq</span> <span class="o">+</span> <span class="n">variance</span><span class="p">))</span>
@@ -902,7 +900,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: log of the resulting relative likelihoods.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
 
         <span class="n">logsupport</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">support</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span>
@@ -936,7 +934,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: resulting cumulative probabilities.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">support</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Normal</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">support</span><span class="p">),</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span></div>
 
 
@@ -986,7 +984,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: mean of the distribution with given parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_tensorizefloat</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_astensorsfloat</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">loc</span> <span class="o">+</span> <span class="n">scale</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span></div>
 
 
@@ -1010,7 +1008,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: variance of the distribution with given parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">tensorize</span><span class="p">(</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">astensors</span><span class="p">(</span>
             <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">conversion</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="n">scalesq</span> <span class="o">=</span> <span class="n">scale</span><span class="o">**</span><span class="mi">2</span>

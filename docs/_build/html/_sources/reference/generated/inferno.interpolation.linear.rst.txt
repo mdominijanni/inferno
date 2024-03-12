@@ -1,0 +1,6 @@
+﻿linear
+======
+
+.. currentmodule:: inferno
+
+.. autofunction:: linear

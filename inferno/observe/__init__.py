@@ -25,8 +25,8 @@ from .monitors import (
     InputMonitor,
     OutputMonitor,
     StateMonitor,
-    PreMonitor,
-    PostMonitor,
+    DifferenceMonitor,
+    MonitorConstructor,
 )
 
 __all__ = [
@@ -44,6 +44,6 @@ __all__ = [
     "InputMonitor",
     "OutputMonitor",
     "StateMonitor",
-    "PreMonitor",
-    "PostMonitor",
+    "DifferenceMonitor",
+    "MonitorConstructor",
 ]

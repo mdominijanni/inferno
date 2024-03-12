@@ -1,4 +1,4 @@
-from inferno._internal import instance_of
+from ..._internal import argtest
 import torch
 import torch.nn as nn
 
@@ -21,9 +21,7 @@ class WeightMixin:
     """
 
     def __init__(self, weight: torch.Tensor, requires_grad: bool = False):
-        e = instance_of("self", self, nn.Module)
-        if e:
-            raise e
+        _ = argtest.instance("self", self, nn.Module)
         self.register_parameter("weight_", nn.Parameter(weight, requires_grad))
 
     @property

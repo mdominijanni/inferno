@@ -1,8 +1,0 @@
-﻿RemoteHook
-==========
-
-.. currentmodule:: inferno
-
-.. autoclass:: RemoteHook
-    :members:
-    :show-inheritance:

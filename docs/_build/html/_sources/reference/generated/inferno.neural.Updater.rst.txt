@@ -1,0 +1,8 @@
+﻿Updater
+=======
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: Updater
+    :members:
+    :show-inheritance:

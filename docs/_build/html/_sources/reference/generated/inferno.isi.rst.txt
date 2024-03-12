@@ -1,0 +1,6 @@
+﻿isi
+===
+
+.. currentmodule:: inferno
+
+.. autofunction:: isi

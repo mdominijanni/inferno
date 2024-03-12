@@ -1,0 +1,8 @@
+﻿Serial
+======
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: Serial
+    :members:
+    :show-inheritance:

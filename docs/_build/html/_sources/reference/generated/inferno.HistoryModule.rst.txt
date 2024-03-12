@@ -1,8 +1,0 @@
-﻿HistoryModule
-=============
-
-.. currentmodule:: inferno
-
-.. autoclass:: HistoryModule
-    :members:
-    :show-inheritance:

@@ -1,29 +1,24 @@
-from .infrastructure import (
+# core module
+from .core import (
+    # submodules
+    bounding,
+    interpolation,
+    types,
+    # infrastructure
     Module,
-    Configuration,
+    DimensionalModule,
+    RecordModule,
     Hook,
     StateHook,
-    RemoteHook,
-    DimensionalModule,
-    HistoryModule,
-)
-
-from .math import (
+    # math
     exp,
     sqrt,
     normalize,
     rescale,
-    isi,
-    simple_exponential_smoothing,
+    exponential_smoothing,
     holt_linear_smoothing,
-    Interpolation,
-    interp_previous,
-    interp_nearest,
-    interp_linear,
-    interp_exp_decay,
-)
-
-from .tensor import (
+    isi,
+    # tensor
     zeros,
     ones,
     empty,
@@ -31,34 +26,36 @@ from .tensor import (
     uniform,
     normal,
     scalar,
-    tensorize,
-)
-
-from . import (
-    stats,
+    astensors,
+    # trace
+    trace_nearest,
+    trace_cumulative,
+    trace_nearest_scaled,
+    trace_cumulative_scaled,
 )
 
 __all__ = [
+    # non-core submodules
     "stats",
+    # core submodules
+    "bounding",
+    "interpolation",
+    "types",
+    # infrastructure
     "Module",
-    "Configuration",
+    "DimensionalModule",
+    "RecordModule",
     "Hook",
     "StateHook",
-    "RemoteHook",
-    "DimensionalModule",
-    "HistoryModule",
+    # math
     "exp",
     "sqrt",
     "normalize",
     "rescale",
-    "isi",
-    "Interpolation",
-    "interp_previous",
-    "interp_nearest",
-    "interp_linear",
-    "interp_exp_decay",
-    "simple_exponential_smoothing",
+    "exponential_smoothing",
     "holt_linear_smoothing",
+    "isi",
+    # tensor
     "zeros",
     "ones",
     "empty",
@@ -66,5 +63,10 @@ __all__ = [
     "uniform",
     "normal",
     "scalar",
-    "tensorize",
+    "astensors",
+    # trace
+    "trace_nearest",
+    "trace_cumulative",
+    "trace_nearest_scaled",
+    "trace_cumulative_scaled",
 ]

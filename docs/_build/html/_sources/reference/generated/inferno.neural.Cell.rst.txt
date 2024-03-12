@@ -1,0 +1,8 @@
+﻿Cell
+====
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: Cell
+    :members:
+    :show-inheritance:

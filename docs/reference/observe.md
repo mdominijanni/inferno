@@ -11,6 +11,7 @@
     :toctree: generated
 
     Monitor
+    MonitorConstructor
     Reducer
 ```
 
@@ -23,8 +24,7 @@
     InputMonitor
     OutputMonitor
     StateMonitor
-    PreMonitor
-    PostMonitor
+    DifferenceMonitor
 ```
 
 ## Reducers

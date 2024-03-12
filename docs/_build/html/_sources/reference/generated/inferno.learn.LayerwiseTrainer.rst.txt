@@ -1,0 +1,8 @@
+﻿LayerwiseTrainer
+================
+
+.. currentmodule:: inferno.learn
+
+.. autoclass:: LayerwiseTrainer
+    :members:
+    :show-inheritance:
