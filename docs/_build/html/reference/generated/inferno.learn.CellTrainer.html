@@ -242,10 +242,10 @@
 </ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>added cell.</p>
+<dd class="field-odd"><p>added cell and auxiliary state.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.Cell">Cell</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.Cell">Cell</a> | None, nn.Module | None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -294,23 +294,12 @@ monitor and return the new one.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.learn.CellTrainer.aux">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aux</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.12)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Module</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.learn.CellTrainer.aux" title="Link to this definition">#</a></dt>
-<dd><p>Auxiliary state associated with cells.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Yields<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>nn.Module</em> – tuple of added state and the associated cell name.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="inferno.learn.CellTrainer.cells">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.12)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.learn.CellTrainer.cells" title="Link to this definition">#</a></dt>
-<dd><p>Added cells.</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.12)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Module</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.learn.CellTrainer.cells" title="Link to this definition">#</a></dt>
+<dd><p>Added cells and their auxiliary states.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Yields<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>Cell</em> – added cells.</p>
+<dd class="field-odd"><p><em>Cell</em> – added cells and their auxiliary states.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -392,7 +381,7 @@ trainer. However its associated state and monitors are deleted.</p>
 <dd class="field-even"><p>specified trainable, if it exists.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Trainable | None</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.Cell">Cell</a> | None, nn.Module | None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -432,23 +421,12 @@ may be less than the number of added monitors.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.learn.CellTrainer.named_aux">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">named_aux</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.12)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Module</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.learn.CellTrainer.named_aux" title="Link to this definition">#</a></dt>
-<dd><p>Auxiliary state associated with cells and their names.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Yields<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>tuple[str, nn.Module]</em> – tuple of added state and the associated cell name.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="inferno.learn.CellTrainer.named_cells">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">named_cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.12)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.learn.CellTrainer.named_cells" title="Link to this definition">#</a></dt>
-<dd><p>Added cells and their names.</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">named_cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.12)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Module</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.learn.CellTrainer.named_cells" title="Link to this definition">#</a></dt>
+<dd><p>Added cell, their auxiliary states, and their names.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Yields<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>tuple[str, Cell]</em> – tuple of an added cell and its name.</p>
+<dd class="field-odd"><p><em>tuple[str, Cell]</em> – tuple of an added cell, their auxiliary states, and its name.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -572,7 +550,6 @@ each be called once, even if present in multiple cells.</p>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer"><code class="docutils literal notranslate"><span class="pre">CellTrainer</span></code></a><ul>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.add_cell"><code class="docutils literal notranslate"><span class="pre">CellTrainer.add_cell()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.add_monitor"><code class="docutils literal notranslate"><span class="pre">CellTrainer.add_monitor()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.CellTrainer.aux"><code class="docutils literal notranslate"><span class="pre">CellTrainer.aux</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.cells"><code class="docutils literal notranslate"><span class="pre">CellTrainer.cells</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.clear"><code class="docutils literal notranslate"><span class="pre">CellTrainer.clear()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.del_cell"><code class="docutils literal notranslate"><span class="pre">CellTrainer.del_cell()</span></code></a></li>
@@ -581,7 +558,6 @@ each be called once, even if present in multiple cells.</p>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.get_cell"><code class="docutils literal notranslate"><span class="pre">CellTrainer.get_cell()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.get_monitor"><code class="docutils literal notranslate"><span class="pre">CellTrainer.get_monitor()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.monitors"><code class="docutils literal notranslate"><span class="pre">CellTrainer.monitors</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.CellTrainer.named_aux"><code class="docutils literal notranslate"><span class="pre">CellTrainer.named_aux</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.named_cells"><code class="docutils literal notranslate"><span class="pre">CellTrainer.named_cells</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.named_monitors"><code class="docutils literal notranslate"><span class="pre">CellTrainer.named_monitors</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.CellTrainer.named_monitors_of"><code class="docutils literal notranslate"><span class="pre">CellTrainer.named_monitors_of()</span></code></a></li>

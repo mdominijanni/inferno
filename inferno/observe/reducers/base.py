@@ -1,6 +1,6 @@
 from __future__ import annotations
 from ... import RecordModule, interpolation, empty
-from ...core.types import OneToOne
+from ...types import OneToOne
 from abc import ABC, abstractmethod
 import torch
 from typing import Callable

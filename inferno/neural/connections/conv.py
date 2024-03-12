@@ -2,7 +2,7 @@ from .mixins import WeightBiasDelayMixin
 from ..base import Connection, SynapseConstructor
 from ..base import Synapse  # noqa:F401, for docstrings
 from ..._internal import argtest
-from ...core.types import OneToOne
+from ...types import OneToOne
 import einops as ein
 import math
 import torch

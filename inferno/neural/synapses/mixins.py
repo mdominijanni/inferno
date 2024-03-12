@@ -1,7 +1,7 @@
 from ... import RecordModule
 from ..._internal import argtest
-from ...core.interpolation import Interpolation
-from ...core.types import OneToOne
+from ...interpolation import Interpolation
+from ...types import OneToOne
 import torch
 import torch.nn as nn
 from typing import Any

@@ -216,8 +216,8 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.neural.functional.neuron_dynamics</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">inferno</span>
-<span class="kn">from</span> <span class="nn">...core.types</span> <span class="kn">import</span> <span class="n">OneToOne</span>
+<span></span><span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">exp</span>
+<span class="kn">from</span> <span class="nn">...types</span> <span class="kn">import</span> <span class="n">OneToOne</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
@@ -413,7 +413,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">decay</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
+    <span class="n">decay</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
     <span class="n">extvoltage</span> <span class="o">=</span> <span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span>
     <span class="k">return</span> <span class="n">rest_v</span> <span class="o">+</span> <span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span> <span class="o">-</span> <span class="n">extvoltage</span><span class="p">)</span> <span class="o">*</span> <span class="n">decay</span> <span class="o">+</span> <span class="n">extvoltage</span></div>
 

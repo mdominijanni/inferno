@@ -1,8 +1,8 @@
-﻿types.OneToManyMethod
-=====================
+﻿OneToManyMethod
+===============
 
-.. currentmodule:: inferno
+.. currentmodule:: inferno.types
 
-.. autoclass:: types.OneToManyMethod
+.. autoclass:: OneToManyMethod
     :members:
     :show-inheritance:

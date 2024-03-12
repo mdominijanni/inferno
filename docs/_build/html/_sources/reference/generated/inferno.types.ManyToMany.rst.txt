@@ -1,8 +1,8 @@
-﻿types.ManyToMany
-================
+﻿ManyToMany
+==========
 
-.. currentmodule:: inferno
+.. currentmodule:: inferno.types
 
-.. autoclass:: types.ManyToMany
+.. autoclass:: ManyToMany
     :members:
     :show-inheritance:

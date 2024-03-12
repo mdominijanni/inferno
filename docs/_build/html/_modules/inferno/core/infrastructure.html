@@ -217,7 +217,7 @@
         <article role="main">
           <h1>Source code for inferno.core.infrastructure</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-<span class="kn">from</span> <span class="nn">.interpolation</span> <span class="kn">import</span> <span class="n">Interpolation</span>
+<span class="kn">from</span> <span class="nn">..interpolation</span> <span class="kn">import</span> <span class="n">Interpolation</span>
 <span class="kn">from</span> <span class="nn">.._internal</span> <span class="kn">import</span> <span class="n">argtest</span><span class="p">,</span> <span class="n">rsetattr</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
@@ -241,10 +241,8 @@
 <span class="sd">    similar to regular tensor state (e.g. buffers and parameters). This enables simple</span>
 <span class="sd">    export to and import from a state dictionary.</span>
 
-<span class="sd">    Unlike PyTorch&#39;s native :py:class:`~torch.nn.Module`, the overrides for</span>
-<span class="sd">    :py:meth:`__getattr__`, :py:meth:`__setattr__`, and :py:meth:`__delattr__` will</span>
-<span class="sd">    check if an attribute is a property on the class and if it is, will use the base</span>
-<span class="sd">    :py:class:`object` methods.</span>
+<span class="sd">    Additionally, attribute assignment will check if the name refers to a property in</span>
+<span class="sd">    the class and if so, uses ``object.__setattr__``.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made</span>
@@ -361,15 +359,12 @@
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__setstate__</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">property</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s2">&quot;_extras&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
-                <span class="n">_extras</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;_extras&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_extras</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">_extras</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;_extras&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="n">_extras</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;_extras&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_extras</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_extras</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
-            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">property</span><span class="p">):</span>
@@ -408,48 +403,51 @@
 <div class="viewcode-block" id="DimensionalModule">
 <a class="viewcode-back" href="../../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule">[docs]</a>
 <span class="k">class</span> <span class="nc">DimensionalModule</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Module with support for dimensionally constrained buffers and parameters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *constraints (tuple[int, int]): tuple of (dim, size) dimensional constraints</span>
+<span class="sd">            for constrained buffers and parameters.</span>
+<span class="sd">        live (bool, optional): if constraints should be evaluated on constrained</span>
+<span class="sd">            attribute set. Defaults to False.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: size specified by each constraint must be positive.</span>
+<span class="sd">        RuntimeError: two or more constraints have the same dimension.</span>
+
+<span class="sd">    Caution:</span>
+<span class="sd">        The names of constrained buffers and parameters will persist via the</span>
+<span class="sd">        state dictionary but the constraints themselves will not.</span>
+
+<span class="sd">    Important:</span>
+<span class="sd">        The constraints given must refer to unique elements. For example, if a</span>
+<span class="sd">        constraint is placed on the dim ``1`` and dim ``-1``, a tensor must be at</span>
+<span class="sd">        least three-dimensional, since in a tensor with two dimensions, ``1`` and</span>
+<span class="sd">        ``-1`` refer to the same dimension.</span>
+
+<span class="sd">    Important:</span>
+<span class="sd">        Constrained values which are either ``None``, scalar (i.e. have zero</span>
+<span class="sd">        dimensions), or have no elements (i.e. have a zero-dimension) are</span>
+<span class="sd">        automatically ignored.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">constraints</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">live</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Module with support for dimensionally constrained buffers and parameters.</span>
+        <span class="c1"># setter-dependent attribute</span>
+        <span class="n">Module</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_live_assert&quot;</span><span class="p">,</span> <span class="n">live</span><span class="p">)</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            *constraints (tuple[int, int]): tuple of (dim, size) dimensional constraints</span>
-<span class="sd">                for constrained buffers and parameters.</span>
-<span class="sd">            live (bool, optional): if constraints should be evaluated on constrained</span>
-<span class="sd">                attribute set. Defaults to False.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: size specified by each constraint must be positive.</span>
-<span class="sd">            RuntimeError: two or more constraints have the same dimension.</span>
-
-<span class="sd">        Caution:</span>
-<span class="sd">            The names of constrained buffers and parameters will persist via the</span>
-<span class="sd">            state dictionary but the constraints themselves will not.</span>
-
-<span class="sd">        Important:</span>
-<span class="sd">            The constraints given must refer to unique elements. For example, if a</span>
-<span class="sd">            constraint is placed on the dim ``1`` and dim ``-1``, a tensor must be at</span>
-<span class="sd">            least three-dimensional, since in a tensor with two dimensions, ``1`` and</span>
-<span class="sd">            ``-1`` refer to the same dimension.</span>
-
-<span class="sd">        Important:</span>
-<span class="sd">            Constrained values which are either ``None``, scalar (i.e. have zero</span>
-<span class="sd">            dimensions), or have no elements (i.e. have a zero-dimension) are</span>
-<span class="sd">            automatically ignored.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># call superclass constructor</span>
         <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># transient state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__live_assert</span> <span class="o">=</span> <span class="n">live</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="c1"># persistent state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;_constrained_buffers&quot;</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;_constrained_params&quot;</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span>
 
         <span class="c1"># cached values</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__constraint_cache</span> <span class="o">=</span> <span class="n">cache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__calc_constraints</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__extra_repr_cache</span> <span class="o">=</span> <span class="n">cache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__calc_extra_repr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_constraint_cache</span> <span class="o">=</span> <span class="n">cache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calc_constraints</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_repr_cache</span> <span class="o">=</span> <span class="n">cache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calc_extra_repr</span><span class="p">)</span>
 
         <span class="c1"># check for consistent constraints</span>
         <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">constraints</span><span class="p">:</span>
@@ -459,12 +457,12 @@
                     <span class="sa">f</span><span class="s2">&quot;constraint </span><span class="si">{</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="s2"> specifies an invalid (nonpositive) &quot;</span>
                     <span class="s2">&quot;number of elements&quot;</span>
                 <span class="p">)</span>
-            <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;constraint </span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s2"> conflicts with constraint &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
                 <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_ignore_tensor</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -479,13 +477,17 @@
         <span class="k">return</span> <span class="n">tensor</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">tensor</span><span class="o">.</span><span class="n">ndim</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">tensor</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">live</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">liveconstrain</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_params</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span>
+        <span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
                 <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;tensor of shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> being assigned to &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;is not compatible with constraints (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__extra_repr_cache</span><span class="p">()</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;is not compatible with constraints (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_repr_cache</span><span class="p">()</span><span class="si">}</span><span class="s2">)&quot;</span>
                 <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
@@ -610,7 +612,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            dict[int, int]: active constraints, represented as a dictionary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constraint_cache</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraint_cache</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dims</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -619,10 +621,10 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            int: minimum required number of dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">live</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">liveconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;If constraints should be enforced on attribute assignment.</span>
 
 <span class="sd">        Args:</span>
@@ -631,36 +633,37 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if constraints should be enforced on attribute assignment.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__live_assert</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_live_assert</span>
 
-    <span class="nd">@live</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">live</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__live_assert</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="nd">@liveconstrain</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">liveconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_live_assert</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DimensionalModule.extra_repr">
 <a class="viewcode-back" href="../../../reference/generated/inferno.DimensionalModule.html#inferno.DimensionalModule.extra_repr">[docs]</a>
     <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;constraints=(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__extra_repr_cache</span><span class="p">()</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
-                <span class="sa">f</span><span class="s2">&quot;constrained=(</span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constrained</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;constraints=(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_repr_cache</span><span class="p">()</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;constrained_buffers=(</span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;constrained_parameters=(</span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constrained_params</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">__calc_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_calc_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates sorted constraints for the cache.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict[int, int]: active constraints, represented as a dictionary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">fwd</span><span class="p">,</span> <span class="n">rev</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
             <span class="n">rev</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span> <span class="k">if</span> <span class="n">dim</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">fwd</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fwd</span> <span class="o">+</span> <span class="n">rev</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__calc_extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_calc_extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates the extra representation layout of constraints.</span>
 
 <span class="sd">        Returns:</span>
@@ -668,7 +671,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># split constraints into forward and reverse (negative) indices, sorted</span>
         <span class="n">fwd</span><span class="p">,</span> <span class="n">rev</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
             <span class="n">rev</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span> <span class="k">if</span> <span class="n">dim</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">fwd</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
 
         <span class="c1"># representation elements</span>
@@ -748,7 +751,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if the tensor is compatible.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DimensionalModule.compatible_like">
@@ -766,7 +769,7 @@
 <span class="sd">            torch.Tensor | nn.Parameter | tuple[int, ...]: new tensor or parameter like</span>
 <span class="sd">            the input, or the new compatible shape if not given a tensor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_like_</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_like_</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DimensionalModule.reconstrain">
@@ -779,7 +782,7 @@
 <span class="sd">        dimension modified.</span>
 
 <span class="sd">        If the tensor was modified to be compatible with the new constraint ahead</span>
-<span class="sd">        of time (i.e. if :py:attr:`live` is ``False`` and was set with its new value),</span>
+<span class="sd">        of time (i.e. if :py:attr:`liveconstrain` is ``False`` and was set with its new value),</span>
 <span class="sd">        then reallocation will not occur.</span>
 
 <span class="sd">        Args:</span>
@@ -797,8 +800,8 @@
 <span class="sd">            DimensionalModule: self.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># clear cached values</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__constraint_cache</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__extra_repr_cache</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_constraint_cache</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_repr_cache</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
 
         <span class="c1"># remove deleted buffers and parameters from constrained set</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trim_constrained</span><span class="p">()</span>
@@ -808,9 +811,9 @@
         <span class="n">size</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 
         <span class="c1"># removes constraint</span>
-        <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">size</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">size</span><span class="p">:</span>
             <span class="c1"># removes constraint</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span>
 
             <span class="c1"># tests if constrained buffers and parameters are still valid</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_test_constrained</span><span class="p">()</span>
@@ -819,12 +822,12 @@
             <span class="k">return</span> <span class="bp">self</span>
 
         <span class="c1"># creates constraint</span>
-        <span class="k">if</span> <span class="n">dim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span> <span class="ow">and</span> <span class="n">size</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="ow">and</span> <span class="n">size</span><span class="p">:</span>
             <span class="c1"># ensures constrained values are still valid</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_test_constrained</span><span class="p">()</span>
 
             <span class="c1"># tests if buffers and parameters will be valid with new constraints</span>
-            <span class="n">cns</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">size</span><span class="p">}</span>
+            <span class="n">cns</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">size</span><span class="p">}</span>
 
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span>
                 <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_buffer</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span>
@@ -845,13 +848,13 @@
                     <span class="p">)</span>
 
             <span class="c1"># adds constraint</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
 
             <span class="c1"># returns self</span>
             <span class="k">return</span> <span class="bp">self</span>
 
         <span class="c1"># alters constraint</span>
-        <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span> <span class="ow">and</span> <span class="n">size</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="ow">and</span> <span class="n">size</span><span class="p">:</span>
             <span class="c1"># check that all tensors have minimum required dimensionality</span>
             <span class="n">ndim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims</span>
 
@@ -874,7 +877,7 @@
                     <span class="p">)</span>
 
             <span class="c1"># edit constraint</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
 
             <span class="c1"># reassign incompatible parameters</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span>
@@ -915,7 +918,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;buffer &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;incompatible with constrained shape (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__extra_repr_cache</span><span class="p">()</span><span class="si">}</span><span class="s2">), &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;incompatible with constrained shape (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_repr_cache</span><span class="p">()</span><span class="si">}</span><span class="s2">), &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;dimensions must match and &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; must have at least &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
                 <span class="p">)</span>
@@ -932,7 +935,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;parameter &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;incompatible with constrained shape (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__extra_repr_cache</span><span class="p">()</span><span class="si">}</span><span class="s2">), &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;incompatible with constrained shape (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_repr_cache</span><span class="p">()</span><span class="si">}</span><span class="s2">), &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;dimensions must match and &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; must have at least &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
                 <span class="p">)</span>
@@ -1000,7 +1003,7 @@
 <div class="viewcode-block" id="RecordModule">
 <a class="viewcode-back" href="../../../reference/generated/inferno.RecordModule.html#inferno.RecordModule">[docs]</a>
 <span class="k">class</span> <span class="nc">RecordModule</span><span class="p">(</span><span class="n">DimensionalModule</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;_summary_</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Module with support for buffers and parameters with time-based indexing.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        step_time (float): length of time between stored values in the record.</span>
@@ -1028,8 +1031,8 @@
         <span class="n">DimensionalModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
 
         <span class="c1"># transient state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span> <span class="o">=</span> <span class="n">step_time</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span> <span class="o">=</span> <span class="n">duration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_step_time</span> <span class="o">=</span> <span class="n">step_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_duration</span> <span class="o">=</span> <span class="n">duration</span>
 
         <span class="c1"># persistent state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;_pointers&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
@@ -1050,7 +1053,7 @@
 <span class="sd">            If a :py:meth:`reconstrain` operation needs to be performed, all state will</span>
 <span class="sd">            be overwritten with zeros.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step_time</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1058,14 +1061,14 @@
         <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
         <span class="c1"># recompute size of the history dimension</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__duration</span> <span class="o">/</span> <span class="n">value</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_duration</span> <span class="o">/</span> <span class="n">value</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="c1"># reconstrain if required</span>
         <span class="k">if</span> <span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">:</span>
             <span class="n">DimensionalModule</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
 
         <span class="c1"># set revised step time</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_step_time</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -1083,7 +1086,7 @@
 <span class="sd">            If a :py:meth:`reconstrain` operation needs to be performed, all state will</span>
 <span class="sd">            be overwritten with zeros.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_duration</span>
 
     <span class="nd">@duration</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1091,14 +1094,14 @@
         <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
         <span class="c1"># recompute size of the history dimension</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">value</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">value</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step_time</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="c1"># reconstrain if required</span>
         <span class="k">if</span> <span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">:</span>
             <span class="n">DimensionalModule</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
 
         <span class="c1"># set revised history length</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_duration</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">recordsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -1188,7 +1191,7 @@
 <span class="sd">        dimension modified.</span>
 
 <span class="sd">        If the tensor was modified to be compatible with the new constraint ahead</span>
-<span class="sd">        of time (i.e. if :py:attr:`live` is ``False`` and was set with its new value),</span>
+<span class="sd">        of time (i.e. if :py:attr:`liveconstrain` is ``False`` and was set with its new value),</span>
 <span class="sd">        then reallocation will not occur.</span>
 
 <span class="sd">        Args:</span>
@@ -1211,7 +1214,19 @@
                 <span class="s2">&quot;dimension (-1)&quot;</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">RecordModule</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">DimensionalModule</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RecordModule.reset">
+<a class="viewcode-back" href="../../../reference/generated/inferno.RecordModule.html#inferno.RecordModule.reset">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets a constrained attribute to some value or values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): name of the attribute to target.</span>
+<span class="sd">            data (Any): data to insert.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_constrained_record</span><span class="p">(</span><span class="n">name</span><span class="p">)[:]</span> <span class="o">=</span> <span class="n">data</span></div>
 
 
 <div class="viewcode-block" id="RecordModule.latest">
@@ -1580,7 +1595,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if a module to which this hook is registred.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prehook_handle</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">__posthook_handle</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prehook_handle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">__posthook_handle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="Hook.register">
 <a class="viewcode-back" href="../../../reference/generated/inferno.Hook.html#inferno.Hook.register">[docs]</a>
@@ -1613,6 +1628,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">__posthook</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__posthook_kwargs</span>
                 <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">()</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;this </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is already registered to a module &quot;</span>
                 <span class="s2">&quot;so new `register()` was ignored&quot;</span><span class="p">,</span>

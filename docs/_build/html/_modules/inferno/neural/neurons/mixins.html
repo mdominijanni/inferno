@@ -217,7 +217,7 @@
         <article role="main">
           <h1>Source code for inferno.neural.neurons.mixins</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">DimensionalModule</span><span class="p">,</span> <span class="n">Module</span>
-<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">attr_members</span><span class="p">,</span> <span class="n">instance_of</span>
+<span class="kn">from</span> <span class="nn">..._internal</span> <span class="kn">import</span> <span class="n">argtest</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
@@ -260,9 +260,7 @@
             <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
         <span class="p">)</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">Module</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">Module</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;adaptation_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">adapt_batchreduce</span> <span class="o">=</span> <span class="n">batch_reduction</span> <span class="k">if</span> <span class="n">batch_reduction</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span>
@@ -315,9 +313,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">)</span>
 
@@ -359,9 +355,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;voltage_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;voltage_&quot;</span><span class="p">)</span>
 
@@ -403,9 +397,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="n">instance_of</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;refrac_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;refrac_&quot;</span><span class="p">)</span>
 
@@ -451,9 +443,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="n">attr_members</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;refrac_t&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">members</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;refrac_t&quot;</span><span class="p">)</span>
         <span class="n">RefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refrac</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">)</span>
 
     <span class="nd">@property</span>

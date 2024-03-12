@@ -1,6 +1,6 @@
 ﻿lower\_power
 ============
 
-.. currentmodule:: inferno
+.. currentmodule:: inferno.bounding
 
 .. autofunction:: lower_power

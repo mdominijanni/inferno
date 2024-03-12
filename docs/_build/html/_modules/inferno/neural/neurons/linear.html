@@ -216,10 +216,10 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.neural.neurons.linear</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Neuron</span>
+<span></span><span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Neuron</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">nf</span>
-<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span>
-<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">numeric_limit</span><span class="p">,</span> <span class="n">numeric_relative</span>
+<span class="kn">from</span> <span class="nn">..._internal</span> <span class="kn">import</span> <span class="n">argtest</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">zip_longest</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
@@ -278,35 +278,13 @@
         <span class="n">Neuron</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
 
         <span class="c1"># dynamics attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span>
-            <span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
-            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
-            <span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">thresh_v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
         <span class="c1"># call mixin constructors</span>
         <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
@@ -337,9 +315,7 @@
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LIF.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LIF.html#inferno.neural.LIF.clear">[docs]</a>
@@ -474,56 +450,33 @@
             <span class="n">spike_increment</span> <span class="o">=</span> <span class="p">(</span><span class="n">spike_increment</span><span class="p">,)</span>
 
         <span class="c1"># prepare converted lists</span>
-        <span class="n">tcL</span><span class="p">,</span> <span class="n">siL</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">tc_list</span><span class="p">,</span> <span class="n">si_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
 
         <span class="c1"># test values</span>
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">tcA</span><span class="p">,</span> <span class="n">siA</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">zip_longest</span><span class="p">(</span><span class="n">tc_adaptation</span><span class="p">,</span> <span class="n">spike_increment</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">tc</span><span class="p">,</span> <span class="n">si</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">zip_longest</span><span class="p">(</span><span class="n">tc_adaptation</span><span class="p">,</span> <span class="n">spike_increment</span><span class="p">)):</span>
             <span class="c1"># time constant of adaptation</span>
-            <span class="k">if</span> <span class="n">tcA</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">tcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tcL</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">tc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tc_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tc_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tc_adaptation[</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">tcA</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">e</span>
-                <span class="n">tcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="n">tc_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_adaptation[</span><span class="si">{idx}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">tc</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
 
             <span class="c1"># threshold spike increment</span>
-            <span class="k">if</span> <span class="n">siL</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">siL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">siL</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">si_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">si_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">si_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">siL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">siA</span><span class="p">))</span>
+                <span class="n">si_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">si</span><span class="p">))</span>
 
         <span class="c1"># reassign</span>
-        <span class="n">tc_adaptation</span><span class="p">,</span> <span class="n">spike_increment</span> <span class="o">=</span> <span class="n">tcL</span><span class="p">,</span> <span class="n">siL</span>
+        <span class="n">tc_adaptation</span><span class="p">,</span> <span class="n">spike_increment</span> <span class="o">=</span> <span class="n">tc_list</span><span class="p">,</span> <span class="n">si_list</span>
 
         <span class="c1"># dynamics attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span> <span class="n">tc_membrane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresh_eq_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
-            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_eq_v&quot;</span><span class="p">,</span> <span class="n">thresh_eq_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
-            <span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="s2">&quot;thresh_eq_v&quot;</span><span class="p">,</span> <span class="n">thresh_eq_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span> <span class="n">tc_membrane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">thresh_eq_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_eq_v&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="n">thresh_eq_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_eq_v&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thresh_eq_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">thresh_eq_v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
         <span class="c1"># register adaptation attributes as buffers (for tensor ops and compatibility)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
@@ -568,9 +521,7 @@
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ALIF.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.ALIF.html#inferno.neural.ALIF.clear">[docs]</a>
@@ -825,53 +776,34 @@
             <span class="n">spike_increment</span> <span class="o">=</span> <span class="p">(</span><span class="n">spike_increment</span><span class="p">,)</span>
 
         <span class="c1"># prepare converted lists</span>
-        <span class="n">rcL</span><span class="p">,</span> <span class="n">siL</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">rc_list</span><span class="p">,</span> <span class="n">si_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
 
         <span class="c1"># test values</span>
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">rcA</span><span class="p">,</span> <span class="n">siA</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">zip_longest</span><span class="p">(</span><span class="n">rc_adaptation</span><span class="p">,</span> <span class="n">spike_increment</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">rc</span><span class="p">,</span> <span class="n">si</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">zip_longest</span><span class="p">(</span><span class="n">rc_adaptation</span><span class="p">,</span> <span class="n">spike_increment</span><span class="p">)):</span>
             <span class="c1"># time constant of adaptation</span>
-            <span class="k">if</span> <span class="n">rcA</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">rcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rcL</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">rc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">rc_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rc_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rc_adaptation[</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">rcA</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">e</span>
-                <span class="n">rcL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="n">rc_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rc_adaptation[</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
 
             <span class="c1"># threshold spike increment</span>
-            <span class="k">if</span> <span class="n">siL</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">siL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">siL</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">si_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">si_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">si_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">siL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">siA</span><span class="p">))</span>
+                <span class="n">si_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">si</span><span class="p">))</span>
 
         <span class="c1"># reassign</span>
-        <span class="n">rc_adaptation</span><span class="p">,</span> <span class="n">spike_increment</span> <span class="o">=</span> <span class="n">rcL</span><span class="p">,</span> <span class="n">siL</span>
+        <span class="n">rc_adaptation</span><span class="p">,</span> <span class="n">spike_increment</span> <span class="o">=</span> <span class="n">rc_list</span><span class="p">,</span> <span class="n">si_list</span>
 
         <span class="c1"># dynamics attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span> <span class="n">tc_membrane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresh_eq_v</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_relative</span><span class="p">(</span>
-            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="s2">&quot;thresh_eq_v&quot;</span><span class="p">,</span> <span class="n">thresh_eq_v</span><span class="p">,</span> <span class="s2">&quot;lt&quot;</span><span class="p">,</span> <span class="nb">float</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span> <span class="n">tc_membrane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">thresh_eq_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_eq_v&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thresh_eq_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">thresh_eq_v</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_v_add</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">reset_v_add</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_v_mul</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">reset_v_mul</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gte&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;neq&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
         <span class="c1"># register adaptation attributes as buffers (for tensor ops and compatibility)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
@@ -916,9 +848,7 @@
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">numeric_limit</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;gt&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GLIF2.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.GLIF2.html#inferno.neural.GLIF2.clear">[docs]</a>

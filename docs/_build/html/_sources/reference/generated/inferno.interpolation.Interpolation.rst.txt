@@ -1,8 +1,8 @@
-﻿interpolation.Interpolation
-===========================
+﻿Interpolation
+=============
 
-.. currentmodule:: inferno
+.. currentmodule:: inferno.interpolation
 
-.. autoclass:: interpolation.Interpolation
+.. autoclass:: Interpolation
     :members:
     :show-inheritance:

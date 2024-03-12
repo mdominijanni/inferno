@@ -231,18 +231,21 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Updatable.setupdater">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setupdater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.modeling.Updater"><span class="pre">Updater</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updatable.setupdater"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updatable.setupdater" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.neural.Updatable.defaultupdater">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">defaultupdater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">includes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.modeling.Updater"><span class="pre">Updater</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/modeling.html#Updatable.defaultupdater"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Updatable.defaultupdater" title="Link to this definition">#</a></dt>
 <dd><p>Default updater for this object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">defaultupdater</span></code> must be implemented by the subclass.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*includes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – additional instance-specific parameters to include.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>the default updater.</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">defaultupdater</span></code> must be implemented by the subclass.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater">Updater</a></p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the default updater.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater">Updater</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -279,11 +282,14 @@ Defaults to True.</p>
 <dd><p>Updater for the module.</p>
 <p>Deleting this attribute deletes the associated updater.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>current updater if it exists, otherwise None.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Updater</strong> – new updater to set.</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater">Updater</a> | None</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>current updater if it exists, otherwise None.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater">Updater</a> | None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -365,7 +371,7 @@ Defaults to True.</p></li>
 <li><a class="reference internal" href="#">Updatable</a><ul>
 <li><a class="reference internal" href="#inferno.neural.Updatable"><code class="docutils literal notranslate"><span class="pre">Updatable</span></code></a><ul>
 <li><a class="reference internal" href="#inferno.neural.Updatable.clear"><code class="docutils literal notranslate"><span class="pre">Updatable.clear()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Updatable.setupdater"><code class="docutils literal notranslate"><span class="pre">Updatable.setupdater()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Updatable.defaultupdater"><code class="docutils literal notranslate"><span class="pre">Updatable.defaultupdater()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Updatable.updatable"><code class="docutils literal notranslate"><span class="pre">Updatable.updatable</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Updatable.update"><code class="docutils literal notranslate"><span class="pre">Updatable.update()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Updatable.updater"><code class="docutils literal notranslate"><span class="pre">Updatable.updater</span></code></a></li>

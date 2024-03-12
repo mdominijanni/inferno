@@ -8,7 +8,7 @@ from ... import (
     trace_cumulative_scaled,
 )
 from ..._internal import argtest
-from ...core.types import OneToOne
+from ...types import OneToOne
 import math
 import torch
 

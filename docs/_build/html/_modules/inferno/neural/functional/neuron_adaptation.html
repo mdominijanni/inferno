@@ -216,7 +216,7 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.neural.functional.neuron_adaptation</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">inferno</span>
+<span></span><span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">exp</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
@@ -527,7 +527,7 @@
 <span class="sd">        :ref:`zoo/neurons-adaptation:Adaptive Threshold, Linear Spike-Dependent` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># decay adaptations over time</span>
-    <span class="n">decayed</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">*</span> <span class="n">inferno</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
+    <span class="n">decayed</span> <span class="o">=</span> <span class="n">adaptations</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">refracs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">adaptations</span> <span class="o">=</span> <span class="n">decayed</span>
     <span class="k">else</span><span class="p">:</span>

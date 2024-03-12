@@ -1,5 +1,5 @@
 from ... import exp
-from ...core.types import OneToOne
+from ...types import OneToOne
 import torch
 
 

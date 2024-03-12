@@ -325,6 +325,40 @@ itself has no clearable state. Keyword arguments are passed through.</p>
 </div>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Connection.defaultupdater">
+<span class="sig-name descname"><span class="pre">defaultupdater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">includes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.modeling.Updater"><span class="pre">Updater</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.defaultupdater"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.defaultupdater" title="Link to this definition">#</a></dt>
+<dd><p>Default updater for this connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*includes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – additional instance-specific parameters to include.</p></li>
+<li><p><strong>exclude_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if weight should not be an updatable
+parameter. Defaults to False.</p></li>
+<li><p><strong>exclude_bias</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if bias should not be an updatable
+parameter. Defaults to False.</p></li>
+<li><p><strong>exclude_delay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if delay should not be an updatable
+parameter. Defaults to False.</p></li>
+</ul>
+</dd>
+</dl>
+<p>This will set and return an <a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater"><code class="xref py py-class docutils literal notranslate"><span class="pre">Updater</span></code></a> with the following trainable
+parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">weight</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bias</span></code>, if <a class="reference internal" href="#inferno.neural.Connection.biased" title="inferno.neural.Connection.biased"><code class="xref py py-attr docutils literal notranslate"><span class="pre">biased</span></code></a> is <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">delay</span></code>, if <a class="reference internal" href="#inferno.neural.Connection.delayedby" title="inferno.neural.Connection.delayedby"><code class="xref py py-attr docutils literal notranslate"><span class="pre">delayedby</span></code></a> is not <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>newly set updater.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater">Updater</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.Connection.delay">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delay</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.Connection.delay" title="Link to this definition">#</a></dt>
@@ -387,6 +421,12 @@ assuming the connection has no step time dependent state.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Connection.extra_repr">
+<span class="sig-name descname"><span class="pre">extra_repr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.extra_repr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.extra_repr" title="Link to this definition">#</a></dt>
+<dd><p>Returns extra information on this module.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Connection.forward">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.forward" title="Link to this definition">#</a></dt>
 <dd><p>Runs a simulation step of the connection.</p>
@@ -429,9 +469,9 @@ synapse and passed to its :py:meth`Synapse.forward` call.</p>
 </dl>
 </dd></dl>
 
-<dl class="py property">
+<dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Connection.insize">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">insize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.Connection.insize" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">insize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.insize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.insize" title="Link to this definition">#</a></dt>
 <dd><p>Number of inputs to the connection, excluding the batch dimension.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -520,9 +560,9 @@ deleted to refresh the cache.</p>
 </dl>
 </dd></dl>
 
-<dl class="py property">
+<dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Connection.outsize">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outsize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.Connection.outsize" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">outsize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.outsize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.outsize" title="Link to this definition">#</a></dt>
 <dd><p>Number of outputs from the connection, excluding the batch dimension.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -629,40 +669,6 @@ with <a class="reference internal" href="#inferno.neural.Connection.weight" titl
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">selector</span></code> must be implemented by the subclass.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.Connection.setupdater">
-<span class="sig-name descname"><span class="pre">setupdater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">includes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.modeling.Updater"><span class="pre">Updater</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.setupdater"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.setupdater" title="Link to this definition">#</a></dt>
-<dd><p>Sets the updater for this connection.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>*includes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – additional instance-specific parameters to include.</p></li>
-<li><p><strong>exclude_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if weight should not be an updatable
-parameter. Defaults to False.</p></li>
-<li><p><strong>exclude_bias</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if bias should not be an updatable
-parameter. Defaults to False.</p></li>
-<li><p><strong>exclude_delay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if delay should not be an updatable
-parameter. Defaults to False.</p></li>
-</ul>
-</dd>
-</dl>
-<p>This will set and return an <a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater"><code class="xref py py-class docutils literal notranslate"><span class="pre">Updater</span></code></a> with the following trainable
-parameters:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">weight</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">bias</span></code>, if <a class="reference internal" href="#inferno.neural.Connection.biased" title="inferno.neural.Connection.biased"><code class="xref py py-attr docutils literal notranslate"><span class="pre">biased</span></code></a> is <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">delay</span></code>, if <a class="reference internal" href="#inferno.neural.Connection.delayedby" title="inferno.neural.Connection.delayedby"><code class="xref py py-attr docutils literal notranslate"><span class="pre">delayedby</span></code></a> is not <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
-</ul>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>newly set updater.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.Updater">Updater</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -804,20 +810,21 @@ currents, otherwise it should return those indexed by <a class="reference intern
 <li><a class="reference internal" href="#inferno.neural.Connection.boutshape"><code class="docutils literal notranslate"><span class="pre">Connection.boutshape</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.bsize"><code class="docutils literal notranslate"><span class="pre">Connection.bsize</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.clear"><code class="docutils literal notranslate"><span class="pre">Connection.clear()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Connection.defaultupdater"><code class="docutils literal notranslate"><span class="pre">Connection.defaultupdater()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.delay"><code class="docutils literal notranslate"><span class="pre">Connection.delay</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.delayedby"><code class="docutils literal notranslate"><span class="pre">Connection.delayedby</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.dt"><code class="docutils literal notranslate"><span class="pre">Connection.dt</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Connection.extra_repr"><code class="docutils literal notranslate"><span class="pre">Connection.extra_repr()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.forward"><code class="docutils literal notranslate"><span class="pre">Connection.forward()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.inshape"><code class="docutils literal notranslate"><span class="pre">Connection.inshape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Connection.insize"><code class="docutils literal notranslate"><span class="pre">Connection.insize</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Connection.insize"><code class="docutils literal notranslate"><span class="pre">Connection.insize()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.like_input"><code class="docutils literal notranslate"><span class="pre">Connection.like_input()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.like_synaptic"><code class="docutils literal notranslate"><span class="pre">Connection.like_synaptic()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.outshape"><code class="docutils literal notranslate"><span class="pre">Connection.outshape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Connection.outsize"><code class="docutils literal notranslate"><span class="pre">Connection.outsize</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Connection.outsize"><code class="docutils literal notranslate"><span class="pre">Connection.outsize()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.postsyn_receptive"><code class="docutils literal notranslate"><span class="pre">Connection.postsyn_receptive()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.presyn_receptive"><code class="docutils literal notranslate"><span class="pre">Connection.presyn_receptive()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.selector"><code class="docutils literal notranslate"><span class="pre">Connection.selector</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Connection.setupdater"><code class="docutils literal notranslate"><span class="pre">Connection.setupdater()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.synapse"><code class="docutils literal notranslate"><span class="pre">Connection.synapse</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.syncurrent"><code class="docutils literal notranslate"><span class="pre">Connection.syncurrent</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.synspike"><code class="docutils literal notranslate"><span class="pre">Connection.synspike</span></code></a></li>

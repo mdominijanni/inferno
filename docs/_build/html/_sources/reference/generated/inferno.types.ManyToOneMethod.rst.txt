@@ -1,8 +1,8 @@
-﻿types.ManyToOneMethod
-=====================
+﻿ManyToOneMethod
+===============
 
-.. currentmodule:: inferno
+.. currentmodule:: inferno.types
 
-.. autoclass:: types.ManyToOneMethod
+.. autoclass:: ManyToOneMethod
     :members:
     :show-inheritance:

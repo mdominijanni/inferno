@@ -227,10 +227,8 @@
 <p>This extends <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a> so that “extra state” is handled in a way
 similar to regular tensor state (e.g. buffers and parameters). This enables simple
 export to and import from a state dictionary.</p>
-<p>Unlike PyTorch’s native <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a>, the overrides for
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">__getattr__()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>, and <code class="xref py py-meth docutils literal notranslate"><span class="pre">__delattr__()</span></code> will
-check if an attribute is a property on the class and if it is, will use the base
-<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a> methods.</p>
+<p>Additionally, attribute assignment will check if the name refers to a property in
+the class and if so, uses <code class="docutils literal notranslate"><span class="pre">object.__setattr__</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Like with <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a>, an <code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code> call must be made
