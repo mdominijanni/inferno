@@ -1,8 +1,8 @@
-﻿types.ManyToOne
-===============
+﻿ManyToOne
+=========
 
-.. currentmodule:: inferno
+.. currentmodule:: inferno.types
 
-.. autoclass:: types.ManyToOne
+.. autoclass:: ManyToOne
     :members:
     :show-inheritance:

@@ -223,6 +223,41 @@
 <dt class="sig sig-object py" id="inferno.DimensionalModule">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DimensionalModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">live</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/core/infrastructure.html#DimensionalModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.DimensionalModule" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.core.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
+<p>Module with support for dimensionally constrained buffers and parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*constraints</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em>) – tuple of (dim, size) dimensional constraints
+for constrained buffers and parameters.</p></li>
+<li><p><strong>live</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if constraints should be evaluated on constrained
+attribute set. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – size specified by each constraint must be positive.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – two or more constraints have the same dimension.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>The names of constrained buffers and parameters will persist via the
+state dictionary but the constraints themselves will not.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The constraints given must refer to unique elements. For example, if a
+constraint is placed on the dim <code class="docutils literal notranslate"><span class="pre">1</span></code> and dim <code class="docutils literal notranslate"><span class="pre">-1</span></code>, a tensor must be at
+least three-dimensional, since in a tensor with two dimensions, <code class="docutils literal notranslate"><span class="pre">1</span></code> and
+<code class="docutils literal notranslate"><span class="pre">-1</span></code> refer to the same dimension.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Constrained values which are either <code class="docutils literal notranslate"><span class="pre">None</span></code>, scalar (i.e. have zero
+dimensions), or have no elements (i.e. have a zero-dimension) are
+automatically ignored.</p>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.DimensionalModule.compatible">
 <span class="sig-name descname"><span class="pre">compatible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../_modules/inferno/core/infrastructure.html#DimensionalModule.compatible"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.DimensionalModule.compatible" title="Link to this definition">#</a></dt>
@@ -378,8 +413,8 @@ strings are acceptable.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.DimensionalModule.live">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">live</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#inferno.DimensionalModule.live" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.DimensionalModule.liveconstrain">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">liveconstrain</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#inferno.DimensionalModule.liveconstrain" title="Link to this definition">#</a></dt>
 <dd><p>If constraints should be enforced on attribute assignment.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -402,7 +437,7 @@ strings are acceptable.</p>
 an existing constraint will create a new zero-tensor with the shape of that
 dimension modified.</p>
 <p>If the tensor was modified to be compatible with the new constraint ahead
-of time (i.e. if <a class="reference internal" href="#inferno.DimensionalModule.live" title="inferno.DimensionalModule.live"><code class="xref py py-attr docutils literal notranslate"><span class="pre">live</span></code></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> and was set with its new value),
+of time (i.e. if <a class="reference internal" href="#inferno.DimensionalModule.liveconstrain" title="inferno.DimensionalModule.liveconstrain"><code class="xref py py-attr docutils literal notranslate"><span class="pre">liveconstrain</span></code></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> and was set with its new value),
 then reallocation will not occur.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -536,7 +571,7 @@ constrained name no longer points at a buffer or parameter, that name is removed
 <li><a class="reference internal" href="#inferno.DimensionalModule.dims"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.dims</span></code></a></li>
 <li><a class="reference internal" href="#inferno.DimensionalModule.dims_"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.dims_()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.DimensionalModule.extra_repr"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.extra_repr()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.DimensionalModule.live"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.live</span></code></a></li>
+<li><a class="reference internal" href="#inferno.DimensionalModule.liveconstrain"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.liveconstrain</span></code></a></li>
 <li><a class="reference internal" href="#inferno.DimensionalModule.reconstrain"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.reconstrain()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.DimensionalModule.register_constrained"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.register_constrained()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.DimensionalModule.validate"><code class="docutils literal notranslate"><span class="pre">DimensionalModule.validate()</span></code></a></li>

@@ -1,6 +1,6 @@
 ﻿expratedecay
 ============
 
-.. currentmodule:: inferno
+.. currentmodule:: inferno.interpolation
 
 .. autofunction:: expratedecay

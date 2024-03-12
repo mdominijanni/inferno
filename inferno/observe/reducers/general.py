@@ -1,7 +1,7 @@
 from __future__ import annotations
 from .base import FoldingReducer
 from ... import interpolation
-from ...core.types import OneToOne
+from ...types import OneToOne
 import torch
 
 

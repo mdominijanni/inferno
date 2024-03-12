@@ -1,6 +1,6 @@
 ﻿lower\_sharp
 ============
 
-.. currentmodule:: inferno
+.. currentmodule:: inferno.bounding
 
 .. autofunction:: lower_sharp

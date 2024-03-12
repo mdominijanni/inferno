@@ -217,10 +217,10 @@
         <article role="main">
           <h1>Source code for inferno.learn.base</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Module</span>
+<span class="kn">from</span> <span class="nn">.._internal</span> <span class="kn">import</span> <span class="n">fzip</span><span class="p">,</span> <span class="n">getitem</span><span class="p">,</span> <span class="n">rgetitem</span><span class="p">,</span> <span class="n">unique</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterator</span>
-<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Module</span>
-<span class="kn">from</span> <span class="nn">inferno._internal</span> <span class="kn">import</span> <span class="n">get</span><span class="p">,</span> <span class="n">fzip</span><span class="p">,</span> <span class="n">unique</span>
 <span class="kn">from</span> <span class="nn">inferno.neural</span> <span class="kn">import</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">Layer</span>
 <span class="kn">from</span> <span class="nn">inferno.observe</span> <span class="kn">import</span> <span class="n">Monitor</span><span class="p">,</span> <span class="n">MonitorConstructor</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
@@ -251,7 +251,7 @@
 
         <span class="c1"># interal storage for cells and monitors</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
 
     <span class="nd">@property</span>
@@ -290,44 +290,28 @@
 <span class="sd">        Yields:</span>
 <span class="sd">            tuple[str, Monitor]: associated monitors and their names.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></div>
+        <span class="k">return</span> <span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></div>
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">cells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Cell</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Added cells.</span>
+    <span class="k">def</span> <span class="nf">cells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Added cells and their auxiliary states.</span>
 
 <span class="sd">        Yields:</span>
-<span class="sd">            Cell: added cells.</span>
+<span class="sd">            Cell: added cells and their auxiliary states.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">c</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">named_cells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Cell</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Added cells and their names.</span>
+    <span class="k">def</span> <span class="nf">named_cells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Added cell, their auxiliary states, and their names.</span>
 
 <span class="sd">        Yields:</span>
-<span class="sd">            tuple[str, Cell]: tuple of an added cell and its name.</span>
+<span class="sd">            tuple[str, Cell]: tuple of an added cell, their auxiliary states, and its name.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">aux</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Auxiliary state associated with cells.</span>
-
-<span class="sd">        Yields:</span>
-<span class="sd">            nn.Module: tuple of added state and the associated cell name.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">named_aux</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Auxiliary state associated with cells and their names.</span>
-
-<span class="sd">        Yields:</span>
-<span class="sd">            tuple[str, nn.Module]: tuple of added state and the associated cell name.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="CellTrainer.add_cell">
 <a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.add_cell">[docs]</a>
@@ -346,7 +330,7 @@
 <span class="sd">            RuntimeError: given cell has no updater.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Cell: added cell.</span>
+<span class="sd">            tuple[Cell | None, nn.Module | None]: added cell and auxiliary state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># ensure a trainable with the given name does not exist</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">:</span>
@@ -365,15 +349,15 @@
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
         <span class="c1"># delete any existing state (should never occur)</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span><span class="p">:</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
         <span class="c1"># add the cell</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell</span>
         <span class="k">if</span> <span class="n">aux</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span>
 
-        <span class="k">return</span> <span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="CellTrainer.del_cell">
@@ -402,8 +386,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">del_monitor</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">monitor</span><span class="p">)</span>
 
         <span class="c1"># delete any existing state</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span><span class="p">:</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
         <span class="c1"># delete the cell</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
@@ -418,9 +402,9 @@
 <span class="sd">            name (str): name of the trainable to get.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Trainable | None: specified trainable, if it exists.</span>
+<span class="sd">            tuple[Cell | None, nn.Module | None]: specified trainable, if it exists.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="CellTrainer.add_monitor">
@@ -469,12 +453,12 @@
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;cell&#39; (&#39;</span><span class="si">{</span><span class="n">cell</span><span class="si">}</span><span class="s2">&#39;) is not the name of an added cell&quot;</span><span class="p">)</span>
 
         <span class="c1"># test if the monitor already exists and return if it does, delete if unique</span>
-        <span class="n">qmon</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">qmon</span><span class="p">:</span>
+        <span class="n">mon</span> <span class="o">=</span> <span class="n">rgetitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">,</span> <span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mon</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">unique</span><span class="p">:</span>
                 <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="n">cell</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">qmon</span>
+                <span class="k">return</span> <span class="n">mon</span>
 
         <span class="c1"># create monitor group if it doesn&#39;t exist</span>
         <span class="k">if</span> <span class="n">cell</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">:</span>
@@ -554,7 +538,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Monitor | None: specified monitor, if it exists.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">get</span><span class="p">(</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">rgetitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">,</span> <span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="CellTrainer.train">
@@ -576,9 +560,13 @@
         <span class="c1"># call superclass function</span>
         <span class="n">Module</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
 
-        <span class="c1"># attach monitors</span>
-        <span class="k">for</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span><span class="p">:</span>
-            <span class="n">monitor</span><span class="o">.</span><span class="n">register</span><span class="p">()</span></div>
+        <span class="c1"># attach/detach monitors</span>
+        <span class="k">if</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span><span class="p">:</span>
+                <span class="n">monitor</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span><span class="p">:</span>
+                <span class="n">monitor</span><span class="o">.</span><span class="n">deregister</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="CellTrainer.clear">
@@ -660,9 +648,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">:</span>
             <span class="k">yield</span> <span class="p">(</span>
-                <span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
-                <span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
-                <span class="p">{</span><span class="o">**</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="p">{})},</span>
+                <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_state_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="p">{</span><span class="o">**</span><span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="p">{})},</span>
             <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_add_cell</span><span class="p">(</span>

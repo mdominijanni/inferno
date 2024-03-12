@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .interpolation import Interpolation
+from ..interpolation import Interpolation
 from .._internal import argtest, rsetattr
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -168,34 +168,35 @@ class Module(nn.Module):
 
 
 class DimensionalModule(Module):
+    r"""Module with support for dimensionally constrained buffers and parameters.
+
+    Args:
+        *constraints (tuple[int, int]): tuple of (dim, size) dimensional constraints
+            for constrained buffers and parameters.
+        live (bool, optional): if constraints should be evaluated on constrained
+            attribute set. Defaults to False.
+
+    Raises:
+        ValueError: size specified by each constraint must be positive.
+        RuntimeError: two or more constraints have the same dimension.
+
+    Caution:
+        The names of constrained buffers and parameters will persist via the
+        state dictionary but the constraints themselves will not.
+
+    Important:
+        The constraints given must refer to unique elements. For example, if a
+        constraint is placed on the dim ``1`` and dim ``-1``, a tensor must be at
+        least three-dimensional, since in a tensor with two dimensions, ``1`` and
+        ``-1`` refer to the same dimension.
+
+    Important:
+        Constrained values which are either ``None``, scalar (i.e. have zero
+        dimensions), or have no elements (i.e. have a zero-dimension) are
+        automatically ignored.
+    """
+
     def __init__(self, *constraints: tuple[int, int], live: bool = False):
-        r"""Module with support for dimensionally constrained buffers and parameters.
-
-        Args:
-            *constraints (tuple[int, int]): tuple of (dim, size) dimensional constraints
-                for constrained buffers and parameters.
-            live (bool, optional): if constraints should be evaluated on constrained
-                attribute set. Defaults to False.
-
-        Raises:
-            ValueError: size specified by each constraint must be positive.
-            RuntimeError: two or more constraints have the same dimension.
-
-        Caution:
-            The names of constrained buffers and parameters will persist via the
-            state dictionary but the constraints themselves will not.
-
-        Important:
-            The constraints given must refer to unique elements. For example, if a
-            constraint is placed on the dim ``1`` and dim ``-1``, a tensor must be at
-            least three-dimensional, since in a tensor with two dimensions, ``1`` and
-            ``-1`` refer to the same dimension.
-
-        Important:
-            Constrained values which are either ``None``, scalar (i.e. have zero
-            dimensions), or have no elements (i.e. have a zero-dimension) are
-            automatically ignored.
-        """
         # setter-dependent attribute
         Module.__setattr__(self, "_live_assert", live)
 

@@ -1,6 +1,6 @@
 ﻿power
 =====
 
-.. currentmodule:: inferno
+.. currentmodule:: inferno.bounding
 
 .. autofunction:: power

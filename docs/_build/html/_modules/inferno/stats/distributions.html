@@ -218,14 +218,14 @@
           <h1>Source code for inferno.stats.distributions</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">constraints</span>
 <span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">DiscreteDistribution</span><span class="p">,</span> <span class="n">ContinuousDistribution</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">astensors</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">import</span> <span class="nn">inferno</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
 <span class="n">_astensorsfloat</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
-    <span class="n">inferno</span><span class="o">.</span><span class="n">astensors</span><span class="p">,</span> <span class="n">conversion</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+    <span class="n">astensors</span><span class="p">,</span> <span class="n">conversion</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
 <span class="p">)</span>
 
 
@@ -1008,7 +1008,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: variance of the distribution with given parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">inferno</span><span class="o">.</span><span class="n">astensors</span><span class="p">(</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">astensors</span><span class="p">(</span>
             <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">conversion</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="n">scalesq</span> <span class="o">=</span> <span class="n">scale</span><span class="o">**</span><span class="mi">2</span>
