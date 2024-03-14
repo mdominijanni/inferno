@@ -17,27 +17,31 @@ class STDP(LayerwiseTrainer):
     r"""Spike-timing dependent plasticity updater.
 
     .. math::
-        \Delta w = A_+ x_\text{pre} \bigl[t = t^f_\text{post}\bigr] +
-        A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]
+        w(t + \Delta t) - w(t) = \eta_\text{post} x_\text{pre}(t) \bigl[t = t^f_\text{post}\bigr] +
+        \eta_\text{pre} x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr]
+
+    When ``trace_mode = "cumulative"``:
+
+    .. math::
+        x_n(t) = x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) + \left[t = t_n^f\right]
+
+    When ``trace_mode = "nearest"``:
+
+    .. math::
+        x_n(t) =
+        \begin{cases}
+            1 & t = t_n^f \\
+            x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) & t \neq t_n^f
+        \end{cases}
 
     Where:
 
-    .. math::
-        x^{(t)} =
-        \begin{cases}
-            1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t = t^f \text{ and cumulative trace} \\
-            1 & t = t^f \text{ and nearest trace} \\
-            x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t \neq t^f
-        \end{cases}
+    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent
+    spike from neuron :math:`n`, respectively.
 
-    :math:`t` and :math:`t^f` are the current time and the time of the most recent
-    spike, respectively.
-
-    The terms :math:`A_+` and :math:`A_-` are equal to the learning rates
-    :math:`\eta_\text{post}` and :math:`\eta_\text{pre}` respectively, although they
-    may be scaled by weight dependence at the updater level. The "mode" changes based on
-    the sign of the learning rates, and updates are applied based on any potentiative
-    and depressive components.
+    The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
+    controls which terms are potentiative and which terms are depressive. The terms can
+    be scaled for weight dependence on updating.
 
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
     | Mode              | :math:`\text{sgn}(\eta_\text{post})` | :math:`\text{sgn}(\eta_\text{pre})` | LTP Term(s)                               | LTD Term(s)                               |
@@ -84,9 +88,7 @@ class STDP(LayerwiseTrainer):
 
     See Also:
         For more details and references, visit
-        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)`,
-        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding`, and
-        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.
+        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)` in the zoo.
     """
 
     def __init__(
@@ -348,9 +350,9 @@ class STDP(LayerwiseTrainer):
             match (aux.lr_post >= 0, aux.lr_pre >= 0):
                 case (False, False):  # depressive
                     cell.updater.weight = (None, dpost + dpre)
-                case (False, True):   # anti-hebbian
+                case (False, True):  # anti-hebbian
                     cell.updater.weight = (dpre, dpost)
-                case (True, False):   # hebbian
+                case (True, False):  # hebbian
                     cell.updater.weight = (dpost, dpre)
-                case (True, True):    # potentiative
+                case (True, True):  # potentiative
                     cell.updater.weight = (dpost + dpre, None)

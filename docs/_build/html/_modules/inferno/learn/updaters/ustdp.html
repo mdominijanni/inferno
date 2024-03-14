@@ -180,6 +180,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/spike-trace.html">Spike Trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/parameter-dependence.html">Parameter Dependence</a></li>
 </ul>
 </li>
 </ul>
@@ -237,27 +239,31 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike-timing dependent plasticity updater.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \Delta w = A_+ x_\text{pre} \bigl[t = t^f_\text{post}\bigr] +</span>
-<span class="sd">        A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]</span>
+<span class="sd">        w(t + \Delta t) - w(t) = \eta_\text{post} x_\text{pre}(t) \bigl[t = t^f_\text{post}\bigr] +</span>
+<span class="sd">        \eta_\text{pre} x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr]</span>
+
+<span class="sd">    When ``trace_mode = &quot;cumulative&quot;``:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        x_n(t) = x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) + \left[t = t_n^f\right]</span>
+
+<span class="sd">    When ``trace_mode = &quot;nearest&quot;``:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        x_n(t) =</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            1 &amp; t = t_n^f \\</span>
+<span class="sd">            x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) &amp; t \neq t_n^f</span>
+<span class="sd">        \end{cases}</span>
 
 <span class="sd">    Where:</span>
 
-<span class="sd">    .. math::</span>
-<span class="sd">        x^{(t)} =</span>
-<span class="sd">        \begin{cases}</span>
-<span class="sd">            1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t = t^f \text{ and cumulative trace} \\</span>
-<span class="sd">            1 &amp; t = t^f \text{ and nearest trace} \\</span>
-<span class="sd">            x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t \neq t^f</span>
-<span class="sd">        \end{cases}</span>
+<span class="sd">    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent</span>
+<span class="sd">    spike from neuron :math:`n`, respectively.</span>
 
-<span class="sd">    :math:`t` and :math:`t^f` are the current time and the time of the most recent</span>
-<span class="sd">    spike, respectively.</span>
-
-<span class="sd">    The terms :math:`A_+` and :math:`A_-` are equal to the learning rates</span>
-<span class="sd">    :math:`\eta_\text{post}` and :math:`\eta_\text{pre}` respectively, although they</span>
-<span class="sd">    may be scaled by weight dependence at the updater level. The &quot;mode&quot; changes based on</span>
-<span class="sd">    the sign of the learning rates, and updates are applied based on any potentiative</span>
-<span class="sd">    and depressive components.</span>
+<span class="sd">    The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`</span>
+<span class="sd">    controls which terms are potentiative and which terms are depressive. The terms can</span>
+<span class="sd">    be scaled for weight dependence on updating.</span>
 
 <span class="sd">    +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+</span>
 <span class="sd">    | Mode              | :math:`\text{sgn}(\eta_\text{post})` | :math:`\text{sgn}(\eta_\text{pre})` | LTP Term(s)                               | LTD Term(s)                               |</span>
@@ -304,9 +310,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
-<span class="sd">        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)`,</span>
-<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding`, and</span>
-<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -576,11 +580,11 @@
             <span class="k">match</span> <span class="p">(</span><span class="n">aux</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">aux</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
                 <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>  <span class="c1"># depressive</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">dpost</span> <span class="o">+</span> <span class="n">dpre</span><span class="p">)</span>
-                <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>   <span class="c1"># anti-hebbian</span>
+                <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>  <span class="c1"># anti-hebbian</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="n">dpre</span><span class="p">,</span> <span class="n">dpost</span><span class="p">)</span>
-                <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>   <span class="c1"># hebbian</span>
+                <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>  <span class="c1"># hebbian</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="n">dpost</span><span class="p">,</span> <span class="n">dpre</span><span class="p">)</span>
-                <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>    <span class="c1"># potentiative</span>
+                <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>  <span class="c1"># potentiative</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="n">dpost</span> <span class="o">+</span> <span class="n">dpre</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 </div>
 

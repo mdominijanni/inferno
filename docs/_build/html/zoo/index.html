@@ -181,6 +181,8 @@
 <li class="toctree-l2"><a class="reference internal" href="synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-resume.html">ReSuMe-Like Learning Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spike-trace.html">Spike Trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameter-dependence.html">Parameter Dependence</a></li>
 </ul>
 </li>
 </ul>
@@ -275,18 +277,35 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="learning-stdp.html">STDP-Like Learning Methods</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="learning-stdp.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="learning-stdp.html#hebbian-learning">Hebbian Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-stdp.html#spike-timing-dependent-plasticity-stdp">Spike Timing-Dependent Plasticity (STDP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-stdp.html#delayed-spike-timing-dependent-plasticity-delayed-stdp">Delayed Spike Timing-Dependent Plasticity (Delayed STDP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="learning-stdp.html#anti-hebbian-spike-timing-dependent-plasticity-astdp">Anti-Hebbian Spike Timing-Dependent Plasticity (aSTDP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-stdp.html#modulated-spike-timing-dependent-plasticity-mstdp">Modulated Spike-Timing Dependent Plasticity (MSTDP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-stdp.html#modulated-spike-timing-dependent-plasticity-with-eligibility-trace-mstdpet">Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="learning-stdp.html#weight-dependence-soft-bounding">Weight Dependence, Soft Bounding</a></li>
-<li class="toctree-l2"><a class="reference internal" href="learning-stdp.html#weight-dependence-hard-bounding">Weight Dependence, Hard Bounding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="learning-stdp.html#triplet-spike-timing-dependent-plasticity-stdp">Triplet Spike-Timing Dependent Plasticity (STDP)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="learning-resume.html">ReSuMe-Like Learning Methods</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="learning-resume.html#overview">Overview</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="additional-concepts">
+<h2>Additional Concepts<a class="headerlink" href="#additional-concepts" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="spike-trace.html">Spike Trace</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spike-trace.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spike-trace.html#cumulative-trace">Cumulative Trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spike-trace.html#nearest-trace">Nearest Trace</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameter-dependence.html">Parameter Dependence</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parameter-dependence.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameter-dependence.html#parameter-dependence-soft-bounding">Parameter Dependence, Soft Bounding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameter-dependence.html#parameter-dependence-hard-bounding">Parameter Dependence, Hard Bounding</a></li>
 </ul>
 </li>
 </ul>
@@ -354,6 +373,7 @@
 <li><a class="reference internal" href="#neurons">Neurons</a></li>
 <li><a class="reference internal" href="#synapses">Synapses</a></li>
 <li><a class="reference internal" href="#learning-methods">Learning Methods</a></li>
+<li><a class="reference internal" href="#additional-concepts">Additional Concepts</a></li>
 </ul>
 </li>
 </ul>

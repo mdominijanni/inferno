@@ -21,6 +21,7 @@
     :toctree: generated
 
     STDP
+    MSTDPET
 ```
 
 ## Classifiers
