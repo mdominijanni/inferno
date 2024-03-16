@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="MaxRateClassifier" href="inferno.learn.MaxRateClassifier.html" /><link rel="prev" title="LayerwiseTrainer" href="inferno.learn.LayerwiseTrainer.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="MSTDPET" href="inferno.learn.MSTDPET.html" /><link rel="prev" title="LayerwiseTrainer" href="inferno.learn.LayerwiseTrainer.html" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>STDP - Inferno</title>
@@ -226,26 +226,29 @@
 <p>Spike-timing dependent plasticity updater.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\Delta w = A_+ x_\text{pre} \bigl[t = t^f_\text{post}\bigr] +
-A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]\]</div>
+\[w(t + \Delta t) - w(t) = \eta_\text{post} x_\text{pre}(t) \bigl[t = t^f_\text{post}\bigr] +
+\eta_\text{pre} x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr]\]</div>
 </div>
-<p>Where:</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">trace_mode</span> <span class="pre">=</span> <span class="pre">&quot;cumulative&quot;</span></code>:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}x^{(t)} =
+\[x_n(t) = x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) + \left[t = t_n^f\right]\]</div>
+</div>
+<p>When <code class="docutils literal notranslate"><span class="pre">trace_mode</span> <span class="pre">=</span> <span class="pre">&quot;nearest&quot;</span></code>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}x_n(t) =
 \begin{cases}
-    1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t = t^f \text{ and cumulative trace} \\
-    1 &amp; t = t^f \text{ and nearest trace} \\
-    x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t \neq t^f
+    1 &amp; t = t_n^f \\
+    x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) &amp; t \neq t_n^f
 \end{cases}\end{split}\]</div>
 </div>
-<p><span class="math notranslate nohighlight">\(t\)</span> and <span class="math notranslate nohighlight">\(t^f\)</span> are the current time and the time of the most recent
-spike, respectively.</p>
-<p>The terms <span class="math notranslate nohighlight">\(A_+\)</span> and <span class="math notranslate nohighlight">\(A_-\)</span> are equal to the learning rates
-<span class="math notranslate nohighlight">\(\eta_\text{post}\)</span> and <span class="math notranslate nohighlight">\(\eta_\text{pre}\)</span> respectively, although they
-may be scaled by weight dependence at the updater level. The “mode” changes based on
-the sign of the learning rates, and updates are applied based on any potentiative
-and depressive components.</p>
+<p>Where:</p>
+<p>Times <span class="math notranslate nohighlight">\(t\)</span> and <span class="math notranslate nohighlight">\(t_n^f\)</span> are the current time and the time of the most recent
+spike from neuron <span class="math notranslate nohighlight">\(n\)</span>, respectively.</p>
+<p>The signs of the learning rates <span class="math notranslate nohighlight">\(\eta_\text{post}\)</span> and <span class="math notranslate nohighlight">\(\eta_\text{pre}\)</span>
+controls which terms are potentiative and which terms are depressive. The terms can
+be scaled for weight dependence on updating.</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -310,8 +313,22 @@ when None. Defaults to None.</p></li>
 </dl>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>The constructor arguments are hyperparameters for STDP and can be overridden on
-a cell-by-cell basis.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">delayed</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the history for the required variables is stored
+over the length of time the delay may be, and the selection is performed using
+the learned delays. When <code class="docutils literal notranslate"><span class="pre">delayed</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, the last state is used even
+if a change in delay occurs. This may be the desired behavior even if delays are
+updated along with weights.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>It is expected for this to be called after every trainable batch. Variables
+used are not stored (or are invalidated) if multiple batches are given before
+an update.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The constructor arguments are hyperparameters and can be overridden on a
+cell-by-cell basis.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -323,9 +340,7 @@ included function, it should not keep the original dimensions by default.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p>For more details and references, visit
-<a class="reference internal" href="../../zoo/learning-stdp.html#spike-timing-dependent-plasticity-stdp"><span class="std std-ref">Spike Timing-Dependent Plasticity (STDP)</span></a>,
-<a class="reference internal" href="../../zoo/learning-stdp.html#weight-dependence-soft-bounding"><span class="std std-ref">Weight Dependence, Soft Bounding</span></a>, and
-<a class="reference internal" href="../../zoo/learning-stdp.html#weight-dependence-hard-bounding"><span class="std std-ref">Weight Dependence, Hard Bounding</span></a> in the zoo.</p>
+<a class="reference internal" href="../../zoo/learning-stdp.html#spike-timing-dependent-plasticity-stdp"><span class="std std-ref">Spike Timing-Dependent Plasticity (STDP)</span></a> in the zoo.</p>
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.learn.STDP.State">
@@ -398,12 +413,12 @@ set on initialization. See <a class="reference internal" href="#inferno.learn.ST
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="inferno.learn.MaxRateClassifier.html">
+          <a class="next-page" href="inferno.learn.MSTDPET.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">MaxRateClassifier</div>
+                <div class="title">MSTDPET</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>

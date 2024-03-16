@@ -52,7 +52,7 @@ class Reducer(RecordModule, ABC):
             "must implement the 'push' method"
         )
 
-    def forward(self, inputs: torch.Tensor, **kwargs) -> None:
+    def forward(self, *inputs: torch.Tensor, **kwargs) -> None:
         """Initializes state and incorporates inputs into the reducer's state."""
         raise NotImplementedError(
             f"'Reducer.forward()' is abstract, {type(self).__name__} "
@@ -64,9 +64,8 @@ class FoldReducer(Reducer):
     r"""Applies a function between the most recent previously stored data and a new observation.
 
     Args:
-        fold_fn (Callable[[torch.Tensor, torch.Tensor | None], torch.Tensor]): relation
-            between the new input (left) and current state (right),
-            returning the new state.
+        fold_fn (Callable[[tuple[torch.Tensor, ...], torch.Tensor | None], torch.Tensor]):
+            relation between the new input (left) and current state (right), returning the new state.
         step_time (float): length of time between observations.
         duration (float): length of time for which observations should be stored.
         interp (interpolation.Interpolation, optional): interpolation function
@@ -75,19 +74,19 @@ class FoldReducer(Reducer):
         initializer (OneToOne[torch.Tensor] | None, optional): function to set the
             initial state, zeroes when None. Defaults to None.
 
-    Note:
-        The left-hand argument of ``fold_fn`` is the new input, and the right-hand
-        argument is the current state. The right-hand argument will be None when
-        no observations have been recorded.
+    Important:
+        The tuple given to ``fold_fn`` is unpacked, but it does not need to accept any
+        number of values, just whatever the expected number of inputs is for the given situation.
 
     Note:
-        The default ``map_fn`` implemented assumes only a single input, and will
-        therefore fail if multiple input values are passed into :py:meth:`forward`.
+        The left-hand argument of ``fold_fn`` (i.e. all but the final) is the new input,
+        and the right-hand argument is the current state. The right-hand argument will
+        be None when no observations have been recorded.
     """
 
     def __init__(
         self,
-        fold_fn: Callable[[torch.Tensor | None, torch.Tensor], torch.Tensor],
+        fold_fn: Callable[[*tuple[torch.Tensor, ...], torch.Tensor | None], torch.Tensor],
         step_time: float,
         duration: float,
         *,
@@ -282,7 +281,7 @@ class FoldReducer(Reducer):
         """
         self.record("_data", inputs)
 
-    def forward(self, inputs: torch.Tensor, **kwargs) -> None:
+    def forward(self, *inputs: torch.Tensor, **kwargs) -> None:
         """Initializes state and incorporates inputs into the reducer's state.
 
         This performs any required initialization steps, maps the inputs,
@@ -291,16 +290,19 @@ class FoldReducer(Reducer):
         Args:
             *inputs (torch.Tensor): inputs to be mapped, then pushed.
         """
-        # initialize data iff uninitialized
-        if self.data.numel() == 0:
-            self._data = empty(self._data, shape=(*inputs.shape, self.recordsz))
-            self.data = self.initialize_(self.data)
-
-        # integrate inputs
+        # non-initial
         if not self._initial:
-            self.push(self.fold_(inputs, self.latest("_data")))
+            self.push(self.fold_(*inputs, self.latest("_data")))
+
+        # initial
         else:
-            self.push(self.fold_(inputs, None))
+            res = self.fold_(*inputs, None)
+
+            if self.data.numel() == 0:
+                self._data = empty(self._data, shape=(*res.shape, self.recordsz))
+                self.data = self.initialize_(self.data)
+
+            self.push(res)
             self._initial = False
 
 
@@ -323,13 +325,12 @@ class FoldingReducer(FoldReducer, ABC):
         )
 
     @abstractmethod
-    def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
+    def fold(self, *args: torch.Tensor | None) -> torch.Tensor:
         r"""Calculation of the next state given an observation and prior state.
 
         Args:
-            obs (torch.Tensor): observation to incorporate into state.
-            state (torch.Tensor | None): state from the prior time step,
-                None if no prior observations.
+            *args (torch.Tensor | None): positional arguments for folding, all but
+                the last will be observations, the final will be the reduced state.
 
         Raises:
             NotImplementedError: abstract methods must be implemented by subclass.

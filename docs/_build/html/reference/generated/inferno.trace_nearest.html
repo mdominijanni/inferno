@@ -225,24 +225,25 @@
 <dd><p>Performs a trace for a time step, considering the latest match.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}x_{t + \Delta t} =
+\[\begin{split}x(t) =
 \begin{cases}
-    a &amp;\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
-    x_t \exp (\Delta t / \tau) &amp;\text{otherwise}
+    A &amp; \lvert h(t) - h^* \rvert \leq \epsilon \\
+    x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
+    &amp; \left[\lvert h(t) - h^* \rvert &gt; \epsilon\right]
 \end{cases}\end{split}\]</div>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>observation</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – latest state to consider for the trace, <span class="math notranslate nohighlight">\(f\)</span>.</p></li>
+<li><p><strong>observation</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – latest state to consider for the trace, <span class="math notranslate nohighlight">\(h\)</span>.</p></li>
 <li><p><strong>trace</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – current value of the trace, <span class="math notranslate nohighlight">\(x\)</span>,
 if not the inital condition.</p></li>
 <li><p><strong>decay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – exponential decay for adaptations,
-<span class="math notranslate nohighlight">\(\exp\left(-\frac{\Delta t}{\tau_k}\right)\)</span>, unitless.</p></li>
+<span class="math notranslate nohighlight">\(\exp\left(-\frac{\Delta t}{\tau_x}\right)\)</span>, unitless.</p></li>
 <li><p><strong>amplitude</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – value to set trace to for
-matching elements, <span class="math notranslate nohighlight">\(a\)</span>.</p></li>
+matching elements, <span class="math notranslate nohighlight">\(A\)</span>.</p></li>
 <li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – target value to set
-trace to, <span class="math notranslate nohighlight">\(f^*\)</span>.</p></li>
+trace to, <span class="math notranslate nohighlight">\(h^*\)</span>.</p></li>
 <li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – allowable absolute
 difference to still count as a match, <span class="math notranslate nohighlight">\(\epsilon\)</span>. Defaults to None.</p></li>
 </ul>

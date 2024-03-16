@@ -270,76 +270,119 @@ Nb^{-k} = N \left[\exp\left(-\frac{\Delta t}{\tau}\right)\right]^{k \tau_b / \De
 <section id="trace">
 <h2>Trace<a class="headerlink" href="#trace" title="Link to this heading">#</a></h2>
 <p>In the context of spiking neural networks, the notion of “trace” frequently arises. When performing computations which care about the history of spiking activity, they may be formally described as summing over all the previous times in which a spike occurred. However, this is not practical for the purposes of simulation, as an all-to-all comparison grows in complexity quadratically with respect to the length of the simulation time.</p>
-<p>In the interest of biological plausibility, and to the benefit of computational feasibility, rather than considering every prior spike, it is instead modeled as each prior spike leaving behind some sort of <em>trace</em>. In its simplest form, a trace is represented by the differential equation</p>
+<p>In the interest of biological plausibility, and to the benefit of computational feasibility, rather than considering every prior spike, it is instead modeled as each prior spike leaving behind a <em>trace</em>. A trace is typically represented by the differential equation</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
-\tau \frac{dx}{dt} = -x + a \sum_f \delta (t - t^f),
+\tau_x \frac{dx}{dt} = -x + A \sum_f \delta (t - t^f),
 \]</div>
 </div>
-<p>where <span class="math notranslate nohighlight">\(x\)</span> is the trace, <span class="math notranslate nohighlight">\(t\)</span> is the simulation time, <span class="math notranslate nohighlight">\(t^f\)</span> are the times at which spikes occurred, <span class="math notranslate nohighlight">\(a\)</span> is some amplitude, and <span class="math notranslate nohighlight">\(\delta\)</span> is the Dirac delta function. This construction <span class="math notranslate nohighlight">\(\delta (t - t^f)\)</span>, when in the solution of the differential equation, evaluates to <span class="math notranslate nohighlight">\(1\)</span> if the current time <span class="math notranslate nohighlight">\(t\)</span> is a time at which an action potential was generated and <span class="math notranslate nohighlight">\(0\)</span> otherwise.</p>
-<p>This equation can be interpreted as follows: whenever a spike occurs, add some value <span class="math notranslate nohighlight">\(a\)</span> to the trace <span class="math notranslate nohighlight">\(x\)</span>, and let this trace decay exponentially with some time constant <span class="math notranslate nohighlight">\(\tau\)</span>.</p>
-<p>Inferno implements four variants of trace, which will be discussed below. A common feature to all of these is that it generalizes the notion of trace beyond just spikes, but instead considers some value <span class="math notranslate nohighlight">\(f\)</span> being traced over time.</p>
+<p>where <span class="math notranslate nohighlight">\(x\)</span> is the trace, <span class="math notranslate nohighlight">\(A\)</span> is the amplitude of the trace, <span class="math notranslate nohighlight">\(\tau_x\)</span> is the time constant of exponential decay, <span class="math notranslate nohighlight">\(t\)</span> is the simulation time, <span class="math notranslate nohighlight">\(t^f\)</span> are the times at which spikes occurred (over the set of spikes <span class="math notranslate nohighlight">\(f\)</span>), and <span class="math notranslate nohighlight">\(\delta\)</span> is the Dirac delta function. This construction <span class="math notranslate nohighlight">\(\delta (t - t^f)\)</span>, when in the solution of the differential equation, evaluates to <span class="math notranslate nohighlight">\(1\)</span> if the current time <span class="math notranslate nohighlight">\(t\)</span> is a time at which an action potential was generated and <span class="math notranslate nohighlight">\(0\)</span> otherwise.</p>
+<p>This equation can be interpreted as follows: whenever a spike occurs, add some value <span class="math notranslate nohighlight">\(A\)</span> to the trace <span class="math notranslate nohighlight">\(x\)</span>, and let this trace decay exponentially with some time constant <span class="math notranslate nohighlight">\(\tau_x\)</span>. Instead of only considering spikes, <span class="math notranslate nohighlight">\(j\)</span> is the set of true events, occuring at times <span class="math notranslate nohighlight">\(t^j\)</span>.</p>
 <section id="cumulative-trace">
 <h3>Cumulative Trace<a class="headerlink" href="#cumulative-trace" title="Link to this heading">#</a></h3>
-<p>This is the same as previously described. Cumulative comes from the fact that this interpretation factors in the contributions of all previous spikes. Below is the update equation, as it is represented in Inferno.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}
-x_{t + \Delta t} =
-\begin{cases}
-    a + x_t \exp (-\Delta t / \tau) &amp;\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
-    x_t \exp (-\Delta t / \tau) &amp;\text{otherwise}
-\end{cases}
-\end{split}\]</div>
+\[
+x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) + A \left[t = t^j\right]
+\]</div>
 </div>
-<p>Here the trace is represented as <span class="math notranslate nohighlight">\(x\)</span>, the simulation step time is <span class="math notranslate nohighlight">\(\Delta t\)</span>, the time constant by <span class="math notranslate nohighlight">\(\tau\)</span>, the and <span class="math notranslate nohighlight">\(a\)</span> is the trace amplitude. The variable being traced is represented as <span class="math notranslate nohighlight">\(f\)</span>, with target <span class="math notranslate nohighlight">\(f^*\)</span> and permissible error <span class="math notranslate nohighlight">\(\epsilon\)</span>.</p>
-<p>For tracing spikes, the target can be set as <span class="math notranslate nohighlight">\(f^* = 1\)</span> and error as <span class="math notranslate nohighlight">\(\epsilon = 0\)</span>. In implementation, when the <span class="math notranslate nohighlight">\(\epsilon\)</span> term is unspecified, it is computed as an equality test.</p>
+<p><em>From:</em></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\tau_x \frac{dx}{dt} = -x(t) + A \sum_j \delta(t - t^j)
+\]</div>
+</div>
+<p><em>Where:</em></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(x\)</span>, spike trace</p></li>
+<li><p><span class="math notranslate nohighlight">\(A\)</span>, amplitude of the trace</p></li>
+<li><p><span class="math notranslate nohighlight">\(\tau_x\)</span>, time constant of exponential decay <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(t^j\)</span>, time of (the most recent) prior event <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(t\)</span>, current runtime of the simulation <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\Delta t\)</span>, length of time over which each simulation step occurs <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+</ul>
+<p><span class="math notranslate nohighlight">\([\cdots]\)</span> is the Iverson bracket and equals <span class="math notranslate nohighlight">\(1\)</span> if the inner statement is true and <span class="math notranslate nohighlight">\(0\)</span> if it is false.</p>
 </section>
 <section id="nearest-trace">
 <h3>Nearest Trace<a class="headerlink" href="#nearest-trace" title="Link to this heading">#</a></h3>
-<p>Whereas the cumulative trace considers all prior inputs, changing from addition to replacement modifies the trace such that it only considers the most recent event (spike or otherwise).</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
-x_{t + \Delta t} =
+x(t) =
 \begin{cases}
-    a &amp;\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
-    x_t \exp (-\Delta t / \tau) &amp;\text{otherwise}
+    A &amp; t=t^j \\
+    x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) &amp; t \neq t^j \\
 \end{cases}
 \end{split}\]</div>
 </div>
-<p>The parameters are otherwise the same, and which is chosen will depend on the desired properties where it will be used.</p>
+<p><em>Where:</em></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(x\)</span>, spike trace</p></li>
+<li><p><span class="math notranslate nohighlight">\(A\)</span>, amplitude of the trace</p></li>
+<li><p><span class="math notranslate nohighlight">\(\tau_x\)</span>, time constant of exponential decay <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(t^j\)</span>, time of (the most recent) prior event <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(t\)</span>, current runtime of the simulation <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\Delta t\)</span>, length of time over which each simulation step occurs <span class="math notranslate nohighlight">\((\text{ms})\)</span></p></li>
+</ul>
 </section>
-<section id="scaling-traces">
-<h3>Scaling Traces<a class="headerlink" href="#scaling-traces" title="Link to this heading">#</a></h3>
-<p>The described formulations of cumulative and nearest trace above treat any input that matches, either exactly or with some tolerance, the same. A generalization is that an input is considered to “match” whenever it meets some criterion <span class="math notranslate nohighlight">\(K\)</span>, and component added to the trace is scaled by the input and some scaling factor <span class="math notranslate nohighlight">\(S\)</span>.</p>
-<section id="cumulative-scaled-trace">
-<h4>Cumulative Scaled Trace<a class="headerlink" href="#cumulative-scaled-trace" title="Link to this heading">#</a></h4>
+<section id="scaling-trace">
+<h3>Scaling Trace<a class="headerlink" href="#scaling-trace" title="Link to this heading">#</a></h3>
+<p>Generalizing trace further, if a new observation <span class="math notranslate nohighlight">\(h\)</span> meets a criterion function <span class="math notranslate nohighlight">\(J\)</span>, then an amplitude proportional to the observation is added to trace. So for <span class="math notranslate nohighlight">\(t^j = \{t \mid  J(h^{(t)})\}\)</span> an observation-dependent amplitude <span class="math notranslate nohighlight">\(f_A(t) = h^{(t)}s + A\)</span> is used.</p>
+</section>
+</section>
+<section id="parameter-dependence">
+<h2>Parameter Dependence<a class="headerlink" href="#parameter-dependence" title="Link to this heading">#</a></h2>
+<p>Traditionally applied to connection weights, especially with learning methods which contain a potentiative and depressive component, parameter dependence is a technique which limits the range of values for a parameter.</p>
+<section id="soft-dependence">
+<h3>Soft Dependence<a class="headerlink" href="#soft-dependence" title="Link to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
-x_{t + \Delta t} =
-\begin{cases}
-    a + Sf + x_t \exp (-\Delta t / \tau) &amp;K(f_{t + \Delta t}) \\
-    x_t \exp (-\Delta t / \tau) &amp;\text{otherwise}
-\end{cases}
+\begin{align*}
+    A_+(v) &amp;= (v_\text{max} - v)^{\mu_+}\eta_+ \\
+    A_-(v) &amp;= (v - v_\text{min})^{\mu_-}\eta_-
+\end{align*}
 \end{split}\]</div>
 </div>
+<p><em>Where:</em></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(A_+\)</span>, adjusted magnitude for long-term potentiation (LTP)</p></li>
+<li><p><span class="math notranslate nohighlight">\(A_-\)</span>, adjusted magnitude for long-term depression (LTD)</p></li>
+<li><p><span class="math notranslate nohighlight">\(v\)</span>, connection parameter being updated</p></li>
+<li><p><span class="math notranslate nohighlight">\(v_\text{max}\)</span>, upper bound for connection parameter</p></li>
+<li><p><span class="math notranslate nohighlight">\(v_\text{min}\)</span>, lower bound for connection parameter</p></li>
+<li><p><span class="math notranslate nohighlight">\(\eta_+\)</span>, original magnitude (learning rate) for LTP</p></li>
+<li><p><span class="math notranslate nohighlight">\(\eta_-\)</span>, original magnitude (learning rate) for LTD</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mu_+\)</span>, order for upper parameter bound</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mu_-\)</span>, order for lower parameter bound</p></li>
+</ul>
+<p>This penalizes parameter that are out of specified bounds by applying a penalty proportional to the amount by which the current weight is over/under the bound. The order parameters <span class="math notranslate nohighlight">\(\mu_+\)</span> and <span class="math notranslate nohighlight">\(\mu_-\)</span> control the rate of this penalty. When <span class="math notranslate nohighlight">\(\mu_+\)</span> and <span class="math notranslate nohighlight">\(\mu_-\)</span> are set to <span class="math notranslate nohighlight">\(1\)</span>, this is referred to as “multiplicative dependence”, and when not set to <span class="math notranslate nohighlight">\(1\)</span> is often referred to as “power law dependence”.</p>
 </section>
-<section id="nearest-scaled-trace">
-<h4>Nearest Scaled Trace<a class="headerlink" href="#nearest-scaled-trace" title="Link to this heading">#</a></h4>
+<section id="hard-dependence">
+<h3>Hard Dependence<a class="headerlink" href="#hard-dependence" title="Link to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
-x_{t + \Delta t} =
-\begin{cases}
-    a + Sf &amp;K(f_{t + \Delta t}) \\
-    x_t \exp (-\Delta t / \tau) &amp;\text{otherwise}
-\end{cases}
+\begin{align*}
+    A_+(v) &amp;= \Theta(v_\text{max} - v)\eta_+ \\
+    A_-(v) &amp;= \Theta(v - v_\text{min})\eta_-
+\end{align*}
 \end{split}\]</div>
 </div>
-</section>
+<p><em>Where:</em></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for long-term potentiation (LTP)</p></li>
+<li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for long-term depression (LTD)</p></li>
+<li><p><span class="math notranslate nohighlight">\(v\)</span>, connection parameter being updated</p></li>
+<li><p><span class="math notranslate nohighlight">\(v_\text{max}\)</span>, upper bound for connection parameter</p></li>
+<li><p><span class="math notranslate nohighlight">\(v_\text{min}\)</span>, lower bound for connection parameter</p></li>
+<li><p><span class="math notranslate nohighlight">\(\eta_+\)</span>, learning rate for LTP</p></li>
+<li><p><span class="math notranslate nohighlight">\(\eta_-\)</span>, learning rate for LTD</p></li>
+</ul>
+<p><span class="math notranslate nohighlight">\(\Theta(\cdots)\)</span> is the <a class="reference internal" href="#heaviside-step-function"><span class="std std-ref">Heaviside step function</span></a> and equals <span class="math notranslate nohighlight">\(1\)</span> if the input is nonnegative and <span class="math notranslate nohighlight">\(0\)</span> otherwise.</p>
+<p>This method filters out any update which would move the parameter further beyond its limit.</p>
 </section>
 </section>
 <section id="dirac-delta-and-heaviside-step-functions">
@@ -448,11 +491,12 @@ x_{t + \Delta t} =
 <li><a class="reference internal" href="#trace">Trace</a><ul>
 <li><a class="reference internal" href="#cumulative-trace">Cumulative Trace</a></li>
 <li><a class="reference internal" href="#nearest-trace">Nearest Trace</a></li>
-<li><a class="reference internal" href="#scaling-traces">Scaling Traces</a><ul>
-<li><a class="reference internal" href="#cumulative-scaled-trace">Cumulative Scaled Trace</a></li>
-<li><a class="reference internal" href="#nearest-scaled-trace">Nearest Scaled Trace</a></li>
+<li><a class="reference internal" href="#scaling-trace">Scaling Trace</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#parameter-dependence">Parameter Dependence</a><ul>
+<li><a class="reference internal" href="#soft-dependence">Soft Dependence</a></li>
+<li><a class="reference internal" href="#hard-dependence">Hard Dependence</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#dirac-delta-and-heaviside-step-functions">Dirac Delta and Heaviside Step Functions</a><ul>

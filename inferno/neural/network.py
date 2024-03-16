@@ -38,7 +38,7 @@ class Cell(Module):
     def get_monitor(
         self,
         name: str,
-        attr: str,
+        attr: str | None,
         monitor: MonitorConstructor,
         pool: Iterable[Cell, Mapping[str, Monitor]] | None = None,
         **tags: Any,
@@ -47,7 +47,8 @@ class Cell(Module):
 
         Args:
             name (str): name of the monitor to add.
-            attr (str): dot-separated attribute path, relative to this cell, to monitor.
+            attr (str): dot-separated attribute path, relative to this cell, to
+                monitor, when an empty-string, the cell is directly targeted.
             monitor (MonitorConstructor): partial constructor for the monitor to add.
             pool (Iterable[Cell, Mapping[str, Monitor]] | None, optional): pool to
                 search for compatible monitor, always creates a new one if None.
@@ -70,14 +71,15 @@ class Cell(Module):
             and do not persist in the state dictionary. If no pool is specified, the
             new monitor will not have added tags, which prevents future aliasing.
         """
-        # check that the attribute is a valid dot-chain identifier
-        _ = argtest.nestedidentifier("attr", attr)
+        # check that the attribute is a valid dot-chain identifier if non-empty
+        if attr:
+            _ = argtest.nestedidentifier("attr", attr)
 
         # split the identifier and check for ownership
         attrchain = attr.split(".")
 
         # ensure the top-level attribute is in this cell
-        if not hasattr(self, attrchain[0]):
+        if attr and not hasattr(self, attrchain[0]):
             raise RuntimeError(f"this cell does not have an attribute '{attrchain[0]}'")
 
         # remap the top-level target if pointing to a private attribute
@@ -130,7 +132,7 @@ class Cell(Module):
                 continue
 
             # create the alias if tags match
-            if hasattr(monitors[name], "__tags") and monitors[name].__tags == tags:
+            if hasattr(monitors[name], "_tags") and monitors[name]._tags == tags:
                 found = monitors[name]
                 if id(cell) == id(self):  # break if identical cell
                     break
@@ -140,7 +142,7 @@ class Cell(Module):
             return found
         else:
             monitor = monitor(attr, self._layer())
-            monitor.__tags = tags
+            monitor._tags = tags
             return monitor
 
     @property
@@ -454,7 +456,7 @@ class Layer(Module, ABC):
                         f"cell 'connection', 'neuron' ('{connection}', '{neuron}') is not valid"
                     )
                 else:
-                    return f"cell_.{connection}.{neuron}{'.' if attr else ''}{attr}"
+                    return f"cells_.{connection}.{neuron}{'.' if attr else ''}{attr}"
             case _:
                 raise ValueError(
                     f"invalid 'target' ('{target}') specified, expected one of: "

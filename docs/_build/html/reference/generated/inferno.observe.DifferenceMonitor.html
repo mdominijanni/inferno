@@ -241,9 +241,9 @@ registered forward prehooks or posthooks. Defaults to False.</p></li>
 <li><p><strong>filter</strong> (<em>Callable</em><em>[</em><em>[</em><em>Any</em><em>, </em><em>Any</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – test if the input should
 be passed to the reducer, ignores None pre or post values when None.
 Defaults to None.</p></li>
-<li><p><strong>map</strong> (<em>Callable</em><em>[</em><em>[</em><em>Any</em><em>, </em><em>Any</em><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – modifies the input
-before being passed to the reduer, post minus pre if None.
-Defaults to None.</p></li>
+<li><p><strong>map</strong> (<em>Callable</em><em>[</em><em>[</em><em>Any</em><em>, </em><em>Any</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><em>...</em><em>]</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – modifies
+the input before being passed to the reducer, post minus pre wrapped in a
+tuple if <code class="docutils literal notranslate"><span class="pre">None</span></code>. Defaults to None.</p></li>
 </ul>
 </dd>
 </dl>

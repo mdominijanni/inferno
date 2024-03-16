@@ -235,20 +235,25 @@ the trace value, in addition to the additive component.</p>
     x_t \exp (\Delta t / \tau) &amp;\text{otherwise}
 \end{cases}\end{split}\]</div>
 </div>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
++ (sh + A) \left[\lvert J(h) \right]\]</div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>observation</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – latest state to consider for the trace, <span class="math notranslate nohighlight">\(f\)</span>.</p></li>
+<li><p><strong>observation</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – latest state to consider for the trace, <span class="math notranslate nohighlight">\(h\)</span>.</p></li>
 <li><p><strong>trace</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em>) – current value of the trace, <span class="math notranslate nohighlight">\(x\)</span>,
 if not the inital condition.</p></li>
 <li><p><strong>decay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – exponential decay for adaptations,
-<span class="math notranslate nohighlight">\(\exp\left(-\frac{\Delta t}{\tau_k}\right)\)</span>, unitless.</p></li>
+<span class="math notranslate nohighlight">\(\exp\left(-\frac{\Delta t}{\tau_x}\right)\)</span>, unitless.</p></li>
 <li><p><strong>amplitude</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – value to add to trace
-to for matching elements, <span class="math notranslate nohighlight">\(a\)</span>.</p></li>
+to for matching elements, <span class="math notranslate nohighlight">\(A\)</span>.</p></li>
 <li><p><strong>scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – value to multiply matching
-inputs by for the trace, <span class="math notranslate nohighlight">\(S\)</span>.</p></li>
+inputs by for the trace, <span class="math notranslate nohighlight">\(s\)</span>.</p></li>
 <li><p><strong>matchfn</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – test if the inputs are considered a
-match for the trace, <span class="math notranslate nohighlight">\(K\)</span>.</p></li>
+match for the trace, <span class="math notranslate nohighlight">\(J\)</span>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

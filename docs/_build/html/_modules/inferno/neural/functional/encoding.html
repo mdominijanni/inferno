@@ -267,10 +267,6 @@
 <span class="sd">    Note:</span>
 <span class="sd">        Frequency is never compensated for based on the refractory period.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># check to see what went horribly wrong</span>
-    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inputs</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">amin</span><span class="p">())</span>
-        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="c1"># disable gradient computation</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
         <span class="c1"># convert refrac from ms to dt</span>

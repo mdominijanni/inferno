@@ -173,13 +173,14 @@ class InputMonitor(Monitor):
             registered forward prehooks. Defaults to False.
         filter_ (Callable[[tuple[Any, ...]], bool] | None, optional): test if the input
             should be passed to the reducer, ignores empty when None. Defaults to None.
-        map_ (Callable[[tuple[Any, ...]], torch.Tensor] | None, optional):
-            modifies the input before being passed to the reducer, 0th input if None.
+        map_ (Callable[[tuple[Any, ...]], tuple[torch.Tensor, ...]] | None, optional):
+            modifies the input before being passed to the reducer, identity when None.
             Defaults to None.
 
     Note:
         The inputs, which are received as a tuple, will be sent to ``filter_``. If this
-        evaluates to ``True``, they are forwarded to ``map_``, then into ``reducer``.
+        evaluates to ``True``, they are forwarded to ``map_``, then unpacked into
+        ``reducer``.
     """
 
     def __init__(
@@ -190,16 +191,16 @@ class InputMonitor(Monitor):
         eval_update: bool = True,
         prepend: bool = False,
         filter_: Callable[[tuple[Any, ...]], bool] | None = None,
-        map_: Callable[[tuple[Any, ...]], torch.Tensor] | None = None,
+        map_: Callable[[tuple[Any, ...]], tuple[torch.Tensor, ...]] | None = None,
     ):
         # set filter and map functions
         filter_ = filter_ if filter_ else lambda x: bool(x)
-        map_ = map_ if map_ else lambda x: x[0]
+        map_ = map_ if map_ else lambda x: x
 
         # determine arguments for superclass constructor
         def prehook(module, args, *_):
             if filter_(args):
-                reducer(map_(args))
+                reducer(*map_(args))
 
         # construct superclass
         Monitor.__init__(
@@ -273,8 +274,9 @@ class OutputMonitor(Monitor):
             registered forward posthooks. Defaults to False.
         filter_ (Callable[[Any], bool] | None, optional): test if the output should be
             passed to the reducer, ignores None values when None. Defaults to None.
-        map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the output before
-            being passed to the reduer, identity if None. Defaults to None.
+        map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies the
+            output before being passed to the reduer, wraps with a tuple if not already
+            a tuple if None. Defaults to None.
 
     Note:
         The output depends on the :py:meth:`~torch.nn.Module.forward` of the
@@ -291,16 +293,16 @@ class OutputMonitor(Monitor):
         eval_update: bool = True,
         prepend: bool = False,
         filter_: Callable[[Any], bool] | None = None,
-        map_: Callable[[Any], torch.Tensor] | None = None,
+        map_: Callable[[Any], tuple[torch.Tensor, ...]] | None = None,
     ):
         # set filter and map functions
         filter_ = filter_ if filter_ else lambda x: x is not None
-        map_ = map_ if map_ else lambda x: x
+        map_ = map_ if map_ else lambda x: x if isinstance(x, tuple) else (x,)
 
         # determine arguments for superclass constructor
         def posthook(module, args, output, *_):
             if filter_(output):
-                reducer(map_(output))
+                reducer(*map_(output))
 
         # construct superclass
         Monitor.__init__(
@@ -376,8 +378,9 @@ class StateMonitor(Monitor):
             registered forward prehooks or posthooks. Defaults to False.
         filter_ (Callable[[Any], bool] | None, optional): test if the input should be
             passed to the reducer, ignores None values when None. Defaults to None.
-        map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the input before
-            being passed to the reduer, identity if None. Defaults to None.
+        map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies the
+            input before being passed to the reduer, wraps with a tuple if not already
+            a tuple if None. Defaults to None.
 
     Note:
         The nested attribute should be specified with dot notation. For instance,
@@ -397,11 +400,11 @@ class StateMonitor(Monitor):
         eval_update: bool = True,
         prepend: bool = False,
         filter_: Callable[[Any], bool] | None = None,
-        map_: Callable[[Any], torch.Tensor] | None = None,
+        map_: Callable[[Any], tuple[torch.Tensor, ...]] | None = None,
     ):
         # set filter and map functions
         filter_ = filter_ if filter_ else lambda x: x is not None
-        map_ = map_ if map_ else lambda x: x
+        map_ = map_ if map_ else lambda x: x if isinstance(x, tuple) else (x,)
 
         # determine arguments for superclass constructor
         if as_prehook:
@@ -409,7 +412,7 @@ class StateMonitor(Monitor):
             def prehook(module, *_):
                 res = rgetattr(module, attr)
                 if filter_(res):
-                    reducer(map_(res))
+                    reducer(*map_(res))
 
             prehook_kwargs = {"prepend": prepend}
             posthook, posthook_kwargs = None, None
@@ -419,7 +422,7 @@ class StateMonitor(Monitor):
             def posthook(module, *_):
                 res = rgetattr(module, attr)
                 if filter_(res):
-                    reducer(map_(res))
+                    reducer(*map_(res))
 
             posthook_kwargs = {"prepend": prepend}
             prehook, prehook_kwargs = None, None
@@ -509,9 +512,9 @@ class DifferenceMonitor(Monitor):
         filter_ (Callable[[Any, Any], bool] | None, optional): test if the input should
             be passed to the reducer, ignores None pre or post values when None.
             Defaults to None.
-        map_ (Callable[[Any, Any], torch.Tensor] | None, optional): modifies the input
-            before being passed to the reduer, post minus pre if None.
-            Defaults to None.
+        map_ (Callable[[Any, Any], tuple[torch.Tensor, ...]] | None, optional): modifies
+            the input before being passed to the reducer, post minus pre wrapped in a
+            tuple if ``None``. Defaults to None.
 
     Note:
         The nested attribute should be specified with dot notation. For instance,
@@ -560,7 +563,7 @@ class DifferenceMonitor(Monitor):
         def posthook(module, *args):
             res = rgetattr(module, attr)
             if filter_(res, self.data):
-                reducer(map_(res, self.data))
+                reducer(*map_(res, self.data))
             self.data = None
 
         # construct superclass

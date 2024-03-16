@@ -414,13 +414,14 @@
 <span class="sd">            registered forward prehooks. Defaults to False.</span>
 <span class="sd">        filter_ (Callable[[tuple[Any, ...]], bool] | None, optional): test if the input</span>
 <span class="sd">            should be passed to the reducer, ignores empty when None. Defaults to None.</span>
-<span class="sd">        map_ (Callable[[tuple[Any, ...]], torch.Tensor] | None, optional):</span>
-<span class="sd">            modifies the input before being passed to the reducer, 0th input if None.</span>
+<span class="sd">        map_ (Callable[[tuple[Any, ...]], tuple[torch.Tensor, ...]] | None, optional):</span>
+<span class="sd">            modifies the input before being passed to the reducer, identity when None.</span>
 <span class="sd">            Defaults to None.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The inputs, which are received as a tuple, will be sent to ``filter_``. If this</span>
-<span class="sd">        evaluates to ``True``, they are forwarded to ``map_``, then into ``reducer``.</span>
+<span class="sd">        evaluates to ``True``, they are forwarded to ``map_``, then unpacked into</span>
+<span class="sd">        ``reducer``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -431,16 +432,16 @@
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># set filter and map functions</span>
         <span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
 
         <span class="c1"># determine arguments for superclass constructor</span>
         <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">filter_</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-                <span class="n">reducer</span><span class="p">(</span><span class="n">map_</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">map_</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
 
         <span class="c1"># construct superclass</span>
         <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -520,8 +521,9 @@
 <span class="sd">            registered forward posthooks. Defaults to False.</span>
 <span class="sd">        filter_ (Callable[[Any], bool] | None, optional): test if the output should be</span>
 <span class="sd">            passed to the reducer, ignores None values when None. Defaults to None.</span>
-<span class="sd">        map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the output before</span>
-<span class="sd">            being passed to the reduer, identity if None. Defaults to None.</span>
+<span class="sd">        map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies the</span>
+<span class="sd">            output before being passed to the reduer, wraps with a tuple if not already</span>
+<span class="sd">            a tuple if None. Defaults to None.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The output depends on the :py:meth:`~torch.nn.Module.forward` of the</span>
@@ -538,16 +540,16 @@
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># set filter and map functions</span>
         <span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+        <span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span>
 
         <span class="c1"># determine arguments for superclass constructor</span>
         <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">filter_</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
-                <span class="n">reducer</span><span class="p">(</span><span class="n">map_</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">map_</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
 
         <span class="c1"># construct superclass</span>
         <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -629,8 +631,9 @@
 <span class="sd">            registered forward prehooks or posthooks. Defaults to False.</span>
 <span class="sd">        filter_ (Callable[[Any], bool] | None, optional): test if the input should be</span>
 <span class="sd">            passed to the reducer, ignores None values when None. Defaults to None.</span>
-<span class="sd">        map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the input before</span>
-<span class="sd">            being passed to the reduer, identity if None. Defaults to None.</span>
+<span class="sd">        map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies the</span>
+<span class="sd">            input before being passed to the reduer, wraps with a tuple if not already</span>
+<span class="sd">            a tuple if None. Defaults to None.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The nested attribute should be specified with dot notation. For instance,</span>
@@ -650,11 +653,11 @@
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># set filter and map functions</span>
         <span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+        <span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span>
 
         <span class="c1"># determine arguments for superclass constructor</span>
         <span class="k">if</span> <span class="n">as_prehook</span><span class="p">:</span>
@@ -662,7 +665,7 @@
             <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
                 <span class="n">res</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
-                    <span class="n">reducer</span><span class="p">(</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
+                    <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
 
             <span class="n">prehook_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span>
             <span class="n">posthook</span><span class="p">,</span> <span class="n">posthook_kwargs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -672,7 +675,7 @@
             <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
                 <span class="n">res</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
-                    <span class="n">reducer</span><span class="p">(</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
+                    <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
 
             <span class="n">posthook_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span>
             <span class="n">prehook</span><span class="p">,</span> <span class="n">prehook_kwargs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -768,9 +771,9 @@
 <span class="sd">        filter_ (Callable[[Any, Any], bool] | None, optional): test if the input should</span>
 <span class="sd">            be passed to the reducer, ignores None pre or post values when None.</span>
 <span class="sd">            Defaults to None.</span>
-<span class="sd">        map_ (Callable[[Any, Any], torch.Tensor] | None, optional): modifies the input</span>
-<span class="sd">            before being passed to the reduer, post minus pre if None.</span>
-<span class="sd">            Defaults to None.</span>
+<span class="sd">        map_ (Callable[[Any, Any], tuple[torch.Tensor, ...]] | None, optional): modifies</span>
+<span class="sd">            the input before being passed to the reducer, post minus pre wrapped in a</span>
+<span class="sd">            tuple if ``None``. Defaults to None.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The nested attribute should be specified with dot notation. For instance,</span>
@@ -819,7 +822,7 @@
         <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
-                <span class="n">reducer</span><span class="p">(</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># construct superclass</span>

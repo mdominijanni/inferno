@@ -234,22 +234,23 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Performs a trace for a time step, considering the latest match.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        x_{t + \Delta t} =</span>
+<span class="sd">        x(t) =</span>
 <span class="sd">        \begin{cases}</span>
-<span class="sd">            a &amp;\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\</span>
-<span class="sd">            x_t \exp (\Delta t / \tau) &amp;\text{otherwise}</span>
+<span class="sd">            A &amp; \lvert h(t) - h^* \rvert \leq \epsilon \\</span>
+<span class="sd">            x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)</span>
+<span class="sd">            &amp; \left[\lvert h(t) - h^* \rvert &gt; \epsilon\right]</span>
 <span class="sd">        \end{cases}</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        observation (torch.Tensor): latest state to consider for the trace, :math:`f`.</span>
+<span class="sd">        observation (torch.Tensor): latest state to consider for the trace, :math:`h`.</span>
 <span class="sd">        trace (torch.Tensor | None): current value of the trace, :math:`x`,</span>
 <span class="sd">            if not the inital condition.</span>
 <span class="sd">        decay (float | torch.Tensor): exponential decay for adaptations,</span>
-<span class="sd">            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.</span>
+<span class="sd">            :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.</span>
 <span class="sd">        amplitude (int | float | complex | torch.Tensor): value to set trace to for</span>
-<span class="sd">            matching elements, :math:`a`.</span>
+<span class="sd">            matching elements, :math:`A`.</span>
 <span class="sd">        target (int | float | bool | complex | torch.Tensor): target value to set</span>
-<span class="sd">            trace to, :math:`f^*`.</span>
+<span class="sd">            trace to, :math:`h^*`.</span>
 <span class="sd">        tolerance (int | float | torch.Tensor | None, optional): allowable absolute</span>
 <span class="sd">            difference to still count as a match, :math:`\epsilon`. Defaults to None.</span>
 
@@ -284,23 +285,19 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Performs a trace for a time step, considering all prior matches.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        x_{t + \Delta t} =</span>
-<span class="sd">        \begin{cases}</span>
-<span class="sd">            a + x_t \exp (\Delta t / \tau) &amp;\lvert f_{t + \Delta t} - f^* \rvert</span>
-<span class="sd">            \leq \epsilon \\</span>
-<span class="sd">            x_t \exp (\Delta t / \tau) &amp;\text{otherwise}</span>
-<span class="sd">        \end{cases}</span>
+<span class="sd">        x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)</span>
+<span class="sd">        + A \left[\lvert h(t) - h^* \rvert \leq \epsilon\right]</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        observation (torch.Tensor): latest state to consider for the trace, :math:`f`.</span>
+<span class="sd">        observation (torch.Tensor): latest state to consider for the trace, :math:`h`.</span>
 <span class="sd">        trace (torch.Tensor | None): current value of the trace, :math:`x`,</span>
 <span class="sd">            if not the inital condition.</span>
 <span class="sd">        decay (float | torch.Tensor): exponential decay for adaptations,</span>
-<span class="sd">            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.</span>
+<span class="sd">            :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.</span>
 <span class="sd">        amplitude (int | float | complex | torch.Tensor): value to add to trace to for</span>
-<span class="sd">            matching elements, :math:`a`.</span>
+<span class="sd">            matching elements, :math:`A`.</span>
 <span class="sd">        target (int | float | bool | complex | torch.Tensor): target value to set</span>
-<span class="sd">            trace to, :math:`f^*`.</span>
+<span class="sd">            trace to, :math:`h^*`.</span>
 <span class="sd">        tolerance (int | float | torch.Tensor | None, optional): allowable absolute</span>
 <span class="sd">            difference to still count as a match, :math:`\epsilon`. Defaults to None.</span>
 
@@ -340,24 +337,25 @@
 <span class="sd">    the trace value, in addition to the additive component.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        x_{t + \Delta t} =</span>
+<span class="sd">        x(t) =</span>
 <span class="sd">        \begin{cases}</span>
-<span class="sd">            a + Sf &amp;K(f_{t + \Delta t}) \\</span>
-<span class="sd">            x_t \exp (\Delta t / \tau) &amp;\text{otherwise}</span>
+<span class="sd">            sh + A &amp; J(h) \\</span>
+<span class="sd">            x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)</span>
+<span class="sd">            &amp; \neg J(h)</span>
 <span class="sd">        \end{cases}</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        observation (torch.Tensor): latest state to consider for the trace, :math:`f`.</span>
+<span class="sd">        observation (torch.Tensor): latest state to consider for the trace, :math:`h`.</span>
 <span class="sd">        trace (torch.Tensor | None): current value of the trace, :math:`x`,</span>
 <span class="sd">            if not the inital condition.</span>
 <span class="sd">        decay (float | torch.Tensor): exponential decay for adaptations,</span>
-<span class="sd">            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.</span>
+<span class="sd">            :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.</span>
 <span class="sd">        amplitude (int | float | complex | torch.Tensor): value to add to trace</span>
-<span class="sd">            for matching elements, :math:`a`.</span>
+<span class="sd">            for matching elements, :math:`A`.</span>
 <span class="sd">        scale (int | float | complex | torch.Tensor): value to multiply matching</span>
-<span class="sd">            inputs by for the trace, :math:`S`.</span>
+<span class="sd">            inputs by for the trace, :math:`s`.</span>
 <span class="sd">        matchfn (Callable[[torch.Tensor], torch.Tensor]): test if the inputs are considered a</span>
-<span class="sd">            match for the trace, :math:`K`.</span>
+<span class="sd">            match for the trace, :math:`J`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: updated trace, incorporating the new observation.</span>
@@ -401,18 +399,22 @@
 <span class="sd">            x_t \exp (\Delta t / \tau) &amp;\text{otherwise}</span>
 <span class="sd">        \end{cases}</span>
 
+<span class="sd">    .. math::</span>
+<span class="sd">        x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)</span>
+<span class="sd">        + (sh + A) \left[\lvert J(h) \right]</span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        observation (torch.Tensor): latest state to consider for the trace, :math:`f`.</span>
+<span class="sd">        observation (torch.Tensor): latest state to consider for the trace, :math:`h`.</span>
 <span class="sd">        trace (torch.Tensor | None): current value of the trace, :math:`x`,</span>
 <span class="sd">            if not the inital condition.</span>
 <span class="sd">        decay (float | torch.Tensor): exponential decay for adaptations,</span>
-<span class="sd">            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.</span>
+<span class="sd">            :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.</span>
 <span class="sd">        amplitude (int | float | complex | torch.Tensor): value to add to trace</span>
-<span class="sd">            to for matching elements, :math:`a`.</span>
+<span class="sd">            to for matching elements, :math:`A`.</span>
 <span class="sd">        scale (int | float | complex | torch.Tensor): value to multiply matching</span>
-<span class="sd">            inputs by for the trace, :math:`S`.</span>
+<span class="sd">            inputs by for the trace, :math:`s`.</span>
 <span class="sd">        matchfn (Callable[[torch.Tensor], torch.Tensor]): test if the inputs are considered a</span>
-<span class="sd">            match for the trace, :math:`K`.</span>
+<span class="sd">            match for the trace, :math:`J`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: updated trace, incorporating the new observation.</span>

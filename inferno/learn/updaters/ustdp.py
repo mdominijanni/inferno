@@ -17,27 +17,31 @@ class STDP(LayerwiseTrainer):
     r"""Spike-timing dependent plasticity updater.
 
     .. math::
-        \Delta w = A_+ x_\text{pre} \bigl[t = t^f_\text{post}\bigr] +
-        A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]
+        w(t + \Delta t) - w(t) = \eta_\text{post} x_\text{pre}(t) \bigl[t = t^f_\text{post}\bigr] +
+        \eta_\text{pre} x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr]
+
+    When ``trace_mode = "cumulative"``:
+
+    .. math::
+        x_n(t) = x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) + \left[t = t_n^f\right]
+
+    When ``trace_mode = "nearest"``:
+
+    .. math::
+        x_n(t) =
+        \begin{cases}
+            1 & t = t_n^f \\
+            x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) & t \neq t_n^f
+        \end{cases}
 
     Where:
 
-    .. math::
-        x^{(t)} =
-        \begin{cases}
-            1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t = t^f \text{ and cumulative trace} \\
-            1 & t = t^f \text{ and nearest trace} \\
-            x^{(t-\Delta t)} \exp(-\Delta t / \tau) & t \neq t^f
-        \end{cases}
+    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent
+    spike from neuron :math:`n`, respectively.
 
-    :math:`t` and :math:`t^f` are the current time and the time of the most recent
-    spike, respectively.
-
-    The terms :math:`A_+` and :math:`A_-` are equal to the learning rates
-    :math:`\eta_\text{post}` and :math:`\eta_\text{pre}` respectively, although they
-    may be scaled by weight dependence at the updater level. The "mode" changes based on
-    the sign of the learning rates, and updates are applied based on any potentiative
-    and depressive components.
+    The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
+    controls which terms are potentiative and which terms are depressive. The terms can
+    be scaled for weight dependence on updating.
 
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
     | Mode              | :math:`\text{sgn}(\eta_\text{post})` | :math:`\text{sgn}(\eta_\text{pre})` | LTP Term(s)                               | LTD Term(s)                               |
@@ -73,8 +77,20 @@ class STDP(LayerwiseTrainer):
             when None. Defaults to None.
 
     Important:
-        The constructor arguments are hyperparameters for STDP and can be overridden on
-        a cell-by-cell basis.
+        When ``delayed`` is ``True``, the history for the required variables is stored
+        over the length of time the delay may be, and the selection is performed using
+        the learned delays. When ``delayed`` is ``False``, the last state is used even
+        if a change in delay occurs. This may be the desired behavior even if delays are
+        updated along with weights.
+
+    Important:
+        It is expected for this to be called after every trainable batch. Variables
+        used are not stored (or are invalidated) if multiple batches are given before
+        an update.
+
+    Note:
+        The constructor arguments are hyperparameters and can be overridden on a
+        cell-by-cell basis.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -84,9 +100,7 @@ class STDP(LayerwiseTrainer):
 
     See Also:
         For more details and references, visit
-        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)`,
-        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding`, and
-        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.
+        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)` in the zoo.
     """
 
     def __init__(
@@ -227,6 +241,9 @@ class STDP(LayerwiseTrainer):
         # add the cell with additional hyperparameters
         cell, state = self._add_cell(name, cell, self.State(self, **kwargs))
 
+        # if delays should be accounted for
+        delayed = state.delayed and cell.connection.delayedby is not None
+
         # common and derived arguments
         match state.trace:
             case "cumulative":
@@ -283,7 +300,6 @@ class STDP(LayerwiseTrainer):
         # presynaptic trace monitor (weighs hebbian LTP)
         # when the delayed condition is true, using synapse.spike records the raw
         # spike times rather than the delay adjusted times of synspike.
-        delayed = state.delayed and cell.connection.delayedby is not None
         self.add_monitor(
             name,
             "trace_pre",
@@ -348,9 +364,9 @@ class STDP(LayerwiseTrainer):
             match (aux.lr_post >= 0, aux.lr_pre >= 0):
                 case (False, False):  # depressive
                     cell.updater.weight = (None, dpost + dpre)
-                case (False, True):   # anti-hebbian
+                case (False, True):  # anti-hebbian
                     cell.updater.weight = (dpre, dpost)
-                case (True, False):   # hebbian
+                case (True, False):  # hebbian
                     cell.updater.weight = (dpost, dpre)
-                case (True, True):    # potentiative
+                case (True, True):  # potentiative
                     cell.updater.weight = (dpost + dpre, None)

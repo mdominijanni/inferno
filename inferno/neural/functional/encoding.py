@@ -47,10 +47,6 @@ def enc_poisson_interval(
     Note:
         Frequency is never compensated for based on the refractory period.
     """
-    # check to see what went horribly wrong
-    if torch.any(inputs < 0):
-        print(inputs.amin())
-        exit(1)
     # disable gradient computation
     with torch.no_grad():
         # convert refrac from ms to dt

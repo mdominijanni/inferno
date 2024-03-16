@@ -219,9 +219,10 @@
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="stdp-like-learning-methods">
 <h1>STDP-Like Learning Methods<a class="headerlink" href="#stdp-like-learning-methods" title="Link to this heading">#</a></h1>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
-<p>STDP (spike timing-dependent plasticity) refers to a category of methods that implement Hebbian…</p>
+<section id="hebbian-learning">
+<h2>Hebbian Learning<a class="headerlink" href="#hebbian-learning" title="Link to this heading">#</a></h2>
+<p>Typically STDP is parameterized such that it performs Hebbian learning (often summarized as “cells that fire together wire together”). In Hebbian learning methods, if there exists a “postsynaptic” neuron which receives input from a “presynaptic” neuron, then if the presynaptic neuron fires and afterwards the postsynaptic neuron fires, its considered to be “causal”. Likewise, if the postsynaptic neuron fires then the presynaptic neuron fires, its considered to be “anti-causal”. Hebbian learning increases the connection weight on neuron firings which are causal and decreases it on anti-causal firings.</p>
+<p>Most STDP methods are phrased in the context of Hebbian learning, although they do not need to be. For instance, STDP can reverse the direction of the weight updates for causal and anti-causal firings (this is called anti-Hebbian learning). For the below methods, they will be written as they are most commonly described, although Inferno typically supports generalization.</p>
 </section>
 <section id="spike-timing-dependent-plasticity-stdp">
 <h2>Spike Timing-Dependent Plasticity (STDP)<a class="headerlink" href="#spike-timing-dependent-plasticity-stdp" title="Link to this heading">#</a></h2>
@@ -230,32 +231,32 @@
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
-\frac{dw}{dt} = A_+ x_\text{pre} \cdot \delta(t - t^f_\text{post}) - A_- x_\text{post} \cdot \delta(t - t^f_\text{pre})
+\frac{dw}{dt} = A_+ x_\text{pre}(t) \sum_{\mathcal{F}_\text{post}} \delta(t - t^f_\text{post}) - A_- x_\text{post}(t) \sum_{\mathcal{F}_\text{pre}} \delta(t - t^f_\text{pre})
 \]</div>
 </div>
-<p>With solution:</p>
+<p><em>With solution:</em></p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}
-\Delta w_t =
-\begin{cases}
-    A_+ x_\text{pre} &amp;t = t^f_\text{post} \\
-    -A_- x_\text{post} &amp;t = t^f_\text{pre}
-\end{cases}
-\end{split}\]</div>
+\[
+w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
+- A_- x_\text{post}(t) \left[ t = t^f_\text{pre} \right]
+\]</div>
 </div>
-<p>Where:</p>
+<p><em>Where:</em></p>
 <ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(\Delta w_t\)</span>, change in weight</p></li>
-<li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for long-term potentiation (LTP)</p></li>
-<li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for long-term depression (LTD)</p></li>
+<li><p><span class="math notranslate nohighlight">\(w\)</span>, connection weight</p></li>
+<li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for Hebbian long-term potentiation (LTP)</p></li>
+<li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for Hebbian long-term depression (LTD)</p></li>
 <li><p><span class="math notranslate nohighlight">\(x_\text{post}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(x_\text{pre}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span> is the current time step</p></li>
-<li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of the most recent postsynaptic spike</p></li>
-<li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of the most recent presynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of (the most recent) postsynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of (the most recent) presynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathcal{F}_\text{post}\)</span>, set of prior postsynaptic spikes</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathcal{F}_\text{pre}\)</span>, set of prior presynaptic spikes</p></li>
 <li><p><span class="math notranslate nohighlight">\(\delta\)</span>, <a class="reference internal" href="../guide/mathematics.html#dirac-delta-function"><span class="std std-ref">Dirac delta function</span></a></p></li>
 </ul>
+<p><span class="math notranslate nohighlight">\([\cdots]\)</span> is the Iverson bracket and equals <span class="math notranslate nohighlight">\(1\)</span> if the inner statement is true and <span class="math notranslate nohighlight">\(0\)</span> if it is false.</p>
 </section>
 </section>
 <section id="delayed-spike-timing-dependent-plasticity-delayed-stdp">
@@ -268,8 +269,8 @@
 \Delta w_t =
 \begin{cases}
     A_+ \exp \left(-\frac{\Delta t_{pp}}{\tau_+}\right) &amp;\Delta t_{pp} &gt; 0 \\
-    -A_- \exp \left(\frac{\Delta t_{pp}}{\tau_-}\right) &amp;\Delta t_{pp} &lt; 0 \\
-    0 &amp;\Delta t_{pp} = 0
+    0 &amp;\Delta t_{pp} = 0 \\
+    -A_- \exp \left(\frac{\Delta t_{pp}}{\tau_-}\right) &amp;\Delta t_{pp} &lt; 0
 \end{cases}
 \end{split}\]</div>
 </div>
@@ -279,7 +280,7 @@
 \Delta t_{pp} = t^f_\text{post} - t^f_\text{pre} - d_{pp}
 \]</div>
 </div>
-<p>Where:</p>
+<p><em>Where:</em></p>
 <ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(\Delta w_t\)</span>, change in weight</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for long-term potentiation (LTP)</p></li>
@@ -293,107 +294,117 @@
 </ul>
 </section>
 </section>
-<section id="anti-hebbian-spike-timing-dependent-plasticity-astdp">
-<h2>Anti-Hebbian Spike Timing-Dependent Plasticity (aSTDP)<a class="headerlink" href="#anti-hebbian-spike-timing-dependent-plasticity-astdp" title="Link to this heading">#</a></h2>
+<section id="modulated-spike-timing-dependent-plasticity-mstdp">
+<h2>Modulated Spike-Timing Dependent Plasticity (MSTDP)<a class="headerlink" href="#modulated-spike-timing-dependent-plasticity-mstdp" title="Link to this heading">#</a></h2>
 <section id="id2">
 <h3>Formulation<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[
-\frac{dw}{dt} = A_+ x_\text{post} \cdot \delta(t - t^f_\text{pre}) - A_- x_\text{pre} \cdot \delta(t - t^f_\text{post})
-\]</div>
+\[\begin{split}
+\begin{align*}
+    \frac{dw}{dt} &amp;= \gamma \, r(t) \, \xi(t) \\
+    \xi(t) &amp;= P^+ \Phi_\text{post}(t) + P^- \Phi_\text{pre}(t) \\
+    \tau_+ \frac{dP^+}{dt} &amp;= -P^+ + A_+ \Phi_\text{pre}(t) \\
+    \tau_- \frac{dP^-}{dt} &amp;= -P^- + A_- \Phi_\text{post}(t) \\
+    \Phi_n(t) &amp;= \sum_{\mathcal{F}_n} \delta(t - t_n^f)
+\end{align*}
+\end{split}\]</div>
 </div>
-<p>With solution:</p>
+<p><em>With solutions:</em></p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
-\Delta w_t =
-\begin{cases}
-    A_+ x_\text{post} &amp;t = t^f_\text{pre} \\
-    -A_- x_\text{pre} &amp;t = t^f_\text{post}
-\end{cases}
+\begin{align*}
+    w(t + \Delta t) - w(t) &amp;= \gamma \, r(t) \, \zeta(t) \\
+    \zeta(t) &amp;= P^+ \left[t = t_\text{post}^f\right] + P^- \left[t = t_\text{pre}^f\right] \\
+    P^-(t) &amp;= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\left[t = t_\text{pre}^f\right] \\
+    P^-(t) &amp;= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \left[t = t_\text{post}^f\right]
+\end{align*}
 \end{split}\]</div>
 </div>
-<p>Where:</p>
+<p><span class="math notranslate nohighlight">\([\cdots]\)</span> is the Iverson bracket and equals <span class="math notranslate nohighlight">\(1\)</span> if the inner statement is true and <span class="math notranslate nohighlight">\(0\)</span> if it is false.</p>
+<p><em>Where:</em></p>
 <ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(\Delta w_t\)</span>, change in weight</p></li>
-<li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for long-term potentiation (LTP)</p></li>
-<li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for long-term depression (LTD)</p></li>
-<li><p><span class="math notranslate nohighlight">\(x_\text{post}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(x_\text{pre}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(w\)</span>, connection weight</p></li>
+<li><p><span class="math notranslate nohighlight">\(\gamma\)</span>, common learning rate</p></li>
+<li><p><span class="math notranslate nohighlight">\(r\)</span>, reward term</p></li>
+<li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for Hebbian long-term potentiation (LTP)</p></li>
+<li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for Hebbian long-term depression (LTD)</p></li>
+<li><p><span class="math notranslate nohighlight">\(P^-\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(P^+\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span> is the current time step</p></li>
-<li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of the most recent postsynaptic spike</p></li>
-<li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of the most recent presynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of (the most recent) postsynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of (the most recent) presynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathcal{F}_\text{post}\)</span>, set of prior postsynaptic spikes</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathcal{F}_\text{pre}\)</span>, set of prior presynaptic spikes</p></li>
 <li><p><span class="math notranslate nohighlight">\(\delta\)</span>, <a class="reference internal" href="../guide/mathematics.html#dirac-delta-function"><span class="std std-ref">Dirac delta function</span></a></p></li>
 </ul>
 </section>
 <section id="description">
 <h3>Description<a class="headerlink" href="#description" title="Link to this heading">#</a></h3>
-<p>This flips the sign of the update magnitudes of <a class="reference internal" href="#spike-timing-dependent-plasticity-stdp">STDP</a> to be anti-Hebbian. That is, when a postsynpatic spike follows a presynaptic one, long term depression takes place. And when a presynaptic spike follows a postsynaptic one, long term potentiation takes place.</p>
+<p>This is equivalent to <a class="reference internal" href="#spike-timing-dependent-plasticity-stdp">STDP</a> except scaled by a time-dependent reward term <span class="math notranslate nohighlight">\(r\)</span>. Note that <span class="math notranslate nohighlight">\(P^+\)</span> is the presynaptic spike trace and <span class="math notranslate nohighlight">\(P^-\)</span> is the postsynaptic spike trace (calculated as <a class="reference internal" href="../guide/mathematics.html#cumulative-trace"><span class="std std-ref">cumulative trace</span></a>).</p>
 </section>
+<section id="references">
+<h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://florian.io/papers/2007_Florian_Modulated_STDP.pdf">10.1162/neco.2007.19.6.1468</a></p></li>
+</ol>
 </section>
-<section id="modulated-spike-timing-dependent-plasticity-mstdp">
-<h2>Modulated Spike-Timing Dependent Plasticity (MSTDP)<a class="headerlink" href="#modulated-spike-timing-dependent-plasticity-mstdp" title="Link to this heading">#</a></h2>
 </section>
 <section id="modulated-spike-timing-dependent-plasticity-with-eligibility-trace-mstdpet">
 <h2>Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)<a class="headerlink" href="#modulated-spike-timing-dependent-plasticity-with-eligibility-trace-mstdpet" title="Link to this heading">#</a></h2>
-</section>
-<section id="weight-dependence-soft-bounding">
-<h2>Weight Dependence, Soft Bounding<a class="headerlink" href="#weight-dependence-soft-bounding" title="Link to this heading">#</a></h2>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+    \frac{dw}{dt} &amp;= \gamma \, r(t) \, z(t) \\
+    \tau_z \frac{dz}{dt} &amp;= -z(t) + \xi(t) \\
+    \xi(t) &amp;= P^+ \Phi_\text{post}(t) + P^- \Phi_\text{pre}(t) \\
+    \tau_+ \frac{dP^+}{dt} &amp;= -P^+ + A_+ \Phi_\text{pre}(t) \\
+    \tau_- \frac{dP^-}{dt} &amp;= -P^- + A_- \Phi_\text{post}(t) \\
+    \Phi_n(t) &amp;= \sum_{\mathcal{F}_n} \delta(t - t_n^f)
+\end{align*}
+\end{split}\]</div>
+</div>
+<p><em>With approximations and solutions:</em></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+    w(t + \Delta t) - w(t) &amp;= \gamma \Delta t \, r(t + \Delta t) \, z(t + \Delta t) \\
+    z(t + \Delta t) &amp;= z(t) \exp\left(-\frac{\Delta t}{\tau_z}\right) + \frac{\zeta(t)}{\tau_z} \\
+    \zeta(t) &amp;= P^+ \left[t = t_\text{post}^f\right] + P^- \left[t = t_\text{pre}^f\right] \\
+    P^+(t) &amp;= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\left[t = t_\text{pre}^f\right] \\
+    P^-(t) &amp;= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \left[t = t_\text{post}^f\right]
+\end{align*}
+\end{split}\]</div>
+</div>
+<p><em>Where:</em></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(w\)</span>, connection weight</p></li>
+<li><p><span class="math notranslate nohighlight">\(z\)</span>, eligibility trace</p></li>
+<li><p><span class="math notranslate nohighlight">\(\gamma\)</span>, common learning rate</p></li>
+<li><p><span class="math notranslate nohighlight">\(r\)</span>, reward term</p></li>
+<li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for Hebbian long-term potentiation (LTP)</p></li>
+<li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for Hebbian long-term depression (LTD)</p></li>
+<li><p><span class="math notranslate nohighlight">\(P^-\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(P^+\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(t\)</span> is the current time step</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of (the most recent) postsynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of (the most recent) presynaptic spike</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathcal{F}_\text{post}\)</span>, set of prior postsynaptic spikes</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathcal{F}_\text{pre}\)</span>, set of prior presynaptic spikes</p></li>
+<li><p><span class="math notranslate nohighlight">\(\delta\)</span>, <a class="reference internal" href="../guide/mathematics.html#dirac-delta-function"><span class="std std-ref">Dirac delta function</span></a></p></li>
+</ul>
 <section id="id3">
-<h3>Formulation<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[\begin{split}
-\begin{align*}
-    A_+(w) &amp;= (w_\text{max} - w)^{\mu_+}\eta_+ \\
-    A_-(w) &amp;= (w - w_\text{min})^{\mu_-}\eta_-
-\end{align*}
-\end{split}\]</div>
-</div>
-<p>Where:</p>
-<ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for long-term potentiation (LTP)</p></li>
-<li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for long-term depression (LTD)</p></li>
-<li><p><span class="math notranslate nohighlight">\(w\)</span>, connection weight being updated</p></li>
-<li><p><span class="math notranslate nohighlight">\(w_\text{max}\)</span>, upper bound for connection weight</p></li>
-<li><p><span class="math notranslate nohighlight">\(w_\text{min}\)</span>, lower bound for connection weight</p></li>
-<li><p><span class="math notranslate nohighlight">\(\eta_+\)</span>, learning rate for LTP</p></li>
-<li><p><span class="math notranslate nohighlight">\(\eta_-\)</span>, learning rate for LTD</p></li>
-<li><p><span class="math notranslate nohighlight">\(\mu_+\)</span>, order for upper weight bound</p></li>
-<li><p><span class="math notranslate nohighlight">\(\mu_-\)</span>, order for lower weight bound</p></li>
-</ul>
-</section>
-<section id="id4">
-<h3>Description<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
-<p>This method penalizes weights that are out of specified bounds by applying a penalty proportional to the amount by which the current weight is over/under the bound. The order parameters <span class="math notranslate nohighlight">\(\mu_+\)</span> and <span class="math notranslate nohighlight">\(\mu_-\)</span> control the rate of this penalty. When <span class="math notranslate nohighlight">\(\mu_+\)</span> and <span class="math notranslate nohighlight">\(\mu_-\)</span> are set to <span class="math notranslate nohighlight">\(1\)</span>, this is referred to as “multiplicative weight dependence”, and when not set to <span class="math notranslate nohighlight">\(1\)</span> is often referred to as “power law weight dependence”.</p>
+<h3>References<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://florian.io/papers/2007_Florian_Modulated_STDP.pdf">10.1162/neco.2007.19.6.1468</a></p></li>
+</ol>
 </section>
 </section>
-<section id="weight-dependence-hard-bounding">
-<h2>Weight Dependence, Hard Bounding<a class="headerlink" href="#weight-dependence-hard-bounding" title="Link to this heading">#</a></h2>
-<section id="id5">
-<h3>Formulation<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[\begin{split}
-\begin{align*}
-    A_+(w) &amp;= \Theta(w_\text{max} - w)\eta_+ \\
-    A_-(w) &amp;= \Theta(w - w_\text{min})\eta_-
-\end{align*}
-\end{split}\]</div>
-</div>
-<p>Where:</p>
-<ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for long-term potentiation (LTP)</p></li>
-<li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for long-term depression (LTD)</p></li>
-<li><p><span class="math notranslate nohighlight">\(w\)</span>, connection weight being updated</p></li>
-<li><p><span class="math notranslate nohighlight">\(w_\text{max}\)</span>, upper bound for connection weight</p></li>
-<li><p><span class="math notranslate nohighlight">\(w_\text{min}\)</span>, lower bound for connection weight</p></li>
-<li><p><span class="math notranslate nohighlight">\(\eta_+\)</span>, learning rate for LTP</p></li>
-<li><p><span class="math notranslate nohighlight">\(\eta_-\)</span>, learning rate for LTD</p></li>
-<li><p><span class="math notranslate nohighlight">\(\Theta\)</span>, <a class="reference internal" href="../guide/mathematics.html#heaviside-step-function"><span class="std std-ref">Heaviside step function</span></a></p></li>
-</ul>
-</section>
+<section id="triplet-spike-timing-dependent-plasticity-stdp">
+<h2>Triplet Spike-Timing Dependent Plasticity (STDP)<a class="headerlink" href="#triplet-spike-timing-dependent-plasticity-stdp" title="Link to this heading">#</a></h2>
 </section>
 </section>
 
@@ -453,7 +464,7 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">STDP-Like Learning Methods</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#hebbian-learning">Hebbian Learning</a></li>
 <li><a class="reference internal" href="#spike-timing-dependent-plasticity-stdp">Spike Timing-Dependent Plasticity (STDP)</a><ul>
 <li><a class="reference internal" href="#formulation">Formulation</a></li>
 </ul>
@@ -462,22 +473,17 @@
 <li><a class="reference internal" href="#id1">Formulation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#anti-hebbian-spike-timing-dependent-plasticity-astdp">Anti-Hebbian Spike Timing-Dependent Plasticity (aSTDP)</a><ul>
+<li><a class="reference internal" href="#modulated-spike-timing-dependent-plasticity-mstdp">Modulated Spike-Timing Dependent Plasticity (MSTDP)</a><ul>
 <li><a class="reference internal" href="#id2">Formulation</a></li>
 <li><a class="reference internal" href="#description">Description</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#modulated-spike-timing-dependent-plasticity-mstdp">Modulated Spike-Timing Dependent Plasticity (MSTDP)</a></li>
-<li><a class="reference internal" href="#modulated-spike-timing-dependent-plasticity-with-eligibility-trace-mstdpet">Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)</a></li>
-<li><a class="reference internal" href="#weight-dependence-soft-bounding">Weight Dependence, Soft Bounding</a><ul>
-<li><a class="reference internal" href="#id3">Formulation</a></li>
-<li><a class="reference internal" href="#id4">Description</a></li>
+<li><a class="reference internal" href="#modulated-spike-timing-dependent-plasticity-with-eligibility-trace-mstdpet">Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)</a><ul>
+<li><a class="reference internal" href="#id3">References</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#weight-dependence-hard-bounding">Weight Dependence, Hard Bounding</a><ul>
-<li><a class="reference internal" href="#id5">Formulation</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#triplet-spike-timing-dependent-plasticity-stdp">Triplet Spike-Timing Dependent Plasticity (STDP)</a></li>
 </ul>
 </li>
 </ul>

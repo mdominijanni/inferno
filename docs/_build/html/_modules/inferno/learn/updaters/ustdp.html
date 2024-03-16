@@ -237,27 +237,31 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike-timing dependent plasticity updater.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \Delta w = A_+ x_\text{pre} \bigl[t = t^f_\text{post}\bigr] +</span>
-<span class="sd">        A_- x_\text{post} \bigl[t = t^f_\text{pre}\bigr]</span>
+<span class="sd">        w(t + \Delta t) - w(t) = \eta_\text{post} x_\text{pre}(t) \bigl[t = t^f_\text{post}\bigr] +</span>
+<span class="sd">        \eta_\text{pre} x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr]</span>
+
+<span class="sd">    When ``trace_mode = &quot;cumulative&quot;``:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        x_n(t) = x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) + \left[t = t_n^f\right]</span>
+
+<span class="sd">    When ``trace_mode = &quot;nearest&quot;``:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        x_n(t) =</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            1 &amp; t = t_n^f \\</span>
+<span class="sd">            x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) &amp; t \neq t_n^f</span>
+<span class="sd">        \end{cases}</span>
 
 <span class="sd">    Where:</span>
 
-<span class="sd">    .. math::</span>
-<span class="sd">        x^{(t)} =</span>
-<span class="sd">        \begin{cases}</span>
-<span class="sd">            1 + x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t = t^f \text{ and cumulative trace} \\</span>
-<span class="sd">            1 &amp; t = t^f \text{ and nearest trace} \\</span>
-<span class="sd">            x^{(t-\Delta t)} \exp(-\Delta t / \tau) &amp; t \neq t^f</span>
-<span class="sd">        \end{cases}</span>
+<span class="sd">    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent</span>
+<span class="sd">    spike from neuron :math:`n`, respectively.</span>
 
-<span class="sd">    :math:`t` and :math:`t^f` are the current time and the time of the most recent</span>
-<span class="sd">    spike, respectively.</span>
-
-<span class="sd">    The terms :math:`A_+` and :math:`A_-` are equal to the learning rates</span>
-<span class="sd">    :math:`\eta_\text{post}` and :math:`\eta_\text{pre}` respectively, although they</span>
-<span class="sd">    may be scaled by weight dependence at the updater level. The &quot;mode&quot; changes based on</span>
-<span class="sd">    the sign of the learning rates, and updates are applied based on any potentiative</span>
-<span class="sd">    and depressive components.</span>
+<span class="sd">    The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`</span>
+<span class="sd">    controls which terms are potentiative and which terms are depressive. The terms can</span>
+<span class="sd">    be scaled for weight dependence on updating.</span>
 
 <span class="sd">    +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+</span>
 <span class="sd">    | Mode              | :math:`\text{sgn}(\eta_\text{post})` | :math:`\text{sgn}(\eta_\text{pre})` | LTP Term(s)                               | LTD Term(s)                               |</span>
@@ -293,8 +297,20 @@
 <span class="sd">            when None. Defaults to None.</span>
 
 <span class="sd">    Important:</span>
-<span class="sd">        The constructor arguments are hyperparameters for STDP and can be overridden on</span>
-<span class="sd">        a cell-by-cell basis.</span>
+<span class="sd">        When ``delayed`` is ``True``, the history for the required variables is stored</span>
+<span class="sd">        over the length of time the delay may be, and the selection is performed using</span>
+<span class="sd">        the learned delays. When ``delayed`` is ``False``, the last state is used even</span>
+<span class="sd">        if a change in delay occurs. This may be the desired behavior even if delays are</span>
+<span class="sd">        updated along with weights.</span>
+
+<span class="sd">    Important:</span>
+<span class="sd">        It is expected for this to be called after every trainable batch. Variables</span>
+<span class="sd">        used are not stored (or are invalidated) if multiple batches are given before</span>
+<span class="sd">        an update.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The constructor arguments are hyperparameters and can be overridden on a</span>
+<span class="sd">        cell-by-cell basis.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        ``batch_reduction`` can be one of the functions in PyTorch including but not</span>
@@ -304,9 +320,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        For more details and references, visit</span>
-<span class="sd">        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)`,</span>
-<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Soft Bounding`, and</span>
-<span class="sd">        :ref:`zoo/learning-stdp:Weight Dependence, Hard Bounding` in the zoo.</span>
+<span class="sd">        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)` in the zoo.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -452,6 +466,9 @@
         <span class="c1"># add the cell with additional hyperparameters</span>
         <span class="n">cell</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_cell</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">State</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
+        <span class="c1"># if delays should be accounted for</span>
+        <span class="n">delayed</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">delayed</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
         <span class="c1"># common and derived arguments</span>
         <span class="k">match</span> <span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
             <span class="k">case</span> <span class="s2">&quot;cumulative&quot;</span><span class="p">:</span>
@@ -508,7 +525,6 @@
         <span class="c1"># presynaptic trace monitor (weighs hebbian LTP)</span>
         <span class="c1"># when the delayed condition is true, using synapse.spike records the raw</span>
         <span class="c1"># spike times rather than the delay adjusted times of synspike.</span>
-        <span class="n">delayed</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">delayed</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_monitor</span><span class="p">(</span>
             <span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;trace_pre&quot;</span><span class="p">,</span>
@@ -576,11 +592,11 @@
             <span class="k">match</span> <span class="p">(</span><span class="n">aux</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">aux</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
                 <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>  <span class="c1"># depressive</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">dpost</span> <span class="o">+</span> <span class="n">dpre</span><span class="p">)</span>
-                <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>   <span class="c1"># anti-hebbian</span>
+                <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>  <span class="c1"># anti-hebbian</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="n">dpre</span><span class="p">,</span> <span class="n">dpost</span><span class="p">)</span>
-                <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>   <span class="c1"># hebbian</span>
+                <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>  <span class="c1"># hebbian</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="n">dpost</span><span class="p">,</span> <span class="n">dpre</span><span class="p">)</span>
-                <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>    <span class="c1"># potentiative</span>
+                <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>  <span class="c1"># potentiative</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="n">dpost</span> <span class="o">+</span> <span class="n">dpre</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 </div>
 
