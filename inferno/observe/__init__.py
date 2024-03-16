@@ -14,6 +14,8 @@ from .reducers.trace import (
     CumulativeTraceReducer,
     ScaledNearestTraceReducer,
     ScaledCumulativeTraceReducer,
+    ConditionalNearestTraceReducer,
+    ConditionalCumulativeTraceReducer,
 )
 
 from .reducers.stats import (
@@ -37,6 +39,8 @@ __all__ = [
     "CumulativeTraceReducer",
     "ScaledNearestTraceReducer",
     "ScaledCumulativeTraceReducer",
+    "ConditionalNearestTraceReducer",
+    "ConditionalCumulativeTraceReducer",
     "EMAReducer",
     "EventReducer",
     "PassthroughReducer",

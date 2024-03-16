@@ -181,8 +181,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../zoo/spike-trace.html">Spike Trace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../zoo/parameter-dependence.html">Parameter Dependence</a></li>
 </ul>
 </li>
 </ul>
@@ -228,24 +226,25 @@
 <p>Stores the trace over time, scaled by the input, considering the latest match.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}x_{t + \Delta t} =
+\[\begin{split}x(t) =
 \begin{cases}
-    a + Sf &amp;K(f_{t + \Delta t}) \\
-    x_t \exp (\Delta t / \tau) &amp;\text{otherwise}
+    sh + A &amp; J(h) \\
+    x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
+    &amp; \neg J(h)
 \end{cases}\end{split}\]</div>
 </div>
-<p>For the trace (state) <span class="math notranslate nohighlight">\(x\)</span> and observation <span class="math notranslate nohighlight">\(f\)</span>.</p>
+<p>For the trace (state) <span class="math notranslate nohighlight">\(x\)</span> and observation <span class="math notranslate nohighlight">\(h\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of the discrete step time, <span class="math notranslate nohighlight">\(\Delta t\)</span>.</p></li>
-<li><p><strong>time_constant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time constant of exponential decay, <span class="math notranslate nohighlight">\(\tau\)</span>.</p></li>
+<li><p><strong>time_constant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time constant of exponential decay, <span class="math notranslate nohighlight">\(\tau_x\)</span>.</p></li>
 <li><p><strong>amplitude</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a>) – value to set trace to for matching elements,
-<span class="math notranslate nohighlight">\(a\)</span>.</p></li>
+<span class="math notranslate nohighlight">\(A\)</span>.</p></li>
 <li><p><strong>scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a>) – multiplicative scale for contributions to trace,
-<span class="math notranslate nohighlight">\(S\)</span>.</p></li>
+<span class="math notranslate nohighlight">\(s\)</span>.</p></li>
 <li><p><strong>criterion</strong> (<a class="reference internal" href="inferno.types.OneToOne.html#inferno.types.OneToOne" title="inferno.types.OneToOne"><em>OneToOne</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – function to test if the input is considered
-a match for the purpose of tracing, <span class="math notranslate nohighlight">\(K\)</span>.</p></li>
+a match for the purpose of tracing, <span class="math notranslate nohighlight">\(J\)</span>.</p></li>
 <li><p><strong>duration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – length of time over which results should be
 stored, in the same units as <span class="math notranslate nohighlight">\(\Delta t\)</span>. Defaults to 0.0.</p></li>
 </ul>

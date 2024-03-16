@@ -27,11 +27,3 @@ synapses-conductance
 learning-stdp
 learning-resume
 ```
-
-## Additional Concepts
-```{toctree}
-:maxdepth: 2
-
-spike-trace
-parameter-dependence
-```

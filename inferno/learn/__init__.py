@@ -8,7 +8,6 @@ from .updaters.ustdp import (
 )
 
 from .updaters.sstdp import (
-    MSTDP,
     MSTDPET,
 )
 

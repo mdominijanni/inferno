@@ -14,22 +14,23 @@ def trace_nearest(
     r"""Performs a trace for a time step, considering the latest match.
 
     .. math::
-        x_{t + \Delta t} =
+        x(t) =
         \begin{cases}
-            a &\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
-            x_t \exp (\Delta t / \tau) &\text{otherwise}
+            A & \lvert h(t) - h^* \rvert \leq \epsilon \\
+            x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
+            & \left[\lvert h(t) - h^* \rvert > \epsilon\right]
         \end{cases}
 
     Args:
-        observation (torch.Tensor): latest state to consider for the trace, :math:`f`.
+        observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
             if not the inital condition.
         decay (float | torch.Tensor): exponential decay for adaptations,
-            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
+            :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
         amplitude (int | float | complex | torch.Tensor): value to set trace to for
-            matching elements, :math:`a`.
+            matching elements, :math:`A`.
         target (int | float | bool | complex | torch.Tensor): target value to set
-            trace to, :math:`f^*`.
+            trace to, :math:`h^*`.
         tolerance (int | float | torch.Tensor | None, optional): allowable absolute
             difference to still count as a match, :math:`\epsilon`. Defaults to None.
 
@@ -61,23 +62,19 @@ def trace_cumulative(
     r"""Performs a trace for a time step, considering all prior matches.
 
     .. math::
-        x_{t + \Delta t} =
-        \begin{cases}
-            a + x_t \exp (\Delta t / \tau) &\lvert f_{t + \Delta t} - f^* \rvert
-            \leq \epsilon \\
-            x_t \exp (\Delta t / \tau) &\text{otherwise}
-        \end{cases}
+        x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
+        + A \left[\lvert h(t) - h^* \rvert \leq \epsilon\right]
 
     Args:
-        observation (torch.Tensor): latest state to consider for the trace, :math:`f`.
+        observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
             if not the inital condition.
         decay (float | torch.Tensor): exponential decay for adaptations,
-            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
+            :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
         amplitude (int | float | complex | torch.Tensor): value to add to trace to for
-            matching elements, :math:`a`.
+            matching elements, :math:`A`.
         target (int | float | bool | complex | torch.Tensor): target value to set
-            trace to, :math:`f^*`.
+            trace to, :math:`h^*`.
         tolerance (int | float | torch.Tensor | None, optional): allowable absolute
             difference to still count as a match, :math:`\epsilon`. Defaults to None.
 
@@ -114,24 +111,25 @@ def trace_nearest_scaled(
     the trace value, in addition to the additive component.
 
     .. math::
-        x_{t + \Delta t} =
+        x(t) =
         \begin{cases}
-            a + Sf &K(f_{t + \Delta t}) \\
-            x_t \exp (\Delta t / \tau) &\text{otherwise}
+            sh + A & J(h) \\
+            x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
+            & \neg J(h)
         \end{cases}
 
     Args:
-        observation (torch.Tensor): latest state to consider for the trace, :math:`f`.
+        observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
             if not the inital condition.
         decay (float | torch.Tensor): exponential decay for adaptations,
-            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
+            :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
         amplitude (int | float | complex | torch.Tensor): value to add to trace
-            for matching elements, :math:`a`.
+            for matching elements, :math:`A`.
         scale (int | float | complex | torch.Tensor): value to multiply matching
-            inputs by for the trace, :math:`S`.
+            inputs by for the trace, :math:`s`.
         matchfn (Callable[[torch.Tensor], torch.Tensor]): test if the inputs are considered a
-            match for the trace, :math:`K`.
+            match for the trace, :math:`J`.
 
     Returns:
         torch.Tensor: updated trace, incorporating the new observation.
@@ -172,18 +170,22 @@ def trace_cumulative_scaled(
             x_t \exp (\Delta t / \tau) &\text{otherwise}
         \end{cases}
 
+    .. math::
+        x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
+        + (sh + A) \left[\lvert J(h) \right]
+
     Args:
-        observation (torch.Tensor): latest state to consider for the trace, :math:`f`.
+        observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
             if not the inital condition.
         decay (float | torch.Tensor): exponential decay for adaptations,
-            :math:`\exp\left(-\frac{\Delta t}{\tau_k}\right)`, unitless.
+            :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
         amplitude (int | float | complex | torch.Tensor): value to add to trace
-            to for matching elements, :math:`a`.
+            to for matching elements, :math:`A`.
         scale (int | float | complex | torch.Tensor): value to multiply matching
-            inputs by for the trace, :math:`S`.
+            inputs by for the trace, :math:`s`.
         matchfn (Callable[[torch.Tensor], torch.Tensor]): test if the inputs are considered a
-            match for the trace, :math:`K`.
+            match for the trace, :math:`J`.
 
     Returns:
         torch.Tensor: updated trace, incorporating the new observation.

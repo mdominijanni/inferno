@@ -180,8 +180,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/spike-trace.html">Spike Trace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/parameter-dependence.html">Parameter Dependence</a></li>
 </ul>
 </li>
 </ul>
@@ -299,8 +297,20 @@
 <span class="sd">            when None. Defaults to None.</span>
 
 <span class="sd">    Important:</span>
-<span class="sd">        The constructor arguments are hyperparameters for STDP and can be overridden on</span>
-<span class="sd">        a cell-by-cell basis.</span>
+<span class="sd">        When ``delayed`` is ``True``, the history for the required variables is stored</span>
+<span class="sd">        over the length of time the delay may be, and the selection is performed using</span>
+<span class="sd">        the learned delays. When ``delayed`` is ``False``, the last state is used even</span>
+<span class="sd">        if a change in delay occurs. This may be the desired behavior even if delays are</span>
+<span class="sd">        updated along with weights.</span>
+
+<span class="sd">    Important:</span>
+<span class="sd">        It is expected for this to be called after every trainable batch. Variables</span>
+<span class="sd">        used are not stored (or are invalidated) if multiple batches are given before</span>
+<span class="sd">        an update.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The constructor arguments are hyperparameters and can be overridden on a</span>
+<span class="sd">        cell-by-cell basis.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        ``batch_reduction`` can be one of the functions in PyTorch including but not</span>
@@ -456,6 +466,9 @@
         <span class="c1"># add the cell with additional hyperparameters</span>
         <span class="n">cell</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_cell</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">State</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
+        <span class="c1"># if delays should be accounted for</span>
+        <span class="n">delayed</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">delayed</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
         <span class="c1"># common and derived arguments</span>
         <span class="k">match</span> <span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
             <span class="k">case</span> <span class="s2">&quot;cumulative&quot;</span><span class="p">:</span>
@@ -512,7 +525,6 @@
         <span class="c1"># presynaptic trace monitor (weighs hebbian LTP)</span>
         <span class="c1"># when the delayed condition is true, using synapse.spike records the raw</span>
         <span class="c1"># spike times rather than the delay adjusted times of synspike.</span>
-        <span class="n">delayed</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">delayed</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_monitor</span><span class="p">(</span>
             <span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;trace_pre&quot;</span><span class="p">,</span>

@@ -181,8 +181,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../zoo/spike-trace.html">Spike Trace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../zoo/parameter-dependence.html">Parameter Dependence</a></li>
 </ul>
 </li>
 </ul>
@@ -315,8 +313,22 @@ when None. Defaults to None.</p></li>
 </dl>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>The constructor arguments are hyperparameters for STDP and can be overridden on
-a cell-by-cell basis.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">delayed</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the history for the required variables is stored
+over the length of time the delay may be, and the selection is performed using
+the learned delays. When <code class="docutils literal notranslate"><span class="pre">delayed</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, the last state is used even
+if a change in delay occurs. This may be the desired behavior even if delays are
+updated along with weights.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>It is expected for this to be called after every trainable batch. Variables
+used are not stored (or are invalidated) if multiple batches are given before
+an update.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The constructor arguments are hyperparameters and can be overridden on a
+cell-by-cell basis.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

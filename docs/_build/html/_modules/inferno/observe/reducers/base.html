@@ -180,8 +180,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/spike-trace.html">Spike Trace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../zoo/parameter-dependence.html">Parameter Dependence</a></li>
 </ul>
 </li>
 </ul>
@@ -291,7 +289,7 @@
 
 <div class="viewcode-block" id="Reducer.forward">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes state and incorporates inputs into the reducer&#39;s state.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;&#39;Reducer.forward()&#39; is abstract, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span>
@@ -307,9 +305,8 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies a function between the most recent previously stored data and a new observation.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        fold_fn (Callable[[torch.Tensor, torch.Tensor | None], torch.Tensor]): relation</span>
-<span class="sd">            between the new input (left) and current state (right),</span>
-<span class="sd">            returning the new state.</span>
+<span class="sd">        fold_fn (Callable[[tuple[torch.Tensor, ...], torch.Tensor | None], torch.Tensor]):</span>
+<span class="sd">            relation between the new input (left) and current state (right), returning the new state.</span>
 <span class="sd">        step_time (float): length of time between observations.</span>
 <span class="sd">        duration (float): length of time for which observations should be stored.</span>
 <span class="sd">        interp (interpolation.Interpolation, optional): interpolation function</span>
@@ -318,19 +315,19 @@
 <span class="sd">        initializer (OneToOne[torch.Tensor] | None, optional): function to set the</span>
 <span class="sd">            initial state, zeroes when None. Defaults to None.</span>
 
-<span class="sd">    Note:</span>
-<span class="sd">        The left-hand argument of ``fold_fn`` is the new input, and the right-hand</span>
-<span class="sd">        argument is the current state. The right-hand argument will be None when</span>
-<span class="sd">        no observations have been recorded.</span>
+<span class="sd">    Important:</span>
+<span class="sd">        The tuple given to ``fold_fn`` is unpacked, but it does not need to accept any</span>
+<span class="sd">        number of values, just whatever the expected number of inputs is for the given situation.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The default ``map_fn`` implemented assumes only a single input, and will</span>
-<span class="sd">        therefore fail if multiple input values are passed into :py:meth:`forward`.</span>
+<span class="sd">        The left-hand argument of ``fold_fn`` (i.e. all but the final) is the new input,</span>
+<span class="sd">        and the right-hand argument is the current state. The right-hand argument will</span>
+<span class="sd">        be None when no observations have been recorded.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">fold_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">fold_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="o">*</span><span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -542,7 +539,7 @@
 
 <div class="viewcode-block" id="FoldReducer.forward">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes state and incorporates inputs into the reducer&#39;s state.</span>
 
 <span class="sd">        This performs any required initialization steps, maps the inputs,</span>
@@ -551,16 +548,19 @@
 <span class="sd">        Args:</span>
 <span class="sd">            *inputs (torch.Tensor): inputs to be mapped, then pushed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># initialize data iff uninitialized</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-
-        <span class="c1"># integrate inputs</span>
+        <span class="c1"># non-initial</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fold_</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fold_</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)))</span>
+
+        <span class="c1"># initial</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fold_</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold_</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">res</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span> <span class="o">=</span> <span class="kc">False</span></div>
 </div>
 
@@ -589,13 +589,12 @@
 <div class="viewcode-block" id="FoldingReducer.fold">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldingReducer.html#inferno.observe.FoldingReducer.fold">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculation of the next state given an observation and prior state.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            obs (torch.Tensor): observation to incorporate into state.</span>
-<span class="sd">            state (torch.Tensor | None): state from the prior time step,</span>
-<span class="sd">                None if no prior observations.</span>
+<span class="sd">            *args (torch.Tensor | None): positional arguments for folding, all but</span>
+<span class="sd">                the last will be observations, the final will be the reduced state.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: abstract methods must be implemented by subclass.</span>

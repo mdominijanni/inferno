@@ -77,8 +77,20 @@ class STDP(LayerwiseTrainer):
             when None. Defaults to None.
 
     Important:
-        The constructor arguments are hyperparameters for STDP and can be overridden on
-        a cell-by-cell basis.
+        When ``delayed`` is ``True``, the history for the required variables is stored
+        over the length of time the delay may be, and the selection is performed using
+        the learned delays. When ``delayed`` is ``False``, the last state is used even
+        if a change in delay occurs. This may be the desired behavior even if delays are
+        updated along with weights.
+
+    Important:
+        It is expected for this to be called after every trainable batch. Variables
+        used are not stored (or are invalidated) if multiple batches are given before
+        an update.
+
+    Note:
+        The constructor arguments are hyperparameters and can be overridden on a
+        cell-by-cell basis.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -229,6 +241,9 @@ class STDP(LayerwiseTrainer):
         # add the cell with additional hyperparameters
         cell, state = self._add_cell(name, cell, self.State(self, **kwargs))
 
+        # if delays should be accounted for
+        delayed = state.delayed and cell.connection.delayedby is not None
+
         # common and derived arguments
         match state.trace:
             case "cumulative":
@@ -285,7 +300,6 @@ class STDP(LayerwiseTrainer):
         # presynaptic trace monitor (weighs hebbian LTP)
         # when the delayed condition is true, using synapse.spike records the raw
         # spike times rather than the delay adjusted times of synspike.
-        delayed = state.delayed and cell.connection.delayedby is not None
         self.add_monitor(
             name,
             "trace_pre",

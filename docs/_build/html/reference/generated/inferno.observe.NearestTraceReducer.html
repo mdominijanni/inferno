@@ -181,8 +181,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../zoo/spike-trace.html">Spike Trace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../zoo/parameter-dependence.html">Parameter Dependence</a></li>
 </ul>
 </li>
 </ul>
@@ -228,22 +226,23 @@
 <p>Stores the trace over time, considering the latest match.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}x_{t + \Delta t} =
+\[\begin{split}x(t) =
 \begin{cases}
-    a &amp;\lvert f_{t + \Delta t} - f^* \rvert \leq \epsilon \\
-    x_t \exp (\Delta t / \tau) &amp;\text{otherwise}
+    A &amp; \lvert h(t) - h^* \rvert \leq \epsilon \\
+    x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
+    &amp; \left[\lvert h(t) - h^* \rvert &gt; \epsilon\right]
 \end{cases}\end{split}\]</div>
 </div>
-<p>For the trace (state) <span class="math notranslate nohighlight">\(x\)</span> and observation <span class="math notranslate nohighlight">\(f\)</span>.</p>
+<p>For the trace (state) <span class="math notranslate nohighlight">\(x\)</span> and observation <span class="math notranslate nohighlight">\(h\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of the discrete step time, <span class="math notranslate nohighlight">\(\Delta t\)</span>.</p></li>
-<li><p><strong>time_constant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time constant of exponential decay, <span class="math notranslate nohighlight">\(\tau\)</span>.</p></li>
+<li><p><strong>time_constant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time constant of exponential decay, <span class="math notranslate nohighlight">\(\tau_x\)</span>.</p></li>
 <li><p><strong>amplitude</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a>) – value to set trace to for matching elements,
-<span class="math notranslate nohighlight">\(a\)</span>.</p></li>
+<span class="math notranslate nohighlight">\(A\)</span>.</p></li>
 <li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.12)"><em>complex</em></a>) – target value test for when determining
-if an input is a match, <span class="math notranslate nohighlight">\(f^*\)</span>.</p></li>
+if an input is a match, <span class="math notranslate nohighlight">\(h^*\)</span>.</p></li>
 <li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – allowable absolute difference to
 still count as a match, <span class="math notranslate nohighlight">\(\epsilon\)</span>. Defaults to None.</p></li>
 <li><p><strong>duration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – length of time over which results should be

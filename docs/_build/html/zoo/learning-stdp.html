@@ -181,8 +181,6 @@
 <li class="toctree-l2"><a class="reference internal" href="synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="learning-resume.html">ReSuMe-Like Learning Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="spike-trace.html">Spike Trace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parameter-dependence.html">Parameter Dependence</a></li>
 </ul>
 </li>
 </ul>
@@ -249,8 +247,8 @@ w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
 <li><p><span class="math notranslate nohighlight">\(w\)</span>, connection weight</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for Hebbian long-term potentiation (LTP)</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for Hebbian long-term depression (LTD)</p></li>
-<li><p><span class="math notranslate nohighlight">\(x_\text{post}\)</span>, <a class="reference internal" href="spike-trace.html#overview"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(x_\text{pre}\)</span>, <a class="reference internal" href="spike-trace.html#overview"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(x_\text{post}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(x_\text{pre}\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span> is the current time step</p></li>
 <li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of (the most recent) postsynaptic spike</p></li>
 <li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of (the most recent) presynaptic spike</p></li>
@@ -332,8 +330,8 @@ w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
 <li><p><span class="math notranslate nohighlight">\(r\)</span>, reward term</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for Hebbian long-term potentiation (LTP)</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for Hebbian long-term depression (LTD)</p></li>
-<li><p><span class="math notranslate nohighlight">\(P^-\)</span>, <a class="reference internal" href="spike-trace.html#overview"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(P^+\)</span>, <a class="reference internal" href="spike-trace.html#overview"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(P^-\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(P^+\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span> is the current time step</p></li>
 <li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of (the most recent) postsynaptic spike</p></li>
 <li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of (the most recent) presynaptic spike</p></li>
@@ -344,7 +342,7 @@ w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
 </section>
 <section id="description">
 <h3>Description<a class="headerlink" href="#description" title="Link to this heading">#</a></h3>
-<p>This is equivalent to <a class="reference internal" href="#spike-timing-dependent-plasticity-stdp">STDP</a> except scaled by a time-dependent reward term <span class="math notranslate nohighlight">\(r\)</span>. Note that <span class="math notranslate nohighlight">\(P^+\)</span> is the presynaptic spike trace and <span class="math notranslate nohighlight">\(P^-\)</span> is the postsynaptic spike trace (calculated as <a class="reference internal" href="spike-trace.html#cumulative-trace"><span class="std std-ref">cumulative trace</span></a>).</p>
+<p>This is equivalent to <a class="reference internal" href="#spike-timing-dependent-plasticity-stdp">STDP</a> except scaled by a time-dependent reward term <span class="math notranslate nohighlight">\(r\)</span>. Note that <span class="math notranslate nohighlight">\(P^+\)</span> is the presynaptic spike trace and <span class="math notranslate nohighlight">\(P^-\)</span> is the postsynaptic spike trace (calculated as <a class="reference internal" href="../guide/mathematics.html#cumulative-trace"><span class="std std-ref">cumulative trace</span></a>).</p>
 </section>
 <section id="references">
 <h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
@@ -389,8 +387,8 @@ w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
 <li><p><span class="math notranslate nohighlight">\(r\)</span>, reward term</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_+\)</span>, update magnitude for Hebbian long-term potentiation (LTP)</p></li>
 <li><p><span class="math notranslate nohighlight">\(A_-\)</span>, update magnitude for Hebbian long-term depression (LTD)</p></li>
-<li><p><span class="math notranslate nohighlight">\(P^-\)</span>, <a class="reference internal" href="spike-trace.html#overview"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(P^+\)</span>, <a class="reference internal" href="spike-trace.html#overview"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(P^-\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of postsynaptic (output) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{post}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(P^+\)</span>, <a class="reference internal" href="../guide/mathematics.html#trace"><span class="std std-ref">spike trace</span></a> of presynaptic (input) spikes, parameterized by time constant <span class="math notranslate nohighlight">\(\tau_\text{pre}\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(t\)</span> is the current time step</p></li>
 <li><p><span class="math notranslate nohighlight">\(t^f_\text{post}\)</span>, time of (the most recent) postsynaptic spike</p></li>
 <li><p><span class="math notranslate nohighlight">\(t^f_\text{pre}\)</span>, time of (the most recent) presynaptic spike</p></li>

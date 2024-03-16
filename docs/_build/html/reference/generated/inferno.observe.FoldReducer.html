@@ -181,8 +181,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../zoo/spike-trace.html">Spike Trace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../zoo/parameter-dependence.html">Parameter Dependence</a></li>
 </ul>
 </li>
 </ul>
@@ -223,15 +221,13 @@
 <h1>FoldReducer<a class="headerlink" href="#foldreducer" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.observe.FoldReducer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FoldReducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">fold_fn:</span> <span class="pre">~typing.Callable[[~torch.Tensor</span> <span class="pre">|</span> <span class="pre">None,</span> <span class="pre">~torch.Tensor],</span> <span class="pre">~torch.Tensor],</span> <span class="pre">step_time:</span> <span class="pre">float,</span> <span class="pre">duration:</span> <span class="pre">float,</span> <span class="pre">*,</span> <span class="pre">interp:</span> <span class="pre">~inferno.interpolation.types.Interpolation</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">nearest&gt;,</span> <span class="pre">initializer:</span> <span class="pre">~inferno.types.functional.OneToOne[~torch.Tensor]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#FoldReducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.FoldReducer" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FoldReducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">fold_fn:</span> <span class="pre">Callable[[*tuple[torch.Tensor,</span> <span class="pre">...],</span> <span class="pre">torch.Tensor</span> <span class="pre">|</span> <span class="pre">None],</span> <span class="pre">torch.Tensor],</span> <span class="pre">step_time:</span> <span class="pre">float,</span> <span class="pre">duration:</span> <span class="pre">float,</span> <span class="pre">*,</span> <span class="pre">interp:</span> <span class="pre">interpolation.Interpolation</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">nearest&gt;,</span> <span class="pre">initializer:</span> <span class="pre">OneToOne[torch.Tensor]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#FoldReducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.FoldReducer" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="inferno.observe.Reducer.html#inferno.observe.Reducer" title="inferno.observe.reducers.base.Reducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Reducer</span></code></a></p>
 <p>Applies a function between the most recent previously stored data and a new observation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fold_fn</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – relation
-between the new input (left) and current state (right),
-returning the new state.</p></li>
+<li><p><strong>fold_fn</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><em>...</em><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><em>None</em><em>]</em><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em>) – relation between the new input (left) and current state (right), returning the new state.</p></li>
 <li><p><strong>step_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of time between observations.</p></li>
 <li><p><strong>duration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – length of time for which observations should be stored.</p></li>
 <li><p><strong>interp</strong> (<a class="reference internal" href="inferno.interpolation.Interpolation.html#inferno.interpolation.Interpolation" title="inferno.interpolation.Interpolation"><em>interpolation.Interpolation</em></a><em>, </em><em>optional</em>) – interpolation function
@@ -242,16 +238,16 @@ initial state, zeroes when None. Defaults to None.</p></li>
 </ul>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The left-hand argument of <code class="docutils literal notranslate"><span class="pre">fold_fn</span></code> is the new input, and the right-hand
-argument is the current state. The right-hand argument will be None when
-no observations have been recorded.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The tuple given to <code class="docutils literal notranslate"><span class="pre">fold_fn</span></code> is unpacked, but it does not need to accept any
+number of values, just whatever the expected number of inputs is for the given situation.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The default <code class="docutils literal notranslate"><span class="pre">map_fn</span></code> implemented assumes only a single input, and will
-therefore fail if multiple input values are passed into <a class="reference internal" href="#inferno.observe.FoldReducer.forward" title="inferno.observe.FoldReducer.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code></a>.</p>
+<p>The left-hand argument of <code class="docutils literal notranslate"><span class="pre">fold_fn</span></code> (i.e. all but the final) is the new input,
+and the right-hand argument is the current state. The right-hand argument will
+be None when no observations have been recorded.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.observe.FoldReducer.clear">
@@ -368,7 +364,7 @@ last dimension.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.observe.FoldReducer.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#FoldReducer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.FoldReducer.forward" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#FoldReducer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.FoldReducer.forward" title="Link to this definition">#</a></dt>
 <dd><p>Initializes state and incorporates inputs into the reducer’s state.</p>
 <p>This performs any required initialization steps, maps the inputs,
 and pushes the new data.</p>

@@ -180,8 +180,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../zoo/synapses-conductance.html">Synapse Models, Conductance-Based</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../zoo/learning-stdp.html">STDP-Like Learning Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../zoo/learning-resume.html">ReSuMe-Like Learning Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../zoo/spike-trace.html">Spike Trace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../zoo/parameter-dependence.html">Parameter Dependence</a></li>
 </ul>
 </li>
 </ul>
@@ -262,7 +260,7 @@
     <span class="k">def</span> <span class="nf">get_monitor</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">monitor</span><span class="p">:</span> <span class="n">MonitorConstructor</span><span class="p">,</span>
         <span class="n">pool</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Monitor</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">tags</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -271,7 +269,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the monitor to add.</span>
-<span class="sd">            attr (str): dot-separated attribute path, relative to this cell, to monitor.</span>
+<span class="sd">            attr (str): dot-separated attribute path, relative to this cell, to</span>
+<span class="sd">                monitor, when an empty-string, the cell is directly targeted.</span>
 <span class="sd">            monitor (MonitorConstructor): partial constructor for the monitor to add.</span>
 <span class="sd">            pool (Iterable[Cell, Mapping[str, Monitor]] | None, optional): pool to</span>
 <span class="sd">                search for compatible monitor, always creates a new one if None.</span>
@@ -294,14 +293,15 @@
 <span class="sd">            and do not persist in the state dictionary. If no pool is specified, the</span>
 <span class="sd">            new monitor will not have added tags, which prevents future aliasing.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># check that the attribute is a valid dot-chain identifier</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">nestedidentifier</span><span class="p">(</span><span class="s2">&quot;attr&quot;</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="c1"># check that the attribute is a valid dot-chain identifier if non-empty</span>
+        <span class="k">if</span> <span class="n">attr</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">nestedidentifier</span><span class="p">(</span><span class="s2">&quot;attr&quot;</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
 
         <span class="c1"># split the identifier and check for ownership</span>
         <span class="n">attrchain</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
 
         <span class="c1"># ensure the top-level attribute is in this cell</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrchain</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">attr</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrchain</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;this cell does not have an attribute &#39;</span><span class="si">{</span><span class="n">attrchain</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
         <span class="c1"># remap the top-level target if pointing to a private attribute</span>
@@ -354,7 +354,7 @@
                 <span class="k">continue</span>
 
             <span class="c1"># create the alias if tags match</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">monitors</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="s2">&quot;__tags&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">monitors</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">__tags</span> <span class="o">==</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">monitors</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="s2">&quot;_tags&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">monitors</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">_tags</span> <span class="o">==</span> <span class="n">tags</span><span class="p">:</span>
                 <span class="n">found</span> <span class="o">=</span> <span class="n">monitors</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
                 <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span> <span class="o">==</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># break if identical cell</span>
                     <span class="k">break</span>
@@ -364,7 +364,7 @@
             <span class="k">return</span> <span class="n">found</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">monitor</span> <span class="o">=</span> <span class="n">monitor</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="p">())</span>
-            <span class="n">monitor</span><span class="o">.</span><span class="n">__tags</span> <span class="o">=</span> <span class="n">tags</span>
+            <span class="n">monitor</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">tags</span>
             <span class="k">return</span> <span class="n">monitor</span></div>
 
 
@@ -685,7 +685,7 @@
                         <span class="sa">f</span><span class="s2">&quot;cell &#39;connection&#39;, &#39;neuron&#39; (&#39;</span><span class="si">{</span><span class="n">connection</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">neuron</span><span class="si">}</span><span class="s2">&#39;) is not valid&quot;</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;cell_.</span><span class="si">{</span><span class="n">connection</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">neuron</span><span class="si">}{</span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">attr</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;cells_.</span><span class="si">{</span><span class="n">connection</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">neuron</span><span class="si">}{</span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">attr</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;invalid &#39;target&#39; (&#39;</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">&#39;) specified, expected one of: &quot;</span>
