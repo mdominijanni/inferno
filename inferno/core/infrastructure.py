@@ -19,7 +19,8 @@ class Module(nn.Module):
 
     This extends :py:class:`torch.nn.Module` so that "extra state" is handled in a way
     similar to regular tensor state (e.g. buffers and parameters). This enables simple
-    export to and import from a state dictionary.
+    export to and import from a state dictionary. This does not enforce exact matching
+    keys, and will insert new keys as required.
 
     Additionally, attribute assignment will check if the name refers to a property in
     the class and if so, uses ``object.__setattr__``.
@@ -198,7 +199,7 @@ class DimensionalModule(Module):
 
     def __init__(self, *constraints: tuple[int, int], live: bool = False):
         # setter-dependent attribute
-        Module.__setattr__(self, "_live_assert", live)
+        object.__setattr__(self, "_live_assert", live)
 
         # call superclass constructor
         Module.__init__(self)
@@ -483,14 +484,15 @@ class DimensionalModule(Module):
         for name, b in map(
             lambda n: (n, self.get_buffer(n)), self._constrained_buffers
         ):
-            if not self._ignore_tensor(b) or not self.compatible(b):
+            if not (self._ignore_tensor(b) or self.compatible(b)):
+                print(f"{self._ignore_tensor(b)}, {self.compatible(b)}")
                 raise RuntimeError(f"constrained buffer '{name}' is invalid")
 
         # ensure constrained parameters have valid shape
         for name, p in map(
             lambda n: (n, self.get_parameter(n)), self._constrained_params
         ):
-            if not self._ignore_tensor(p) or not self.compatible(p):
+            if not (self._ignore_tensor(p) or self.compatible(p)):
                 raise RuntimeError(f"constrained parameter '{name}' is invalid")
 
     def compatible(self, tensor: torch.Tensor) -> bool:
