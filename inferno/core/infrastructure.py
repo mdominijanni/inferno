@@ -485,7 +485,6 @@ class DimensionalModule(Module):
             lambda n: (n, self.get_buffer(n)), self._constrained_buffers
         ):
             if not (self._ignore_tensor(b) or self.compatible(b)):
-                print(f"{self._ignore_tensor(b)}, {self.compatible(b)}")
                 raise RuntimeError(f"constrained buffer '{name}' is invalid")
 
         # ensure constrained parameters have valid shape
@@ -579,7 +578,7 @@ class DimensionalModule(Module):
             for name, b in map(
                 lambda n: (n, self.get_buffer(n)), self._constrained_buffers
             ):
-                if not self._ignore_tensor(b) and not self.compatible_(b, cns):
+                if not (self._ignore_tensor(b) or self.compatible_(b, cns)):
                     raise RuntimeError(
                         f"constrained buffer '{name}' would be invalidated by the "
                         f"addition of constraint {(dim, size)}"
@@ -588,7 +587,7 @@ class DimensionalModule(Module):
             for name, p in map(
                 lambda n: (n, self.get_parameter(n)), self._constrained_params
             ):
-                if not self._ignore_tensor(p) and not self.compatible_(p, cns):
+                if not (self._ignore_tensor(p) or self.compatible_(p, cns)):
                     raise RuntimeError(
                         f"constrained parameter '{name}' would be invalidated by the "
                         f"addition of constraint {(dim, size)}"
@@ -608,7 +607,7 @@ class DimensionalModule(Module):
             for name, b in map(
                 lambda n: (n, self.get_buffer(n)), self._constrained_buffers
             ):
-                if not self._ignore_tensor(b) and not b.ndim > ndim:
+                if not (self._ignore_tensor(b) or b.ndim >= ndim):
                     raise RuntimeError(
                         f"constrained buffer '{name}' with {b.ndim} dims cannot be made "
                         f"compatible, requires a minimum dimensionality of {ndim}"
@@ -617,7 +616,7 @@ class DimensionalModule(Module):
             for name, p in map(
                 lambda n: (n, self.get_parameter(n)), self._constrained_params
             ):
-                if not self._ignore_tensor(p) and not p.ndim > ndim:
+                if not (self._ignore_tensor(p) or p.ndim >= ndim):
                     raise RuntimeError(
                         f"constrained parameter '{name}' with {p.ndim} dims cannot be made "
                         f"compatible, requires a minimum dimensionality of {ndim}"
@@ -631,7 +630,7 @@ class DimensionalModule(Module):
                 map(lambda n: (n, self.get_buffer(n)), self._constrained_buffers),
                 map(lambda n: (n, self.get_parameter(n)), self._constrained_params),
             ):
-                if not self._ignore_tensor(value) and not self.compatible(value):
+                if not (self._ignore_tensor(value) or self.compatible(value)):
                     rsetattr(self, name, self.compatible_like(value))
 
             # returns self
@@ -659,7 +658,7 @@ class DimensionalModule(Module):
         except AttributeError:
             pass
         else:
-            if not self._ignore_tensor(b) and not self.compatible(b):
+            if not (self._ignore_tensor(b) or self.compatible(b)):
                 raise RuntimeError(
                     f"buffer '{name}' has shape of {tuple(b.shape)} "
                     f"incompatible with constrained shape ({self._extra_repr_cache()}), "
@@ -676,7 +675,7 @@ class DimensionalModule(Module):
         except AttributeError:
             pass
         else:
-            if not self._ignore_tensor(p) and not self.compatible(p):
+            if not (self._ignore_tensor(p) or self.compatible(p)):
                 raise RuntimeError(
                     f"parameter '{name}' has shape of {tuple(p.shape)} "
                     f"incompatible with constrained shape ({self._extra_repr_cache()}), "

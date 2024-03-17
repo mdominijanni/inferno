@@ -330,9 +330,8 @@ class TestDimensionalModule:
         (
             nn.Parameter(torch.tensor(random.random()), False),
             nn.Parameter(torch.rand(0), False),
-            None,
         ),
-        ids=("scalar", "empty", "None"),
+        ids=("scalar", "empty"),
     )
     def test_constrained_parameter_assignment_ignorelive(self, sentinel):
         name = self.random_identifier()
@@ -463,3 +462,187 @@ class TestDimensionalModule:
         assert param_name not in module._constrained_params
         assert buffer_name in dict(module.named_buffers())
         assert param_name in dict(module.named_parameters())
+
+    def test_reconstrain_remove(self):
+        module = self.random_init_final_module()
+
+        for _ in range(0, random.randint(10, 25)):
+            name = self.random_identifier()
+            value = self.random_valid_tensor(module, random.randint(0, 4))
+            module.register_buffer(name, value)
+            module.register_constrained(name)
+
+        for _ in range(0, random.randint(10, 25)):
+            name = self.random_identifier()
+            value = self.random_valid_parameter(module, random.randint(0, 4))
+            module.register_parameter(name, value)
+            module.register_constrained(name)
+
+        dim = [*module._constraints.keys()][
+            random.randint(0, len(module._constraints) - 1)
+        ]
+
+        module.reconstrain(dim, None)
+
+        assert dim not in module._constraints
+        module.validate()
+
+    def test_reconstrain_create_invalid_buffer(self):
+        name = self.random_identifier()
+        module = self.random_init_final_module()
+        value = self.random_valid_tensor(module)
+
+        module.register_buffer(name, value)
+        module.register_constrained(name)
+
+        dim = max(filter(lambda x: x >= 0, module._constraints.keys())) + 1
+        if dim < value.ndim:
+            size = value.size(dim) + 1
+        else:
+            size = 1
+
+        with pytest.raises(RuntimeError) as excinfo:
+            module.reconstrain(dim, size)
+        assert (
+            f"constrained buffer '{name}' would be invalidated by the "
+            f"addition of constraint {(dim, size)}"
+        ) in str(excinfo.value)
+
+    def test_reconstrain_create_invalid_parameter(self):
+        name = self.random_identifier()
+        module = self.random_init_final_module()
+        value = self.random_valid_parameter(module)
+
+        module.register_parameter(name, value)
+        module.register_constrained(name)
+
+        dim = max(filter(lambda x: x >= 0, module._constraints.keys())) + 1
+        if dim < value.ndim:
+            size = value.size(dim) + 1
+        else:
+            size = 1
+
+        with pytest.raises(RuntimeError) as excinfo:
+            module.reconstrain(dim, size)
+        assert (
+            f"constrained parameter '{name}' would be invalidated by the "
+            f"addition of constraint {(dim, size)}"
+        ) in str(excinfo.value)
+
+    def test_reconstrain_create_valid(self):
+        buffer_name = self.random_identifier()
+        param_name = self.random_identifier()
+        module = self.random_init_final_module()
+        module.liveconstrain = False
+
+        module.register_buffer(buffer_name, self.random_valid_tensor(module))
+        module.register_constrained(buffer_name)
+        module.register_parameter(param_name, self.random_valid_parameter(module))
+        module.register_constrained(param_name)
+
+        dim = max(filter(lambda x: x >= 0, module._constraints.keys())) + 1
+        size = random.randint(1, 9)
+
+        shape_module = DimensionalModule(*module._constraints.items(), (dim, size))
+        setattr(module, buffer_name, self.random_valid_tensor(shape_module))
+        setattr(module, param_name, self.random_valid_parameter(shape_module))
+
+        module.reconstrain(dim, size)
+        assert shape_module._constraints == module._constraints
+
+    @pytest.mark.parametrize(
+        "sentinel",
+        (torch.tensor(random.random()), torch.rand(0), None),
+        ids=("scalar", "empty", "None"),
+    )
+    def test_reconstrain_create_ignore_buffer(self, sentinel):
+        name = self.random_identifier()
+        module = self.random_init_final_module()
+        module.liveconstrain = False
+
+        module.register_buffer(name, sentinel)
+
+        module.reconstrain(
+            max(filter(lambda x: x >= 0, module._constraints.keys())) + 1,
+            random.randint(1, 9),
+        )
+        assert id(sentinel) == id(getattr(module, name))
+
+    @pytest.mark.parametrize(
+        "sentinel",
+        (
+            nn.Parameter(torch.tensor(random.random()), False),
+            nn.Parameter(torch.rand(0), False),
+        ),
+        ids=("scalar", "empty"),
+    )
+    def test_reconstrain_create_ignore_parameter(self, sentinel):
+        name = self.random_identifier()
+        module = self.random_init_final_module()
+        module.liveconstrain = False
+
+        module.register_parameter(name, sentinel)
+
+        module.reconstrain(
+            max(filter(lambda x: x >= 0, module._constraints.keys())) + 1,
+            random.randint(1, 9),
+        )
+
+        assert id(sentinel) == id(getattr(module, name))
+
+    def test_reconstrain_alter_valid(self):
+        buffer_name = self.random_identifier()
+        param_name = self.random_identifier()
+        module = self.random_init_final_module()
+        module.liveconstrain = False
+
+        module.register_buffer(buffer_name, self.random_valid_tensor(module))
+        module.register_constrained(buffer_name)
+        module.register_parameter(param_name, self.random_valid_parameter(module))
+        module.register_constrained(param_name)
+
+        dim, size = [*module._constraints.items()][
+            random.randint(0, len(module._constraints) - 1)
+        ]
+        while size == module._constraints[dim]:
+            size = random.randint(1, 9)
+
+        revised_constraints = dict(module._constraints.items())
+        revised_constraints[dim] = size
+        shape_module = DimensionalModule(*revised_constraints.items())
+
+        setattr(module, buffer_name, self.random_valid_tensor(shape_module))
+        setattr(module, param_name, self.random_valid_parameter(shape_module))
+
+        buffer_data = getattr(module, buffer_name).clone().detach()
+        param_data = getattr(module, param_name).data.clone().detach()
+
+        module.reconstrain(dim, size)
+
+        assert revised_constraints == module._constraints
+        assert torch.all(buffer_data == getattr(module, buffer_name))
+        assert torch.all(param_data == getattr(module, param_name).data)
+
+    def test_reconstrain_alter_invalid(self):
+        buffer_name = self.random_identifier()
+        param_name = self.random_identifier()
+        module = self.random_init_final_module()
+        module.liveconstrain = False
+
+        module.register_buffer(buffer_name, self.random_valid_tensor(module))
+        module.register_constrained(buffer_name)
+        module.register_parameter(param_name, self.random_valid_parameter(module))
+        module.register_constrained(param_name)
+
+        dim, size = [*module._constraints.items()][
+            random.randint(0, len(module._constraints) - 1)
+        ]
+        while size == module._constraints[dim]:
+            size = random.randint(1, 9)
+        module.reconstrain(dim, size)
+
+        assert size == module._constraints[dim]
+        assert size == getattr(module, buffer_name).size(dim)
+        assert size == getattr(module, param_name).size(dim)
+        assert torch.all(0 == getattr(module, buffer_name))
+        assert torch.all(0 == getattr(module, param_name))
