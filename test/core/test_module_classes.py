@@ -7,7 +7,7 @@ import torch.nn as nn
 from typing import Any
 import uuid
 
-from inferno import Module, DimensionalModule
+from inferno import Module, DimensionalModule, RecordModule
 
 
 def rgetattr(obj: object, attr: str, *default: Any) -> Any:
@@ -646,3 +646,338 @@ class TestDimensionalModule:
         assert size == getattr(module, param_name).size(dim)
         assert torch.all(0 == getattr(module, buffer_name))
         assert torch.all(0 == getattr(module, param_name))
+
+
+class TestRecordModule:
+    @staticmethod
+    def random_identifier():
+        return f"testvar_{uuid.uuid4().hex}"
+
+    def test_set_step_time_without_reconstrain(self):
+        name = self.random_identifier()
+        dt, duration = 1.0, 3.3
+        module = RecordModule(dt, duration)
+
+        assert duration == module.duration
+
+        leading_dims = (random.randint(1, 9) for _ in range(random.randint(1, 9) + 1))
+        module.register_buffer(name, torch.rand(*leading_dims, module.recordsz))
+        module.register_constrained(name)
+        data = getattr(module, name).clone().detach()
+
+        module.dt = 1.09
+
+        assert 1.09 == module.dt
+        assert 5 == module.recordsz
+        assert torch.all(data == getattr(module, name))
+
+        module.dt = 0.9
+
+        assert 0.9 == module.dt
+        assert 5 == module.recordsz
+        assert torch.all(data == getattr(module, name))
+
+    def test_set_step_time_with_reconstrain(self):
+        name = self.random_identifier()
+        dt, duration = 1.0, 3.3
+        module = RecordModule(dt, duration)
+
+        assert duration == module.duration
+
+        leading_dims = (random.randint(1, 9) for _ in range(random.randint(1, 9) + 1))
+        module.register_buffer(name, torch.rand(*leading_dims, module.recordsz))
+        module.register_constrained(name)
+
+        module.dt = 1.1
+
+        assert 1.1 == module.dt
+        assert 4 == module.recordsz
+        assert torch.all(0 == getattr(module, name))
+
+    def test_set_duration_without_reconstrain(self):
+        name = self.random_identifier()
+        dt, duration = 1.0, 3.3
+        module = RecordModule(dt, duration)
+
+        assert duration == module.duration
+
+        leading_dims = (random.randint(1, 9) for _ in range(random.randint(1, 9) + 1))
+        module.register_buffer(name, torch.rand(*leading_dims, module.recordsz))
+        module.register_constrained(name)
+        data = getattr(module, name).clone().detach()
+
+        module.duration = 4.0
+
+        assert 4.0 == module.duration
+        assert 5 == module.recordsz
+        assert torch.all(data == getattr(module, name))
+
+        module.duration = 3.1
+
+        assert 3.1 == module.duration
+        assert 5 == module.recordsz
+        assert torch.all(data == getattr(module, name))
+
+    def test_set_duration_with_reconstrain(self):
+        name = self.random_identifier()
+        dt, duration = 1.0, 3.3
+        module = RecordModule(dt, duration)
+
+        assert duration == module.duration
+
+        leading_dims = (random.randint(1, 9) for _ in range(random.randint(1, 9) + 1))
+        module.register_buffer(name, torch.rand(*leading_dims, module.recordsz))
+        module.register_constrained(name)
+
+        module.duration = 4.1
+
+        assert 4.1 == module.duration
+        assert 6 == module.recordsz
+        assert torch.all(0 == getattr(module, name))
+
+    def test_reconstrain_valid_dim(self):
+        module = RecordModule(1.0, 0.0)
+
+        dim, size = random.randint(1, 9), random.randint(1, 9)
+        module.reconstrain(dim, size)
+
+        assert len(module.constraints) == 2
+        assert module.constraints[-1] == 1
+        assert module.constraints[dim] == size
+
+    def test_reconstrain_invalid_dim(self):
+        module = RecordModule(1.0, 0.0)
+
+        size, orig_size = module.recordsz, module.recordsz
+        while size == orig_size:
+            size = random.randint(1, 9)
+
+        with pytest.raises(RuntimeError) as excinfo:
+            module.reconstrain(-1, size)
+
+        assert (
+            f"{type(module).__name__}(RecordModule) cannot reconstrain the record dimension (-1)"
+            in str(excinfo.value)
+        )
+        assert orig_size == module.constraints[-1]
+
+    def test_record_latest(self):
+        name = self.random_identifier()
+        dt, duration = 1.0, 5.5
+        module = RecordModule(dt, duration)
+
+        leading_dims = [random.randint(1, 9) for _ in range(random.randint(1, 9) + 1)]
+        module.register_buffer(name, torch.rand(*leading_dims, module.recordsz))
+        module.register_constrained(name)
+
+        data = torch.rand(*leading_dims)
+        module.record(name, data)
+
+        for _ in range(random.randint(15, 25)):
+            assert torch.all(data == module.latest(name))
+            newdata = torch.rand(*leading_dims)
+            module.record(name, newdata)
+            assert torch.all(data == module.latest(name, 2))
+            data = newdata
+
+    @pytest.mark.parametrize(
+        "indexing",
+        (
+            "scalar",
+            "tensorsingle",
+            "tensormultiple",
+        ),
+        ids=("index=scalar", "index=oneslice", "index=manyslices"),
+    )
+    @pytest.mark.parametrize(
+        "offset",
+        (
+            1,
+            2,
+        ),
+        ids=("offset=default", "offset=2"),
+    )
+    @pytest.mark.parametrize(
+        "tolerance",
+        (
+            0,
+            0.1,
+        ),
+        ids=("tolerance=0", "tolerance=0.1"),
+    )
+    def test_tensor_select_interp_bypass(self, indexing, offset, tolerance):
+        def bad_interp(prev_data, next_data, sample_at, step_time):
+            return torch.rand_like(prev_data)
+
+        name = self.random_identifier()
+        dt, duration = 1.1, 5.5
+        module = RecordModule(dt, duration)
+
+        adjf = offset - 1
+
+        leading_dims = [random.randint(1, 5) for _ in range(random.randint(1, 4) + 1)]
+        module.register_buffer(name, torch.rand(*leading_dims, module.recordsz))
+        module.register_constrained(name)
+
+        data = torch.rand(*leading_dims, module.recordsz)
+        for t in range(module.recordsz):
+            module.record(name, data[..., t])
+
+        match indexing:
+            case "scalar":
+                index = random.randint(0, module.recordsz - 1 - adjf)
+                res = module.select(
+                    name,
+                    index * dt,
+                    bad_interp,
+                    tolerance=(0.1 + tolerance),
+                    offset=offset,
+                )
+                assert leading_dims == [*res.shape]
+                index = torch.full(leading_dims + [1], index) + adjf
+                res = res.unsqueeze(-1)
+
+            case "tensorsingle":
+                index = torch.randint(0, module.recordsz - adjf, leading_dims)
+                res = module.select(
+                    name,
+                    index * dt - tolerance / 2,
+                    bad_interp,
+                    tolerance=tolerance,
+                    offset=offset,
+                )
+                assert leading_dims == [*res.shape]
+                index = index.unsqueeze(-1) + adjf
+                res = res.unsqueeze(-1)
+
+            case "tensormultiple":
+                nget = random.randint(2, 9)
+                index = torch.randint(0, module.recordsz - adjf, leading_dims + [nget])
+                res = module.select(
+                    name,
+                    index * dt + tolerance / 2,
+                    bad_interp,
+                    tolerance=tolerance,
+                    offset=offset,
+                )
+                assert leading_dims + [nget] == [*res.shape]
+                index = index + adjf
+
+        idxs = [()]
+        for d in leading_dims:
+            tempidx = []
+            for n in range(d):
+                tempidx.extend(ix + (n,) for ix in idxs)
+            idxs = [tuple(ix) for ix in tempidx]
+
+        truth = torch.zeros_like(res)
+        for prefix in idxs:
+            for suffix in range(index.size(-1)):
+                truth[*prefix, suffix] = data[
+                    *prefix, module.recordsz - 1 - int(index[*prefix, suffix])
+                ]
+
+        assert torch.all(truth == res)
+
+    @pytest.mark.parametrize(
+        "indexing",
+        (
+            "scalar",
+            "tensorsingle",
+            "tensormultiple",
+        ),
+        ids=("index=scalar", "index=oneslice", "index=manyslices"),
+    )
+    @pytest.mark.parametrize(
+        "offset",
+        (
+            1,
+            2,
+        ),
+        ids=("offset=default", "offset=2"),
+    )
+    def test_tensor_select_interp(self, indexing, offset):
+        def linear_interp(prev_data, next_data, sample_at, step_time):
+            slope = (next_data - prev_data) / step_time
+            return prev_data + slope * sample_at
+
+        name = self.random_identifier()
+        dt, duration = 1.1, 5.5
+        module = RecordModule(dt, duration)
+
+        adjf = offset - 1
+
+        leading_dims = [random.randint(1, 5) for _ in range(random.randint(1, 4) + 1)]
+        module.register_buffer(name, torch.rand(*leading_dims, module.recordsz))
+        module.register_constrained(name)
+
+        data = torch.rand(*leading_dims, module.recordsz)
+        for t in range(module.recordsz):
+            module.record(name, data[..., t])
+
+        match indexing:
+            case "scalar":
+                index = random.random() * (module.recordsz - 1 - adjf)
+                res = module.select(
+                    name, index * dt, linear_interp, tolerance=0, offset=offset
+                )
+                assert leading_dims == [*res.shape]
+                index = torch.full(leading_dims + [1], index) + adjf
+                res = res.unsqueeze(-1)
+
+            case "tensorsingle":
+                index = torch.rand(leading_dims) * (module.recordsz - 1 - adjf)
+                res = module.select(
+                    name, index * dt, linear_interp, tolerance=0, offset=offset
+                )
+                assert leading_dims == [*res.shape]
+                index = index.unsqueeze(-1) + adjf
+                res = res.unsqueeze(-1)
+
+            case "tensormultiple":
+                nget = random.randint(2, 9)
+                index = torch.rand(leading_dims + [nget]) * (module.recordsz - 1 - adjf)
+                res = module.select(
+                    name, index * dt, linear_interp, tolerance=0, offset=offset
+                )
+                assert leading_dims + [nget] == [*res.shape]
+                index = index + adjf
+
+        prev_index = module.recordsz - 1 - torch.ceil(index).long()
+        next_index = module.recordsz - 1 - torch.floor(index).long()
+
+        assert torch.all(
+            linear_interp(
+                torch.gather(data, -1, prev_index),
+                torch.gather(data, -1, next_index),
+                dt * (index % 1),
+                dt,
+            )
+            - res
+            < 1e-6
+        )
+
+    @pytest.mark.parametrize(
+        "flip",
+        (
+            True,
+            False,
+        ),
+        ids=("flip=True", "flip=False"),
+    )
+    def test_aligned(self, flip):
+        name = self.random_identifier()
+        dt, duration = 1.1, 5.5
+        module = RecordModule(dt, duration)
+
+        leading_dims = [random.randint(1, 9) for _ in range(random.randint(1, 9))]
+        module.register_buffer(name, torch.rand(*leading_dims, module.recordsz))
+        module.register_constrained(name)
+
+        data = torch.rand(*leading_dims, module.recordsz)
+        for t in range(module.recordsz):
+            module.record(name, data[..., t])
+
+        assert torch.all(
+            (data.flip(-1) if flip else data) == module.aligned(name, latest_first=flip)
+        )

@@ -797,7 +797,7 @@ class RecordModule(DimensionalModule):
         size = math.ceil(self._duration / value) + 1
 
         # reconstrain if required
-        if size != self.self.recordsz:
+        if size != self.recordsz:
             DimensionalModule.reconstrain(self, -1, size)
 
         # set revised step time
@@ -949,6 +949,7 @@ class RecordModule(DimensionalModule):
             data (Any): data to insert.
         """
         self._get_constrained_record(name)[:] = data
+        self._pointers[name] = 0
 
     def latest(self, name: str, offset: int = 1) -> torch.Tensor:
         r"""Retrieves the most recent slice of a constrained attribute.
@@ -1103,7 +1104,7 @@ class RecordModule(DimensionalModule):
 
             # integer index (no interpolation)
             if isinstance(index, int):
-                return data[(pointer - index) % self.recordsz]
+                return data[..., (pointer - index) % self.recordsz]
 
             # float index (interpolation)
             else:
