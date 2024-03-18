@@ -797,7 +797,7 @@ class RecordModule(DimensionalModule):
         size = math.ceil(self._duration / value) + 1
 
         # reconstrain if required
-        if size != self.self.recordsz:
+        if size != self.recordsz:
             DimensionalModule.reconstrain(self, -1, size)
 
         # set revised step time
@@ -949,6 +949,7 @@ class RecordModule(DimensionalModule):
             data (Any): data to insert.
         """
         self._get_constrained_record(name)[:] = data
+        self._pointers[name] = 0
 
     def latest(self, name: str, offset: int = 1) -> torch.Tensor:
         r"""Retrieves the most recent slice of a constrained attribute.
@@ -1103,7 +1104,7 @@ class RecordModule(DimensionalModule):
 
             # integer index (no interpolation)
             if isinstance(index, int):
-                return data[(pointer - index) % self.recordsz]
+                return data[..., (pointer - index) % self.recordsz]
 
             # float index (interpolation)
             else:
@@ -1224,14 +1225,14 @@ class Hook:
 
         # prehook and posthook functions
         if isinstance(prehook, Callable):
-            self.__prehook = prehook
+            self._prehook_call = prehook
         else:
-            self.__prehook = None
+            self._prehook_call = None
 
         if isinstance(posthook, Callable):
-            self.__posthook = posthook
+            self._posthook_call = posthook
         else:
-            self.__posthook = None
+            self._posthook_call = None
 
         # set returned handle
         self.__prehook_handle = None
@@ -1250,17 +1251,17 @@ class Hook:
 
     def __wrapped_prehook(self, module, *args, **kwargs):
         if self.trainexec and module.training:
-            return self.__prehook(module, *args, **kwargs)
+            return self._prehook_call(module, *args, **kwargs)
 
         if self.evalexec and not module.training:
-            return self.__prehook(module, *args, **kwargs)
+            return self._prehook_call(module, *args, **kwargs)
 
     def __wrapped_posthook(self, module, *args, **kwargs):
         if self.trainexec and module.training:
-            return self.__posthook(module, *args, **kwargs)
+            return self._posthook_call(module, *args, **kwargs)
 
         if self.evalexec and not module.training:
-            return self.__posthook(module, *args, **kwargs)
+            return self._posthook_call(module, *args, **kwargs)
 
     @property
     def trainexec(self) -> bool:
@@ -1322,17 +1323,16 @@ class Hook:
         if not self.registered:
             _ = argtest.instance("module", module, nn.Module)
 
-            if self.__prehook:
+            if self._prehook_call:
                 self.__prehook_handle = module.register_forward_pre_hook(
-                    self.__prehook, **self.__prehook_kwargs
+                    self.__wrapped_prehook, **self.__prehook_kwargs
                 )
 
-            if self.__posthook:
+            if self._posthook_call:
                 self.__posthook_handle = module.register_forward_hook(
-                    self.__posthook, **self.__posthook_kwargs
+                    self.__wrapped_posthook, **self.__posthook_kwargs
                 )
         else:
-            raise RuntimeError()
             warnings.warn(
                 f"this {type(self).__name__} is already registered to a module "
                 "so new `register()` was ignored",
@@ -1392,7 +1392,7 @@ class StateHook(Module, Hook, ABC):
         Module.__init__(self)
 
         # subclass state
-        self.__hooked_module = argtest.instance("module", module, nn.Module)
+        self._hooked_module = argtest.instance("module", module, nn.Module)
 
         # construct hook superclass
         if as_prehook:
@@ -1436,11 +1436,12 @@ class StateHook(Module, Hook, ABC):
         Returns:
             ~torch.nn.Module: module to which the hook is applied.
         """
-        return self.__hooked_module
+        return self._hooked_module
 
     def register(self) -> None:
         r"""Registers state the hook as a forward hook or prehook."""
-        Hook.register(self, self.module)
+        if not self.registered:
+            Hook.register(self, self.module)
 
     def forward(self, force: bool = False, ignore_mode: bool = False) -> None:
         """Executes the hook at any time, by default only when registered.
