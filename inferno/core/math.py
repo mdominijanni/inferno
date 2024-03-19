@@ -260,7 +260,8 @@ def isi(
     The returned tensor will be padded with ``NaN`` values where an interval could not
     be computed but the position existed (e.g. padding at the end of) spike trains
     with fewer spikes. If no intervals could be generated at all, a tensor with a
-    final dimension of zero will be returned.
+    final dimension of zero will be returned. The returned tensor will have a floating
+    point type, as required for the padding.
 
     Args:
         spikes (torch.Tensor): spike trains for which to calculate intervals.
