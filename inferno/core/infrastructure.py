@@ -1377,8 +1377,10 @@ class ContextualHook(Hook):
     garbage collector (i.e. without cyclic references).
 
     Args:
-        enable_prehook (bool): if the prehook component should be enabled.
-        enable_posthook (bool): if the posthook component should be enabled.
+        prehook (str | None, optional): name of the prehook method, if any, to execute,
+            no prehook when ``None``. Defaults to ``None``.
+        posthook (str | None, optional): name of the posthook method, if any, to execute,
+            no posthook when ``None``. Defaults to ``None``.
         prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
             :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to ``None``.
         posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
@@ -1389,53 +1391,10 @@ class ContextualHook(Hook):
             in eval mode. Defaults to ``True``.
 
     Raises:
-        RuntimeError: at least one of ``enable_prehook`` and ``enable_posthook`` must
-        be ``True``.
-    """
+        RuntimeError: at least one of ``prehook`` and ``posthook`` must not be None.
 
-    def __init__(
-        self,
-        enable_prehook: bool,
-        enable_posthook: bool,
-        *,
-        prehook_kwargs: dict[str, Any] | None = None,
-        posthook_kwargs: dict[str, Any] | None = None,
-        train_update: bool = True,
-        eval_update: bool = True,
-    ):
-        # check that something will occur on call
-        if not (enable_prehook or enable_posthook):
-            raise ValueError(
-                "at least one of 'enable_prehook' and 'enable_posthook' must be True"
-            )
-
-        # weakly reference self for prehook
-        weakself_bfc = weakref.ref(self)
-
-        def context_prehook(*args, **kwargs):
-            weakself_bfc().prehook(*args, **kwargs)
-
-        # weakly reference self for posthook
-        weakself_afc = weakref.ref(self)
-
-        def context_posthook(*args, **kwargs):
-            weakself_afc().posthook(*args, **kwargs)
-
-        # call superclass constructor
-        Hook.__init__(
-            self,
-            prehook=context_prehook if enable_prehook else None,
-            posthook=context_posthook if enable_posthook else None,
-            prehook_kwargs=prehook_kwargs if enable_prehook else None,
-            posthook_kwargs=posthook_kwargs if enable_posthook else None,
-            train_update=train_update,
-            eval_update=eval_update,
-        )
-
-    def prehook(self, *args, **kwargs) -> tuple[Any, ...] | None:
-        r"""Method to execute on forward prehook.
-
-        This method is expected to be compatible with the following signatures.
+    Note:
+        If not ``None``, the signature of the prehook must be of the following form.
 
         .. code-block:: python
 
@@ -1450,19 +1409,8 @@ class ContextualHook(Hook):
         See :py:meth:`~torch.nn.Module.register_forward_pre_hook` for
         further information.
 
-        Raises:
-            RuntimeError: method must be implemented by the subclass to support prehook
-                functionality
-        """
-        raise RuntimeError(
-            f"{type(self).__name__}(ContextualHook) must be initialized with "
-            "'enable_prehook' set to False"
-        )
-
-    def posthook(self, *args, **kwargs) -> Any | None:
-        r"""Method to execute on forward posthook.
-
-        This method is expected to be compatible with the following signatures.
+    Note:
+        If not ``None``, the signature of the posthook must be of the following form.
 
         .. code-block:: python
 
@@ -1475,14 +1423,42 @@ class ContextualHook(Hook):
             hook(module, args, kwargs, output) -> None or modified output
 
         See :py:meth:`~torch.nn.Module.register_forward_hook` for further information.
+    """
 
-        Raises:
-            RuntimeError: method must be implemented by the subclass to support posthook
-                functionality
-        """
-        raise RuntimeError(
-            f"{type(self).__name__}(ContextualHook) must be initialized with "
-            "'enable_posthook' set to False"
+    def __init__(
+        self,
+        prehook: str | None = None,
+        posthook: str | None = None,
+        *,
+        prehook_kwargs: dict[str, Any] | None = None,
+        posthook_kwargs: dict[str, Any] | None = None,
+        train_update: bool = True,
+        eval_update: bool = True,
+    ):
+        # check that something will occur on call
+        _ = argtest.onedefined(("prehook", prehook), ("posthook", posthook))
+
+        # weakly reference self for prehook
+        weakself_bfc = weakref.ref(self)
+
+        def context_prehook(*args, **kwargs):
+            getattr(weakself_bfc(), prehook)(*args, **kwargs)
+
+        # weakly reference self for posthook
+        weakself_afc = weakref.ref(self)
+
+        def context_posthook(*args, **kwargs):
+            getattr(weakself_afc(), posthook)(*args, **kwargs)
+
+        # call superclass constructor
+        Hook.__init__(
+            self,
+            prehook=context_prehook if prehook else None,
+            posthook=context_posthook if posthook else None,
+            prehook_kwargs=prehook_kwargs if prehook else None,
+            posthook_kwargs=posthook_kwargs if posthook else None,
+            train_update=train_update,
+            eval_update=eval_update,
         )
 
 
@@ -1530,18 +1506,15 @@ class StateHook(Module, ContextualHook, ABC):
         # construct hook superclass
         ContextualHook.__init__(
             self,
-            enable_prehook=as_prehook,
-            enable_posthook=not as_prehook,
+            prehook="_StateHook__wrapped_hook" if as_prehook else None,
+            posthook="_StateHook__wrapped_hook" if not as_prehook else None,
             prehook_kwargs={"prepend": prepend},
             posthook_kwargs={"prepend": prepend, "always_call": always_call},
             train_update=train_update,
             eval_update=eval_update,
         )
 
-    def prehook(self, module, *args, **kwargs) -> None:
-        self.hook(module)
-
-    def posthook(self, module, *args, **kwargs) -> None:
+    def __wrapped_hook(self, module, *args, **kwargs) -> None:
         self.hook(module)
 
     @abstractmethod

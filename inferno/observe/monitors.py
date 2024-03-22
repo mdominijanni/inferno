@@ -1,6 +1,6 @@
 from __future__ import annotations
 from . import Reducer
-from .. import Module, Hook
+from .. import Module, ContextualHook
 from .._internal import rgetattr
 import torch
 from typing import Any, Callable, Protocol
@@ -35,7 +35,7 @@ class MonitorConstructor(Protocol):
         ...
 
 
-class Monitor(Module, Hook):
+class Monitor(Module, ContextualHook):
     r"""Base class for recording input, output, or state of a Module.
 
     Args:
@@ -43,10 +43,10 @@ class Monitor(Module, Hook):
             and storing them.
         module (Module | None, optional): module to register as the target for monitoring,
             can be modified after construction. Defaults to None.
-        prehook (Callable | None, optional): function to call before hooked's
-            :py:meth:`~torch.nn.Module.forward`. Defaults to None.
-        posthook (Callable | None, optional): function to call after hooked's
-            :py:meth:`~torch.nn.Module.forward`. Defaults to None.
+        prehook (str | None, optional): name of the prehook method, if any, to execute,
+            no prehook when ``None``. Defaults to ``None``.
+        posthook (str | None, optional): name of the posthook method, if any, to execute,
+            no posthook when ``None``. Defaults to ``None``.
         prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
             :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to None.
         posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
@@ -70,8 +70,8 @@ class Monitor(Module, Hook):
         self,
         reducer: Reducer,
         module: Module | None = None,
-        prehook: Callable | None = None,
-        posthook: Callable | None = None,
+        prehook: str | None = None,
+        posthook: str | None = None,
         prehook_kwargs: dict[str, Any] | None = None,
         posthook_kwargs: dict[str, Any] | None = None,
         train_update: bool = True,
@@ -79,7 +79,7 @@ class Monitor(Module, Hook):
     ):
         # construct module superclasses
         Module.__init__(self)
-        Hook.__init__(
+        ContextualHook.__init__(
             self,
             prehook=prehook,
             posthook=posthook,
@@ -154,7 +154,7 @@ class Monitor(Module, Hook):
         # module from function arguments
         if module:
             try:
-                Hook.register(self, module)
+                ContextualHook.register(self, module)
             except RuntimeError:
                 raise RuntimeError(
                     f"{type(self).__name__}(Monitor) is already registered to a module "
@@ -168,7 +168,7 @@ class Monitor(Module, Hook):
             # try to get the referenced module
             if self._observed and self._observed():
                 module = self._observed()
-                Hook.register(self, module)
+                ContextualHook.register(self, module)
             else:
                 raise RuntimeError(
                     "weak reference to monitored module does not exist, "
@@ -213,24 +213,23 @@ class InputMonitor(Monitor):
         map_: Callable[[tuple[Any, ...]], tuple[torch.Tensor, ...]] | None = None,
     ):
         # set filter and map functions
-        filter_ = filter_ if filter_ else lambda x: bool(x)
-        map_ = map_ if map_ else lambda x: x
-
-        # determine arguments for superclass constructor
-        def prehook(module, args, *_):
-            if filter_(args):
-                reducer(*map_(args))
+        self.filter_ = filter_ if filter_ else lambda x: bool(x)
+        self.map_ = map_ if map_ else lambda x: x
 
         # construct superclass
         Monitor.__init__(
             self,
             reducer=reducer,
             module=module,
-            prehook=prehook,
+            prehook="_monitor_call",
             prehook_kwargs={"prepend": prepend},
             train_update=train_update,
             eval_update=eval_update,
         )
+
+    def _monitor_call(self, module, args, *_):
+        if self.filter_(args):
+            self.reducer_(*self.map_(args))
 
     @classmethod
     def partialconstructor(
@@ -315,24 +314,23 @@ class OutputMonitor(Monitor):
         map_: Callable[[Any], tuple[torch.Tensor, ...]] | None = None,
     ):
         # set filter and map functions
-        filter_ = filter_ if filter_ else lambda x: x is not None
-        map_ = map_ if map_ else lambda x: x if isinstance(x, tuple) else (x,)
-
-        # determine arguments for superclass constructor
-        def posthook(module, args, output, *_):
-            if filter_(output):
-                reducer(*map_(output))
+        self.filter_ = filter_ if filter_ else lambda x: x is not None
+        self.map_ = map_ if map_ else lambda x: x if isinstance(x, tuple) else (x,)
 
         # construct superclass
         Monitor.__init__(
             self,
             reducer=reducer,
             module=module,
-            posthook=posthook,
+            posthook="_monitor_call",
             posthook_kwargs={"prepend": prepend},
             train_update=train_update,
             eval_update=eval_update,
         )
+
+    def _monitor_call(self, module, args, output, *_):
+        if self.filter_(output):
+            self.reducer(*self.map_(output))
 
     @classmethod
     def partialconstructor(
@@ -423,42 +421,27 @@ class StateMonitor(Monitor):
         map_: Callable[[Any], tuple[torch.Tensor, ...]] | None = None,
     ):
         # set filter and map functions
-        filter_ = filter_ if filter_ else lambda x: x is not None
-        map_ = map_ if map_ else lambda x: x if isinstance(x, tuple) else (x,)
-
-        # determine arguments for superclass constructor
-        if as_prehook:
-
-            def prehook(module, *_):
-                res = rgetattr(module, attr)
-                if filter_(res):
-                    reducer(*map_(res))
-
-            prehook_kwargs = {"prepend": prepend}
-            posthook, posthook_kwargs = None, None
-
-        else:
-
-            def posthook(module, *_):
-                res = rgetattr(module, attr)
-                if filter_(res):
-                    reducer(*map_(res))
-
-            posthook_kwargs = {"prepend": prepend}
-            prehook, prehook_kwargs = None, None
+        self.filter_ = filter_ if filter_ else lambda x: x is not None
+        self.map_ = map_ if map_ else lambda x: x if isinstance(x, tuple) else (x,)
+        self.__observed_attr = attr
 
         # construct superclass
         Monitor.__init__(
             self,
             reducer=reducer,
             module=module,
-            prehook=prehook,
-            posthook=posthook,
-            prehook_kwargs=prehook_kwargs,
-            posthook_kwargs=posthook_kwargs,
+            prehook="_monitor_call" if as_prehook else None,
+            posthook="_monitor_call" if not as_prehook else None,
+            prehook_kwargs={"prepend": prepend} if as_prehook else None,
+            posthook_kwargs={"prepend": prepend} if not as_prehook else None,
             train_update=train_update,
             eval_update=eval_update,
         )
+
+    def _monitor_call(self, module, args, *_):
+        res = rgetattr(module, self.__observed_attr)
+        if self.filter_(res):
+            self.reducer_(*self.map_(res))
 
     @classmethod
     def partialconstructor(
@@ -580,34 +563,33 @@ class DifferenceMonitor(Monitor):
                 )
             )
 
-        filter_ = filter_ if filter_ else _default_filter
-        map_ = map_ if map_ else _default_map
+        self.filter_ = filter_ if filter_ else _default_filter
+        self.map_ = map_ if map_ else _default_map
+        self.__observed_attr = attr
 
         # monitor state
-        self.data = None
-
-        # hook functions
-        def prehook(module, *args):
-            self.data = rgetattr(module, attr)
-
-        def posthook(module, *args):
-            res = rgetattr(module, attr)
-            if filter_(res, self.data):
-                reducer(*map_(res, self.data))
-            self.data = None
+        self.__data = None
 
         # construct superclass
         Monitor.__init__(
             self,
             reducer=reducer,
             module=module,
-            prehook=prehook,
-            posthook=posthook,
+            prehook="_monitor_pre_call",
+            posthook="_monitor_post_call",
             prehook_kwargs={"prepend": prepend},
             posthook_kwargs={"prepend": prepend},
             train_update=train_update,
             eval_update=eval_update,
         )
+
+    def _monitor_pre_call(self, module, args, *_):
+        self.__data = rgetattr(module, self.__observed_attr)
+
+    def _monitor_post_call(self, module, args, *_):
+        res = rgetattr(module, self.__observed_attr)
+        if self.filter_(res, self.__data):
+            self.reducer_(*self.map_(res, self.__data))
 
     @classmethod
     def partialconstructor(
@@ -663,5 +645,5 @@ class DifferenceMonitor(Monitor):
 
     def clear(self, **kwargs) -> None:
         r"""Clears monitor state and reinitializes the reducer's state."""
-        self.data = None
+        self.__data = None
         return self.reducer_.clear(**kwargs)

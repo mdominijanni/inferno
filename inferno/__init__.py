@@ -10,6 +10,7 @@ from .core import (
     DimensionalModule,
     RecordModule,
     Hook,
+    ContextualHook,
     StateHook,
     # math
     exp,
@@ -46,6 +47,7 @@ __all__ = [
     "DimensionalModule",
     "RecordModule",
     "Hook",
+    "ContextualHook",
     "StateHook",
     # math
     "exp",
