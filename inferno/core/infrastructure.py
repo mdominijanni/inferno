@@ -1158,7 +1158,7 @@ def _detach_handles(*handles):
 
 
 class Hook:
-    r"""Provides forward hook and prehook functionality for subclasses.
+    r"""Provides and manages forward hook and prehook functionality.
 
     `Hook` provides functionality to register and deregister itself as
     forward hook with a :py:class:`~torch.nn.Module` object. This is performed using
@@ -1370,7 +1370,123 @@ class Hook:
         self.__finalizer = None
 
 
-class StateHook(Module, Hook, ABC):
+class ContextualHook(Hook):
+    r"""Provides forward hook and prehook functionality for subclasses.
+
+    This is used to manage references to the ``ContextualHook`` in a safe way for the
+    garbage collector (i.e. without cyclic references).
+
+    Args:
+        enable_prehook (bool): if the prehook component should be enabled.
+        enable_posthook (bool): if the posthook component should be enabled.
+        prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
+            :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to ``None``.
+        posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
+            :py:meth:`~torch.nn.Module.register_forward_hook`. Defaults to ``None``.
+        train_update (bool, optional): if the hooks should be run when hooked module is
+            in train mode. Defaults to ``True``.
+        eval_update (bool, optional): if the hooks should be run when hooked module is
+            in eval mode. Defaults to ``True``.
+
+    Raises:
+        RuntimeError: at least one of ``enable_prehook`` and ``enable_posthook`` must
+        be ``True``.
+    """
+
+    def __init__(
+        self,
+        enable_prehook: bool,
+        enable_posthook: bool,
+        *,
+        prehook_kwargs: dict[str, Any] | None = None,
+        posthook_kwargs: dict[str, Any] | None = None,
+        train_update: bool = True,
+        eval_update: bool = True,
+    ):
+        # check that something will occur on call
+        if not (enable_prehook or enable_posthook):
+            raise ValueError(
+                "at least one of 'enable_prehook' and 'enable_posthook' must be True"
+            )
+
+        # weakly reference self for prehook
+        weakself_bfc = weakref.ref(self)
+
+        def context_prehook(*args, **kwargs):
+            weakself_bfc().prehook(*args, **kwargs)
+
+        # weakly reference self for posthook
+        weakself_afc = weakref.ref(self)
+
+        def context_posthook(*args, **kwargs):
+            weakself_afc().posthook(*args, **kwargs)
+
+        # call superclass constructor
+        Hook.__init__(
+            self,
+            prehook=context_prehook if enable_prehook else None,
+            posthook=context_posthook if enable_posthook else None,
+            prehook_kwargs=prehook_kwargs if enable_prehook else None,
+            posthook_kwargs=posthook_kwargs if enable_posthook else None,
+            train_update=train_update,
+            eval_update=eval_update,
+        )
+
+    def prehook(self, *args, **kwargs) -> tuple[Any, ...] | None:
+        r"""Method to execute on forward prehook.
+
+        This method is expected to be compatible with the following signatures.
+
+        .. code-block:: python
+
+            hook(module, args) -> None or modified input
+
+        Or, if ``with_kwargs`` is passed as a keyword argument.
+
+        .. code-block:: python
+
+            hook(module, args, kwargs) -> None or modified input
+
+        See :py:meth:`~torch.nn.Module.register_forward_pre_hook` for
+        further information.
+
+        Raises:
+            RuntimeError: method must be implemented by the subclass to support prehook
+                functionality
+        """
+        raise RuntimeError(
+            f"{type(self).__name__}(ContextualHook) must be initialized with "
+            "'enable_prehook' set to False"
+        )
+
+    def posthook(self, *args, **kwargs) -> Any | None:
+        r"""Method to execute on forward posthook.
+
+        This method is expected to be compatible with the following signatures.
+
+        .. code-block:: python
+
+            hook(module, args, output) -> None or modified output
+
+        Or, if ``with_kwargs`` is passed as a keyword argument.
+
+        .. code-block:: python
+
+            hook(module, args, kwargs, output) -> None or modified output
+
+        See :py:meth:`~torch.nn.Module.register_forward_hook` for further information.
+
+        Raises:
+            RuntimeError: method must be implemented by the subclass to support posthook
+                functionality
+        """
+        raise RuntimeError(
+            f"{type(self).__name__}(ContextualHook) must be initialized with "
+            "'enable_posthook' set to False"
+        )
+
+
+class StateHook(Module, ContextualHook, ABC):
     r"""Interactable hook which only acts on module state.
 
     Args:
@@ -1411,30 +1527,21 @@ class StateHook(Module, Hook, ABC):
         # subclass state
         self._hooked_module = argtest.instance("module", module, nn.Module)
 
-        weakself = weakref.ref(self)
-
-        def wrapped_statehook(module, *args, **kwargs):
-            weakself().hook(module)
-
         # construct hook superclass
-        if as_prehook:
-            Hook.__init__(
-                self,
-                prehook=wrapped_statehook,
-                prehook_kwargs={"prepend": prepend},
-                train_update=train_update,
-                eval_update=eval_update,
-            )
-        else:
-            Hook.__init__(
-                self,
-                posthook=wrapped_statehook,
-                posthook_kwargs={"prepend": prepend, "always_call": always_call},
-                train_update=train_update,
-                eval_update=eval_update,
-            )
+        ContextualHook.__init__(
+            self,
+            enable_prehook=as_prehook,
+            enable_posthook=not as_prehook,
+            prehook_kwargs={"prepend": prepend},
+            posthook_kwargs={"prepend": prepend, "always_call": always_call},
+            train_update=train_update,
+            eval_update=eval_update,
+        )
 
-    def __wrapped_statehook(self, module, *args, **kwargs):
+    def prehook(self, module, *args, **kwargs) -> None:
+        self.hook(module)
+
+    def posthook(self, module, *args, **kwargs) -> None:
         self.hook(module)
 
     @abstractmethod
