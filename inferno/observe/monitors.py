@@ -4,7 +4,6 @@ from .. import Module, Hook
 from .._internal import rgetattr
 import torch
 from typing import Any, Callable, Protocol
-import warnings
 import weakref
 
 
@@ -57,6 +56,10 @@ class Monitor(Module, Hook):
         eval_update (bool, optional): if this monitor should be called when the module
             being monitored is in eval mode. Defaults to True.
 
+    Important:
+        While ``Monitor`` can be used directly, it must be subclassed to be used in
+        cases where monitors are constructed automatically.
+
     See Also:
         See :py:meth:`~torch.nn.Module.register_forward_pre_hook` and
         :py:meth:`~torch.nn.Module.register_forward_hook` for keyword arguments that
@@ -96,8 +99,21 @@ class Monitor(Module, Hook):
         # register submodule
         self.reducer_ = reducer
 
-        # add tag data
-        self._tags = {}
+    @classmethod
+    def partialconstructor(cls, *args, **kwargs) -> MonitorConstructor:
+        r"""Returns a function with a common signature for monitor construction.
+
+        Raises:
+            NotImplementedError: ``partialconstructor`` must be implemented
+                by the subclass.
+
+        Returns:
+            MonitorConstructor: partial constructor for monitor.
+        """
+        raise NotImplementedError(
+            f"{cls.__name__}(Monitor) must implement "
+            "the method `partialconstructor`."
+        )
 
     def clear(self, **kwargs) -> None:
         r"""Reinitializes the reducer's state."""
@@ -139,8 +155,11 @@ class Monitor(Module, Hook):
         if module:
             try:
                 Hook.register(self, module)
-            except RuntimeWarning as w:
-                warnings.warn(str(w), type(w))
+            except RuntimeError:
+                raise RuntimeError(
+                    f"{type(self).__name__}(Monitor) is already registered to a module "
+                    "so register() was ignored"
+                )
             else:
                 self._observed = weakref.ref(module)
 
@@ -323,7 +342,7 @@ class OutputMonitor(Monitor):
         eval_update: bool = True,
         prepend: bool = False,
         filter_: Callable[[Any], bool] | None = None,
-        map_: Callable[[Any], torch.Tensor] | None = None,
+        map_: Callable[[Any], tuple[torch.Tensor, ...]] | None = None,
     ) -> MonitorConstructor:
         r"""Returns a function with a common signature for monitor construction.
 
@@ -338,8 +357,9 @@ class OutputMonitor(Monitor):
                 registered forward prehooks or posthooks. Defaults to False.
             filter_ (Callable[[Any], bool] | None, optional): test if the output should be
                 passed to the reducer, ignores None values when None. Defaults to None.
-            map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the output before
-                being passed to the reduer, identity if None. Defaults to None.
+            map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies
+                the output before being passed to the reduer, wraps with a tuple if not
+                already a tuple if None. Defaults to None.
 
         Returns:
             MonitorConstructor: partial constructor for monitor.
@@ -449,7 +469,7 @@ class StateMonitor(Monitor):
         eval_update: bool = True,
         prepend: bool = False,
         filter_: Callable[[Any], bool] | None = None,
-        map_: Callable[[Any], torch.Tensor] | None = None,
+        map_: Callable[[Any], tuple[torch.Tensor, ...]] | None = None,
     ) -> MonitorConstructor:
         r"""Returns a function with a common signature for monitor construction.
 
@@ -464,12 +484,11 @@ class StateMonitor(Monitor):
                 module being monitored is in eval mode. Defaults to True.
             prepend (bool, optional): if this monitor should be called before other
                 registered forward prehooks or posthooks. Defaults to False.
-            filter_ (Callable[[Any], bool] | None, optional): test if the input should
-                be passed to the reducer, ignores None values when None.
-                Defaults to None.
-            map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the input
-                before being passed to the reduer, identity if None.
-                Defaults to None.
+            filter_ (Callable[[Any], bool] | None, optional): test if the input should be
+                passed to the reducer, ignores None values when None. Defaults to None.
+            map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies
+                the input before being passed to the reduer, wraps with a tuple if not
+                already a tuple if None. Defaults to None.
 
         Returns:
             MonitorConstructor: partial constructor for monitor.
@@ -510,11 +529,13 @@ class DifferenceMonitor(Monitor):
         prepend (bool, optional): if this monitor should be called before other
             registered forward prehooks or posthooks. Defaults to False.
         filter_ (Callable[[Any, Any], bool] | None, optional): test if the input should
-            be passed to the reducer, ignores None pre or post values when None.
-            Defaults to None.
+            be passed to the reducer, ignores None values when None. Defaults to None.
         map_ (Callable[[Any, Any], tuple[torch.Tensor, ...]] | None, optional): modifies
-            the input before being passed to the reducer, post minus pre wrapped in a
-            tuple if ``None``. Defaults to None.
+            the input before being passed to the reducer, post-forward value minus
+            pre-forward value wrapped in a tuple if ``None``. Defaults to ``None``.
+        op_ (Callable[[torch.Tensor, torch.Tensor], torch.Tensor] | None, optional): operation
+            to calculate the difference between post-forward and pre-forward, only used
+            when ``map_`` is ``None``, subtraction when ``None``. Defaults to ``None``.
 
     Note:
         The nested attribute should be specified with dot notation. For instance,
@@ -524,14 +545,14 @@ class DifferenceMonitor(Monitor):
         the module with which it is registered.
 
     Note:
-        The left-hand argument of ``filter_`` and ``map_`` is the attribute after
-        the :py:meth:`~torch.nn.Module.forward` of ``module`` is run, and the right-hand
-        argument is before it is run.
+        The left-hand argument of ``filter_``, ``map_``, and ``op_`` is the attribute
+        after the :py:meth:`~torch.nn.Module.forward` call of ``module`` is run, and
+        the right-hand argument is before it is run.
 
         By default, ``filter_`` will only reject an input if both the pre and post
-        states are ``None``. By default, ``map_`` will subtract the pre-forward value
-        from the post-forward value. If either is ``None``, it will assume the ``None``
-        value was composed of all-zeros.
+        states are ``None``. By default, ``map_`` will use ``op_`` to compare the
+        pre-forward value from the post-forward value. If either is ``None`` (but not
+        both), ``map_`` will assume the ``None`` value was composed of all-zeros.
     """
 
     def __init__(
@@ -543,15 +564,24 @@ class DifferenceMonitor(Monitor):
         eval_update: bool = True,
         prepend: bool = False,
         filter_: Callable[[Any, Any], bool] | None = None,
-        map_: Callable[[Any, Any], torch.Tensor] | None = None,
+        map_: Callable[[Any, Any], tuple[torch.Tensor, ...]] | None = None,
+        op_: Callable[[torch.Tensor, torch.Tensor], torch.Tensor] | None = None,
     ):
         # set filter and map functions
-        filter_ = filter_ if filter_ else lambda f, i: not (f is None and i is None)
-        map_ = (
-            map_
-            if map_
-            else lambda f, i: (0 if f is None else f) - (0 if i is None else i)
-        )
+        def _default_filter(final, initial):
+            return not (final is None and initial is None)
+
+        def _default_map(final, initial, op=(op_ if op_ else lambda f, i: f - i)):
+            return tuple(
+                op(fv, iv)
+                for fv, iv in zip(
+                    final if isinstance(final, tuple) else (final,),
+                    initial if isinstance(initial, tuple) else (initial,),
+                )
+            )
+
+        filter_ = filter_ if filter_ else _default_filter
+        map_ = map_ if map_ else _default_map
 
         # monitor state
         self.data = None
@@ -587,7 +617,8 @@ class DifferenceMonitor(Monitor):
         eval_update: bool = True,
         prepend: bool = False,
         filter_: Callable[[Any, Any], bool] | None = None,
-        map_: Callable[[Any, Any], torch.Tensor] | None = None,
+        map_: Callable[[Any, Any], tuple[torch.Tensor, ...]] | None = None,
+        op_: Callable[[torch.Tensor, torch.Tensor], torch.Tensor] | None = None,
     ) -> MonitorConstructor:
         r"""Returns a function with a common signature for monitor construction.
 
@@ -600,12 +631,14 @@ class DifferenceMonitor(Monitor):
                 module being monitored is in eval mode. Defaults to True.
             prepend (bool, optional): if this monitor should be called before other
                 registered forward prehooks or posthooks. Defaults to False.
-            filter_ (Callable[[Any, Any], bool] | None, optional): test if the input
-                should be passed to the reducer, ignores None pre or post values when
-                None. Defaults to None.
-            map_ (Callable[[Any, Any], torch.Tensor] | None, optional): modifies the
-                input before being passed to the reduer, post minus pre if None.
-                Defaults to None.
+            filter_ (Callable[[Any, Any], bool] | None, optional): test if the input should
+                be passed to the reducer, ignores None values when None. Defaults to None.
+            map_ (Callable[[Any, Any], tuple[torch.Tensor, ...]] | None, optional): modifies
+                the input before being passed to the reducer, post-forward value minus
+                pre-forward value wrapped in a tuple if ``None``. Defaults to ``None``.
+            op_ (Callable[[torch.Tensor, torch.Tensor], torch.Tensor] | None, optional): operation
+                to calculate the difference between post-forward and pre-forward, only used
+                when ``map_`` is ``None``, subtraction when ``None``. Defaults to ``None``.
 
         Returns:
             MonitorConstructor: partial constructor for monitor.

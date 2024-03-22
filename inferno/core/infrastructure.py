@@ -10,7 +10,6 @@ import math
 import torch
 import torch.nn as nn
 from typing import Any, Callable
-import warnings
 import weakref
 
 
@@ -1152,6 +1151,12 @@ class RecordModule(DimensionalModule):
         return data
 
 
+def _detach_handles(*handles):
+    for h in handles:
+        if h:
+            h.remove()
+
+
 class Hook:
     r"""Provides forward hook and prehook functionality for subclasses.
 
@@ -1247,7 +1252,7 @@ class Hook:
         self.__call_eval = eval_update
 
         # finalizer
-        self.__finalizer = weakref.finalize(self, self.deregister)
+        self.__finalizer = None
 
     def __wrapped_prehook(self, module, *args, **kwargs):
         if self.trainexec and module.training:
@@ -1322,21 +1327,34 @@ class Hook:
         """
         if not self.registered:
             _ = argtest.instance("module", module, nn.Module)
-
             if self._prehook_call:
+                weakself = weakref.ref(self)
                 self.__prehook_handle = module.register_forward_pre_hook(
-                    self.__wrapped_prehook, **self.__prehook_kwargs
+                    lambda module, *args, **kwargs: weakself().__wrapped_prehook(
+                        module, *args, **kwargs
+                    ),
+                    **self.__prehook_kwargs,
                 )
 
             if self._posthook_call:
+                weakself = weakref.ref(self)
                 self.__posthook_handle = module.register_forward_hook(
-                    self.__wrapped_posthook, **self.__posthook_kwargs
+                    lambda module, *args, **kwargs: weakself().__wrapped_posthook(
+                        module, *args, **kwargs
+                    ),
+                    **self.__posthook_kwargs,
                 )
+
+            if self.__finalizer:
+                self.__finalizer.detach()
+            self.__finalizer = weakref.finalize(
+                self, _detach_handles, self.__prehook_handle, self.__posthook_handle
+            )
+
         else:
-            warnings.warn(
+            raise RuntimeError(
                 f"this {type(self).__name__} is already registered to a module "
-                "so new `register()` was ignored",
-                category=RuntimeWarning,
+                "so new register() was ignored"
             )
 
     def deregister(self) -> None:
@@ -1344,13 +1362,12 @@ class Hook:
 
         If the :py:class:`Hook` is not registered, this is still safe to call.
         """
-        if self.__prehook_handle:
-            self.__prehook_handle.remove()
-            self.__prehook_handle = None
-
-        if self.__posthook_handle:
-            self.__posthook_handle.remove()
-            self.__posthook_handle = None
+        _detach_handles(self.__prehook_handle, self.__posthook_handle)
+        self.__prehook_handle = None
+        self.__posthook_handle = None
+        if self.__finalizer:
+            self.__finalizer.detach()
+        self.__finalizer = None
 
 
 class StateHook(Module, Hook, ABC):
@@ -1394,11 +1411,16 @@ class StateHook(Module, Hook, ABC):
         # subclass state
         self._hooked_module = argtest.instance("module", module, nn.Module)
 
+        weakself = weakref.ref(self)
+
+        def wrapped_statehook(module, *args, **kwargs):
+            weakself().hook(module)
+
         # construct hook superclass
         if as_prehook:
             Hook.__init__(
                 self,
-                prehook=self.__wrapped_statehook,
+                prehook=wrapped_statehook,
                 prehook_kwargs={"prepend": prepend},
                 train_update=train_update,
                 eval_update=eval_update,
@@ -1406,7 +1428,7 @@ class StateHook(Module, Hook, ABC):
         else:
             Hook.__init__(
                 self,
-                posthook=self.__wrapped_statehook,
+                posthook=wrapped_statehook,
                 posthook_kwargs={"prepend": prepend, "always_call": always_call},
                 train_update=train_update,
                 eval_update=eval_update,
