@@ -16,7 +16,7 @@ class BatchMixin:
 
     Caution:
         Module which inherit from this mixin cannot be constrained on ``dim=0``.
-        Do not manually change this constraint, it is managed through :py:attr:`bsize`.
+        Do not manually change this constraint, it is managed through :py:attr:`batchsz`.
     """
 
     def __init__(
@@ -37,7 +37,7 @@ class BatchMixin:
         self.reconstrain(0, batch_size)
 
     @property
-    def bsize(self) -> int:
+    def batchsz(self) -> int:
         r"""Batch size of the module.
 
         Args:
@@ -48,10 +48,10 @@ class BatchMixin:
         """
         return self.constraints.get(0)
 
-    @bsize.setter
-    def bsize(self, value: int) -> None:
-        value = argtest.gt("bsize", value, 0, int)
-        if value != self.bsize:
+    @batchsz.setter
+    def batchsz(self, value: int) -> None:
+        value = argtest.gt("batchsz", value, 0, int)
+        if value != self.batchsz:
             self.reconstrain(0, value)
 
 
@@ -70,7 +70,7 @@ class ShapeMixin(BatchMixin):
 
     Caution:
         Module which inherit from this mixin cannot be constrained on ``dim=0``.
-        Do not manually change this constraint, it is managed through :py:attr:`bsize`.
+        Do not manually change this constraint, it is managed through :py:attr:`batchsz`.
 
     Note:
         This sets an attribute ``__shape`` which is managed internally.
@@ -96,13 +96,13 @@ class ShapeMixin(BatchMixin):
         return self.__shape
 
     @property
-    def bshape(self) -> tuple[int, ...]:
+    def batchedshape(self) -> tuple[int, ...]:
         r"""Batch shape of the module
 
         Returns:
             tuple[int, ...]: Shape of the module, including the batch dimension.
         """
-        return (self.bsize,) + self.__shape
+        return (self.batchsz,) + self.__shape
 
     @property
     def count(self) -> int:

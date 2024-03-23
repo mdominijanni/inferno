@@ -474,13 +474,13 @@ class MSTDPET(LayerwiseTrainer):
             if aux.delayed and cell.connection.delayedby:
                 z_post = aux.e_post_trace.view(
                     cell.connection.delay.unsqueeze(0).expand(
-                        cell.connection.bsize, *cell.connection.delay.shape
+                        cell.connection.batchsz, *cell.connection.delay.shape
                     ),
                     aux.tolerance,
                 )
                 z_pre = aux.e_pre_trace.view(
                     cell.connection.delay.unsqueeze(0).expand(
-                        cell.connection.bsize, *cell.connection.delay.shape
+                        cell.connection.batchsz, *cell.connection.delay.shape
                     ),
                     aux.tolerance,
                 )

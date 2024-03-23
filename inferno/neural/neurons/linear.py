@@ -67,8 +67,8 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.resistance = argtest.neq("resistance", resistance, 0, float)
 
         # call mixin constructors
-        VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
-        SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
+        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v), False)
+        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), False)
 
     def _integrate_v(self, masked_inputs):
         r"""Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
@@ -258,8 +258,8 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         )
 
         # call mixin constructors
-        VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
-        SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
+        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v), False)
+        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), False)
         AdaptationMixin.__init__(
             self,
             torch.zeros(*self.shape, self.tc_adaptation.numel()),
@@ -567,8 +567,8 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         )
 
         # call mixin constructors
-        VoltageMixin.__init__(self, torch.full(self.bshape, self.rest_v), False)
-        SpikeRefractoryMixin.__init__(self, torch.zeros(self.bshape), False)
+        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v), False)
+        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), False)
         AdaptationMixin.__init__(
             self,
             torch.zeros(*self.shape, self.rc_adaptation.numel()),

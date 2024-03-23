@@ -70,7 +70,7 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
 
         # call mixin constructors
         SpikeDerivedCurrentMixin.__init__(
-            self, torch.zeros(*self.bshape, self.recordsz, dtype=torch.bool), False
+            self, torch.zeros(*self.batchedshape, self.recordsz, dtype=torch.bool), False
         )
         DelayedSpikeCurrentAccessorMixin.__init__(
             self,
@@ -224,8 +224,8 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
         # call mixin constructors
         SpikeCurrentMixin.__init__(
             self,
-            torch.zeros(*self.bshape, self.recordsz),
-            torch.zeros(*self.bshape, self.recordsz, dtype=torch.bool),
+            torch.zeros(*self.batchedshape, self.recordsz),
+            torch.zeros(*self.batchedshape, self.recordsz, dtype=torch.bool),
             False,
         )
         DelayedSpikeCurrentAccessorMixin.__init__(
