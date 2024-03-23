@@ -120,7 +120,7 @@ class Clamping(StateHook):
         self.attribute = argtest.nestedidentifier("attr", attr)
         self.clampmin, self.clampmax = argtest.onedefined(("min", min), ("max", max))
         if min is not None and max is not None:
-            _ = argtest.lte("max", max, min, None, limit_name="min")
+            _ = argtest.gt("max", max, min, None, limit_name="min")
 
         # call superclass constructor
         StateHook.__init__(

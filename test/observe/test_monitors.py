@@ -5,7 +5,7 @@ import torch
 import weakref
 
 from inferno import Module
-from inferno.observe import Monitor, Reducer, InputMonitor, StateMonitor
+from inferno.observe import Monitor, Reducer, InputMonitor, OutputMonitor, StateMonitor
 
 
 class MockReducer(Reducer):
@@ -185,6 +185,22 @@ class TestInputMonitor:
             (id(ds) == id(di) for ds, di in zip(reducer.latest_inputs, pass_data))
         )
 
+    def test_custom_map(self):
+        shape = self.random_shape()
+        reducer = MockReducer()
+        module = MockModule()
+
+        map_ = lambda inputs: tuple(x * 2 for x in inputs)  # noqa:E731;
+        monitor = InputMonitor(reducer, None, map_=map_)
+        monitor.register(module)
+
+        data = (torch.rand(shape) for _ in range(random.randint(1, 9)))
+
+        module(*data)
+        assert all(
+            torch.all(ds == di) for ds, di in zip(reducer.latest_inputs, map_(data))
+        )
+
 
 class TestStateMonitor:
 
@@ -239,3 +255,81 @@ class TestStateMonitor:
             assert len(module._forward_pre_hooks) == 0
         else:
             assert len(module._forward_hooks) == 0
+
+    def test_filter(self):
+        shape = self.random_shape()
+        reducer = MockReducer()
+        module = MockModule()
+
+        monitor = StateMonitor(reducer, "data", None)
+        monitor.register(module)
+
+        data = torch.rand(shape)
+
+        module(data)
+        assert id(reducer.latest_inputs) == id(module.data)
+
+        module()
+        assert id(reducer.latest_inputs) == id(module.data)
+
+        data = torch.rand(shape)
+        module(data)
+        assert id(reducer.latest_inputs) == id(module.data)
+
+
+class TestOutputMonitor:
+
+    @staticmethod
+    def random_shape(mindims=1, maxdims=9, minsize=1, maxsize=9):
+        return tuple(
+            random.randint(mindims, maxdims)
+            for _ in range(random.randint(minsize, maxsize))
+        )
+
+    def test_finalizer_unregistered(self):
+        reducer = MockReducer()
+        module = MockModule()
+        monitor = OutputMonitor(reducer, module)
+
+        monitor.deregister()
+
+        monitorref = weakref.ref(monitor)
+        del monitor
+
+        assert monitorref() is None
+        assert len(module._forward_hooks) == 0
+
+    def test_finalizer_registered(self):
+        reducer = MockReducer()
+        module = MockModule()
+        monitor = OutputMonitor(reducer, module)
+
+        assert len(module._forward_hooks) == 1
+
+        monitorref = weakref.ref(monitor)
+        del monitor
+
+        assert monitorref() is None
+        assert len(module._forward_hooks) == 0
+
+    def test_filter(self):
+        shape = self.random_shape()
+        reducer = MockReducer()
+        module = MockModule()
+
+        monitor = OutputMonitor(reducer, None)
+        monitor.register(module)
+
+        sentinel = torch.rand(shape)
+
+        res = module(sentinel)
+        assert id(reducer.latest_inputs) == id(res)
+        assert torch.all(reducer.latest_inputs == res)
+
+        module()
+        assert id(reducer.latest_inputs) == id(res)
+
+        sentinel = torch.rand(shape)
+        res = module(sentinel)
+        assert id(reducer.latest_inputs) == id(res)
+        assert torch.all(reducer.latest_inputs == res)
