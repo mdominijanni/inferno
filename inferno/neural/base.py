@@ -706,6 +706,7 @@ class Connection(Updatable, Module, ABC):
         Updatable.clear(self, **kwargs)
         self.synapse.clear(**kwargs)
 
+    @abstractmethod
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like synapse input to connection input.
 
@@ -734,6 +735,7 @@ class Connection(Updatable, Module, ABC):
             "the method `like_input`."
         )
 
+    @abstractmethod
     def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection input to synapse input.
 
@@ -762,6 +764,7 @@ class Connection(Updatable, Module, ABC):
             "the method `like_synaptic`."
         )
 
+    @abstractmethod
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection output for pre-post learning methods.
 
@@ -796,6 +799,7 @@ class Connection(Updatable, Module, ABC):
             "the method `postsyn_receptive`."
         )
 
+    @abstractmethod
     def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like the synapse state for pre-post learning methods.
 

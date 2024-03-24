@@ -228,7 +228,6 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">weakref</span>
 
 
@@ -239,7 +238,8 @@
 
 <span class="sd">    This extends :py:class:`torch.nn.Module` so that &quot;extra state&quot; is handled in a way</span>
 <span class="sd">    similar to regular tensor state (e.g. buffers and parameters). This enables simple</span>
-<span class="sd">    export to and import from a state dictionary.</span>
+<span class="sd">    export to and import from a state dictionary. This does not enforce exact matching</span>
+<span class="sd">    keys, and will insert new keys as required.</span>
 
 <span class="sd">    Additionally, attribute assignment will check if the name refers to a property in</span>
 <span class="sd">    the class and if so, uses ``object.__setattr__``.</span>
@@ -433,7 +433,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">constraints</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">live</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="c1"># setter-dependent attribute</span>
-        <span class="n">Module</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_live_assert&quot;</span><span class="p">,</span> <span class="n">live</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_live_assert&quot;</span><span class="p">,</span> <span class="n">live</span><span class="p">)</span>
 
         <span class="c1"># call superclass constructor</span>
         <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -730,14 +730,14 @@
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span>
             <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_buffer</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span>
         <span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">b</span><span class="p">)):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;constrained buffer &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is invalid&quot;</span><span class="p">)</span>
 
         <span class="c1"># ensure constrained parameters have valid shape</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span>
             <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_params</span>
         <span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">p</span><span class="p">)):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;constrained parameter &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is invalid&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DimensionalModule.compatible">
@@ -832,7 +832,7 @@
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span>
                 <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_buffer</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span>
             <span class="p">):</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">cns</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">cns</span><span class="p">)):</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;constrained buffer &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; would be invalidated by the &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;addition of constraint </span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -841,7 +841,7 @@
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span>
                 <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_params</span>
             <span class="p">):</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">cns</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">cns</span><span class="p">)):</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;constrained parameter &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; would be invalidated by the &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;addition of constraint </span><span class="si">{</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -861,7 +861,7 @@
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span>
                 <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_buffer</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span>
             <span class="p">):</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">b</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="n">ndim</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="ow">or</span> <span class="n">b</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;=</span> <span class="n">ndim</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;constrained buffer &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; with </span><span class="si">{</span><span class="n">b</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> dims cannot be made &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;compatible, requires a minimum dimensionality of </span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -870,7 +870,7 @@
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span>
                 <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_params</span>
             <span class="p">):</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="n">ndim</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">or</span> <span class="n">p</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;=</span> <span class="n">ndim</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;constrained parameter &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; with </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> dims cannot be made &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;compatible, requires a minimum dimensionality of </span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -884,7 +884,7 @@
                 <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_buffer</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_buffers</span><span class="p">),</span>
                 <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constrained_params</span><span class="p">),</span>
             <span class="p">):</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">value</span><span class="p">)):</span>
                     <span class="n">rsetattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible_like</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
 
             <span class="c1"># returns self</span>
@@ -915,7 +915,7 @@
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">b</span><span class="p">)):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;buffer &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;incompatible with constrained shape (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_repr_cache</span><span class="p">()</span><span class="si">}</span><span class="s2">), &quot;</span>
@@ -932,7 +932,7 @@
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">p</span><span class="p">)):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;parameter &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has shape of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;incompatible with constrained shape (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_repr_cache</span><span class="p">()</span><span class="si">}</span><span class="s2">), &quot;</span>
@@ -1031,8 +1031,8 @@
         <span class="n">DimensionalModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
 
         <span class="c1"># transient state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_step_time</span> <span class="o">=</span> <span class="n">step_time</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_duration</span> <span class="o">=</span> <span class="n">duration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span> <span class="o">=</span> <span class="n">step_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span> <span class="o">=</span> <span class="n">duration</span>
 
         <span class="c1"># persistent state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;_pointers&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
@@ -1053,7 +1053,7 @@
 <span class="sd">            If a :py:meth:`reconstrain` operation needs to be performed, all state will</span>
 <span class="sd">            be overwritten with zeros.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step_time</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1061,14 +1061,14 @@
         <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
         <span class="c1"># recompute size of the history dimension</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_duration</span> <span class="o">/</span> <span class="n">value</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__duration</span> <span class="o">/</span> <span class="n">value</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="c1"># reconstrain if required</span>
-        <span class="k">if</span> <span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">:</span>
             <span class="n">DimensionalModule</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
 
         <span class="c1"># set revised step time</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_step_time</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -1086,7 +1086,7 @@
 <span class="sd">            If a :py:meth:`reconstrain` operation needs to be performed, all state will</span>
 <span class="sd">            be overwritten with zeros.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_duration</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span>
 
     <span class="nd">@duration</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1094,14 +1094,14 @@
         <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
         <span class="c1"># recompute size of the history dimension</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">value</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step_time</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">value</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="c1"># reconstrain if required</span>
         <span class="k">if</span> <span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">:</span>
             <span class="n">DimensionalModule</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
 
         <span class="c1"># set revised history length</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_duration</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">recordsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -1226,7 +1226,8 @@
 <span class="sd">            name (str): name of the attribute to target.</span>
 <span class="sd">            data (Any): data to insert.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_get_constrained_record</span><span class="p">(</span><span class="n">name</span><span class="p">)[:]</span> <span class="o">=</span> <span class="n">data</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_constrained_record</span><span class="p">(</span><span class="n">name</span><span class="p">)[:]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pointers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 
 <div class="viewcode-block" id="RecordModule.latest">
@@ -1390,7 +1391,7 @@
 
             <span class="c1"># integer index (no interpolation)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">data</span><span class="p">[(</span><span class="n">pointer</span> <span class="o">-</span> <span class="n">index</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">(</span><span class="n">pointer</span> <span class="o">-</span> <span class="n">index</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">]</span>
 
             <span class="c1"># float index (interpolation)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1443,10 +1444,16 @@
 
 
 
+<span class="k">def</span> <span class="nf">_detach_handles</span><span class="p">(</span><span class="o">*</span><span class="n">handles</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">handles</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">h</span><span class="p">:</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+
+
 <div class="viewcode-block" id="Hook">
 <a class="viewcode-back" href="../../../reference/generated/inferno.Hook.html#inferno.Hook">[docs]</a>
 <span class="k">class</span> <span class="nc">Hook</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Provides forward hook and prehook functionality for subclasses.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Provides and manages forward hook and prehook functionality.</span>
 
 <span class="sd">    `Hook` provides functionality to register and deregister itself as</span>
 <span class="sd">    forward hook with a :py:class:`~torch.nn.Module` object. This is performed using</span>
@@ -1518,14 +1525,14 @@
 
         <span class="c1"># prehook and posthook functions</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prehook</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__prehook</span> <span class="o">=</span> <span class="n">prehook</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_call</span> <span class="o">=</span> <span class="n">prehook</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__prehook</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_call</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">posthook</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__posthook</span> <span class="o">=</span> <span class="n">posthook</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_posthook_call</span> <span class="o">=</span> <span class="n">posthook</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__posthook</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_posthook_call</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># set returned handle</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__prehook_handle</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1540,21 +1547,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__call_eval</span> <span class="o">=</span> <span class="n">eval_update</span>
 
         <span class="c1"># finalizer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__finalizer</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deregister</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__finalizer</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">__wrapped_prehook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainexec</span> <span class="ow">and</span> <span class="n">module</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_call</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalexec</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">module</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_call</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__wrapped_posthook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainexec</span> <span class="ow">and</span> <span class="n">module</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posthook_call</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalexec</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">module</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posthook_call</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">trainexec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1617,22 +1624,34 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered</span><span class="p">:</span>
             <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s2">&quot;module&quot;</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prehook</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prehook_call</span><span class="p">:</span>
+                <span class="n">weakself</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__prehook_handle</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">register_forward_pre_hook</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__prehook</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__prehook_kwargs</span>
+                    <span class="k">lambda</span> <span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">weakself</span><span class="p">()</span><span class="o">.</span><span class="n">__wrapped_prehook</span><span class="p">(</span>
+                        <span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+                    <span class="p">),</span>
+                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__prehook_kwargs</span><span class="p">,</span>
                 <span class="p">)</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__posthook</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posthook_call</span><span class="p">:</span>
+                <span class="n">weakself</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__posthook_handle</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">register_forward_hook</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__posthook</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__posthook_kwargs</span>
+                    <span class="k">lambda</span> <span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">weakself</span><span class="p">()</span><span class="o">.</span><span class="n">__wrapped_posthook</span><span class="p">(</span>
+                        <span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+                    <span class="p">),</span>
+                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__posthook_kwargs</span><span class="p">,</span>
                 <span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__finalizer</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__finalizer</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__finalizer</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">_detach_handles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prehook_handle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__posthook_handle</span>
+            <span class="p">)</span>
+
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">()</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;this </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is already registered to a module &quot;</span>
-                <span class="s2">&quot;so new `register()` was ignored&quot;</span><span class="p">,</span>
-                <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">,</span>
+                <span class="s2">&quot;so new register() was ignored&quot;</span>
             <span class="p">)</span></div>
 
 
@@ -1643,20 +1662,114 @@
 
 <span class="sd">        If the :py:class:`Hook` is not registered, this is still safe to call.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prehook_handle</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__prehook_handle</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__prehook_handle</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__posthook_handle</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__posthook_handle</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__posthook_handle</span> <span class="o">=</span> <span class="kc">None</span></div>
+        <span class="n">_detach_handles</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__prehook_handle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__posthook_handle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__prehook_handle</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__posthook_handle</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__finalizer</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__finalizer</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__finalizer</span> <span class="o">=</span> <span class="kc">None</span></div>
 </div>
+
+
+
+<div class="viewcode-block" id="ContextualHook">
+<a class="viewcode-back" href="../../../reference/generated/inferno.ContextualHook.html#inferno.ContextualHook">[docs]</a>
+<span class="k">class</span> <span class="nc">ContextualHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Provides forward hook and prehook functionality for subclasses.</span>
+
+<span class="sd">    This is used to manage references to the ``ContextualHook`` in a safe way for the</span>
+<span class="sd">    garbage collector (i.e. without cyclic references).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        prehook (str | None, optional): name of the prehook method, if any, to execute,</span>
+<span class="sd">            no prehook when ``None``. Defaults to ``None``.</span>
+<span class="sd">        posthook (str | None, optional): name of the posthook method, if any, to execute,</span>
+<span class="sd">            no posthook when ``None``. Defaults to ``None``.</span>
+<span class="sd">        prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to</span>
+<span class="sd">            :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to ``None``.</span>
+<span class="sd">        posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to</span>
+<span class="sd">            :py:meth:`~torch.nn.Module.register_forward_hook`. Defaults to ``None``.</span>
+<span class="sd">        train_update (bool, optional): if the hooks should be run when hooked module is</span>
+<span class="sd">            in train mode. Defaults to ``True``.</span>
+<span class="sd">        eval_update (bool, optional): if the hooks should be run when hooked module is</span>
+<span class="sd">            in eval mode. Defaults to ``True``.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RuntimeError: at least one of ``prehook`` and ``posthook`` must not be None.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        If not ``None``, the signature of the prehook must be of the following form.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            hook(module, args) -&gt; None or modified input</span>
+
+<span class="sd">        Or, if ``with_kwargs`` is passed as a keyword argument.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            hook(module, args, kwargs) -&gt; None or modified input</span>
+
+<span class="sd">        See :py:meth:`~torch.nn.Module.register_forward_pre_hook` for</span>
+<span class="sd">        further information.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        If not ``None``, the signature of the posthook must be of the following form.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            hook(module, args, output) -&gt; None or modified output</span>
+
+<span class="sd">        Or, if ``with_kwargs`` is passed as a keyword argument.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            hook(module, args, kwargs, output) -&gt; None or modified output</span>
+
+<span class="sd">        See :py:meth:`~torch.nn.Module.register_forward_hook` for further information.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prehook</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">posthook</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">prehook_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">posthook_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># check that something will occur on call</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">onedefined</span><span class="p">((</span><span class="s2">&quot;prehook&quot;</span><span class="p">,</span> <span class="n">prehook</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;posthook&quot;</span><span class="p">,</span> <span class="n">posthook</span><span class="p">))</span>
+
+        <span class="c1"># weakly reference self for prehook</span>
+        <span class="n">weakself_bfc</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">context_prehook</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">weakself_bfc</span><span class="p">(),</span> <span class="n">prehook</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># weakly reference self for posthook</span>
+        <span class="n">weakself_afc</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">context_posthook</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">weakself_afc</span><span class="p">(),</span> <span class="n">posthook</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># call superclass constructor</span>
+        <span class="n">Hook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">prehook</span><span class="o">=</span><span class="n">context_prehook</span> <span class="k">if</span> <span class="n">prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">posthook</span><span class="o">=</span><span class="n">context_posthook</span> <span class="k">if</span> <span class="n">posthook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">prehook_kwargs</span><span class="o">=</span><span class="n">prehook_kwargs</span> <span class="k">if</span> <span class="n">prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">posthook_kwargs</span><span class="o">=</span><span class="n">posthook_kwargs</span> <span class="k">if</span> <span class="n">posthook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
+            <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="StateHook">
 <a class="viewcode-back" href="../../../reference/generated/inferno.StateHook.html#inferno.StateHook">[docs]</a>
-<span class="k">class</span> <span class="nc">StateHook</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">Hook</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">StateHook</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ContextualHook</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interactable hook which only acts on module state.</span>
 
 <span class="sd">    Args:</span>
@@ -1695,27 +1808,20 @@
         <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># subclass state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__hooked_module</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s2">&quot;module&quot;</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hooked_module</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s2">&quot;module&quot;</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span>
 
         <span class="c1"># construct hook superclass</span>
-        <span class="k">if</span> <span class="n">as_prehook</span><span class="p">:</span>
-            <span class="n">Hook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-                <span class="bp">self</span><span class="p">,</span>
-                <span class="n">prehook</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__wrapped_statehook</span><span class="p">,</span>
-                <span class="n">prehook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">},</span>
-                <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
-                <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">Hook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-                <span class="bp">self</span><span class="p">,</span>
-                <span class="n">posthook</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__wrapped_statehook</span><span class="p">,</span>
-                <span class="n">posthook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">,</span> <span class="s2">&quot;always_call&quot;</span><span class="p">:</span> <span class="n">always_call</span><span class="p">},</span>
-                <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
-                <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="n">ContextualHook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">prehook</span><span class="o">=</span><span class="s2">&quot;_StateHook__wrapped_hook&quot;</span> <span class="k">if</span> <span class="n">as_prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">posthook</span><span class="o">=</span><span class="s2">&quot;_StateHook__wrapped_hook&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">as_prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">prehook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">},</span>
+            <span class="n">posthook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">,</span> <span class="s2">&quot;always_call&quot;</span><span class="p">:</span> <span class="n">always_call</span><span class="p">},</span>
+            <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
+            <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
+        <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__wrapped_statehook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__wrapped_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StateHook.hook">
@@ -1742,13 +1848,14 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            ~torch.nn.Module: module to which the hook is applied.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hooked_module</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hooked_module</span>
 
 <div class="viewcode-block" id="StateHook.register">
 <a class="viewcode-back" href="../../../reference/generated/inferno.StateHook.html#inferno.StateHook.register">[docs]</a>
     <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registers state the hook as a forward hook or prehook.&quot;&quot;&quot;</span>
-        <span class="n">Hook</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered</span><span class="p">:</span>
+            <span class="n">Hook</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StateHook.forward">

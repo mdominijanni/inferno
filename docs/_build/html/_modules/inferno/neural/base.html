@@ -250,11 +250,11 @@
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.extra_repr">[docs]</a>
     <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns extra information on this module.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, bsize=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="si">}</span><span class="s2">, dt=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2">&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, batchsz=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="si">}</span><span class="s2">, dt=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the neuron group.</span>
 
 <span class="sd">        Args:</span>
@@ -263,11 +263,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            int: present batch size.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ShapeMixin</span><span class="o">.</span><span class="n">bsize</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ShapeMixin</span><span class="o">.</span><span class="n">batchsz</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-    <span class="nd">@bsize</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">ShapeMixin</span><span class="o">.</span><span class="n">bsize</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="nd">@batchsz</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ShapeMixin</span><span class="o">.</span><span class="n">batchsz</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
     <span class="nd">@property</span>
@@ -458,7 +458,7 @@
     <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns extra information on this module.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, bsize=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="si">}</span><span class="s2">, dt=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2">, delay=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, batchsz=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="si">}</span><span class="s2">, dt=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2">, delay=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span></div>
 
 
@@ -691,7 +691,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">synapses</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the connection.</span>
 
 <span class="sd">        Args:</span>
@@ -701,14 +701,14 @@
 <span class="sd">            int: current batch size.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            This calls the property :py:attr:`Synapse.bsize` on :py:attr:`synapse`,</span>
+<span class="sd">            This calls the property :py:attr:`Synapse.batchsz` on :py:attr:`synapse`,</span>
 <span class="sd">            assuming the connection has no batch size dependent state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">bsize</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">batchsz</span>
 
-    <span class="nd">@bsize</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">bsize</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="nd">@batchsz</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">batchsz</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -763,22 +763,22 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">binshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">batched_inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, including the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of inputs to the connection.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">inshape</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">inshape</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">boutshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">batched_outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, including the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of outputs from the connection.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">outshape</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">outshape</span>
 
 <div class="viewcode-block" id="Connection.insize">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.insize">[docs]</a>
@@ -976,6 +976,7 @@
 
 <div class="viewcode-block" id="Connection.like_input">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.like_input">[docs]</a>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like synapse input to connection input.</span>
 
@@ -997,7 +998,7 @@
 
 <span class="sd">            ``return``:</span>
 
-<span class="sd">            :py:attr:`binshape`</span>
+<span class="sd">            :py:attr:`batched_inshape`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Connection) must implement &quot;</span>
@@ -1007,6 +1008,7 @@
 
 <div class="viewcode-block" id="Connection.like_synaptic">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.like_synaptic">[docs]</a>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection input to synapse input.</span>
 
@@ -1024,7 +1026,7 @@
 
 <span class="sd">            ``data``:</span>
 
-<span class="sd">            :py:attr:`binshape`</span>
+<span class="sd">            :py:attr:`batched_inshape`</span>
 
 <span class="sd">            ``return``:</span>
 
@@ -1038,6 +1040,7 @@
 
 <div class="viewcode-block" id="Connection.postsyn_receptive">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.postsyn_receptive">[docs]</a>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>
 
@@ -1056,7 +1059,7 @@
 
 <span class="sd">            ``data``:</span>
 
-<span class="sd">            :py:attr:`boutshape`</span>
+<span class="sd">            :py:attr:`batched_outshape`</span>
 
 <span class="sd">            ``return``:</span>
 
@@ -1075,6 +1078,7 @@
 
 <div class="viewcode-block" id="Connection.presyn_receptive">
 <a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.presyn_receptive">[docs]</a>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
 

@@ -219,12 +219,6 @@
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="pragmatic-considerations">
 <h1>Pragmatic Considerations<a class="headerlink" href="#pragmatic-considerations" title="Link to this heading">#</a></h1>
-<section id="functional-or-object-oriented">
-<h2>Functional or Object-Oriented?<a class="headerlink" href="#functional-or-object-oriented" title="Link to this heading">#</a></h2>
-<p>Inferno provides two main ways to interact with it—through its object-oriented and its functional interfaces. The latter can be distinguished by having module names which end in <code class="docutils literal notranslate"><span class="pre">.functional</span></code>.</p>
-<p>In general, the object-oriented interface is great at getting off the ground quickly as a lot of the boilerplate code, such as ensuring tensor shape compatibility and automatic reduction of the batch axis is done for you. The functional interface meanwhile provides more control over the flow of logic and allows for greater customization.</p>
-<p>The object-oriented interface provides base classes which can be extended, and implementation of custom subclasses using logic from the functional interface can balance these considerations. Dedicated classes provided by this interface in certain cases may be faster, as less type-checking is needed, and parameters which remain the same over multiple calls can be pre-computed on initialization.</p>
-</section>
 <section id="minibatching">
 <h2>Minibatching<a class="headerlink" href="#minibatching" title="Link to this heading">#</a></h2>
 <p>Unlike the artificial neurons typically found in ANNs, the neurons in SNNs are fundamentally stateful. In biological neurons, the electric potential difference between the interior and exterior of a cell is the driving force behind the generation of action potentials. This extends to the simplified models used in SNNs.</p>
@@ -243,7 +237,7 @@
 </section>
 <section id="model-saving-and-restoring">
 <h2>Model Saving and Restoring<a class="headerlink" href="#model-saving-and-restoring" title="Link to this heading">#</a></h2>
-<p>Because batch size affects not only the data passed through a model, but the model itself, special consideratin must be taken when saving and loading models. The batch size of a model saved must match the batch size of the model loaded. This same principle extends to modules which record state over time (e.g. reducers and synapses). While a step time and duration are specified, this changes the underlying structure of the data and therefore should match on load and restore. Note that the included property setters can be used to modify this state after loading.</p>
+<p>Because batch size affects not only the data passed through a model, but the model itself, special consideration must be given when saving and loading models. The batch size of a model saved must match the batch size of the model loaded. This same principle extends to modules which record state over time (e.g. reducers and synapses). While a step time and duration are specified, this changes the underlying structure of the data and therefore should match on load and restore. Note that the included property setters can be used to modify this state after loading.</p>
 </section>
 </section>
 
@@ -303,7 +297,6 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Pragmatic Considerations</a><ul>
-<li><a class="reference internal" href="#functional-or-object-oriented">Functional or Object-Oriented?</a></li>
 <li><a class="reference internal" href="#minibatching">Minibatching</a></li>
 <li><a class="reference internal" href="#discrete-time-simulations">Discrete Time Simulations</a><ul>
 <li><a class="reference internal" href="#refractory-periods">Refractory Periods</a></li>

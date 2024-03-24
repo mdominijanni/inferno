@@ -230,6 +230,56 @@
 </dd>
 </dl>
 <dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Connection.batched_inshape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batched_inshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Connection.batched_inshape" title="Link to this definition">#</a></dt>
+<dd><p>Shape of inputs to the connection, including the batch dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>shape of inputs to the connection.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Connection.batched_outshape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batched_outshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Connection.batched_outshape" title="Link to this definition">#</a></dt>
+<dd><p>Shape of outputs from the connection, including the batch dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>shape of outputs from the connection.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.neural.Connection.batchsz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batchsz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.Connection.batchsz" title="Link to this definition">#</a></dt>
+<dd><p>Batch size of the connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – new batch size.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>current batch size.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This calls the property <code class="xref py py-attr docutils literal notranslate"><span class="pre">Synapse.batchsz</span></code> on <a class="reference internal" href="#inferno.neural.Connection.synapse" title="inferno.neural.Connection.synapse"><code class="xref py py-attr docutils literal notranslate"><span class="pre">synapse</span></code></a>,
+assuming the connection has no batch size dependent state.</p>
+</div>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.Connection.bias">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bias</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#inferno.neural.Connection.bias" title="Link to this definition">#</a></dt>
 <dd><p>Learnable connection biases.</p>
@@ -261,56 +311,6 @@
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Connection.binshape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">binshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Connection.binshape" title="Link to this definition">#</a></dt>
-<dd><p>Shape of inputs to the connection, including the batch dimension.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>shape of inputs to the connection.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Connection.boutshape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">boutshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Connection.boutshape" title="Link to this definition">#</a></dt>
-<dd><p>Shape of outputs from the connection, including the batch dimension.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>shape of outputs from the connection.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Connection.bsize">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bsize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.Connection.bsize" title="Link to this definition">#</a></dt>
-<dd><p>Batch size of the connection.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – new batch size.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>current batch size.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This calls the property <code class="xref py py-attr docutils literal notranslate"><span class="pre">Synapse.bsize</span></code> on <a class="reference internal" href="#inferno.neural.Connection.synapse" title="inferno.neural.Connection.synapse"><code class="xref py py-attr docutils literal notranslate"><span class="pre">synapse</span></code></a>,
-assuming the connection has no batch size dependent state.</p>
-</div>
 </dd></dl>
 
 <dl class="py method">
@@ -491,7 +491,7 @@ deleted to refresh the cache.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Connection.like_input">
-<span class="sig-name descname"><span class="pre">like_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.like_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.like_input" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">like_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.like_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.like_input" title="Link to this definition">#</a></dt>
 <dd><p>Reshapes data like synapse input to connection input.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -512,13 +512,13 @@ deleted to refresh the cache.</p>
 <p><code class="docutils literal notranslate"><span class="pre">data</span></code>:</p>
 <p>like <a class="reference internal" href="#inferno.neural.Connection.syncurrent" title="inferno.neural.Connection.syncurrent"><code class="xref py py-attr docutils literal notranslate"><span class="pre">syncurrent</span></code></a> or <a class="reference internal" href="#inferno.neural.Connection.synspike" title="inferno.neural.Connection.synspike"><code class="xref py py-attr docutils literal notranslate"><span class="pre">synspike</span></code></a></p>
 <p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
-<p><a class="reference internal" href="#inferno.neural.Connection.binshape" title="inferno.neural.Connection.binshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">binshape</span></code></a></p>
+<p><a class="reference internal" href="#inferno.neural.Connection.batched_inshape" title="inferno.neural.Connection.batched_inshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">batched_inshape</span></code></a></p>
 </div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Connection.like_synaptic">
-<span class="sig-name descname"><span class="pre">like_synaptic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.like_synaptic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.like_synaptic" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">like_synaptic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.like_synaptic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.like_synaptic" title="Link to this definition">#</a></dt>
 <dd><p>Reshapes data like connection input to synapse input.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -537,7 +537,7 @@ deleted to refresh the cache.</p>
 <div class="tensorshape admonition">
 <p class="admonition-title">Shape</p>
 <p><code class="docutils literal notranslate"><span class="pre">data</span></code>:</p>
-<p><a class="reference internal" href="#inferno.neural.Connection.binshape" title="inferno.neural.Connection.binshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">binshape</span></code></a></p>
+<p><a class="reference internal" href="#inferno.neural.Connection.batched_inshape" title="inferno.neural.Connection.batched_inshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">batched_inshape</span></code></a></p>
 <p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
 <p>like <a class="reference internal" href="#inferno.neural.Connection.syncurrent" title="inferno.neural.Connection.syncurrent"><code class="xref py py-attr docutils literal notranslate"><span class="pre">syncurrent</span></code></a> or <a class="reference internal" href="#inferno.neural.Connection.synspike" title="inferno.neural.Connection.synspike"><code class="xref py py-attr docutils literal notranslate"><span class="pre">synspike</span></code></a></p>
 </div>
@@ -582,7 +582,7 @@ deleted to refresh the cache.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Connection.postsyn_receptive">
-<span class="sig-name descname"><span class="pre">postsyn_receptive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.postsyn_receptive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.postsyn_receptive" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">postsyn_receptive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.postsyn_receptive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.postsyn_receptive" title="Link to this definition">#</a></dt>
 <dd><p>Reshapes data like connection output for pre-post learning methods.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -604,7 +604,7 @@ deleted to refresh the cache.</p>
 <div class="tensorshape admonition">
 <p class="admonition-title">Shape</p>
 <p><code class="docutils literal notranslate"><span class="pre">data</span></code>:</p>
-<p><a class="reference internal" href="#inferno.neural.Connection.boutshape" title="inferno.neural.Connection.boutshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">boutshape</span></code></a></p>
+<p><a class="reference internal" href="#inferno.neural.Connection.batched_outshape" title="inferno.neural.Connection.batched_outshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">batched_outshape</span></code></a></p>
 <p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
 <p><span class="math notranslate nohighlight">\(B \times\)</span> <a class="reference external" href="https://pytorch.org/docs/stable/notes/broadcasting.html">broadcastable</a>
 with <a class="reference internal" href="#inferno.neural.Connection.weight" title="inferno.neural.Connection.weight"><code class="xref py py-attr docutils literal notranslate"><span class="pre">weight</span></code></a> <span class="math notranslate nohighlight">\(\times L\)</span></p>
@@ -620,7 +620,7 @@ with <a class="reference internal" href="#inferno.neural.Connection.weight" titl
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.Connection.presyn_receptive">
-<span class="sig-name descname"><span class="pre">presyn_receptive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.presyn_receptive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.presyn_receptive" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">presyn_receptive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/base.html#Connection.presyn_receptive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Connection.presyn_receptive" title="Link to this definition">#</a></dt>
 <dd><p>Reshapes data like the synapse state for pre-post learning methods.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -804,11 +804,11 @@ currents, otherwise it should return those indexed by <a class="reference intern
             <ul>
 <li><a class="reference internal" href="#">Connection</a><ul>
 <li><a class="reference internal" href="#inferno.neural.Connection"><code class="docutils literal notranslate"><span class="pre">Connection</span></code></a><ul>
+<li><a class="reference internal" href="#inferno.neural.Connection.batched_inshape"><code class="docutils literal notranslate"><span class="pre">Connection.batched_inshape</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Connection.batched_outshape"><code class="docutils literal notranslate"><span class="pre">Connection.batched_outshape</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Connection.batchsz"><code class="docutils literal notranslate"><span class="pre">Connection.batchsz</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.bias"><code class="docutils literal notranslate"><span class="pre">Connection.bias</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.biased"><code class="docutils literal notranslate"><span class="pre">Connection.biased</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Connection.binshape"><code class="docutils literal notranslate"><span class="pre">Connection.binshape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Connection.boutshape"><code class="docutils literal notranslate"><span class="pre">Connection.boutshape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Connection.bsize"><code class="docutils literal notranslate"><span class="pre">Connection.bsize</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.clear"><code class="docutils literal notranslate"><span class="pre">Connection.clear()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.defaultupdater"><code class="docutils literal notranslate"><span class="pre">Connection.defaultupdater()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Connection.delay"><code class="docutils literal notranslate"><span class="pre">Connection.delay</span></code></a></li>

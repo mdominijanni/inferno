@@ -1,0 +1,6 @@
+﻿voltage\_thresholding\_linear
+=============================
+
+.. currentmodule:: inferno.neural.functional
+
+.. autofunction:: voltage_thresholding_linear

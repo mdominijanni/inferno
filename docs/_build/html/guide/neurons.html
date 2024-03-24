@@ -221,11 +221,14 @@
 <h1>Neurons and Neuronal Systems<a class="headerlink" href="#neurons-and-neuronal-systems" title="Link to this heading">#</a></h1>
 <section id="dynamics-of-a-neuron">
 <h2>Dynamics of a Neuron<a class="headerlink" href="#dynamics-of-a-neuron" title="Link to this heading">#</a></h2>
+<section id="id1">
+<h3><a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+</section>
 <section id="refractory-periods">
 <h3>Refractory Periods<a class="headerlink" href="#refractory-periods" title="Link to this heading">#</a></h3>
 <p>Biological neurons have two kinds of refractory periods— an absolute refractory period (ARP) and a relative refractory period (RRP).</p>
 <p>The ARP is a period during which action potentials cannot be generated, and any presynaptic current does not affect the membrane potential (this is the period in which the neuron depolarizes and then repolarizes). The RRP is a period during which the neuron is hyperpolarized, meaning that while it is more difficult for the neuron to fire in this period, it is not impossible.</p>
-<p>The ARP is modeled using a refractory period (in integer multiples of the simulation step time) in which a neuron cannot fire and the voltage of neurons in this period is fixed. This can also apply to neuronal adaptations. Meanwhile, RRP is modeled through the reset voltage, which determines how strongly the neuron is hyperpolarized following the action potential.</p>
+<p>The ARP is modeled using a refractory period (in integer multiples of the simulation step time) in which a neuron cannot fire and the voltage of neurons in this period is fixed. This can also apply to neuronal adaptations. Meanwhile, RRP is modeled through the reset voltage, which determines how strongly the neuron is hyperpolarized following the action potential. In some models, this reset voltage is a constant value whereas in others it may be parameterized by some state of the model.</p>
 </section>
 </section>
 </section>
@@ -287,6 +290,7 @@
             <ul>
 <li><a class="reference internal" href="#">Neurons and Neuronal Systems</a><ul>
 <li><a class="reference internal" href="#dynamics-of-a-neuron">Dynamics of a Neuron</a><ul>
+<li><a class="reference internal" href="#id1"></a></li>
 <li><a class="reference internal" href="#refractory-periods">Refractory Periods</a></li>
 </ul>
 </li>

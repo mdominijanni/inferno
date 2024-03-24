@@ -286,7 +286,7 @@ respectively, initialized as uniform random values over the interval
 <dd><p>Generates connection output from inputs, after passing through the synapse.</p>
 <p>Outputs are determined as the learned linear transformation applied to synaptic
 currents, after new input is applied to the synapse, then reshaped to match
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">boutshape</span></code>.</p>
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">batched_outshape</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>*inputs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – inputs to the connection.</p>

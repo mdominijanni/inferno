@@ -232,6 +232,18 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
         <span class="n">RecordModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">peekvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return&#39;s the reducer&#39;s current state.</span>
+
+<span class="sd">        If :py:meth:`peek` has multiple options, this should be considered as the</span>
+<span class="sd">        default. Unless overridden, :py:meth:`peek` is called without arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: reducer&#39;s current state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
+
 <div class="viewcode-block" id="Reducer.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer.clear">[docs]</a>
     <span class="nd">@abstractmethod</span>

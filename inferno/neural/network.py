@@ -16,6 +16,15 @@ from typing import Any, Callable, Literal
 
 
 class Cell(Module, Observable):
+    r"""Pair of a ``Connection`` and ``Neuron`` produced by ``Layer`` for training.
+
+    Args:
+        layer (Layer): layer which owns this cell.
+        connection (Connection): connection for the cell.
+        neuron (Neuron): neuron for the cell.
+        names (tuple[str, str]): names used by the layer to uniquely identify this cell.
+    """
+
     def __init__(
         self,
         layer: Layer,
