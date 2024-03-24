@@ -12,6 +12,18 @@ class Reducer(RecordModule, ABC):
     def __init__(self, step_time, duration):
         RecordModule.__init__(self, step_time, duration)
 
+    @property
+    def peekvalue(self) -> torch.Tensor:
+        r"""Return's the reducer's current state.
+
+        If :py:meth:`peek` has multiple options, this should be considered as the
+        default. Unless overridden, :py:meth:`peek` is called without arguments.
+
+        Returns:
+            torch.Tensor: reducer's current state.
+        """
+        return self.peek()
+
     @abstractmethod
     def clear(self, **kwargs) -> None:
         r"""Reinitializes the reducer's state."""

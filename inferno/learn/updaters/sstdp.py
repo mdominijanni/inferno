@@ -1,6 +1,6 @@
 from __future__ import annotations
 from .. import LayerwiseTrainer
-from ... import Module, exp, interpolation
+from ... import Module, interpolation
 from ..._internal import argtest
 from ...neural import Cell
 from ...observe import (
@@ -172,7 +172,7 @@ class MSTDPET(LayerwiseTrainer):
         @dt.setter
         def dt(self, value: float):
             FoldingReducer.dt.fset(self, value)
-            self.decay = torch.tensor(exp(-self.dt / self.time_constant))
+            self.decay = math.exp(-self.dt / self.time_constant)
 
         def fold(
             self, obs: torch.Tensor, cond: torch.Tensor, state: torch.Tensor | None
@@ -353,9 +353,7 @@ class MSTDPET(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
-            trace=state.trace,
-            tc=state.tc_post,
+            {"dt": state.step_time, "trace": state.trace, "tc": state.tc_post},
         )
 
         # postsynaptic spike monitor (triggers hebbian LTP)
@@ -368,7 +366,7 @@ class MSTDPET(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            {"dt": state.step_time},
         )
 
         # presynaptic trace monitor (weighs hebbian LTP)
@@ -389,12 +387,17 @@ class MSTDPET(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
-            trace=state.trace,
-            tc=state.tc_pre,
+            {
+                "dt": state.step_time,
+                "trace": state.trace,
+                "tc": state.tc_pre,
+                "delayed": delayed,
+            },
         )
 
         # presynaptic spike monitor (triggers hebbian LTD)
+        # when the delayed condition is true, using synapse.spike records the raw
+        # spike times rather than the delay adjusted times of synspike.
         self.add_monitor(
             name,
             "spike_pre",
@@ -407,7 +410,7 @@ class MSTDPET(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            {"dt": state.step_time, "delayed": delayed},
         )
 
         return name
@@ -453,40 +456,40 @@ class MSTDPET(LayerwiseTrainer):
                 * :math:`B` is the batch size.
         """
         # iterate through self
-        for cell, aux, monitors in self:
+        for cell, state, monitors in self:
 
             # skip if self or cell is not in training mode or has no updater
             if not cell.training or not self.training or not cell.updater:
                 continue
 
             # update eligibility traces
-            aux.e_post_trace(
+            state.e_post_trace(
                 cell.connection.presyn_receptive(monitors["trace_pre"].peek()),
                 cell.connection.postsyn_receptive(monitors["spike_post"].peek()),
             )
 
-            aux.e_pre_trace(
+            state.e_pre_trace(
                 cell.connection.postsyn_receptive(monitors["trace_post"].peek()),
                 cell.connection.presyn_receptive(monitors["spike_pre"].peek()),
             )
 
             # retrieve eligbility traces
-            if aux.delayed and cell.connection.delayedby:
-                z_post = aux.e_post_trace.view(
+            if state.delayed and cell.connection.delayedby:
+                z_post = state.e_post_trace.view(
                     cell.connection.delay.unsqueeze(0).expand(
                         cell.connection.batchsz, *cell.connection.delay.shape
                     ),
-                    aux.tolerance,
+                    state.tolerance,
                 )
-                z_pre = aux.e_pre_trace.view(
+                z_pre = state.e_pre_trace.view(
                     cell.connection.delay.unsqueeze(0).expand(
                         cell.connection.batchsz, *cell.connection.delay.shape
                     ),
-                    aux.tolerance,
+                    state.tolerance,
                 )
             else:
-                z_post = aux.e_post_trace.peek()
-                z_pre = aux.e_pre_trace.peek()
+                z_post = state.e_post_trace.peek()
+                z_pre = state.e_pre_trace.peek()
 
             # process update
             if isinstance(reward, torch.Tensor):
@@ -496,14 +499,14 @@ class MSTDPET(LayerwiseTrainer):
                 reward_neg = torch.argwhere(reward_abs < 0)
 
                 # partial updates
-                dpost = z_post * (reward_abs * aux.scale)
-                dpre = z_pre * (reward_abs * aux.scale)
+                dpost = z_post * (reward_abs * state.scale)
+                dpre = z_pre * (reward_abs * state.scale)
 
                 dpost_reg, dpost_inv = dpost[reward_pos], dpost[reward_neg]
                 dpre_reg, dpre_inv = dpre[reward_pos], dpre[reward_neg]
 
                 # join partials
-                match (aux.lr_post >= 0, aux.lr_pre >= 0):
+                match (state.lr_post >= 0, state.lr_pre >= 0):
                     case (False, False):  # depressive
                         dpos = torch.cat(dpost_inv, dpre_inv, 0)
                         dneg = torch.cat(dpost_reg, dpre_reg, 0)
@@ -519,17 +522,17 @@ class MSTDPET(LayerwiseTrainer):
 
                 # apply update
                 cell.updater.weight = (
-                    aux.batchreduce(dpos, 0) if dpos.numel() else None,
-                    aux.batchreduce(dneg, 0) if dneg.numel() else None,
+                    state.batchreduce(dpos, 0) if dpos.numel() else None,
+                    state.batchreduce(dneg, 0) if dneg.numel() else None,
                 )
 
             else:
                 # partial updates
-                dpost = aux.batchreduce(z_post * abs(reward), 0) * aux.scale
-                dpre = aux.batchreduce(z_pre * abs(reward), 0) * aux.scale
+                dpost = state.batchreduce(z_post * abs(reward), 0) * state.scale
+                dpre = state.batchreduce(z_pre * abs(reward), 0) * state.scale
 
                 # accumulate partials with mode condition
-                match (aux.lr_post * reward >= 0, aux.lr_pre * reward >= 0):
+                match (state.lr_post * reward >= 0, state.lr_pre * reward >= 0):
                     case (False, False):  # depressive
                         cell.updater.weight = (None, dpost + dpre)
                     case (False, True):  # anti-hebbian

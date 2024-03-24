@@ -115,6 +115,18 @@ class Monitor(Module, ContextualHook):
             "the method `partialconstructor`."
         )
 
+    @property
+    def peekvalue(self) -> torch.Tensor:
+        r"""Return's the reducer's current state.
+
+        If :py:meth:`peek` has multiple options, this should be considered as the
+        default. Unless overridden, :py:meth:`peek` is called without arguments.
+
+        Returns:
+            torch.Tensor: reducer's current state.
+        """
+        return self.reducer_.peekvalue
+
     def clear(self, **kwargs) -> None:
         r"""Reinitializes the reducer's state."""
         return self.reducer_.clear(**kwargs)
@@ -401,6 +413,10 @@ class StateMonitor(Monitor):
             a tuple if None. Defaults to None.
 
     Note:
+        The end target of this can be a method name, however ``map_`` will need to be
+        specified in such a way as to call the method with desired arguments.
+
+    Note:
         The nested attribute should be specified with dot notation. For instance,
         if the observed module has an attribute ``a`` which in turn has an
         attribute ``b`` that should be monitored, then ``attr`` should be
@@ -489,9 +505,6 @@ class StateMonitor(Monitor):
                 filter_=filter_,
                 map_=map_,
             )
-
-        constructor.monitor = cls
-        constructor.reducer = type(reducer)
 
         return constructor
 
@@ -638,12 +651,140 @@ class DifferenceMonitor(Monitor):
                 map_=map_,
             )
 
-        constructor.monitor = cls
-        constructor.reducer = type(reducer)
-
         return constructor
 
     def clear(self, **kwargs) -> None:
         r"""Clears monitor state and reinitializes the reducer's state."""
         self.__data = None
         return self.reducer_.clear(**kwargs)
+
+
+class MultiStateMonitor(Monitor):
+    r"""Records a combination of the state of multiple attributes in a Module.
+
+    Attributes are passed to the reducer in-order.
+
+    Args:
+        reducer (Reducer): underlying means for reducing samples over time
+            and storing them.
+        attr (str): attribute or nested attribute to target.
+        subattrs (tuple[str, ...]): attributes, relative to ``attr``, to target.
+        module (Module, optional): module to register as the target for monitoring,
+            can be modified after construction. Defaults to None.
+        as_prehook (bool, optional): if this monitor should be called before the forward
+            call of the module being monitored. Defaults to False.
+        train_update (bool, optional): if this monitor should be called when the module
+            being monitored is in train mode. Defaults to True.
+        eval_update (bool, optional): if this monitor should be called when the module
+            being monitored is in eval mode. Defaults to True.
+        prepend (bool, optional): if this monitor should be called before other
+            registered forward prehooks or posthooks. Defaults to False.
+        filter_ (Callable[[tuple[Any, ...]], bool] | None, optional): test if the input
+            should be passed to the reducer, ignores None values when None.
+            Defaults to None.
+        map_ (Callable[[tuple[Any, ...]], tuple[torch.Tensor, ...]] | None, optional):
+            modifies the input before being passed to the reduer, identity if None.
+            Defaults to None.
+
+    Note:
+        The end targets of this can be a method name, however ``map_`` will need to be
+        specified in such a way as to call the method with desired arguments.
+
+    Note:
+        The nested attributes should be specified with dot notation. For instance,
+        if the observed module has an attribute ``a`` which in turn has an
+        attribute ``b`` that should be monitored, then ``attr`` should be
+        `'a.b'``. Even with nested attributes, the monitor's hook will be tied to
+        the module with which it is registered.
+    """
+
+    def __init__(
+        self,
+        reducer: Reducer,
+        attr: str,
+        subattrs: tuple[str, ...],
+        module: Module = None,
+        as_prehook: bool = False,
+        train_update: bool = True,
+        eval_update: bool = True,
+        prepend: bool = False,
+        filter_: Callable[[tuple[Any, ...]], bool] | None = None,
+        map_: Callable[[tuple[Any, ...]], tuple[torch.Tensor, ...]] | None = None,
+    ):
+        # set filter and map functions
+        self.filter_ = filter_ if filter_ else lambda x: x is not None
+        self.map_ = map_ if map_ else lambda x: x
+        if attr:
+            self.__observed_attrs = tuple(f"{attr}.{satr}" for satr in subattrs)
+        else:
+            self.__observed_attrs = tuple(satr for satr in subattrs)
+
+        # construct superclass
+        Monitor.__init__(
+            self,
+            reducer=reducer,
+            module=module,
+            prehook="_monitor_call" if as_prehook else None,
+            posthook="_monitor_call" if not as_prehook else None,
+            prehook_kwargs={"prepend": prepend} if as_prehook else None,
+            posthook_kwargs={"prepend": prepend} if not as_prehook else None,
+            train_update=train_update,
+            eval_update=eval_update,
+        )
+
+    def _monitor_call(self, module, args, *_):
+        res = tuple(rgetattr(module, oa) for oa in self.__observed_attrs)
+        if self.filter_(res):
+            self.reducer_(*self.map_(res))
+
+    @classmethod
+    def partialconstructor(
+        cls,
+        reducer: Reducer,
+        subattrs: tuple[str, ...],
+        as_prehook: bool = False,
+        train_update: bool = True,
+        eval_update: bool = True,
+        prepend: bool = False,
+        filter_: Callable[[Any], bool] | None = None,
+        map_: Callable[[Any], tuple[torch.Tensor, ...]] | None = None,
+    ) -> MonitorConstructor:
+        r"""Returns a function with a common signature for monitor construction.
+
+        Args:
+            reducer (Reducer): underlying means for reducing samples over time
+                and storing them.
+            subattrs (tuple[str, ...]): attributes, relative to ``attr``, to target.
+            as_prehook (bool, optional): if this monitor should be called before the
+                forward call of the module being monitored. Defaults to False.
+            train_update (bool, optional): if this monitor should be called when the
+                module being monitored is in train mode. Defaults to True.
+            eval_update (bool, optional): if this monitor should be called when the
+                module being monitored is in eval mode. Defaults to True.
+            prepend (bool, optional): if this monitor should be called before other
+                registered forward prehooks or posthooks. Defaults to False.
+            filter_ (Callable[[Any], bool] | None, optional): test if the input should be
+                passed to the reducer, ignores None values when None. Defaults to None.
+            map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies
+                the input before being passed to the reduer, wraps with a tuple if not
+                already a tuple if None. Defaults to None.
+
+        Returns:
+            MonitorConstructor: partial constructor for monitor.
+        """
+
+        def constructor(attr: str, module: Module):
+            return cls(
+                reducer=reducer,
+                attr=attr,
+                subattrs=subattrs,
+                module=module,
+                as_prehook=as_prehook,
+                train_update=train_update,
+                eval_update=eval_update,
+                prepend=prepend,
+                filter_=filter_,
+                map_=map_,
+            )
+
+        return constructor

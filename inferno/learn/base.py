@@ -1,14 +1,14 @@
 from __future__ import annotations
 from .. import Module
-from .._internal import fzip, getitem, rgetitem, unique
+from .._internal import fzip, getitem, unique
+from ..neural import Cell, Layer
+from ..observe import Monitor, MonitorConstructor, MonitorPool
 from abc import ABC, abstractmethod
-from collections.abc import Iterator
-from inferno.neural import Cell, Layer
-from inferno.observe import Monitor, MonitorConstructor
-from itertools import chain
+from collections.abc import Iterator, Mapping
 import torch  # noqa:F401, for docstrings
 import torch.nn as nn
 from typing import Any
+import weakref
 
 
 class CellTrainer(Module):
@@ -30,9 +30,9 @@ class CellTrainer(Module):
         Module.__init__(self, **kwargs)
 
         # interal storage for cells and monitors
-        self.cells_ = {}
-        self.aux_state_ = nn.ModuleDict()
-        self.monitors_ = nn.ModuleDict()
+        self.cells_ = weakref.WeakValueDictionary()
+        self.aux_states_ = nn.ModuleDict()
+        self.monitor_pool_ = MonitorPool()
 
     @property
     def monitors(self) -> Iterator[Monitor]:
@@ -45,7 +45,7 @@ class CellTrainer(Module):
         Yields:
             Monitor: added monitors.
         """
-        return unique(chain.from_iterable(m.values() for m in self.monitors_.values()))
+        return self.monitor_pool_.monitors()
 
     @property
     def named_monitors(self) -> Iterator[tuple[tuple[str, str], Monitor]]:
@@ -55,9 +55,7 @@ class CellTrainer(Module):
             tuple[tuple[str, str], Monitor]: tuple of an added monitor and a tuple
             of the cell name and monitor name corresponding to it.
         """
-        return chain.from_iterable(
-            (((c, n), m) for n, m in md.items()) for c, md in self.monitors_.items()
-        )
+        return self.monitor_pool_.named_monitors()
 
     def named_monitors_of(self, cell: str) -> Iterator[tuple[str, Monitor]]:
         r"""Monitors associated with a given cell.
@@ -68,7 +66,7 @@ class CellTrainer(Module):
         Yields:
             tuple[str, Monitor]: associated monitors and their names.
         """
-        return ((n, m) for n, m in getitem(self.monitors_, cell, {}).items())
+        return self.monitor_pool_.named_monitors_of(cell)
 
     @property
     def cells(self) -> Iterator[tuple[Cell, nn.Module | None]]:
@@ -77,7 +75,7 @@ class CellTrainer(Module):
         Yields:
             Cell: added cells and their auxiliary states.
         """
-        return ((c, getattr(self.aux_state_, n, None)) for n, c in self.cells_.items())
+        return ((c, getattr(self.aux_states_, n, None)) for n, c in self.cells_.items())
 
     @property
     def named_cells(self) -> Iterator[tuple[str, tuple[Cell, nn.Module | None]]]:
@@ -87,18 +85,18 @@ class CellTrainer(Module):
             tuple[str, Cell]: tuple of an added cell, their auxiliary states, and its name.
         """
         return (
-            (n, (c, getattr(self.aux_state_, n, None))) for n, c in self.cells_.items()
+            (n, (c, getattr(self.aux_states_, n, None))) for n, c in self.cells_.items()
         )
 
     def add_cell(
-        self, name: str, cell: Cell, aux: nn.Module | None = None
+        self, name: str, cell: Cell, state: nn.Module | None = None
     ) -> tuple[Cell, nn.Module | None]:
         r"""Adds a cell and any auxiliary state.
 
         Args:
             name (str): name of the cell to add.
             cell (Cell): cell to add.
-            aux (nn.Module | None, optional): any extra state to add. Defaults to None.
+            state (nn.Module | None, optional): any extra state to add. Defaults to None.
 
         Raises:
             ValueError: a cell with the specified name already exists.
@@ -117,22 +115,21 @@ class CellTrainer(Module):
                 "'cell' is not updatable, add an updater to 'cell.connection'"
             )
 
-        # delete any existing monitors (should never occur)
-        if name in self.monitors_:
-            for monitor in [*self.monitors_[name].keys()]:
-                self.del_monitor(name, monitor)
-            del self.monitors_[name]
+        # delete any existing monitors (should only occur if a cell died w/o removal)
+        self.monitor_pool_.del_observed(name)
 
-        # delete any existing state (should never occur)
-        if name in self.aux_state_:
-            del self.aux_state_[name]
+        # delete any existing state (should only occur if a cell died w/o removal)
+        if name in self.aux_states_:
+            del self.aux_states_[name]
 
         # add the cell
         self.cells_[name] = cell
-        if aux is not None:
-            self.aux_state_[name] = aux
+        self.monitor_pool_.add_observed(name, cell)
 
-        return getitem(self.cells_, name), getitem(self.aux_state_, name)
+        if state is not None:
+            self.aux_states_[name] = state
+
+        return getitem(self.cells_, name), getitem(self.aux_states_, name)
 
     def del_cell(self, name: str) -> None:
         r"""Deletes an added cell.
@@ -153,13 +150,11 @@ class CellTrainer(Module):
             raise AttributeError(f"'name' ('{name}') is not the name of an added cell")
 
         # delete any existing monitors
-        if name in self.monitors_:
-            for monitor in [*self.monitors_[name].keys()]:
-                self.del_monitor(name, monitor)
+        self.monitor_pool_.del_observed(name)
 
         # delete any existing state
-        if name in self.aux_state_:
-            del self.aux_state_[name]
+        if name in self.aux_states_:
+            del self.aux_states_[name]
 
         # delete the cell
         del self.cells_[name]
@@ -173,7 +168,7 @@ class CellTrainer(Module):
         Returns:
             tuple[Cell | None, nn.Module | None]: specified trainable, if it exists.
         """
-        return getitem(self.cells_, name), getitem(self.aux_state_, name)
+        return getitem(self.cells_, name), getitem(self.aux_states_, name)
 
     def add_monitor(
         self,
@@ -182,7 +177,7 @@ class CellTrainer(Module):
         attr: str,
         monitor: MonitorConstructor,
         unique: bool = False,
-        **tags: Any,
+        tags: Mapping[str, Any] | None = None,
     ) -> Monitor:
         r"""Adds a monitor to a trainable.
 
@@ -218,42 +213,7 @@ class CellTrainer(Module):
         if cell not in self.cells_:
             raise AttributeError(f"'cell' ('{cell}') is not the name of an added cell")
 
-        # test if the monitor already exists and return if it does, delete if unique
-        mon = rgetitem(self.monitors_, (cell, name), None)
-        if mon:
-            if unique:
-                del self.monitors_[cell][name]
-            else:
-                return mon
-
-        # create monitor group if it doesn't exist
-        if cell not in self.monitors_:
-            self.monitors_[cell] = nn.ModuleDict()
-
-        # construct the pool and prematurely return
-        if unique:
-            pool = None
-        else:
-            pool = (
-                (c, {mn: m for mn, m in self.monitors_[cn].items()})
-                for cn, c in self.cells_.items()
-                if cn in self.monitors_
-            )
-
-        # create monitor via the cell
-        monitor = self.cells_[cell].get_monitor(name, attr, monitor, pool, **tags)
-
-        # deregister if not in training mode
-        if not self.training:
-            monitor.deregister()
-
-        # add monitor to the trainer
-        if cell not in self.monitors_:
-            self.monitors_[cell] = nn.ModuleDict()
-        self.monitors_[cell][name] = monitor
-
-        # return the monitor
-        return monitor
+        return self.monitor_pool_.add_monitor(cell, name, attr, monitor, unique, tags)
 
     def del_monitor(self, cell: str, name: str) -> None:
         r"""Deletes an added monitor.
@@ -266,27 +226,7 @@ class CellTrainer(Module):
             AttributeError: specified cell does not exist, or does not have a
                 monitor with the specified name added to it.
         """
-        # check that the cell has monitors
-        if cell not in self.monitors_ or cell not in self.cells_:
-            raise AttributeError(
-                f"'cell' ('{cell}') is either not the name of an added "
-                "cell or is a cell with no added monitors"
-            )
-
-        # check that the monitor to delete exists
-        if name not in self.monitors_[cell]:
-            raise AttributeError(
-                f"'name' ('{name}') is not the name of a monitor added on cell "
-                f"with name '{cell}'"
-            )
-
-        # delete the monitor
-        self.monitors_[cell][name].deregister()
-        del self.monitors_[cell][name]
-
-        # delete group if empty
-        if not len(self.monitors_[cell]):
-            del self.monitors_[cell]
+        self.monitor_pool_.del_monitor(cell, name)
 
     def get_monitor(self, cell: str, name: str) -> Monitor | None:
         r"""Gets an added monitor.
@@ -298,7 +238,7 @@ class CellTrainer(Module):
         Returns:
             Monitor | None: specified monitor, if it exists.
         """
-        return rgetitem(self.monitors_, (cell, name), None)
+        return self.monitor_pool_.get_monitor(cell, name)
 
     def train(self, mode: bool = True) -> CellTrainer:
         r"""Override of module's train method.
@@ -319,10 +259,10 @@ class CellTrainer(Module):
 
         # attach/detach monitors
         if mode:
-            for monitor in self.monitors:
+            for monitor in self.monitor_pool_.monitors:
                 monitor.register()
         else:
-            for monitor in self.monitors:
+            for monitor in self.monitor_pool_.monitors:
                 monitor.deregister()
 
     def clear(self, **kwargs):
@@ -336,7 +276,7 @@ class CellTrainer(Module):
             to delete that state as well. This however doesn't delete updater state
             as it may be shared across trainers.
         """
-        for monitor in self.monitors:
+        for monitor in self.monitor_pool_.monitors:
             monitor.clear(**kwargs)
 
     def update(self, **kwargs) -> None:
@@ -393,12 +333,12 @@ class LayerwiseTrainer(CellTrainer, ABC):
         for name in self.cells_:
             yield (
                 getitem(self.cells_, name),
-                getitem(self.aux_state_, name),
-                {**getitem(self.monitors_, name, {})},
+                getitem(self.aux_states_, name),
+                dict(self.monitor_pool_.named_monitors_of(name)),
             )
 
     def _add_cell(
-        self, name: str, cell: Cell, aux: nn.Module | None = None
+        self, name: str, cell: Cell, state: nn.Module | None = None
     ) -> tuple[Cell, nn.Module | None]:
         r"""Alias to CellTrainer's add_cell function.
 
@@ -407,7 +347,7 @@ class LayerwiseTrainer(CellTrainer, ABC):
         Args:
             name (str): name of the cell to add.
             cell (Cell): cell to add.
-            aux (nn.Module | None, optional): any extra state to add. Defaults to None.
+            state (nn.Module | None, optional): any extra state to add. Defaults to None.
 
         Raises:
             ValueError: a cell with the specified name already exists.
@@ -416,7 +356,7 @@ class LayerwiseTrainer(CellTrainer, ABC):
         Returns:
             Cell: added cell.
         """
-        return CellTrainer.add_cell(self, name, cell, aux)
+        return CellTrainer.add_cell(self, name, cell, state)
 
     @abstractmethod
     def add_cell(self, name: str, cell: Cell, **kwargs) -> str:

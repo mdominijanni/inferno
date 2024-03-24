@@ -5,18 +5,17 @@ from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
 from .. import Module
 from .._internal import Proxy, argtest, rgetattr, rgetitem
 from ..types import OneToOne
-from ..observe import Monitor, MonitorConstructor
+from ..observe import Observable
 from abc import ABC, abstractmethod
-from collections.abc import Iterator, Iterable, Mapping
+from collections.abc import Iterator, Iterable
 import einops as ein
 from itertools import chain
 import torch
 import torch.nn as nn
 from typing import Any, Callable, Literal
-import weakref
 
 
-class Cell(Module):
+class Cell(Module, Observable):
     def __init__(
         self,
         layer: Layer,
@@ -24,52 +23,27 @@ class Cell(Module):
         neuron: Neuron,
         names: tuple[str, str],
     ):
-        # call superclass constructor
+        # call superclass constructors
         Module.__init__(self)
+        Observable.__init__(self, layer, "_realign_attribute", names, None)
 
         # component elements
         self.connection_ = connection
         self.neuron_ = neuron
 
-        # reference to owner and names
-        self._layer = weakref.ref(layer)
-        self._names = names
+    def local_remap(self, attr: str) -> tuple[tuple[Any, ...], dict[str, Any]]:
+        r"""Locally remaps an attribute for pooled monitors.
 
-    def get_monitor(
-        self,
-        name: str,
-        attr: str | None,
-        monitor: MonitorConstructor,
-        pool: Iterable[Cell, Mapping[str, Monitor]] | None = None,
-        **tags: Any,
-    ) -> Monitor:
-        r"""Creates or alias a monitor on the owning layer.
+        This method should alias any local attributes being referenced
+        as required. The callback ``realign`` given on initialization will
+        accept the output of this as positional and keyword arguments.
 
         Args:
-            name (str): name of the monitor to add.
-            attr (str): dot-separated attribute path, relative to this cell, to
-                monitor, when an empty-string, the cell is directly targeted.
-            monitor (MonitorConstructor): partial constructor for the monitor to add.
-            pool (Iterable[Cell, Mapping[str, Monitor]] | None, optional): pool to
-                search for compatible monitor, always creates a new one if None.
-                Defaults to None.
-            **tags (Any): tags to add to the monitor and to test for uniqueness.
-
-        Raises:
-            RuntimeError: attribute must be a member of this trainable.
-            RuntimeError: 'updater.connection' is the only valid head of the attribute
-                chain starting with 'updater'.
+            attr (str): dot-seperated attribute relative to self, to realign.
 
         Returns:
-            Monitor: added monitor.
-
-        Important:
-            All monitors added this way will be hooked to the :py:class:`Layer` which
-            owns this ``Cell`, and therefore will be associated with its ``forward``
-            call. If a monitor targeting an updater should trigger on updating, it
-            should be directly added to the updater. These tags are added via reflection
-            and do not persist in the state dictionary. If no pool is specified, the
-            new monitor will not have added tags, which prevents future aliasing.
+            tuple[tuple[Any, ...], dict[str, Any]]: tuple of positional arguments and
+            keyword arguments for ``realign`` method specified on initialization.
         """
         # check that the attribute is a valid dot-chain identifier if non-empty
         if attr:
@@ -102,48 +76,11 @@ class Cell(Module):
         # split the chain into target and attribute
         match attrchain[0]:
             case "connection":
-                target, attr = "connection", ".".join(attrchain[1:])
+                return ("connection", ".".join(attrchain[1:])), {}
             case "neuron":
-                target, attr = "neuron", ".".join(attrchain[1:])
+                return ("neuron", ".".join(attrchain[1:])), {}
             case _:
-                target, attr = "cell", ".".join(attrchain)
-
-        # get resolved attribute if the layer exists
-        if not self._layer():
-            raise RuntimeError("layer is no longer in memory")
-        else:
-            attr = self._layer()._align_attribute(*self._names, target, attr)
-
-        # return new monitor if pool is undefined (do not tag, guaranteed unique)
-        if not pool:
-            return monitor(attr, self._layer())
-
-        # get test tags
-        tags = {"attr": attr, **tags}
-        found = None
-
-        for cell, monitors in pool:
-            # skip invalid cells or cells from a different layer
-            if not (cell._layer() or id(cell._layer()) == id(self._layer())):
-                continue
-
-            # skip if the named monitor doesn't exist
-            if name not in monitors:
-                continue
-
-            # create the alias if tags match
-            if hasattr(monitors[name], "_tags") and monitors[name]._tags == tags:
-                found = monitors[name]
-                if id(cell) == id(self):  # break if identical cell
-                    break
-
-        # return alias or create new monitor
-        if found:
-            return found
-        else:
-            monitor = monitor(attr, self._layer())
-            monitor._tags = tags
-            return monitor
+                return ("cell", ".".join(attrchain)), {}
 
     @property
     def connection(self) -> Connection:
@@ -424,7 +361,7 @@ class Layer(Module, ABC):
         else:
             return name in self.connections_ or name in self.neurons_
 
-    def _align_attribute(
+    def _realign_attribute(
         self, connection: str, neuron: str, target: str, attr: str
     ) -> str:
         r"""Gets the attribute path for monitoring relative to the layer.

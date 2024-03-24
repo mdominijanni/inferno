@@ -279,9 +279,7 @@ class STDP(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
-            trace=state.trace,
-            tc=state.tc_post,
+            {"dt": state.step_time, "trace": state.trace, "tc": state.tc_post},
         )
 
         # postsynaptic spike monitor (triggers hebbian LTP)
@@ -294,7 +292,7 @@ class STDP(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            {"dt": state.step_time},
         )
 
         # presynaptic trace monitor (weighs hebbian LTP)
@@ -315,22 +313,30 @@ class STDP(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
-            trace=state.trace,
-            tc=state.tc_pre,
+            {
+                "dt": state.step_time,
+                "trace": state.trace,
+                "tc": state.tc_pre,
+                "delayed": delayed,
+            },
         )
 
         # presynaptic spike monitor (triggers hebbian LTD)
+        # when the delayed condition is true, using synapse.spike records the raw
+        # spike times rather than the delay adjusted times of synspike.
         self.add_monitor(
             name,
             "spike_pre",
-            "connection.synspike",
+            "synapse.spike" if delayed else "connection.synspike",
             StateMonitor.partialconstructor(
-                reducer=PassthroughReducer(state.step_time, duration=0.0),
+                reducer=PassthroughReducer(
+                    state.step_time,
+                    duration=cell.connection.delayedby if delayed else 0.0,
+                ),
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            {"dt": state.step_time, "delayed": delayed},
         )
 
         return name
@@ -338,7 +344,7 @@ class STDP(LayerwiseTrainer):
     def forward(self) -> None:
         """Processes update for given layers based on current monitor stored data."""
         # iterate through self
-        for cell, aux, monitors in self:
+        for cell, state, monitors in self:
 
             # skip if self or cell is not in training mode or has no updater
             if not cell.training or not self.training or not cell.updater:
@@ -347,21 +353,29 @@ class STDP(LayerwiseTrainer):
             # spike traces, reshaped into receptive format
             x_post = cell.connection.postsyn_receptive(monitors["trace_post"].peek())
             x_pre = cell.connection.presyn_receptive(
-                monitors["trace_pre"].view(cell.connection.selector, aux.tolerance)
-                if aux.delayed and cell.connection.delayedby
+                monitors["trace_pre"].view(cell.connection.selector, state.tolerance)
+                if state.delayed and cell.connection.delayedby
                 else monitors["trace_pre"].peek()
             )
 
             # spike presence, reshaped into receptive format
             i_post = cell.connection.postsyn_receptive(monitors["spike_post"].peek())
-            i_pre = cell.connection.presyn_receptive(monitors["spike_pre"].peek())
+            i_pre = cell.connection.presyn_receptive(
+                monitors["spike_pre"].view(cell.connection.selector, state.tolerance)
+                if state.delayed and cell.connection.delayedby
+                else monitors["spike_pre"].peek()
+            )
 
             # partial updates
-            dpost = aux.batchreduce(torch.sum(i_post * x_pre, -1), 0) * abs(aux.lr_post)
-            dpre = aux.batchreduce(torch.sum(i_pre * x_post, -1), 0) * abs(aux.lr_pre)
+            dpost = state.batchreduce(torch.sum(i_post * x_pre, -1), 0) * abs(
+                state.lr_post
+            )
+            dpre = state.batchreduce(torch.sum(i_pre * x_post, -1), 0) * abs(
+                state.lr_pre
+            )
 
             # accumulate partials with mode condition
-            match (aux.lr_post >= 0, aux.lr_pre >= 0):
+            match (state.lr_post >= 0, state.lr_pre >= 0):
                 case (False, False):  # depressive
                     cell.updater.weight = (None, dpost + dpre)
                 case (False, True):  # anti-hebbian
