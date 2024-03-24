@@ -172,8 +172,8 @@ class TestLIF:
         hyper = self.random_hyper()
         neuron = LIF(shape, **hyper)
 
-        validate_refrac_voltagedriven(
-            neuron, hyper["thresh_v"] + 5, hyper["step_time"], hyper["refrac_t"]
+        validate_refrac_voltagedriven_eps(
+            neuron, hyper["thresh_v"] + 5, hyper["step_time"], hyper["refrac_t"], 5e-7
         )
 
     def test_voltage_lock(self):
@@ -352,8 +352,8 @@ class TestGLIF1:
         hyper = self.random_hyper()
         neuron = GLIF1(shape, **hyper)
 
-        validate_refrac_voltagedriven(
-            neuron, hyper["thresh_v"] + 5, hyper["step_time"], hyper["refrac_t"]
+        validate_refrac_voltagedriven_eps(
+            neuron, hyper["thresh_v"] + 5, hyper["step_time"], hyper["refrac_t"], 5e-7
         )
 
     def test_voltage_lock(self):
@@ -537,8 +537,8 @@ class TestQIF:
         hyper = self.random_hyper()
         neuron = QIF(shape, **hyper)
 
-        validate_refrac_voltagedriven(
-            neuron, hyper["thresh_v"] + 5, hyper["step_time"], hyper["refrac_t"]
+        validate_refrac_voltagedriven_eps(
+            neuron, hyper["thresh_v"] + 5, hyper["step_time"], hyper["refrac_t"], 5e-7
         )
 
     def test_voltage_lock(self):
@@ -717,8 +717,8 @@ class TestEIF:
         hyper = self.random_hyper()
         neuron = EIF(shape, **hyper)
 
-        validate_refrac_voltagedriven(
-            neuron, hyper["thresh_v"] + 5, hyper["step_time"], hyper["refrac_t"]
+        validate_refrac_voltagedriven_eps(
+            neuron, hyper["thresh_v"] + 5, hyper["step_time"], hyper["refrac_t"], 5e-7
         )
 
     def test_voltage_lock(self):

@@ -1,6 +1,7 @@
 from .mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
 from .. import Neuron
 from .. import functional as nf
+from ... import scalar
 from ..._internal import argtest
 from itertools import zip_longest
 import torch
@@ -58,13 +59,41 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         Neuron.__init__(self, shape, batch_size)
 
         # dynamics attributes
-        self.step_time = argtest.gt("step_time", step_time, 0, float)
-        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
-        self.rest_v = argtest.lt("rest_v", rest_v, thresh_v, float, "thresh_v")
-        self.reset_v = argtest.lt("reset_v", reset_v, thresh_v, float, "thresh_v")
-        self.thresh_v = float(thresh_v)
-        self.refrac_t = argtest.gte("refrac_t", refrac_t, 0, float)
-        self.resistance = argtest.neq("resistance", resistance, 0, float)
+        self.register_buffer(
+            "step_time",
+            torch.tensor(argtest.gt("step_time", step_time, 0, float)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "rest_v",
+            torch.tensor(argtest.lt("rest_v", rest_v, thresh_v, float, "thresh_v")),
+            persistent=False,
+        )
+        self.register_buffer(
+            "reset_v",
+            torch.tensor(argtest.lt("reset_v", reset_v, thresh_v, float, "thresh_v")),
+            persistent=False,
+        )
+        self.register_buffer(
+            "thresh_v",
+            torch.tensor(float(thresh_v)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "refrac_t",
+            torch.tensor(argtest.gte("refrac_t", refrac_t, 0, float)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "time_constant",
+            torch.tensor(argtest.gt("time_constant", time_constant, 0, float)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "resistance",
+            torch.tensor(argtest.neq("resistance", resistance, 0, float)),
+            persistent=False,
+        )
 
         # call mixin constructors
         VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v), False)
@@ -75,7 +104,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
-            step_time=self.dt,
+            step_time=self.step_time,
             time_constant=self.time_constant,
             rest_v=self.rest_v,
             resistance=self.resistance,
@@ -91,11 +120,11 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         Returns:
             float: present simulation time step length.
         """
-        return self.step_time
+        return float(self.step_time)
 
     @dt.setter
     def dt(self, value: float):
-        self.step_time = argtest.gt("dt", value, 0, float)
+        self.step_time = scalar(argtest.gt("dt", value, 0, float), self.step_time)
 
     def clear(self, **kwargs):
         r"""Resets neurons to their resting state."""
@@ -241,13 +270,45 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         tc_adaptation, spike_increment = tc_list, si_list
 
         # dynamics attributes
-        self.step_time = argtest.gt("step_time", step_time, 0, float)
-        self.tc_membrane = argtest.gt("tc_membrane", tc_membrane, 0, float)
-        self.rest_v = argtest.lt("rest_v", rest_v, thresh_eq_v, float, "thresh_eq_v")
-        self.reset_v = argtest.lt("reset_v", reset_v, thresh_eq_v, float, "thresh_eq_v")
-        self.thresh_eq_v = float(thresh_eq_v)
-        self.refrac_t = argtest.gte("refrac_t", refrac_t, 0, float)
-        self.resistance = argtest.neq("resistance", resistance, 0, float)
+        self.register_buffer(
+            "step_time",
+            torch.tensor(argtest.gt("step_time", step_time, 0, float)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "rest_v",
+            torch.tensor(
+                argtest.lt("rest_v", rest_v, thresh_eq_v, float, "thresh_eq_v")
+            ),
+            persistent=False,
+        )
+        self.register_buffer(
+            "reset_v",
+            torch.tensor(
+                argtest.lt("reset_v", reset_v, thresh_eq_v, float, "thresh_eq_v")
+            ),
+            persistent=False,
+        )
+        self.register_buffer(
+            "thresh_eq_v",
+            torch.tensor(float(thresh_eq_v)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "refrac_t",
+            torch.tensor(argtest.gte("refrac_t", refrac_t, 0, float)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "tc_membrane",
+            torch.tensor(argtest.gt("tc_membrane", tc_membrane, 0, float)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "resistance",
+            torch.tensor(argtest.neq("resistance", resistance, 0, float)),
+            persistent=False,
+        )
 
         # register adaptation attributes as buffers (for tensor ops and compatibility)
         self.register_buffer(
@@ -272,7 +333,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
-            step_time=self.dt,
+            step_time=self.step_time,
             time_constant=self.tc_membrane,
             rest_v=self.rest_v,
             resistance=self.resistance,
@@ -288,11 +349,11 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         Returns:
             float: present simulation time step length.
         """
-        return self.step_time
+        return float(self.step_time)
 
     @dt.setter
     def dt(self, value: float):
-        self.step_time = argtest.gt("dt", value, 0, float)
+        self.step_time = scalar(argtest.gt("dt", value, 0, float), self.step_time)
 
     def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
@@ -354,7 +415,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             adaptations = nf.adaptive_thresholds_linear_spike(
                 adaptations=self.adaptation,
                 spikes=spikes,
-                step_time=self.dt,
+                step_time=self.step_time,
                 time_constant=self.tc_adaptation,
                 spike_increment=self.adapt_increment,
                 refracs=(self.refrac if refrac_lock else None),
@@ -549,14 +610,48 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         rc_adaptation, spike_increment = rc_list, si_list
 
         # dynamics attributes
-        self.step_time = argtest.gt("step_time", step_time, 0, float)
-        self.tc_membrane = argtest.gt("tc_membrane", tc_membrane, 0, float)
-        self.rest_v = argtest.lt("rest_v", rest_v, thresh_eq_v, float, "thresh_eq_v")
-        self.thresh_eq_v = float(thresh_eq_v)
-        self.reset_v_add = float(reset_v_add)
-        self.reset_v_mul = float(reset_v_mul)
-        self.refrac_t = argtest.gte("refrac_t", refrac_t, 0, float)
-        self.resistance = argtest.neq("resistance", resistance, 0, float)
+        self.register_buffer(
+            "step_time",
+            torch.tensor(argtest.gt("step_time", step_time, 0, float)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "rest_v",
+            torch.tensor(
+                argtest.lt("rest_v", rest_v, thresh_eq_v, float, "thresh_eq_v")
+            ),
+            persistent=False,
+        )
+        self.register_buffer(
+            "reset_v_add",
+            torch.tensor(float(reset_v_add)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "reset_v_mul",
+            torch.tensor(float(reset_v_mul)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "thresh_eq_v",
+            torch.tensor(float(thresh_eq_v)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "refrac_t",
+            torch.tensor(argtest.gte("refrac_t", refrac_t, 0, float)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "tc_membrane",
+            torch.tensor(argtest.gt("tc_membrane", tc_membrane, 0, float)),
+            persistent=False,
+        )
+        self.register_buffer(
+            "resistance",
+            torch.tensor(argtest.neq("resistance", resistance, 0, float)),
+            persistent=False,
+        )
 
         # register adaptation attributes as buffers (for tensor ops and compatibility)
         self.register_buffer(
@@ -581,7 +676,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
-            step_time=self.dt,
+            step_time=self.step_time,
             time_constant=self.tc_membrane,
             rest_v=self.rest_v,
             resistance=self.resistance,
@@ -597,11 +692,11 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         Returns:
             float: present simulation time step length.
         """
-        return self.step_time
+        return float(self.step_time)
 
     @dt.setter
     def dt(self, value: float):
-        self.step_time = argtest.gt("dt", value, 0, float)
+        self.step_time = scalar(argtest.gt("dt", value, 0, float), self.step_time)
 
     def clear(self, keep_adaptations=True, **kwargs):
         r"""Resets neurons to their resting state.
@@ -665,7 +760,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             adaptations = nf.adaptive_thresholds_linear_spike(
                 adaptations=self.adaptation,
                 spikes=spikes,
-                step_time=self.dt,
+                step_time=self.step_time,
                 time_constant=1 / self.rc_adaptation,
                 spike_increment=self.adapt_increment,
                 refracs=(self.refrac if refrac_lock else None),
