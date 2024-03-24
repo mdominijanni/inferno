@@ -71,7 +71,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), False)
 
     def _integrate_v(self, masked_inputs):
-        r"""Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
+        r"""Internal, voltage function for :py:func:`~nf.voltage_thresholding_constant`."""
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
@@ -115,7 +115,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
             torch.Tensor: if the corresponding neuron generated an action potential.
         """
         # use voltage thresholding function
-        spikes, voltages, refracs = nf.voltage_thresholding(
+        spikes, voltages, refracs = nf.voltage_thresholding_constant(
             inputs=inputs,
             refracs=self.refrac,
             dynamics=self._integrate_v,
@@ -229,7 +229,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             if tc is None:
                 tc_list.append(tc_list[-1])
             else:
-                tc_list.append(argtest.gt("tc_adaptation[{idx}]", tc, 0, float))
+                tc_list.append(argtest.gt(f"tc_adaptation[{idx}]", tc, 0, float))
 
             # threshold spike increment
             if si_list is None:
@@ -268,7 +268,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         )
 
     def _integrate_v(self, masked_inputs):
-        """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
+        """Internal, voltage function for :py:func:`~nf.voltage_thresholding_constant`."""
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
@@ -331,7 +331,7 @@ class ALIF(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             is in training mode but not when it is in evaluation mode.
         """
         # use voltage thresholding function
-        spikes, voltages, refracs = nf.voltage_thresholding(
+        spikes, voltages, refracs = nf.voltage_thresholding_constant(
             inputs=inputs,
             refracs=self.refrac,
             dynamics=self._integrate_v,
@@ -405,7 +405,7 @@ class GLIF1(VoltageMixin, SpikeRefractoryMixin, Neuron):
         )
 
     def _integrate_v(self, masked_inputs):
-        """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
+        """Internal, voltage function for :py:func:`~nf.voltage_thresholding_constant`."""
         return LIF._integrate_v(self, masked_inputs)
 
     @property
@@ -440,7 +440,7 @@ class GLIF1(VoltageMixin, SpikeRefractoryMixin, Neuron):
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential.
         """
-        return LIF.forward(inputs, refrac_lock=refrac_lock)
+        return LIF.forward(self, inputs, refrac_lock=refrac_lock)
 
 
 class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
@@ -577,7 +577,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         )
 
     def _integrate_v(self, masked_inputs):
-        """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
+        """Internal, voltage function for :py:func:`~nf.voltage_thresholding_linear`."""
         return nf.voltage_integration_linear(
             masked_inputs,
             self.voltage,
@@ -640,7 +640,7 @@ class GLIF2(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             is in training mode but not when it is in evaluation mode.
         """
         # use naturalistic voltage thresholding function
-        spikes, voltages, refracs = nf.voltage_thresholding_slope_intercept(
+        spikes, voltages, refracs = nf.voltage_thresholding_linear(
             inputs=inputs,
             refracs=self.refrac,
             dynamics=self._integrate_v,

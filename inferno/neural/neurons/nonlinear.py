@@ -128,7 +128,7 @@ class QIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
             torch.Tensor: if the corresponding neuron generated an action potential.
         """
         # use voltage thresholding function
-        spikes, voltages, refracs = nf.voltage_thresholding(
+        spikes, voltages, refracs = nf.voltage_thresholding_constant(
             inputs=inputs,
             refracs=self.refrac,
             dynamics=self._integrate_v,
@@ -304,7 +304,7 @@ class Izhikevich(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         )
 
     def _integrate_v(self, masked_inputs):
-        """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
+        """Internal, voltage function for :py:func:`~nf.voltage_thresholding_constant`."""
         return nf.voltage_integration_quadratic(
             masked_inputs,
             self.voltage,
@@ -312,7 +312,7 @@ class Izhikevich(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             rest_v=self.rest_v,
             crit_v=self.crit_v,
             affinity=self.affinity,
-            time_constant=self.time_constant,
+            time_constant=self.tc_membrane,
             resistance=self.resistance,
         )
 
@@ -369,13 +369,13 @@ class Izhikevich(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             is in training mode but not when it is in evaluation mode.
         """
         # use voltage thresholding function
-        spikes, voltages, refracs = nf.voltage_thresholding(
+        spikes, voltages, refracs = nf.voltage_thresholding_constant(
             inputs=nf.apply_adaptive_currents(inputs, self.adaptation),
             refracs=self.refrac,
             dynamics=self._integrate_v,
             step_time=self.step_time,
             reset_v=self.reset_v,
-            thresh_v=self.adaptation,
+            thresh_v=self.thresh_v,
             refrac_t=self.refrac_t,
             voltages=(self.voltage if refrac_lock else None),
         )
@@ -483,7 +483,7 @@ class EIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), False)
 
     def _integrate_v(self, masked_inputs):
-        r"""Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
+        r"""Internal, voltage function for :py:func:`~nf.voltage_thresholding_constant`."""
         return nf.voltage_integration_exponential(
             masked_inputs,
             self.voltage,
@@ -529,7 +529,7 @@ class EIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
             torch.Tensor: if the corresponding neuron generated an action potential.
         """
         # use voltage thresholding function
-        spikes, voltages, refracs = nf.voltage_thresholding(
+        spikes, voltages, refracs = nf.voltage_thresholding_constant(
             inputs=inputs,
             refracs=self.refrac,
             dynamics=self._integrate_v,
@@ -708,7 +708,7 @@ class AdEx(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         )
 
     def _integrate_v(self, masked_inputs):
-        """Internal, voltage function for :py:func:`~nf.voltage_thresholding`."""
+        """Internal, voltage function for :py:func:`~nf.voltage_thresholding_constant`."""
         return nf.voltage_integration_exponential(
             masked_inputs,
             self.voltage,
@@ -716,7 +716,7 @@ class AdEx(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             rest_v=self.rest_v,
             rheobase_v=self.rheobase_v,
             sharpness=self.sharpness,
-            time_constant=self.time_constant,
+            time_constant=self.tc_membrane,
             resistance=self.resistance,
         )
 
@@ -773,13 +773,13 @@ class AdEx(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
             is in training mode but not when it is in evaluation mode.
         """
         # use voltage thresholding function
-        spikes, voltages, refracs = nf.voltage_thresholding(
+        spikes, voltages, refracs = nf.voltage_thresholding_constant(
             inputs=nf.apply_adaptive_currents(inputs, self.adaptation),
             refracs=self.refrac,
             dynamics=self._integrate_v,
             step_time=self.step_time,
             reset_v=self.reset_v,
-            thresh_v=self.adaptation,
+            thresh_v=self.thresh_v,
             refrac_t=self.refrac_t,
             voltages=(self.voltage if refrac_lock else None),
         )

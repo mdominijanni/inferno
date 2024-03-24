@@ -5,7 +5,14 @@ import torch
 import weakref
 
 from inferno import Module
-from inferno.observe import Monitor, Reducer, InputMonitor, OutputMonitor, StateMonitor
+from inferno.observe import (
+    Monitor,
+    Reducer,
+    InputMonitor,
+    OutputMonitor,
+    StateMonitor,
+    MultiStateMonitor,
+)
 
 
 class MockReducer(Reducer):
@@ -333,3 +340,88 @@ class TestOutputMonitor:
         res = module(sentinel)
         assert id(reducer.latest_inputs) == id(res)
         assert torch.all(reducer.latest_inputs == res)
+
+
+class TestMultiStateMonitor:
+
+    @staticmethod
+    def random_shape(mindims=1, maxdims=9, minsize=1, maxsize=9):
+        return tuple(
+            random.randint(mindims, maxdims)
+            for _ in range(random.randint(minsize, maxsize))
+        )
+
+    @pytest.mark.parametrize(
+        "prehook",
+        (True, False),
+        ids=("prehook", "posthook"),
+    )
+    def test_finalizer_unregistered(self, prehook):
+        reducer = MockReducer()
+        module = MockModule()
+        module.nested = MockModule()
+        module.nested.nested = MockModule()
+
+        monitor = MultiStateMonitor(
+            reducer, "nested", ("data", "nested.data"), module, as_prehook=prehook
+        )
+
+        monitor.deregister()
+
+        monitorref = weakref.ref(monitor)
+        del monitor
+
+        assert monitorref() is None
+        if prehook:
+            assert len(module._forward_pre_hooks) == 0
+        else:
+            assert len(module._forward_hooks) == 0
+
+    @pytest.mark.parametrize(
+        "prehook",
+        (True, False),
+        ids=("prehook", "posthook"),
+    )
+    def test_finalizer_registered(self, prehook):
+        reducer = MockReducer()
+        module = MockModule()
+        module.nested = MockModule()
+        module.nested.nested = MockModule()
+
+        monitor = MultiStateMonitor(
+            reducer, "nested", ("data", "nested.data"), module, as_prehook=prehook
+        )
+
+        if prehook:
+            assert len(module._forward_pre_hooks) == 1
+        else:
+            assert len(module._forward_hooks) == 1
+
+        monitorref = weakref.ref(monitor)
+        del monitor
+
+        assert monitorref() is None
+        if prehook:
+            assert len(module._forward_pre_hooks) == 0
+        else:
+            assert len(module._forward_hooks) == 0
+
+    def test_monitored_forward(self):
+        shape = self.random_shape()
+        reducer = MockReducer()
+        module = MockModule()
+        module.nested = MockModule()
+        module.nested.nested = MockModule()
+
+        module.nested.data = torch.rand(3, 3)
+        module.nested.nested.data = torch.rand(3, 3)
+
+        _ = MultiStateMonitor(
+            reducer, "nested", ("data", "nested.data"), module
+        )
+
+        data = torch.rand(shape)
+
+        module(data)
+        assert id(reducer.latest_inputs[0]) == id(module.nested.data)
+        assert id(reducer.latest_inputs[1]) == id(module.nested.nested.data)
