@@ -763,8 +763,8 @@ class RecordModule(DimensionalModule):
         DimensionalModule.__init__(self, (-1, size))
 
         # transient state
-        self._step_time = step_time
-        self._duration = duration
+        self.__step_time = step_time
+        self.__duration = duration
 
         # persistent state
         self.register_extra("_pointers", dict())
@@ -785,7 +785,7 @@ class RecordModule(DimensionalModule):
             If a :py:meth:`reconstrain` operation needs to be performed, all state will
             be overwritten with zeros.
         """
-        return self._step_time
+        return self.__step_time
 
     @dt.setter
     def dt(self, value: float) -> None:
@@ -793,14 +793,14 @@ class RecordModule(DimensionalModule):
         value = argtest.gt("value", value, 0, float)
 
         # recompute size of the history dimension
-        size = math.ceil(self._duration / value) + 1
+        size = math.ceil(self.__duration / value) + 1
 
         # reconstrain if required
         if size != self.recordsz:
             DimensionalModule.reconstrain(self, -1, size)
 
         # set revised step time
-        self._step_time = value
+        self.__step_time = value
 
     @property
     def duration(self) -> float:
@@ -818,7 +818,7 @@ class RecordModule(DimensionalModule):
             If a :py:meth:`reconstrain` operation needs to be performed, all state will
             be overwritten with zeros.
         """
-        return self._duration
+        return self.__duration
 
     @duration.setter
     def duration(self, value: float) -> None:
@@ -826,14 +826,14 @@ class RecordModule(DimensionalModule):
         value = argtest.gte("value", value, 0, float)
 
         # recompute size of the history dimension
-        size = math.ceil(value / self._step_time) + 1
+        size = math.ceil(value / self.__step_time) + 1
 
         # reconstrain if required
         if size != self.recordsz:
             DimensionalModule.reconstrain(self, -1, size)
 
         # set revised history length
-        self._duration = value
+        self.__duration = value
 
     @property
     def recordsz(self) -> int:
