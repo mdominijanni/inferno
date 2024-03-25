@@ -134,80 +134,62 @@ class STDP(LayerwiseTrainer):
         )
         self.batchreduce = batch_reduction if batch_reduction else torch.mean
 
-    class State(Module):
-        r"""STDP Auxiliary State
+    def _build_cell_state(self, **kwargs) -> Module:
+        r"""Builds auxiliary state for a cell.
 
-        Args:
-            trainer (STDP): STDP trainer.
-            **kwargs (Any): default argument overrides.
+        Keyword arguments will override module-level hyperparameters.
+
+        Returns:
+            Module: state module.
         """
+        state = Module()
 
-        def __init__(self, trainer: STDP, **kwargs: Any):
-            # call superclass constructor
-            Module.__init__(self)
+        step_time = kwargs.get("step_time", self.step_time)
+        lr_post = kwargs.get("lr_post", self.lr_post)
+        lr_pre = kwargs.get("lr_pre", self.lr_pre)
+        tc_post = kwargs.get("tc_post", self.tc_post)
+        tc_pre = kwargs.get("tc_pre", self.tc_pre)
+        delayed = kwargs.get("delayed", self.delayed)
+        interp_tolerance = kwargs.get("interp_tolerance", self.tolerance)
+        trace_mode = kwargs.get("trace_mode", self.trace)
+        batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
 
-            # map arguments
-            if "step_time" in kwargs:
-                self.step_time = argtest.gt("step_time", kwargs["step_time"], 0, float)
-            else:
-                self.step_time = trainer.step_time
+        state.register_buffer(
+            "step_time",
+            torch.tensor(argtest.gt("step_time", step_time, 0, float)),
+            persistent=False,
+        )
+        state.register_buffer("lr_post", torch.tensor(float(lr_post)), persistent=False)
+        state.register_buffer("lr_pre", torch.tensor(float(lr_pre)), persistent=False)
+        state.register_buffer(
+            "tc_post",
+            torch.tensor(argtest.gt("tc_post", tc_post, 0, float)),
+            persistent=False,
+        )
+        state.register_buffer(
+            "tc_pre",
+            torch.tensor(argtest.gt("tc_pre", tc_pre, 0, float)),
+            persistent=False,
+        )
+        state.register_buffer(
+            "tolerance",
+            torch.tensor(argtest.gte("interp_tolerance", interp_tolerance, 0, float)),
+            persistent=False,
+        )
 
-            if "lr_post" in kwargs:
-                self.lr_post = float(kwargs["lr_post"])
-            else:
-                self.lr_post = trainer.lr_post
+        state.delayed = bool(delayed)
+        state.trace = argtest.oneof(
+            "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
+        )
+        state.batchreduce = batch_reduction if batch_reduction else torch.mean
 
-            if "lr_pre" in kwargs:
-                self.lr_pre = float(kwargs["lr_pre"])
-            else:
-                self.lr_pre = trainer.lr_pre
+        return state
 
-            if "tc_post" in kwargs:
-                self.tc_post = argtest.gt("tc_post", kwargs["tc_post"], 0, float)
-            else:
-                self.tc_post = trainer.tc_post
-
-            if "tc_pre" in kwargs:
-                self.tc_pre = argtest.gt("tc_pre", kwargs["tc_pre"], 0, float)
-            else:
-                self.tc_pre = trainer.tc_pre
-
-            if "delayed" in kwargs:
-                self.delayed = bool(kwargs["delayed"])
-            else:
-                self.delayed = trainer.delayed
-
-            if "interp_tolerance" in kwargs:
-                self.tolerance = argtest.gte(
-                    "interp_tolerance", kwargs["interp_tolerance"], 0, float
-                )
-            else:
-                self.tolerance = trainer.tolerance
-
-            if "trace_mode" in kwargs:
-                self.trace = argtest.oneof(
-                    "trace_mode",
-                    kwargs["trace_mode"],
-                    "cumulative",
-                    "nearest",
-                    op=(lambda x: x.lower()),
-                )
-            else:
-                self.trace = trainer.trace
-
-            if "batch_reduction" in kwargs:
-                self.batchreduce = (
-                    kwargs["batch_reduction"]
-                    if kwargs["batch_reduction"]
-                    else torch.mean
-                )
-            else:
-                self.batchreduce = trainer.batchreduce
-
-    def add_cell(
+    def register_cell(
         self,
         name: str,
         cell: Cell,
+        /,
         **kwargs: Any,
     ) -> str:
         r"""Adds a cell with required state.
@@ -239,7 +221,7 @@ class STDP(LayerwiseTrainer):
             set on initialization. See :py:class:`STDP` for details.
         """
         # add the cell with additional hyperparameters
-        cell, state = self._add_cell(name, cell, self.State(self, **kwargs))
+        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
 
         # if delays should be accounted for
         delayed = state.delayed and cell.connection.delayedby is not None
@@ -279,7 +261,9 @@ class STDP(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            {"dt": state.step_time, "trace": state.trace, "tc": state.tc_post},
+            dt=state.step_time,
+            trace=state.trace,
+            tc=state.tc_post,
         )
 
         # postsynaptic spike monitor (triggers hebbian LTP)
@@ -292,7 +276,7 @@ class STDP(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            {"dt": state.step_time},
+            dt=state.step_time,
         )
 
         # presynaptic trace monitor (weighs hebbian LTP)
@@ -313,12 +297,10 @@ class STDP(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            {
-                "dt": state.step_time,
-                "trace": state.trace,
-                "tc": state.tc_pre,
-                "delayed": delayed,
-            },
+            dt=state.step_time,
+            trace=state.trace,
+            tc=state.tc_pre,
+            delayed=delayed,
         )
 
         # presynaptic spike monitor (triggers hebbian LTD)
@@ -336,7 +318,8 @@ class STDP(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            {"dt": state.step_time, "delayed": delayed},
+            dt=state.step_time,
+            delayed=delayed,
         )
 
         return name

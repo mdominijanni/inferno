@@ -162,8 +162,16 @@ class MSTDPET(LayerwiseTrainer):
             FoldingReducer.__init__(self, step_time, duration)
 
             # register state
-            self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
-            self.decay = math.exp(-self.dt / self.time_constant)
+            self.register_buffer(
+                "time_constant",
+                argtest.gt("time_constant", time_constant, 0, float),
+                persistent=False,
+            )
+            self.register_buffer(
+                "decay",
+                math.exp(-self.dt / self.time_constant),
+                persistent=False,
+            )
 
         @property
         def dt(self) -> float:
@@ -172,7 +180,7 @@ class MSTDPET(LayerwiseTrainer):
         @dt.setter
         def dt(self, value: float):
             FoldingReducer.dt.fset(self, value)
-            self.decay = math.exp(-self.dt / self.time_constant)
+            self.decay = torch.exp(-self.dt / self.time_constant)
 
         def fold(
             self, obs: torch.Tensor, cond: torch.Tensor, state: torch.Tensor | None
@@ -192,7 +200,7 @@ class MSTDPET(LayerwiseTrainer):
             prev_data: torch.Tensor,
             next_data: torch.Tensor,
             sample_at: torch.Tensor,
-            step_time: float,
+            step_time: float | torch.Tensor,
         ) -> torch.Tensor:
             return interpolation.expdecay(
                 prev_data, next_data, sample_at, step_time, self.time_constant
@@ -353,7 +361,9 @@ class MSTDPET(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            {"dt": state.step_time, "trace": state.trace, "tc": state.tc_post},
+            dt=state.step_time,
+            trace=state.trace,
+            tc=state.tc_post,
         )
 
         # postsynaptic spike monitor (triggers hebbian LTP)
@@ -366,7 +376,7 @@ class MSTDPET(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            {"dt": state.step_time},
+            dt=state.step_time,
         )
 
         # presynaptic trace monitor (weighs hebbian LTP)
@@ -387,12 +397,10 @@ class MSTDPET(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            {
-                "dt": state.step_time,
-                "trace": state.trace,
-                "tc": state.tc_pre,
-                "delayed": delayed,
-            },
+            dt=state.step_time,
+            trace=state.trace,
+            tc=state.tc_pre,
+            delayed=delayed,
         )
 
         # presynaptic spike monitor (triggers hebbian LTD)
@@ -410,7 +418,8 @@ class MSTDPET(LayerwiseTrainer):
                 **monitor_kwargs,
             ),
             False,
-            {"dt": state.step_time, "delayed": delayed},
+            dt=state.step_time,
+            delayed=delayed,
         )
 
         return name

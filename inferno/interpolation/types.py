@@ -9,7 +9,8 @@ class Interpolation(Protocol):
         prev_data (torch.Tensor): most recent observation prior to sample time.
         next_data (torch.Tensor): most recent observation subsequent to sample time.
         sample_at (torch.Tensor): relative time at which to sample data.
-        step_data (float): length of time between the prior and subsequent observations.
+        step_time (float | torch.Tensor): length of time between the prior and
+            subsequent observations.
 
     Returns:
         torch.Tensor: interpolated data at sample time.
@@ -24,7 +25,7 @@ class Interpolation(Protocol):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_data: float,
+        step_data: float | torch.Tensor,
         **kwargs,
     ) -> torch.Tensor:
         r"""Callback protocol function."""

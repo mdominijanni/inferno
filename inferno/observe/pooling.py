@@ -292,7 +292,8 @@ class MonitorPool(Module):
         attr: str,
         constructor: MonitorConstructor,
         unique: bool = False,
-        tags: Mapping[str, Any] | None = None,
+        /,
+        **tags: Any,
     ) -> Monitor:
         r"""Adds a monitor to an observable.
 
@@ -303,9 +304,8 @@ class MonitorPool(Module):
             constructor (MonitorConstructor): partial constructor for the monitor.
             unique (bool, optional): if the monitor should never be aliased from the
                 pool. Defaults to False.
-            tags (Mapping[str, Any] | None, optional): tags to determine if the monitor
-                is unique amongst monitors with the same name, targeting the same
-                attribute (aligned to the basis). Defaults to None.
+            **tags (Any): tags to determine if the monitor is unique amongst monitors
+                with the same name, targeting the same attribute (aligned to the basis).
 
         Raises:
             AttributeError: specified observable does not exist.
@@ -329,7 +329,7 @@ class MonitorPool(Module):
 
         # create monitor via the observable
         monitor = self.get_observed(observed).add_monitor(
-            name, attr, constructor, None if unique else self.pool, tags if tags else {}
+            name, attr, constructor, None if unique else self.pool, tags
         )
 
         # deregister if not currently training

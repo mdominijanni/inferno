@@ -384,8 +384,16 @@
             <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 
             <span class="c1"># register state</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+                <span class="s2">&quot;time_constant&quot;</span><span class="p">,</span>
+                <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+                <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+                <span class="s2">&quot;decay&quot;</span><span class="p">,</span>
+                <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">),</span>
+                <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="nd">@property</span>
         <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -394,7 +402,7 @@
         <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
         <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
             <span class="n">FoldingReducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
 
 <div class="viewcode-block" id="MSTDPET.EligibilityTraceReducer.fold">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MSTDPET.html#inferno.learn.MSTDPET.EligibilityTraceReducer.fold">[docs]</a>
@@ -422,7 +430,7 @@
             <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
             <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
             <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-            <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">expdecay</span><span class="p">(</span>
                 <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
@@ -590,7 +598,9 @@
                 <span class="o">**</span><span class="n">monitor_kwargs</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="kc">False</span><span class="p">,</span>
-            <span class="p">{</span><span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="p">,</span> <span class="s2">&quot;tc&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">tc_post</span><span class="p">},</span>
+            <span class="n">dt</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
+            <span class="n">trace</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="p">,</span>
+            <span class="n">tc</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">tc_post</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># postsynaptic spike monitor (triggers hebbian LTP)</span>
@@ -603,7 +613,7 @@
                 <span class="o">**</span><span class="n">monitor_kwargs</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="kc">False</span><span class="p">,</span>
-            <span class="p">{</span><span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">},</span>
+            <span class="n">dt</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># presynaptic trace monitor (weighs hebbian LTP)</span>
@@ -624,12 +634,10 @@
                 <span class="o">**</span><span class="n">monitor_kwargs</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="kc">False</span><span class="p">,</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
-                <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="p">,</span>
-                <span class="s2">&quot;tc&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">tc_pre</span><span class="p">,</span>
-                <span class="s2">&quot;delayed&quot;</span><span class="p">:</span> <span class="n">delayed</span><span class="p">,</span>
-            <span class="p">},</span>
+            <span class="n">dt</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
+            <span class="n">trace</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="p">,</span>
+            <span class="n">tc</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">tc_pre</span><span class="p">,</span>
+            <span class="n">delayed</span><span class="o">=</span><span class="n">delayed</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># presynaptic spike monitor (triggers hebbian LTD)</span>
@@ -647,7 +655,8 @@
                 <span class="o">**</span><span class="n">monitor_kwargs</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="kc">False</span><span class="p">,</span>
-            <span class="p">{</span><span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span> <span class="s2">&quot;delayed&quot;</span><span class="p">:</span> <span class="n">delayed</span><span class="p">},</span>
+            <span class="n">dt</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
+            <span class="n">delayed</span><span class="o">=</span><span class="n">delayed</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">name</span></div>
