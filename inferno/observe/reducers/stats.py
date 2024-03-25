@@ -43,7 +43,11 @@ class EMAReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, duration)
 
         # set state
-        self.alpha = argtest.minmax_incl("alpha", alpha, 0, 1, float)
+        self.alpha = self.register_buffer(
+            "alpha",
+            torch.tensor(argtest.minmax_incl("alpha", alpha, 0, 1, float)),
+            persistent=False,
+        )
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of exponential smoothing.
@@ -74,7 +78,7 @@ class EMAReducer(FoldingReducer):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_time: float,
+        step_time: float | torch.Tensor,
     ) -> torch.Tensor:
         r"""Linear interpolation between observations.
 
@@ -82,8 +86,8 @@ class EMAReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float): length of time between the prior and subsequent
-                observations.
+            step_data (float | torch.Tensor): length of time between the prior and
+                subsequent observations.
 
         Returns:
             torch.Tensor: interpolated data at sample time.
