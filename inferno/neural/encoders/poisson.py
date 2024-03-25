@@ -1,6 +1,6 @@
 from .. import functional as nf
 from .mixins import GeneratorMixin, RefractoryStepMixin
-from ... import Module
+from ... import Module, scalar
 from ..._internal import argtest
 import torch
 from typing import Iterator
@@ -14,9 +14,9 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
     period and compensating the rate.
 
     Args:
+        steps (int): number of steps for which to generate spikes, :math:`S`.
         step_time (float): length of time between outputs, :math:`\Delta t`,
             in :math:`\text{ms}`.
-        steps (int): number of steps for which to generate spikes, :math:`S`.
         frequency (float): maximum spike frequency (associated with an input of 1),
             :math:`f`, in :math:`\text{Hz}`.
         refrac (float | None, optional): minimum interal between spikes set to the step
@@ -35,8 +35,8 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
 
     def __init__(
         self,
-        step_time: float,
         steps: int,
+        step_time: float,
         frequency: float,
         *,
         refrac: float | None = None,
@@ -47,7 +47,11 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         Module.__init__(self)
 
         # set encoder attributes
-        self.freqscale = argtest.gte("frequency", frequency, 0, float)
+        self.register_buffer(
+            "freqscale",
+            torch.tensor(argtest.gte("frequency", frequency, 0, float)),
+            persistent=False,
+        )
         self.refrac_compensated = bool(compensate)
 
         # call mixin constructors
@@ -88,7 +92,7 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         Returns:
             float: present frequency scale for inputs.
         """
-        return self.freqscale
+        return float(self.freqscale)
 
     @frequency.setter
     def frequency(self, value: float) -> None:
@@ -96,7 +100,9 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         if self.compensated:
             _ = argtest.lt("frequency * refrac", value * self.refrac, 1000, float)
 
-        self.freqscale = argtest.gte("frequency", value, 0, float)
+        self.freqscale = scalar(
+            argtest.gte("frequency", value, 0, float), self.freqscale
+        )
 
     @property
     def refrac(self) -> float:
@@ -115,9 +121,11 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
     def refrac(self, value: float | None) -> None:
         # refrac-frequency compatibility test
         if self.compensated:
-            newrefrac = self.dt if value is None else value
             _ = argtest.lt(
-                "refrac * frequency ", newrefrac * self.frequency, 1000, float
+                "refrac * frequency ",
+                (self.dt if value is None else value) * self.frequency,
+                1000,
+                float,
             )
 
         return RefractoryStepMixin.refrac.fset(self, value)
@@ -169,19 +177,19 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         """
         if online:
             return nf.enc_homogeneous_poisson_exp_interval_online(
-                self.frequency * inputs,
-                step_time=self.dt,
+                self.freqscale * inputs,
                 steps=self.steps,
-                refrac=self.refrac,
+                step_time=self.step_time,
+                refrac=self.interval_min,
                 compensate=self.compensated,
                 generator=self.generator,
             )
         else:
             return nf.enc_homogeneous_poisson_exp_interval(
-                self.frequency * inputs,
-                step_time=self.dt,
+                self.freqscale * inputs,
                 steps=self.steps,
-                refrac=self.refrac,
+                step_time=self.step_time,
+                refrac=self.interval_min,
                 compensate=self.compensated,
                 generator=self.generator,
             )

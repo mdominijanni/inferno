@@ -1,3 +1,4 @@
+from ... import scalar
 from ..._internal import argtest
 import torch
 
@@ -7,11 +8,19 @@ class StepTimeMixin:
 
     Args:
         step_time (float): length of a simulation time step, in :math:`ms`.
+
+    Note:
+        This creates the property :py:attr:`dt` for managing step time using Python
+        built-ins and the attribute ``step_time`` for access as a :py:class`~torch.Tensor`.
     """
 
     def __init__(self, step_time: float):
         # encoder attributes
-        self.step_time = argtest.gt("step_time", step_time, 0, float)
+        self.register_buffer(
+            "step_time",
+            torch.tensor(argtest.gt("step_time", step_time, 0, float)),
+            persistent=False,
+        )
 
     @property
     def dt(self) -> float:
@@ -23,11 +32,11 @@ class StepTimeMixin:
         Returns:
             float: present simulation time step length.
         """
-        return self.step_time
+        return float(self.step_time)
 
     @dt.setter
     def dt(self, value: float) -> None:
-        self.step_time = argtest.gt("dt", value, 0, float)
+        self.step_time = scalar(argtest.gt("dt", value, 0, float), self.step_time)
 
 
 class StepMixin(StepTimeMixin):
@@ -36,6 +45,10 @@ class StepMixin(StepTimeMixin):
     Args:
         step_time (float): length of a simulation time step, in :math:`ms`.
         steps (int): number of steps over which to generate a spike train.
+
+    Note:
+        This creates the property :py:attr:`dt` for managing step time using Python
+        built-ins and the attribute ``step_time`` for access as a :py:class`~torch.Tensor`.
     """
 
     def __init__(self, step_time: float, steps: int):
@@ -68,7 +81,7 @@ class StepMixin(StepTimeMixin):
         Returns:
             float: length of simulation time for which to generate a spike train.
         """
-        return self.steps * self.dt
+        return float(self.steps * self.dt)
 
 
 class RefractoryStepMixin(StepMixin):
@@ -78,6 +91,12 @@ class RefractoryStepMixin(StepMixin):
         step_time (float): length of a simulation time step, in :math:`ms`.
         steps (int): number of steps over which to generate a spike train.
         refrac (float): refractory period, in :math:`\text{ms}`.
+
+    Note:
+        This creates the properties :py:attr:`dt` and :py:attr:`refrac` for managing
+        step time and refractory period using Python built-ins and the attributes
+        ``step_time`` and ``interval_min`` for access as a :py:class`~torch.Tensor`.
+
     """
 
     def __init__(self, step_time: float, steps: int, refrac: float | None):
@@ -87,10 +106,18 @@ class RefractoryStepMixin(StepMixin):
         # encoder attributes
         if refrac is None:
             self.autorefrac = True
-            self.interval_min = self.dt
+            self.register_buffer(
+                "interval_min",
+                torch.tensor(self.dt),
+                persistent=False,
+            )
         else:
             self.autorefrac = False
-            self.interval_min = argtest.gte("refrac", refrac, 0, float)
+            self.register_buffer(
+                "interval_min",
+                torch.tensor(argtest.gte("refrac", refrac, 0, float)),
+                persistent=False,
+            )
 
     @property
     def dt(self) -> float:
@@ -108,7 +135,7 @@ class RefractoryStepMixin(StepMixin):
     def dt(self, value: float) -> None:
         StepMixin.dt.fset(self, value)
         if self.autorefrac:
-            self.interval_min = self.dt
+            self.interval_min = scalar(self.dt, self.interval_min)
 
     @property
     def refrac(self) -> float:
@@ -121,16 +148,18 @@ class RefractoryStepMixin(StepMixin):
         Returns:
             float: present refractory period length.
         """
-        return self.interval_min
+        return float(self.interval_min)
 
     @refrac.setter
     def refrac(self, value: float | None) -> None:
         if value is None:
             self.autorefrac = True
-            self.interval_min = self.dt
+            self.interval_min = scalar(self.dt, self.interval_min)
         else:
             self.autorefrac = False
-            self.interval_min = argtest.gte("refrac", value, 0, float)
+            self.interval_min = scalar(
+                argtest.gte("refrac", value, 0, float), self.interval_min
+            )
 
 
 class GeneratorMixin:
