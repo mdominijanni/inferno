@@ -13,7 +13,7 @@ class Reducer(RecordModule, ABC):
         RecordModule.__init__(self, step_time, duration)
 
     @property
-    def peekvalue(self) -> torch.Tensor:
+    def peeked(self) -> torch.Tensor:
         r"""Return's the reducer's current state.
 
         If :py:meth:`peek` has multiple options, this should be considered as the

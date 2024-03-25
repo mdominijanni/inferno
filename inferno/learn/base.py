@@ -1,7 +1,7 @@
 from __future__ import annotations
 from .. import Module
-from .._internal import fzip, getitem, unique
-from ..neural import Cell, Layer
+from .._internal import getitem, unique
+from ..neural import Cell
 from ..observe import Monitor, MonitorConstructor, MonitorPool
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
@@ -308,8 +308,8 @@ class CellTrainer(Module):
         )
 
 
-class LayerwiseTrainer(CellTrainer, ABC):
-    r"""Trainer for update methods without inter-layer dependencies.
+class IndependentTrainer(CellTrainer, ABC):
+    r"""Trainer for update methods without inter-cell dependencies.
 
     Important:
         The :py:class:`Layer` object "owns" the :py:class:`Cell` objects but not
@@ -322,6 +322,25 @@ class LayerwiseTrainer(CellTrainer, ABC):
         Likewise, :py:meth:`Layer.to` will alter ``Cell`` objects but not
         ``Monitor`` objects.
     """
+
+    class Unit(Module):
+        r"""Trainable units.
+
+        Attributes:
+            cell (Cell): registered cell.
+            state (nn.Module): auxiliary state.
+            monitors (nn.ModuleDict): associated monitors.
+
+        Args:
+            cell (Cell): registered cell.
+            state (nn.Module): auxiliary state.
+            monitors (dict[str, Monitor]): associated monitors.
+        """
+        def __init__(self, cell: Cell, state: nn.Module, monitors: dict[str, Monitor]):
+            Module.__init__(self)
+            self.cell = cell
+            self.state = state
+            self.monitors = nn.ModuleDict(monitors)
 
     def __init__(self, **kwargs):
         # call superclass
@@ -343,14 +362,14 @@ class LayerwiseTrainer(CellTrainer, ABC):
                 dict(self.monitor_pool_.named_monitors_of(name)),
             )
 
-    def unit(self, name: str) -> nn.ModuleDict:
+    def unit(self, name: str) -> IndependentTrainer.Unit:
         r"""Gets a trainable unit.
 
         This can be used if a single trainer should handle training on different
         devices. The returned module dictionary can then be altered in-place with
-        :py:meth:`~nn.Module.to` in order to move a cell, its auxiliary state, and
-        the monitors used by the trainer to a different device, or change the used
-        data type.
+        :py:meth:`~nn.Module.to` in order to move a cell (``cell``), its auxiliary
+        state (``state``), and monitors (``monitors``) used by the trainer to a
+        different device, or change the used data type.
 
         Calling :py:meth:`~nn.Module.to` on the trainer itself will apply to all
         monitors and auxiliary states, but not to any cells.
@@ -359,20 +378,16 @@ class LayerwiseTrainer(CellTrainer, ABC):
             name (str): name of the cell to get alongside its auxiliary state.
 
         Returns:
-            nn.ModuleDict: specified cell, auxiliary state, and monitors.
+            IndependentTrainer.Unit: specified cell, auxiliary state, and monitors.
         """
-        return nn.ModuleDict(
-            {
-                "cell": getitem(self.cells_, name),
-                "auxstate": getitem(self.aux_states_, name),
-                "monitors": nn.ModuleDict(
-                    dict(self.monitor_pool_.named_monitors_of(name))
-                ),
-            }
+        return self.Unit(
+            getitem(self.cells_, name),
+            getitem(self.aux_states_, name, None),
+            dict(self.monitor_pool_.named_monitors_of(name)),
         )
 
     @abstractmethod
-    def register_cell(self, name: str, cell: Cell, **kwargs) -> str:
+    def register_cell(self, name: str, cell: Cell, **kwargs) -> IndependentTrainer.Unit:
         r"""Adds a cell with any required state.
 
         Args:
@@ -380,46 +395,13 @@ class LayerwiseTrainer(CellTrainer, ABC):
             cell (Cell): cell to add.
 
         Returns:
-            str: name of the added cell.
+            IndependentTrainer.Unit: specified cell, auxiliary state, and monitors,
+            as returned by :py:meth:`unit`.
 
         Raises:
             NotImplementedError: ``register_cell`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"{type(self).__name__}(LayerwiseTrainer) must implement "
-            "the method `add_cell`."
-        )
-
-    def register_layer(
-        self,
-        prefix: str,
-        layer: Layer,
-        **kwargs: Any,
-    ) -> tuple[str, ...]:
-        r"""Adds all cells from a given layer.
-
-        Args:
-            prefix (str): string to prepend to cell name.
-            layer (Layer): layer from which cells should be added.
-            **kwargs (Any): keyword arguments passed to each :py:meth:`register_cells` call.
-
-        Returns:
-            tuple[str, ...]: names of the added cells.
-
-        Note:
-            The names used are automatically generated based on the name of the cell in
-            the layer. For example, with a connection named ``"linear"`` and a neuron
-            named ``"alif"``, and a ``prefix`` of ``"l0"``, the cell name will be
-            ``"l0:linear-alif"``. If ``prefix`` is an empty string, the name would be
-            ``"linear-alif"``.
-        """
-        prefix = f"{prefix}:" if prefix else ""
-        return tuple(
-            self.add_cell(n, c, **kwargs)
-            for n, c in fzip(
-                layer.named_cells,
-                lambda nc: f"{prefix}{nc[0][0]}-{nc[0][1]}",
-                lambda nc: nc[1],
-                identity=False,
-            )
+            f"{type(self).__name__}(IndependentTrainer) must implement "
+            "the method 'register_cell'"
         )

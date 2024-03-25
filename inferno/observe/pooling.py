@@ -103,7 +103,8 @@ class Observable:
         attr: str,
         constructor: MonitorConstructor,
         pool: Iterable[tuple[Observable, Mapping[str, Monitor]]] | None,
-        tags: dict[str, Any] | None = None,
+        /,
+        **tags: Any,
     ) -> Monitor:
         r"""Creates or alias a monitor on the observable's basis.
 
@@ -115,8 +116,8 @@ class Observable:
             pool (Iterable[tuple[Observable, Mapping[str, Monitor]]] | None): pool to
                 search for compatible monitor, always creates a new one if None.
                 Defaults to None.
-            tags (dict[str, Any] | None, optional): tags to add to the monitor to test
-                for equivalence. Defaults to None.
+            **tags (Any): tags to determine if the monitor is unique amongst monitors
+                with the same name, targeting the same attribute (aligned to the basis).
 
         Returns:
             Monitor: added or retrieved monitor.
@@ -135,7 +136,7 @@ class Observable:
             return monitor
 
         # monitor tags
-        tags = (tags if tags else {}) | {"_attr": attr}
+        tags = tags | {"_attr": attr}
 
         # try to find if a compatible monitor exists
         found = None
@@ -329,7 +330,7 @@ class MonitorPool(Module):
 
         # create monitor via the observable
         monitor = self.get_observed(observed).add_monitor(
-            name, attr, constructor, None if unique else self.pool, tags
+            name, attr, constructor, None if unique else self.pool, **tags
         )
 
         # deregister if not currently training

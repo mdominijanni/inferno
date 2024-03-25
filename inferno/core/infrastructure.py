@@ -988,7 +988,7 @@ class RecordModule(DimensionalModule):
         time: float | torch.Tensor,
         interp: Interpolation,
         *,
-        tolerance: float = 1e-7,
+        tolerance: float | torch.Tensor = 1e-7,
         offset: int = 1,
     ) -> torch.Tensor:
         r"""Selects elements of a constrained attribute based on prior time.
@@ -999,14 +999,16 @@ class RecordModule(DimensionalModule):
         If ``time`` is a tensor, interpolation will be called regardless, and the time
         passed into the interpolation call will be set to either ``0`` or
         :py:attr:`self.dt`. Interpolation results are then overwritten with exact values
-        before returning.
+        before returning. If ``time`` is a tensor, then ``tolerance`` can also be
+        a tensor.
 
         Args:
             name (str): name of the attribute from which to select.
             time (float | torch.Tensor): time(s) before present to select from.
             interp (Interpolation): method to interpolate between discrete time steps.
-            tolerance (float, optional): maximum difference in time from a discrete
-                sample to consider a time co-occuring with the sample. Defaults to 1e-7.
+            tolerance (float | torch.Tensor, optional): maximum difference in time from
+                a discrete sample to consider a time co-occuring with the sample.
+                Defaults to 1e-7.
             offset (int, optional): window index offset as number of steps prior to the
                 location of the next time slice to overwrite. Defaults to 1.
 

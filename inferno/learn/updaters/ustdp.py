@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .. import LayerwiseTrainer
+from .. import IndependentTrainer
 from ... import Module
 from ..._internal import argtest
 from ...neural import Cell
@@ -13,7 +13,7 @@ import torch
 from typing import Any, Callable, Literal
 
 
-class STDP(LayerwiseTrainer):
+class STDP(IndependentTrainer):
     r"""Spike-timing dependent plasticity updater.
 
     .. math::
@@ -75,6 +75,9 @@ class STDP(LayerwiseTrainer):
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce updates over the batch dimension, :py:func:`torch.mean`
             when None. Defaults to None.
+        field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+            function to reduce updates over the receptive field dimension,
+            :py:func:`torch.sum` when None. Defaults to None.
 
     Important:
         When ``delayed`` is ``True``, the history for the required variables is stored
@@ -116,10 +119,13 @@ class STDP(LayerwiseTrainer):
         batch_reduction: (
             Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
         ) = None,
+        field_reduction: (
+            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+        ) = None,
         **kwargs,
     ):
         # call superclass constructor
-        LayerwiseTrainer.__init__(self, **kwargs)
+        IndependentTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
         self.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -133,6 +139,7 @@ class STDP(LayerwiseTrainer):
             "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
         )
         self.batchreduce = batch_reduction if batch_reduction else torch.mean
+        self.fieldreduce = field_reduction if field_reduction else torch.sum
 
     def _build_cell_state(self, **kwargs) -> Module:
         r"""Builds auxiliary state for a cell.
@@ -153,35 +160,24 @@ class STDP(LayerwiseTrainer):
         interp_tolerance = kwargs.get("interp_tolerance", self.tolerance)
         trace_mode = kwargs.get("trace_mode", self.trace)
         batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
+        field_reduction = kwargs.get("field_reduction", self.fieldreduce)
 
-        state.register_buffer(
-            "step_time",
-            torch.tensor(argtest.gt("step_time", step_time, 0, float)),
-            persistent=False,
-        )
+        state.step_time = argtest.gt("step_time", step_time, 0, float)
         state.register_buffer("lr_post", torch.tensor(float(lr_post)), persistent=False)
         state.register_buffer("lr_pre", torch.tensor(float(lr_pre)), persistent=False)
-        state.register_buffer(
-            "tc_post",
-            torch.tensor(argtest.gt("tc_post", tc_post, 0, float)),
-            persistent=False,
-        )
-        state.register_buffer(
-            "tc_pre",
-            torch.tensor(argtest.gt("tc_pre", tc_pre, 0, float)),
-            persistent=False,
-        )
+        state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
+        state.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
+        state.delayed = bool(delayed)
         state.register_buffer(
             "tolerance",
             torch.tensor(argtest.gte("interp_tolerance", interp_tolerance, 0, float)),
             persistent=False,
         )
-
-        state.delayed = bool(delayed)
         state.trace = argtest.oneof(
             "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
         )
         state.batchreduce = batch_reduction if batch_reduction else torch.mean
+        state.fieldreduce = field_reduction if field_reduction else torch.sum
 
         return state
 
@@ -191,7 +187,7 @@ class STDP(LayerwiseTrainer):
         cell: Cell,
         /,
         **kwargs: Any,
-    ) -> str:
+    ) -> STDP.Unit:
         r"""Adds a cell with required state.
 
         Args:
@@ -212,9 +208,12 @@ class STDP(LayerwiseTrainer):
                 calculating spike traces.
             batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
                 function to reduce updates over the batch dimension.
+            field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+                function to reduce updates over the receptive field dimension,
+                :py:func:`torch.sum` when None. Defaults to None.
 
         Returns:
-            str: name of the added cell.
+            IndependentTrainer.Unit: specified cell, auxiliary state, and monitors.
 
         Important:
             Any specified keyword arguments will override the default hyperparameters
@@ -262,8 +261,8 @@ class STDP(LayerwiseTrainer):
             ),
             False,
             dt=state.step_time,
-            trace=state.trace,
             tc=state.tc_post,
+            trace=state.trace,
         )
 
         # postsynaptic spike monitor (triggers hebbian LTP)
@@ -298,8 +297,8 @@ class STDP(LayerwiseTrainer):
             ),
             False,
             dt=state.step_time,
-            trace=state.trace,
             tc=state.tc_pre,
+            trace=state.trace,
             delayed=delayed,
         )
 
@@ -322,7 +321,7 @@ class STDP(LayerwiseTrainer):
             delayed=delayed,
         )
 
-        return name
+        return self.unit(name)
 
     def forward(self) -> None:
         """Processes update for given layers based on current monitor stored data."""
@@ -350,11 +349,13 @@ class STDP(LayerwiseTrainer):
             )
 
             # partial updates
-            dpost = state.batchreduce(torch.sum(i_post * x_pre, -1), 0) * abs(
-                state.lr_post
+            dpost = (
+                state.batchreduce(state.fieldreduce(i_post * x_pre, -1), 0)
+                * state.lr_post.abs()
             )
-            dpre = state.batchreduce(torch.sum(i_pre * x_post, -1), 0) * abs(
-                state.lr_pre
+            dpre = (
+                state.batchreduce(state.fieldreduce(i_pre * x_post, -1), 0)
+                * state.lr_pre.abs()
             )
 
             # accumulate partials with mode condition

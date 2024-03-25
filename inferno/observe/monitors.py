@@ -116,7 +116,7 @@ class Monitor(Module, ContextualHook):
         )
 
     @property
-    def peekvalue(self) -> torch.Tensor:
+    def peeked(self) -> torch.Tensor:
         r"""Return's the reducer's current state.
 
         If :py:meth:`peek` has multiple options, this should be considered as the
@@ -125,7 +125,7 @@ class Monitor(Module, ContextualHook):
         Returns:
             torch.Tensor: reducer's current state.
         """
-        return self.reducer_.peekvalue
+        return self.reducer_.peeked
 
     def clear(self, **kwargs) -> None:
         r"""Reinitializes the reducer's state."""

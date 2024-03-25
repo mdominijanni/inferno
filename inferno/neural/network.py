@@ -63,7 +63,7 @@ class Cell(Module, Observable):
 
         # ensure the top-level attribute is in this cell
         if attr and not hasattr(self, attrchain[0]):
-            raise RuntimeError(f"this cell does not have an attribute '{attrchain[0]}'")
+            raise RuntimeError(f"cell does not have an attribute '{attrchain[0]}'")
 
         # remap the top-level target if pointing to a private attribute
         attrchain[0] = {
@@ -196,9 +196,10 @@ class Layer(Module, ABC):
         # inner modules
         self.connections_ = nn.ModuleDict()
         self.neurons_ = nn.ModuleDict()
+        self.cells_ = nn.ModuleDict()
 
         # set cells dict so it is not part of PyTorch's state
-        object.__setattr__(self, "cells_", nn.ModuleDict())
+        # object.__setattr__(self, "cells_", nn.ModuleDict())
 
     def add_cell(self, connection: str, neuron: str) -> Cell:
         r"""Creates and adds a cell if it doesn't exist.
