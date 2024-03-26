@@ -1,5 +1,6 @@
 from .infrastructure import (
     Module,
+    ShapedTensor,
     DimensionalModule,
     RecordModule,
     Hook,
@@ -42,6 +43,7 @@ __all__ = [
     "types",
     # infrastructure
     "Module",
+    "ShapedTensor",
     "DimensionalModule",
     "RecordModule",
     "Hook",
