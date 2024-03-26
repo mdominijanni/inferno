@@ -218,10 +218,11 @@
           <h1>Source code for inferno.observe.monitors</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Reducer</span>
-<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Module</span><span class="p">,</span> <span class="n">ContextualHook</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Module</span><span class="p">,</span> <span class="n">Hook</span>
 <span class="kn">from</span> <span class="nn">.._internal</span> <span class="kn">import</span> <span class="n">rgetattr</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Protocol</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">weakref</span>
 
 
@@ -258,7 +259,7 @@
 
 <div class="viewcode-block" id="Monitor">
 <a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor">[docs]</a>
-<span class="k">class</span> <span class="nc">Monitor</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ContextualHook</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Monitor</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">Hook</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for recording input, output, or state of a Module.</span>
 
 <span class="sd">    Args:</span>
@@ -266,10 +267,10 @@
 <span class="sd">            and storing them.</span>
 <span class="sd">        module (Module | None, optional): module to register as the target for monitoring,</span>
 <span class="sd">            can be modified after construction. Defaults to None.</span>
-<span class="sd">        prehook (str | None, optional): name of the prehook method, if any, to execute,</span>
-<span class="sd">            no prehook when ``None``. Defaults to ``None``.</span>
-<span class="sd">        posthook (str | None, optional): name of the posthook method, if any, to execute,</span>
-<span class="sd">            no posthook when ``None``. Defaults to ``None``.</span>
+<span class="sd">        prehook (Callable | None, optional): function to call before hooked&#39;s</span>
+<span class="sd">            :py:meth:`~torch.nn.Module.forward`. Defaults to None.</span>
+<span class="sd">        posthook (Callable | None, optional): function to call after hooked&#39;s</span>
+<span class="sd">            :py:meth:`~torch.nn.Module.forward`. Defaults to None.</span>
 <span class="sd">        prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to</span>
 <span class="sd">            :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to None.</span>
 <span class="sd">        posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to</span>
@@ -278,10 +279,6 @@
 <span class="sd">            being monitored is in train mode. Defaults to True.</span>
 <span class="sd">        eval_update (bool, optional): if this monitor should be called when the module</span>
 <span class="sd">            being monitored is in eval mode. Defaults to True.</span>
-
-<span class="sd">    Important:</span>
-<span class="sd">        While ``Monitor`` can be used directly, it must be subclassed to be used in</span>
-<span class="sd">        cases where monitors are constructed automatically.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        See :py:meth:`~torch.nn.Module.register_forward_pre_hook` and</span>
@@ -293,8 +290,8 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
         <span class="n">module</span><span class="p">:</span> <span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">prehook</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">posthook</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">prehook</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">posthook</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">prehook_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">posthook_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -302,7 +299,7 @@
     <span class="p">):</span>
         <span class="c1"># construct module superclasses</span>
         <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">ContextualHook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="n">Hook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">prehook</span><span class="o">=</span><span class="n">prehook</span><span class="p">,</span>
             <span class="n">posthook</span><span class="o">=</span><span class="n">posthook</span><span class="p">,</span>
@@ -322,36 +319,8 @@
         <span class="c1"># register submodule</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span> <span class="o">=</span> <span class="n">reducer</span>
 
-<div class="viewcode-block" id="Monitor.partialconstructor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.partialconstructor">[docs]</a>
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: ``partialconstructor`` must be implemented</span>
-<span class="sd">                by the subclass.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            MonitorConstructor: partial constructor for monitor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Monitor) must implement &quot;</span>
-            <span class="s2">&quot;the method `partialconstructor`.&quot;</span>
-        <span class="p">)</span></div>
-
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">peekvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return&#39;s the reducer&#39;s current state.</span>
-
-<span class="sd">        If :py:meth:`peek` has multiple options, this should be considered as the</span>
-<span class="sd">        default. Unless overridden, :py:meth:`peek` is called without arguments.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: reducer&#39;s current state.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">peekvalue</span>
+        <span class="c1"># add tag data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="p">{}</span>
 
 <div class="viewcode-block" id="Monitor.clear">
 <a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.clear">[docs]</a>
@@ -406,12 +375,9 @@
         <span class="c1"># module from function arguments</span>
         <span class="k">if</span> <span class="n">module</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">ContextualHook</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Monitor) is already registered to a module &quot;</span>
-                    <span class="s2">&quot;so register() was ignored&quot;</span>
-                <span class="p">)</span>
+                <span class="n">Hook</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">RuntimeWarning</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">w</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
 
@@ -420,7 +386,7 @@
             <span class="c1"># try to get the referenced module</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span><span class="p">():</span>
                 <span class="n">module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span><span class="p">()</span>
-                <span class="n">ContextualHook</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
+                <span class="n">Hook</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="s2">&quot;weak reference to monitored module does not exist, &quot;</span>
@@ -469,23 +435,24 @@
         <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># set filter and map functions</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+        <span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+
+        <span class="c1"># determine arguments for superclass constructor</span>
+        <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">filter_</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">map_</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
 
         <span class="c1"># construct superclass</span>
         <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
             <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
-            <span class="n">prehook</span><span class="o">=</span><span class="s2">&quot;_monitor_call&quot;</span><span class="p">,</span>
+            <span class="n">prehook</span><span class="o">=</span><span class="n">prehook</span><span class="p">,</span>
             <span class="n">prehook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">},</span>
             <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
             <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
         <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_monitor_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
 
 <div class="viewcode-block" id="InputMonitor.partialconstructor">
 <a class="viewcode-back" href="../../../reference/generated/inferno.observe.InputMonitor.html#inferno.observe.InputMonitor.partialconstructor">[docs]</a>
@@ -576,23 +543,24 @@
         <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># set filter and map functions</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span>
+        <span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span>
+
+        <span class="c1"># determine arguments for superclass constructor</span>
+        <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">filter_</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">map_</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
 
         <span class="c1"># construct superclass</span>
         <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
             <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
-            <span class="n">posthook</span><span class="o">=</span><span class="s2">&quot;_monitor_call&quot;</span><span class="p">,</span>
+            <span class="n">posthook</span><span class="o">=</span><span class="n">posthook</span><span class="p">,</span>
             <span class="n">posthook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">},</span>
             <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
             <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
         <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_monitor_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
 
 <div class="viewcode-block" id="OutputMonitor.partialconstructor">
 <a class="viewcode-back" href="../../../reference/generated/inferno.observe.OutputMonitor.html#inferno.observe.OutputMonitor.partialconstructor">[docs]</a>
@@ -604,7 +572,7 @@
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
 
@@ -619,9 +587,8 @@
 <span class="sd">                registered forward prehooks or posthooks. Defaults to False.</span>
 <span class="sd">            filter_ (Callable[[Any], bool] | None, optional): test if the output should be</span>
 <span class="sd">                passed to the reducer, ignores None values when None. Defaults to None.</span>
-<span class="sd">            map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies</span>
-<span class="sd">                the output before being passed to the reduer, wraps with a tuple if not</span>
-<span class="sd">                already a tuple if None. Defaults to None.</span>
+<span class="sd">            map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the output before</span>
+<span class="sd">                being passed to the reduer, identity if None. Defaults to None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            MonitorConstructor: partial constructor for monitor.</span>
@@ -669,10 +636,6 @@
 <span class="sd">            a tuple if None. Defaults to None.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The end target of this can be a method name, however ``map_`` will need to be</span>
-<span class="sd">        specified in such a way as to call the method with desired arguments.</span>
-
-<span class="sd">    Note:</span>
 <span class="sd">        The nested attribute should be specified with dot notation. For instance,</span>
 <span class="sd">        if the observed module has an attribute ``a`` which in turn has an</span>
 <span class="sd">        attribute ``b`` that should be monitored, then ``attr`` should be</span>
@@ -693,27 +656,42 @@
         <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># set filter and map functions</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__observed_attr</span> <span class="o">=</span> <span class="n">attr</span>
+        <span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span>
+
+        <span class="c1"># determine arguments for superclass constructor</span>
+        <span class="k">if</span> <span class="n">as_prehook</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
+                    <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
+
+            <span class="n">prehook_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span>
+            <span class="n">posthook</span><span class="p">,</span> <span class="n">posthook_kwargs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
+                    <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
+
+            <span class="n">posthook_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span>
+            <span class="n">prehook</span><span class="p">,</span> <span class="n">prehook_kwargs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="c1"># construct superclass</span>
         <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
             <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
-            <span class="n">prehook</span><span class="o">=</span><span class="s2">&quot;_monitor_call&quot;</span> <span class="k">if</span> <span class="n">as_prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">posthook</span><span class="o">=</span><span class="s2">&quot;_monitor_call&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">as_prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">prehook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span> <span class="k">if</span> <span class="n">as_prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">posthook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">as_prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">prehook</span><span class="o">=</span><span class="n">prehook</span><span class="p">,</span>
+            <span class="n">posthook</span><span class="o">=</span><span class="n">posthook</span><span class="p">,</span>
+            <span class="n">prehook_kwargs</span><span class="o">=</span><span class="n">prehook_kwargs</span><span class="p">,</span>
+            <span class="n">posthook_kwargs</span><span class="o">=</span><span class="n">posthook_kwargs</span><span class="p">,</span>
             <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
             <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
         <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_monitor_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__observed_attr</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
 
 <div class="viewcode-block" id="StateMonitor.partialconstructor">
 <a class="viewcode-back" href="../../../reference/generated/inferno.observe.StateMonitor.html#inferno.observe.StateMonitor.partialconstructor">[docs]</a>
@@ -726,7 +704,7 @@
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
 
@@ -741,11 +719,12 @@
 <span class="sd">                module being monitored is in eval mode. Defaults to True.</span>
 <span class="sd">            prepend (bool, optional): if this monitor should be called before other</span>
 <span class="sd">                registered forward prehooks or posthooks. Defaults to False.</span>
-<span class="sd">            filter_ (Callable[[Any], bool] | None, optional): test if the input should be</span>
-<span class="sd">                passed to the reducer, ignores None values when None. Defaults to None.</span>
-<span class="sd">            map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies</span>
-<span class="sd">                the input before being passed to the reduer, wraps with a tuple if not</span>
-<span class="sd">                already a tuple if None. Defaults to None.</span>
+<span class="sd">            filter_ (Callable[[Any], bool] | None, optional): test if the input should</span>
+<span class="sd">                be passed to the reducer, ignores None values when None.</span>
+<span class="sd">                Defaults to None.</span>
+<span class="sd">            map_ (Callable[[Any], torch.Tensor] | None, optional): modifies the input</span>
+<span class="sd">                before being passed to the reduer, identity if None.</span>
+<span class="sd">                Defaults to None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            MonitorConstructor: partial constructor for monitor.</span>
@@ -763,6 +742,9 @@
                 <span class="n">filter_</span><span class="o">=</span><span class="n">filter_</span><span class="p">,</span>
                 <span class="n">map_</span><span class="o">=</span><span class="n">map_</span><span class="p">,</span>
             <span class="p">)</span>
+
+        <span class="n">constructor</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="bp">cls</span>
+        <span class="n">constructor</span><span class="o">.</span><span class="n">reducer</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">reducer</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">constructor</span></div>
 </div>
@@ -787,13 +769,11 @@
 <span class="sd">        prepend (bool, optional): if this monitor should be called before other</span>
 <span class="sd">            registered forward prehooks or posthooks. Defaults to False.</span>
 <span class="sd">        filter_ (Callable[[Any, Any], bool] | None, optional): test if the input should</span>
-<span class="sd">            be passed to the reducer, ignores None values when None. Defaults to None.</span>
+<span class="sd">            be passed to the reducer, ignores None pre or post values when None.</span>
+<span class="sd">            Defaults to None.</span>
 <span class="sd">        map_ (Callable[[Any, Any], tuple[torch.Tensor, ...]] | None, optional): modifies</span>
-<span class="sd">            the input before being passed to the reducer, post-forward value minus</span>
-<span class="sd">            pre-forward value wrapped in a tuple if ``None``. Defaults to ``None``.</span>
-<span class="sd">        op_ (Callable[[torch.Tensor, torch.Tensor], torch.Tensor] | None, optional): operation</span>
-<span class="sd">            to calculate the difference between post-forward and pre-forward, only used</span>
-<span class="sd">            when ``map_`` is ``None``, subtraction when ``None``. Defaults to ``None``.</span>
+<span class="sd">            the input before being passed to the reducer, post minus pre wrapped in a</span>
+<span class="sd">            tuple if ``None``. Defaults to None.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The nested attribute should be specified with dot notation. For instance,</span>
@@ -803,14 +783,14 @@
 <span class="sd">        the module with which it is registered.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        The left-hand argument of ``filter_``, ``map_``, and ``op_`` is the attribute</span>
-<span class="sd">        after the :py:meth:`~torch.nn.Module.forward` call of ``module`` is run, and</span>
-<span class="sd">        the right-hand argument is before it is run.</span>
+<span class="sd">        The left-hand argument of ``filter_`` and ``map_`` is the attribute after</span>
+<span class="sd">        the :py:meth:`~torch.nn.Module.forward` of ``module`` is run, and the right-hand</span>
+<span class="sd">        argument is before it is run.</span>
 
 <span class="sd">        By default, ``filter_`` will only reject an input if both the pre and post</span>
-<span class="sd">        states are ``None``. By default, ``map_`` will use ``op_`` to compare the</span>
-<span class="sd">        pre-forward value from the post-forward value. If either is ``None`` (but not</span>
-<span class="sd">        both), ``map_`` will assume the ``None`` value was composed of all-zeros.</span>
+<span class="sd">        states are ``None``. By default, ``map_`` will subtract the pre-forward value</span>
+<span class="sd">        from the post-forward value. If either is ``None``, it will assume the ``None``</span>
+<span class="sd">        value was composed of all-zeros.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -822,49 +802,41 @@
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">op_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># set filter and map functions</span>
-        <span class="k">def</span> <span class="nf">_default_filter</span><span class="p">(</span><span class="n">final</span><span class="p">,</span> <span class="n">initial</span><span class="p">):</span>
-            <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span><span class="n">final</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">initial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">_default_map</span><span class="p">(</span><span class="n">final</span><span class="p">,</span> <span class="n">initial</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="p">(</span><span class="n">op_</span> <span class="k">if</span> <span class="n">op_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">f</span> <span class="o">-</span> <span class="n">i</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
-                <span class="n">op</span><span class="p">(</span><span class="n">fv</span><span class="p">,</span> <span class="n">iv</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">fv</span><span class="p">,</span> <span class="n">iv</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                    <span class="n">final</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">final</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">final</span><span class="p">,),</span>
-                    <span class="n">initial</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">initial</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">initial</span><span class="p">,),</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="n">_default_filter</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="n">_default_map</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__observed_attr</span> <span class="o">=</span> <span class="n">attr</span>
+        <span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="ow">not</span> <span class="p">(</span><span class="n">f</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">i</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">map_</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">map_</span>
+            <span class="k">if</span> <span class="n">map_</span>
+            <span class="k">else</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">f</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">i</span><span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="c1"># monitor state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># hook functions</span>
+        <span class="k">def</span> <span class="nf">prehook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">posthook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+                <span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># construct superclass</span>
         <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
             <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
-            <span class="n">prehook</span><span class="o">=</span><span class="s2">&quot;_monitor_pre_call&quot;</span><span class="p">,</span>
-            <span class="n">posthook</span><span class="o">=</span><span class="s2">&quot;_monitor_post_call&quot;</span><span class="p">,</span>
+            <span class="n">prehook</span><span class="o">=</span><span class="n">prehook</span><span class="p">,</span>
+            <span class="n">posthook</span><span class="o">=</span><span class="n">posthook</span><span class="p">,</span>
             <span class="n">prehook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">},</span>
             <span class="n">posthook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">},</span>
             <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
             <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
         <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_monitor_pre_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__observed_attr</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_monitor_post_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__observed_attr</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">))</span>
 
 <div class="viewcode-block" id="DifferenceMonitor.partialconstructor">
 <a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor.partialconstructor">[docs]</a>
@@ -876,8 +848,7 @@
         <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">op_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
 
@@ -890,14 +861,12 @@
 <span class="sd">                module being monitored is in eval mode. Defaults to True.</span>
 <span class="sd">            prepend (bool, optional): if this monitor should be called before other</span>
 <span class="sd">                registered forward prehooks or posthooks. Defaults to False.</span>
-<span class="sd">            filter_ (Callable[[Any, Any], bool] | None, optional): test if the input should</span>
-<span class="sd">                be passed to the reducer, ignores None values when None. Defaults to None.</span>
-<span class="sd">            map_ (Callable[[Any, Any], tuple[torch.Tensor, ...]] | None, optional): modifies</span>
-<span class="sd">                the input before being passed to the reducer, post-forward value minus</span>
-<span class="sd">                pre-forward value wrapped in a tuple if ``None``. Defaults to ``None``.</span>
-<span class="sd">            op_ (Callable[[torch.Tensor, torch.Tensor], torch.Tensor] | None, optional): operation</span>
-<span class="sd">                to calculate the difference between post-forward and pre-forward, only used</span>
-<span class="sd">                when ``map_`` is ``None``, subtraction when ``None``. Defaults to ``None``.</span>
+<span class="sd">            filter_ (Callable[[Any, Any], bool] | None, optional): test if the input</span>
+<span class="sd">                should be passed to the reducer, ignores None pre or post values when</span>
+<span class="sd">                None. Defaults to None.</span>
+<span class="sd">            map_ (Callable[[Any, Any], torch.Tensor] | None, optional): modifies the</span>
+<span class="sd">                input before being passed to the reduer, post minus pre if None.</span>
+<span class="sd">                Defaults to None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            MonitorConstructor: partial constructor for monitor.</span>
@@ -914,6 +883,9 @@
                 <span class="n">filter_</span><span class="o">=</span><span class="n">filter_</span><span class="p">,</span>
                 <span class="n">map_</span><span class="o">=</span><span class="n">map_</span><span class="p">,</span>
             <span class="p">)</span>
+
+        <span class="n">constructor</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="bp">cls</span>
+        <span class="n">constructor</span><span class="o">.</span><span class="n">reducer</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">reducer</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">constructor</span></div>
 
@@ -922,141 +894,10 @@
 <a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor.clear">[docs]</a>
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears monitor state and reinitializes the reducer&#39;s state.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </div>
 
-
-
-<span class="k">class</span> <span class="nc">MultiStateMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records a combination of the state of multiple attributes in a Module.</span>
-
-<span class="sd">    Attributes are passed to the reducer in-order.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
-<span class="sd">            and storing them.</span>
-<span class="sd">        attr (str): attribute or nested attribute to target.</span>
-<span class="sd">        subattrs (tuple[str, ...]): attributes, relative to ``attr``, to target.</span>
-<span class="sd">        module (Module, optional): module to register as the target for monitoring,</span>
-<span class="sd">            can be modified after construction. Defaults to None.</span>
-<span class="sd">        as_prehook (bool, optional): if this monitor should be called before the forward</span>
-<span class="sd">            call of the module being monitored. Defaults to False.</span>
-<span class="sd">        train_update (bool, optional): if this monitor should be called when the module</span>
-<span class="sd">            being monitored is in train mode. Defaults to True.</span>
-<span class="sd">        eval_update (bool, optional): if this monitor should be called when the module</span>
-<span class="sd">            being monitored is in eval mode. Defaults to True.</span>
-<span class="sd">        prepend (bool, optional): if this monitor should be called before other</span>
-<span class="sd">            registered forward prehooks or posthooks. Defaults to False.</span>
-<span class="sd">        filter_ (Callable[[tuple[Any, ...]], bool] | None, optional): test if the input</span>
-<span class="sd">            should be passed to the reducer, ignores None values when None.</span>
-<span class="sd">            Defaults to None.</span>
-<span class="sd">        map_ (Callable[[tuple[Any, ...]], tuple[torch.Tensor, ...]] | None, optional):</span>
-<span class="sd">            modifies the input before being passed to the reduer, identity if None.</span>
-<span class="sd">            Defaults to None.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        The end targets of this can be a method name, however ``map_`` will need to be</span>
-<span class="sd">        specified in such a way as to call the method with desired arguments.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        The nested attributes should be specified with dot notation. For instance,</span>
-<span class="sd">        if the observed module has an attribute ``a`` which in turn has an</span>
-<span class="sd">        attribute ``b`` that should be monitored, then ``attr`` should be</span>
-<span class="sd">        `&#39;a.b&#39;``. Even with nested attributes, the monitor&#39;s hook will be tied to</span>
-<span class="sd">        the module with which it is registered.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
-        <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">subattrs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-        <span class="n">module</span><span class="p">:</span> <span class="n">Module</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">as_prehook</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-        <span class="c1"># set filter and map functions</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span> <span class="o">=</span> <span class="n">filter_</span> <span class="k">if</span> <span class="n">filter_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">map_</span> <span class="o">=</span> <span class="n">map_</span> <span class="k">if</span> <span class="n">map_</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
-        <span class="k">if</span> <span class="n">attr</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__observed_attrs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">satr</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">satr</span> <span class="ow">in</span> <span class="n">subattrs</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__observed_attrs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">satr</span> <span class="k">for</span> <span class="n">satr</span> <span class="ow">in</span> <span class="n">subattrs</span><span class="p">)</span>
-
-        <span class="c1"># construct superclass</span>
-        <span class="n">Monitor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
-            <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
-            <span class="n">prehook</span><span class="o">=</span><span class="s2">&quot;_monitor_call&quot;</span> <span class="k">if</span> <span class="n">as_prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">posthook</span><span class="o">=</span><span class="s2">&quot;_monitor_call&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">as_prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">prehook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span> <span class="k">if</span> <span class="n">as_prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">posthook_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prepend&quot;</span><span class="p">:</span> <span class="n">prepend</span><span class="p">}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">as_prehook</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
-            <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_monitor_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">rgetattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">oa</span><span class="p">)</span> <span class="k">for</span> <span class="n">oa</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__observed_attrs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">,</span>
-        <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
-        <span class="n">subattrs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-        <span class="n">as_prehook</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">train_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">eval_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            reducer (Reducer): underlying means for reducing samples over time</span>
-<span class="sd">                and storing them.</span>
-<span class="sd">            subattrs (tuple[str, ...]): attributes, relative to ``attr``, to target.</span>
-<span class="sd">            as_prehook (bool, optional): if this monitor should be called before the</span>
-<span class="sd">                forward call of the module being monitored. Defaults to False.</span>
-<span class="sd">            train_update (bool, optional): if this monitor should be called when the</span>
-<span class="sd">                module being monitored is in train mode. Defaults to True.</span>
-<span class="sd">            eval_update (bool, optional): if this monitor should be called when the</span>
-<span class="sd">                module being monitored is in eval mode. Defaults to True.</span>
-<span class="sd">            prepend (bool, optional): if this monitor should be called before other</span>
-<span class="sd">                registered forward prehooks or posthooks. Defaults to False.</span>
-<span class="sd">            filter_ (Callable[[Any], bool] | None, optional): test if the input should be</span>
-<span class="sd">                passed to the reducer, ignores None values when None. Defaults to None.</span>
-<span class="sd">            map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies</span>
-<span class="sd">                the input before being passed to the reduer, wraps with a tuple if not</span>
-<span class="sd">                already a tuple if None. Defaults to None.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            MonitorConstructor: partial constructor for monitor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">def</span> <span class="nf">constructor</span><span class="p">(</span><span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-                <span class="n">reducer</span><span class="o">=</span><span class="n">reducer</span><span class="p">,</span>
-                <span class="n">attr</span><span class="o">=</span><span class="n">attr</span><span class="p">,</span>
-                <span class="n">subattrs</span><span class="o">=</span><span class="n">subattrs</span><span class="p">,</span>
-                <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span>
-                <span class="n">as_prehook</span><span class="o">=</span><span class="n">as_prehook</span><span class="p">,</span>
-                <span class="n">train_update</span><span class="o">=</span><span class="n">train_update</span><span class="p">,</span>
-                <span class="n">eval_update</span><span class="o">=</span><span class="n">eval_update</span><span class="p">,</span>
-                <span class="n">prepend</span><span class="o">=</span><span class="n">prepend</span><span class="p">,</span>
-                <span class="n">filter_</span><span class="o">=</span><span class="n">filter_</span><span class="p">,</span>
-                <span class="n">map_</span><span class="o">=</span><span class="n">map_</span><span class="p">,</span>
-            <span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">constructor</span>
 </pre></div>
         </article>
       </div>

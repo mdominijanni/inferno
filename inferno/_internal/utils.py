@@ -65,12 +65,12 @@ class Proxy:
 
     .. code-block:: python
 
-        self.layers = nn.ModuleDict()
-        self.layers["linear"] = nn.Linear(784, 10)
+            self.layers = nn.ModuleDict()
+            self.layers["linear"] = nn.Linear(784, 10)
 
-        @property
-        def weight(self):
-            return Proxy(self.layers, 'linear')
+            @property
+            def weight(self):
+                return Proxy(self.layers, 'linear')
 
     When the user calls the ``weight`` property of that object, it returns a proxy
     which will intercept any ``__getattr__`` calls and postpend the accessor. The
@@ -103,39 +103,6 @@ class Proxy:
             return Proxy(res, self.otheracc[0], *self.otheracc[1:])
         else:
             return res
-
-
-class MapAccessor(Mapping):
-    r"""Exposes item access through attribute-like access.
-
-    This only supports reading items, although they can be modified in place.
-
-    Args:
-        inner (Mapping[str, Any]): object to wrap.
-    """
-
-    def __init__(self, inner: Mapping[str, Any]):
-        self.__inner = inner
-
-    def __getitem__(self, __key: str) -> Any:
-        return self.__inner[__key]
-
-    def __iter__(self) -> Iterator[str]:
-        return iter(self.__inner)
-
-    def __len__(self) -> int:
-        return len(self.__inner)
-
-    def __contains__(self, __key: str) -> bool:
-        return self.__inner.__contains__(__key)
-
-    def __getattr__(self, attr: str) -> Any:
-        if hasattr(self.__inner, attr):
-            return getattr(self.__inner, attr)
-        elif attr in self.__inner:
-            return self.__inner[attr]
-        else:
-            raise AttributeError(f"attribute ('{attr}') does not exist")
 
 
 def rgetattr(obj: object, attr: str, *default) -> Any:

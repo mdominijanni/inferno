@@ -267,7 +267,7 @@ def _synparam_at(
         bounded_selector = 0
 
         # retrieve most recent value
-        res = transform(module.latest(dataloc))
+        res = transform(module.latest_(dataloc))
 
     # delayed access
     else:

@@ -31,6 +31,6 @@
     apply_adaptive_thresholds
     voltage_integration_linear
     voltage_integration_quadratic
-    voltage_thresholding_constant
-    voltage_thresholding_linear
+    voltage_thresholding
+    voltage_thresholding_slope_intercept
 ```

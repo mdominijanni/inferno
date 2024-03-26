@@ -7,8 +7,8 @@ from .encoding import (
 )
 
 from .neuron_dynamics import (
-    voltage_thresholding_constant,
-    voltage_thresholding_linear,
+    voltage_thresholding,
+    voltage_thresholding_slope_intercept,
     voltage_integration_linear,
     voltage_integration_quadratic,
     voltage_integration_exponential,
@@ -28,8 +28,8 @@ __all__ = [
     "enc_inhomogenous_poisson_bernoulli_approx",
     "enc_poisson_interval",
     "enc_poisson_interval_online",
-    "voltage_thresholding_constant",
-    "voltage_thresholding_linear",
+    "voltage_thresholding",
+    "voltage_thresholding_slope_intercept",
     "voltage_integration_linear",
     "voltage_integration_quadratic",
     "voltage_integration_exponential",

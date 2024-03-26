@@ -248,22 +248,6 @@
 <dd><p>Returns the reducer’s current state.</p>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.observe.Reducer.peekvalue">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">peekvalue</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.observe.Reducer.peekvalue" title="Link to this definition">#</a></dt>
-<dd><p>Return’s the reducer’s current state.</p>
-<p>If <a class="reference internal" href="#inferno.observe.Reducer.peek" title="inferno.observe.Reducer.peek"><code class="xref py py-meth docutils literal notranslate"><span class="pre">peek()</span></code></a> has multiple options, this should be considered as the
-default. Unless overridden, <a class="reference internal" href="#inferno.observe.Reducer.peek" title="inferno.observe.Reducer.peek"><code class="xref py py-meth docutils literal notranslate"><span class="pre">peek()</span></code></a> is called without arguments.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>reducer’s current state.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.observe.Reducer.push">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">push</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#Reducer.push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.Reducer.push" title="Link to this definition">#</a></dt>
@@ -341,7 +325,6 @@ default. Unless overridden, <a class="reference internal" href="#inferno.observe
 <li><a class="reference internal" href="#inferno.observe.Reducer.dump"><code class="docutils literal notranslate"><span class="pre">Reducer.dump()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Reducer.forward"><code class="docutils literal notranslate"><span class="pre">Reducer.forward()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Reducer.peek"><code class="docutils literal notranslate"><span class="pre">Reducer.peek()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.observe.Reducer.peekvalue"><code class="docutils literal notranslate"><span class="pre">Reducer.peekvalue</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Reducer.push"><code class="docutils literal notranslate"><span class="pre">Reducer.push()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Reducer.view"><code class="docutils literal notranslate"><span class="pre">Reducer.view()</span></code></a></li>
 </ul>

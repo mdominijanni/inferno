@@ -1,10 +1,8 @@
 from .infrastructure import (
     Module,
-    ShapedTensor,
     DimensionalModule,
     RecordModule,
     Hook,
-    ContextualHook,
     StateHook,
 )
 
@@ -43,11 +41,9 @@ __all__ = [
     "types",
     # infrastructure
     "Module",
-    "ShapedTensor",
     "DimensionalModule",
     "RecordModule",
     "Hook",
-    "ContextualHook",
     "StateHook",
     # math
     "exp",

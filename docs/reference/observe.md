@@ -41,7 +41,5 @@
     CumulativeTraceReducer
     ScaledNearestTraceReducer
     ScaledCumulativeTraceReducer
-    ConditionalNearestTraceReducer
-    ConditionalCumulativeTraceReducer
     EMAReducer
 ```

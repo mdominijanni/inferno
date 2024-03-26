@@ -3,7 +3,6 @@ import pytest
 import random
 import torch
 from typing import Any
-import weakref
 
 from inferno import Module, Hook, StateHook
 
@@ -71,56 +70,6 @@ class TestHook:
             random.randint(mindims, maxdims)
             for _ in range(random.randint(minsize, maxsize))
         )
-
-    def test_finalizer_unregistered(self):
-        shape = self.random_shape(maxdims=4)
-        module = self.MockModule(torch.zeros(shape))
-        prehook, posthook = self.MockPrehook("data"), self.MockPosthook("data")
-
-        hook = Hook(
-            prehook,
-            posthook,
-            prehook_kwargs={"with_kwargs": False},
-            posthook_kwargs={"with_kwargs": False},
-            train_update=True,
-            eval_update=True,
-        )
-
-        hook.register(module)
-        hook.deregister()
-
-        hookref = weakref.ref(hook)
-        del hook
-
-        assert hookref() is None
-        assert len(module._forward_pre_hooks) == 0
-        assert len(module._forward_hooks) == 0
-
-    def test_finalizer_registered(self):
-        shape = self.random_shape(maxdims=4)
-        module = self.MockModule(torch.zeros(shape))
-        prehook, posthook = self.MockPrehook("data"), self.MockPosthook("data")
-
-        hook = Hook(
-            prehook,
-            posthook,
-            prehook_kwargs={"with_kwargs": False},
-            posthook_kwargs={"with_kwargs": False},
-            train_update=True,
-            eval_update=True,
-        )
-
-        hook.register(module)
-
-        assert len(module._forward_pre_hooks) == 1
-        assert len(module._forward_hooks) == 1
-
-        hookref = weakref.ref(hook)
-        del hook
-
-        assert hookref() is None
-        assert len(module._forward_pre_hooks) == 0
-        assert len(module._forward_hooks) == 0
 
     def test_register_exec(self):
         shape = self.random_shape(maxdims=4)
@@ -333,77 +282,6 @@ class TestStateHook:
             random.randint(mindims, maxdims)
             for _ in range(random.randint(minsize, maxsize))
         )
-
-    def test_finalizer_unregistered(self):
-        shape = self.random_shape(maxdims=4)
-        module = self.MockModule(torch.zeros(shape))
-
-        prehook = self.MockHook(
-            "data",
-            module,
-            train_update=True,
-            eval_update=True,
-            as_prehook=True,
-        )
-
-        posthook = self.MockHook(
-            "data",
-            module,
-            train_update=True,
-            eval_update=True,
-            as_prehook=False,
-        )
-
-        prehook.register()
-        posthook.register()
-        prehook.deregister()
-        posthook.deregister()
-
-        prehookref = weakref.ref(prehook)
-        posthookref = weakref.ref(posthook)
-        del prehook
-        del posthook
-
-        assert prehookref() is None
-        assert posthookref() is None
-        assert len(module._forward_pre_hooks) == 0
-        assert len(module._forward_hooks) == 0
-
-    def test_finalizer_registered(self):
-        shape = self.random_shape(maxdims=4)
-        module = self.MockModule(torch.zeros(shape))
-
-        prehook = self.MockHook(
-            "data",
-            module,
-            train_update=True,
-            eval_update=True,
-            as_prehook=True,
-        )
-
-        posthook = self.MockHook(
-            "data",
-            module,
-            train_update=True,
-            eval_update=True,
-            as_prehook=False,
-        )
-
-        prehook.register()
-        posthook.register()
-
-        assert len(module._forward_pre_hooks) == 1
-        assert len(module._forward_hooks) == 1
-
-        prehookref = weakref.ref(prehook)
-        posthookref = weakref.ref(posthook)
-        del prehook
-        del posthook
-
-        assert prehookref() is None
-        assert posthookref() is None
-        assert len(module._forward_pre_hooks) == 0
-        assert len(module._forward_hooks) == 0
 
     def test_register_exec(self):
         shape = self.random_shape(maxdims=4)

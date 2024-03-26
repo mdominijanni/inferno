@@ -12,18 +12,6 @@ class Reducer(RecordModule, ABC):
     def __init__(self, step_time, duration):
         RecordModule.__init__(self, step_time, duration)
 
-    @property
-    def peeked(self) -> torch.Tensor:
-        r"""Return's the reducer's current state.
-
-        If :py:meth:`peek` has multiple options, this should be considered as the
-        default. Unless overridden, :py:meth:`peek` is called without arguments.
-
-        Returns:
-            torch.Tensor: reducer's current state.
-        """
-        return self.peek()
-
     @abstractmethod
     def clear(self, **kwargs) -> None:
         r"""Reinitializes the reducer's state."""
@@ -379,7 +367,7 @@ class FoldingReducer(FoldReducer, ABC):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_time: float | torch.Tensor,
+        step_time: float,
     ) -> torch.Tensor:
         r"""Manner of sampling state between observations.
 
@@ -387,7 +375,7 @@ class FoldingReducer(FoldReducer, ABC):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float | torch.Tensor): length of time between the prior and
+            step_data (float): length of time between the prior and
                 subsequent observations.
 
         Raises:

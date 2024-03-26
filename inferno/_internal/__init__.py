@@ -1,6 +1,5 @@
 from .utils import (
     Proxy,
-    MapAccessor,
     rgetattr,
     rsetattr,
     fzip,
@@ -16,7 +15,6 @@ from . import (
 __all__ = [
     "argtest",
     "Proxy",
-    "MapAccessor",
     "rgetattr",
     "rsetattr",
     "fzip",

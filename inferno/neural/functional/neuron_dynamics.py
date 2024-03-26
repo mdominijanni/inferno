@@ -3,7 +3,7 @@ from ...types import OneToOne
 import torch
 
 
-def voltage_thresholding_constant(
+def voltage_thresholding(
     inputs: torch.Tensor,
     refracs: torch.Tensor,
     dynamics: OneToOne[torch.Tensor],
@@ -75,7 +75,7 @@ def voltage_thresholding_constant(
     return spikes, voltages, refracs
 
 
-def voltage_thresholding_linear(
+def voltage_thresholding_slope_intercept(
     inputs: torch.Tensor,
     refracs: torch.Tensor,
     dynamics: OneToOne[torch.Tensor],
@@ -281,7 +281,7 @@ def voltage_integration_exponential(
     Returns:
         torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.
     """
-    expdyn_v = sharpness * torch.exp((voltages - rheobase_v) / sharpness)
+    expdyn_v = rheobase_v * torch.exp((voltages - rheobase_v) / sharpness)
     decay = step_time / time_constant
     return voltages + decay * (
         -(voltages - rest_v) + expdyn_v + (resistance * masked_inputs)

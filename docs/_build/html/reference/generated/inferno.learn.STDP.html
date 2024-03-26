@@ -342,15 +342,24 @@ included function, it should not keep the original dimensions by default.</p>
 <p>For more details and references, visit
 <a class="reference internal" href="../../zoo/learning-stdp.html#spike-timing-dependent-plasticity-stdp"><span class="std std-ref">Spike Timing-Dependent Plasticity (STDP)</span></a> in the zoo.</p>
 </div>
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.STDP.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP.forward" title="Link to this definition">#</a></dt>
-<dd><p>Processes update for given layers based on current monitor stored data.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="inferno.learn.STDP.State">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">State</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#inferno.learn.STDP" title="inferno.learn.updaters.ustdp.STDP"><span class="pre">STDP</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP.State"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP.State" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.core.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
+<p>STDP Auxiliary State</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainer</strong> (<a class="reference internal" href="#inferno.learn.STDP" title="inferno.learn.STDP"><em>STDP</em></a>) – STDP trainer.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – default argument overrides.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.STDP.register_cell">
-<span class="sig-name descname"><span class="pre">register_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP.register_cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP.register_cell" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.learn.STDP.add_cell">
+<span class="sig-name descname"><span class="pre">add_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP.add_cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP.add_cell" title="Link to this definition">#</a></dt>
 <dd><p>Adds a cell with required state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -387,6 +396,12 @@ calculating spike traces.</p></li>
 <p>Any specified keyword arguments will override the default hyperparameters
 set on initialization. See <a class="reference internal" href="#inferno.learn.STDP" title="inferno.learn.STDP"><code class="xref py py-class docutils literal notranslate"><span class="pre">STDP</span></code></a> for details.</p>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.STDP.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/updaters/ustdp.html#STDP.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.STDP.forward" title="Link to this definition">#</a></dt>
+<dd><p>Processes update for given layers based on current monitor stored data.</p>
 </dd></dl>
 
 </dd></dl>
@@ -450,8 +465,9 @@ set on initialization. See <a class="reference internal" href="#inferno.learn.ST
             <ul>
 <li><a class="reference internal" href="#">STDP</a><ul>
 <li><a class="reference internal" href="#inferno.learn.STDP"><code class="docutils literal notranslate"><span class="pre">STDP</span></code></a><ul>
+<li><a class="reference internal" href="#inferno.learn.STDP.State"><code class="docutils literal notranslate"><span class="pre">STDP.State</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.STDP.add_cell"><code class="docutils literal notranslate"><span class="pre">STDP.add_cell()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.STDP.forward"><code class="docutils literal notranslate"><span class="pre">STDP.forward()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.STDP.register_cell"><code class="docutils literal notranslate"><span class="pre">STDP.register_cell()</span></code></a></li>
 </ul>
 </li>
 </ul>

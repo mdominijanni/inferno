@@ -221,9 +221,9 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
-<div class="viewcode-block" id="voltage_thresholding_constant">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.voltage_thresholding_constant.html#inferno.neural.functional.voltage_thresholding_constant">[docs]</a>
-<span class="k">def</span> <span class="nf">voltage_thresholding_constant</span><span class="p">(</span>
+<div class="viewcode-block" id="voltage_thresholding">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.voltage_thresholding.html#inferno.neural.functional.voltage_thresholding">[docs]</a>
+<span class="k">def</span> <span class="nf">voltage_thresholding</span><span class="p">(</span>
     <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">refracs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">dynamics</span><span class="p">:</span> <span class="n">OneToOne</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
@@ -296,9 +296,9 @@
 
 
 
-<div class="viewcode-block" id="voltage_thresholding_linear">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.voltage_thresholding_linear.html#inferno.neural.functional.voltage_thresholding_linear">[docs]</a>
-<span class="k">def</span> <span class="nf">voltage_thresholding_linear</span><span class="p">(</span>
+<div class="viewcode-block" id="voltage_thresholding_slope_intercept">
+<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.voltage_thresholding_slope_intercept.html#inferno.neural.functional.voltage_thresholding_slope_intercept">[docs]</a>
+<span class="k">def</span> <span class="nf">voltage_thresholding_slope_intercept</span><span class="p">(</span>
     <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">refracs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">dynamics</span><span class="p">:</span> <span class="n">OneToOne</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
@@ -511,7 +511,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: membrane voltages with inputs integrated, in :math:`\text{mV}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">expdyn_v</span> <span class="o">=</span> <span class="n">sharpness</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rheobase_v</span><span class="p">)</span> <span class="o">/</span> <span class="n">sharpness</span><span class="p">)</span>
+    <span class="n">expdyn_v</span> <span class="o">=</span> <span class="n">rheobase_v</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rheobase_v</span><span class="p">)</span> <span class="o">/</span> <span class="n">sharpness</span><span class="p">)</span>
     <span class="n">decay</span> <span class="o">=</span> <span class="n">step_time</span> <span class="o">/</span> <span class="n">time_constant</span>
     <span class="k">return</span> <span class="n">voltages</span> <span class="o">+</span> <span class="n">decay</span> <span class="o">*</span> <span class="p">(</span>
         <span class="o">-</span><span class="p">(</span><span class="n">voltages</span> <span class="o">-</span> <span class="n">rest_v</span><span class="p">)</span> <span class="o">+</span> <span class="n">expdyn_v</span> <span class="o">+</span> <span class="p">(</span><span class="n">resistance</span> <span class="o">*</span> <span class="n">masked_inputs</span><span class="p">)</span>

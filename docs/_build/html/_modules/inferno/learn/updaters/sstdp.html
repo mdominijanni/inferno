@@ -218,7 +218,7 @@
           <h1>Source code for inferno.learn.updaters.sstdp</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">LayerwiseTrainer</span>
-<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">Module</span><span class="p">,</span> <span class="n">interpolation</span>
+<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">Module</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">interpolation</span>
 <span class="kn">from</span> <span class="nn">..._internal</span> <span class="kn">import</span> <span class="n">argtest</span>
 <span class="kn">from</span> <span class="nn">...neural</span> <span class="kn">import</span> <span class="n">Cell</span>
 <span class="kn">from</span> <span class="nn">...observe</span> <span class="kn">import</span> <span class="p">(</span>
@@ -384,16 +384,8 @@
             <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 
             <span class="c1"># register state</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-                <span class="s2">&quot;time_constant&quot;</span><span class="p">,</span>
-                <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
-                <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-                <span class="s2">&quot;decay&quot;</span><span class="p">,</span>
-                <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">),</span>
-                <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
 
         <span class="nd">@property</span>
         <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -402,7 +394,7 @@
         <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
         <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
             <span class="n">FoldingReducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
 
 <div class="viewcode-block" id="MSTDPET.EligibilityTraceReducer.fold">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MSTDPET.html#inferno.learn.MSTDPET.EligibilityTraceReducer.fold">[docs]</a>
@@ -430,7 +422,7 @@
             <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
             <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
             <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-            <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+            <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">expdecay</span><span class="p">(</span>
                 <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
@@ -637,12 +629,9 @@
             <span class="n">dt</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
             <span class="n">trace</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="p">,</span>
             <span class="n">tc</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">tc_pre</span><span class="p">,</span>
-            <span class="n">delayed</span><span class="o">=</span><span class="n">delayed</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># presynaptic spike monitor (triggers hebbian LTD)</span>
-        <span class="c1"># when the delayed condition is true, using synapse.spike records the raw</span>
-        <span class="c1"># spike times rather than the delay adjusted times of synspike.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_monitor</span><span class="p">(</span>
             <span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;spike_pre&quot;</span><span class="p">,</span>
@@ -656,7 +645,6 @@
             <span class="p">),</span>
             <span class="kc">False</span><span class="p">,</span>
             <span class="n">dt</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
-            <span class="n">delayed</span><span class="o">=</span><span class="n">delayed</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">name</span></div>
@@ -708,40 +696,40 @@
 <span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># iterate through self</span>
-        <span class="k">for</span> <span class="n">cell</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">monitors</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">cell</span><span class="p">,</span> <span class="n">aux</span><span class="p">,</span> <span class="n">monitors</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
 
             <span class="c1"># skip if self or cell is not in training mode or has no updater</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">cell</span><span class="o">.</span><span class="n">training</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="p">:</span>
                 <span class="k">continue</span>
 
             <span class="c1"># update eligibility traces</span>
-            <span class="n">state</span><span class="o">.</span><span class="n">e_post_trace</span><span class="p">(</span>
+            <span class="n">aux</span><span class="o">.</span><span class="n">e_post_trace</span><span class="p">(</span>
                 <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">monitors</span><span class="p">[</span><span class="s2">&quot;trace_pre&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">peek</span><span class="p">()),</span>
                 <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">monitors</span><span class="p">[</span><span class="s2">&quot;spike_post&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">peek</span><span class="p">()),</span>
             <span class="p">)</span>
 
-            <span class="n">state</span><span class="o">.</span><span class="n">e_pre_trace</span><span class="p">(</span>
+            <span class="n">aux</span><span class="o">.</span><span class="n">e_pre_trace</span><span class="p">(</span>
                 <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="n">monitors</span><span class="p">[</span><span class="s2">&quot;trace_post&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">peek</span><span class="p">()),</span>
                 <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="n">monitors</span><span class="p">[</span><span class="s2">&quot;spike_pre&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">peek</span><span class="p">()),</span>
             <span class="p">)</span>
 
             <span class="c1"># retrieve eligbility traces</span>
-            <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">delayed</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delayedby</span><span class="p">:</span>
-                <span class="n">z_post</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">e_post_trace</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
+            <span class="k">if</span> <span class="n">aux</span><span class="o">.</span><span class="n">delayed</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delayedby</span><span class="p">:</span>
+                <span class="n">z_post</span> <span class="o">=</span> <span class="n">aux</span><span class="o">.</span><span class="n">e_post_trace</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span>
-                        <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,</span> <span class="o">*</span><span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">shape</span>
+                        <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">bsize</span><span class="p">,</span> <span class="o">*</span><span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">shape</span>
                     <span class="p">),</span>
-                    <span class="n">state</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
+                    <span class="n">aux</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
                 <span class="p">)</span>
-                <span class="n">z_pre</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">e_pre_trace</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
+                <span class="n">z_pre</span> <span class="o">=</span> <span class="n">aux</span><span class="o">.</span><span class="n">e_pre_trace</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span>
-                        <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,</span> <span class="o">*</span><span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">shape</span>
+                        <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">bsize</span><span class="p">,</span> <span class="o">*</span><span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">shape</span>
                     <span class="p">),</span>
-                    <span class="n">state</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
+                    <span class="n">aux</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">z_post</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">e_post_trace</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
-                <span class="n">z_pre</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">e_pre_trace</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
+                <span class="n">z_post</span> <span class="o">=</span> <span class="n">aux</span><span class="o">.</span><span class="n">e_post_trace</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
+                <span class="n">z_pre</span> <span class="o">=</span> <span class="n">aux</span><span class="o">.</span><span class="n">e_pre_trace</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
 
             <span class="c1"># process update</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reward</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
@@ -751,14 +739,14 @@
                 <span class="n">reward_neg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">reward_abs</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
 
                 <span class="c1"># partial updates</span>
-                <span class="n">dpost</span> <span class="o">=</span> <span class="n">z_post</span> <span class="o">*</span> <span class="p">(</span><span class="n">reward_abs</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
-                <span class="n">dpre</span> <span class="o">=</span> <span class="n">z_pre</span> <span class="o">*</span> <span class="p">(</span><span class="n">reward_abs</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
+                <span class="n">dpost</span> <span class="o">=</span> <span class="n">z_post</span> <span class="o">*</span> <span class="p">(</span><span class="n">reward_abs</span> <span class="o">*</span> <span class="n">aux</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
+                <span class="n">dpre</span> <span class="o">=</span> <span class="n">z_pre</span> <span class="o">*</span> <span class="p">(</span><span class="n">reward_abs</span> <span class="o">*</span> <span class="n">aux</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
 
                 <span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpost_inv</span> <span class="o">=</span> <span class="n">dpost</span><span class="p">[</span><span class="n">reward_pos</span><span class="p">],</span> <span class="n">dpost</span><span class="p">[</span><span class="n">reward_neg</span><span class="p">]</span>
                 <span class="n">dpre_reg</span><span class="p">,</span> <span class="n">dpre_inv</span> <span class="o">=</span> <span class="n">dpre</span><span class="p">[</span><span class="n">reward_pos</span><span class="p">],</span> <span class="n">dpre</span><span class="p">[</span><span class="n">reward_neg</span><span class="p">]</span>
 
                 <span class="c1"># join partials</span>
-                <span class="k">match</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">match</span> <span class="p">(</span><span class="n">aux</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">aux</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
                     <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>  <span class="c1"># depressive</span>
                         <span class="n">dpos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dpost_inv</span><span class="p">,</span> <span class="n">dpre_inv</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
                         <span class="n">dneg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpre_reg</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -774,17 +762,17 @@
 
                 <span class="c1"># apply update</span>
                 <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">state</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">dpos</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">dpos</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">state</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">dneg</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">dneg</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">aux</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">dpos</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">dpos</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">aux</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">dneg</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">dneg</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># partial updates</span>
-                <span class="n">dpost</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">z_post</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reward</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">scale</span>
-                <span class="n">dpre</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">z_pre</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reward</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">scale</span>
+                <span class="n">dpost</span> <span class="o">=</span> <span class="n">aux</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">z_post</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reward</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">aux</span><span class="o">.</span><span class="n">scale</span>
+                <span class="n">dpre</span> <span class="o">=</span> <span class="n">aux</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">z_pre</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reward</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">aux</span><span class="o">.</span><span class="n">scale</span>
 
                 <span class="c1"># accumulate partials with mode condition</span>
-                <span class="k">match</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">*</span> <span class="n">reward</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">*</span> <span class="n">reward</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">match</span> <span class="p">(</span><span class="n">aux</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">*</span> <span class="n">reward</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">aux</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">*</span> <span class="n">reward</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
                     <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>  <span class="c1"># depressive</span>
                         <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">dpost</span> <span class="o">+</span> <span class="n">dpre</span><span class="p">)</span>
                     <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>  <span class="c1"># anti-hebbian</span>

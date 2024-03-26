@@ -262,27 +262,6 @@ uses values at observation limits if None. Defaults to False.</p></li>
 <dd><p>Resets synapses to their resting state.</p>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.DeltaCurrent.dt">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><a class="headerlink" href="#inferno.neural.DeltaCurrent.dt" title="Link to this definition">#</a></dt>
-<dd><p>Length of the simulation time step, in milliseconds.</p>
-<p>For tensor-based calculations, the internal attribute <code class="docutils literal notranslate"><span class="pre">step_time</span></code> can
-be used. The getter for <code class="docutils literal notranslate"><span class="pre">dt</span></code> will use the <code class="docutils literal notranslate"><span class="pre">RecordModule</span></code> value, the
-setter will set to the <code class="docutils literal notranslate"><span class="pre">RecordModule</span></code> value then create the corresponding
-tensor and assign that to <code class="docutils literal notranslate"><span class="pre">step_time</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – new simulation time step length.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present simulation time step length.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.DeltaCurrent.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/current.html#DeltaCurrent.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.DeltaCurrent.forward" title="Link to this definition">#</a></dt>
@@ -394,7 +373,6 @@ bounds, uses values at observation limits if None. Defaults to False.</p></li>
 <li><a class="reference internal" href="#">DeltaCurrent</a><ul>
 <li><a class="reference internal" href="#inferno.neural.DeltaCurrent"><code class="docutils literal notranslate"><span class="pre">DeltaCurrent</span></code></a><ul>
 <li><a class="reference internal" href="#inferno.neural.DeltaCurrent.clear"><code class="docutils literal notranslate"><span class="pre">DeltaCurrent.clear()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.DeltaCurrent.dt"><code class="docutils literal notranslate"><span class="pre">DeltaCurrent.dt</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.DeltaCurrent.forward"><code class="docutils literal notranslate"><span class="pre">DeltaCurrent.forward()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.DeltaCurrent.partialconstructor"><code class="docutils literal notranslate"><span class="pre">DeltaCurrent.partialconstructor()</span></code></a></li>
 </ul>

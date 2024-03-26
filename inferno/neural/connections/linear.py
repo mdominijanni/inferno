@@ -163,7 +163,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
             delays = self.delay
         else:
             delays = torch.zeros_like(self.weight)
-        return ein.rearrange(delays, "o i -> 1 i o").expand(self.batchsz, -1, -1)
+        return ein.rearrange(delays, "o i -> 1 i o").expand(self.bsize, -1, -1)
 
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like synapse input to connection input.
@@ -290,7 +290,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
         Outputs are determined as the learned linear transformation applied to synaptic
         currents, after new input is applied to the synapse, then reshaped to match
-        :py:attr:`batched_outshape`.
+        :py:attr:`boutshape`.
 
         Args:
             *inputs (torch.Tensor): inputs to the connection.
@@ -477,7 +477,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
         else:
             delays = torch.zeros_like(self.weight)
 
-        return ein.rearrange(delays, "n -> 1 n 1").expand(self.batchsz, -1, -1)
+        return ein.rearrange(delays, "n -> 1 n 1").expand(self.bsize, -1, -1)
 
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like synapse input to connection input.
@@ -591,7 +591,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
         Outputs are determined as the learned linear transformation applied to synaptic
         currents, after new input is applied to the synapse, then reshaped to match
-        :py:attr:`batched_outshape`.
+        :py:attr:`boutshape`.
 
         Args:
             inputs (torch.Tensor): inputs to the connection.
@@ -928,7 +928,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
         Outputs are determined as the learned linear transformation applied to synaptic
         currents, after new input is applied to the synapse, then reshaped to match
-        :py:attr:`batched_outshape`.
+        :py:attr:`boutshape`.
 
         Args:
             *inputs (torch.Tensor): inputs to the connection.

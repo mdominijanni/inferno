@@ -1,95 +1,20 @@
 from __future__ import annotations
-from .. import IndependentTrainer
-from ... import Module, interpolation, scalar
+from .. import LayerwiseTrainer
+from ... import Module, exp, interpolation
 from ..._internal import argtest
 from ...neural import Cell
 from ...observe import (
     StateMonitor,
-    MultiStateMonitor,
     CumulativeTraceReducer,
     PassthroughReducer,
     FoldingReducer,
 )
-from functools import partial
+import math
 import torch
 from typing import Any, Callable
-import weakref
 
 
-class EligibilityTrace(FoldingReducer):
-    r"""Simple eligibility trace reducer.
-
-    .. math::
-        z(t + \Delta t) = z(t) \exp \left( -\frac{\Delta t}{\tau_z} \right)
-        + \frac{\zeta(t)}{\tau_z}
-
-    Args:
-        step_time (float): length of the discrete step time, :math:`\Delta t`.
-        time_constant (float): time constant of exponential decay, :math:`\tau_z`.
-        duration (float): length of time over which results should be stored.
-        trace_reshape (weakref.WeakMethod): method to reshape trace spikes to
-            presynaptic or postsynaptic receptive fields.
-        spike_reshape (weakref.WeakMethod): method to reshape condition spikes to
-            presynaptic or postsynaptic receptive fields.
-        field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
-            function to reduce eligibility over the receptive field dimension.
-    """
-
-    def __init__(
-        self,
-        step_time: float,
-        time_constant: float,
-        *,
-        duration: float,
-    ):
-        # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
-
-        # register hyperparameters
-        self.register_buffer(
-            "time_constant",
-            torch.tensor(argtest.gt("time_constant", time_constant, 0, float)),
-            persistent=False,
-        )
-        self.register_buffer(
-            "decay",
-            torch.exp(-self.dt / self.time_constant),
-            persistent=False,
-        )
-
-    @property
-    def dt(self) -> float:
-        return FoldingReducer.dt.fget(self)
-
-    @dt.setter
-    def dt(self, value: float):
-        FoldingReducer.dt.fset(self, value)
-        self.decay = scalar(torch.exp(-self.dt / self.time_constant), self.decay)
-
-    def fold(
-        self, obs: torch.Tensor, spike: torch.Tensor, state: torch.Tensor | None
-    ) -> torch.Tensor:
-        if state is None:
-            return obs / self.time_constant
-        else:
-            return (self.decay * state) + (obs / self.time_constant)
-
-    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
-        return inputs.fill_(0)
-
-    def interpolate(
-        self,
-        prev_data: torch.Tensor,
-        next_data: torch.Tensor,
-        sample_at: torch.Tensor,
-        step_time: float | torch.Tensor,
-    ) -> torch.Tensor:
-        return interpolation.expdecay(
-            prev_data, next_data, sample_at, step_time, self.time_constant
-        )
-
-
-class MSTDPET(IndependentTrainer):
+class MSTDPET(LayerwiseTrainer):
     r"""Modulated spike-timing dependent plasticity with eligibility trace updater.
 
     .. math::
@@ -156,9 +81,6 @@ class MSTDPET(IndependentTrainer):
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce updates over the batch dimension, :py:func:`torch.mean`
             when None. Defaults to None.
-        field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-            function to reduce updates over the receptive field dimension,
-            :py:func:`torch.sum` when None. Defaults to None.
 
     Important:
         When ``delayed`` is ``True``, the history for the required variables is stored
@@ -203,13 +125,10 @@ class MSTDPET(IndependentTrainer):
         batch_reduction: (
             Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
         ) = None,
-        field_reduction: (
-            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
-        ) = None,
         **kwargs,
     ):
         # call superclass constructor
-        IndependentTrainer.__init__(self, **kwargs)
+        LayerwiseTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
         self.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -222,63 +141,158 @@ class MSTDPET(IndependentTrainer):
         self.delayed = bool(delayed)
         self.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
         self.batchreduce = batch_reduction if batch_reduction else torch.mean
-        self.fieldreduce = field_reduction if field_reduction else torch.sum
 
-    def _build_cell_state(self, **kwargs) -> Module:
-        r"""Builds auxiliary state for a cell.
+    class EligibilityTraceReducer(FoldingReducer):
+        r"""Reducer for eligibility trace.
 
-        Keyword arguments will override module-level hyperparameters.
-
-        Returns:
-            Module: state module.
+        Args:
+            step_time (float): length of the discrete step time.
+            time_constant (float): time constant of exponential decay.
+            duration (float): length of time over which results should be stored.
         """
-        state = Module()
 
-        step_time = kwargs.get("step_time", self.step_time)
-        lr_post = kwargs.get("lr_post", self.lr_post)
-        lr_pre = kwargs.get("lr_pre", self.lr_pre)
-        tc_post = kwargs.get("tc_post", self.tc_post)
-        tc_pre = kwargs.get("tc_pre", self.tc_pre)
-        tc_eligibility = kwargs.get("tc_eligibility", self.tc_eligibility)
-        scale = kwargs.get("scale", self.scale)
-        delayed = kwargs.get("delayed", self.delayed)
-        interp_tolerance = kwargs.get("interp_tolerance", self.tolerance)
-        trace_mode = kwargs.get("trace_mode", self.trace)
-        batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
-        field_reduction = kwargs.get("field_reduction", self.fieldreduce)
+        def __init__(
+            self,
+            step_time: float,
+            time_constant: float,
+            *,
+            duration: float,
+        ):
+            # call superclass constructor
+            FoldingReducer.__init__(self, step_time, duration)
 
-        state.step_time = argtest.gt("step_time", step_time, 0, float)
-        state.register_buffer("lr_post", torch.tensor(float(lr_post)), persistent=False)
-        state.register_buffer("lr_pre", torch.tensor(float(lr_pre)), persistent=False)
-        state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
-        state.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
-        state.tc_eligibility = argtest.gt("tc_eligibility", tc_eligibility, 0, float)
-        state.register_buffer(
-            "scale",
-            torch.tensor(argtest.gt("scale", scale, 0, float)),
-            persistent=False,
-        )
-        state.delayed = bool(delayed)
-        state.register_buffer(
-            "tolerance",
-            torch.tensor(argtest.gte("interp_tolerance", interp_tolerance, 0, float)),
-            persistent=False,
-        )
-        state.trace = argtest.oneof(
-            "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
-        )
-        state.batchreduce = batch_reduction if batch_reduction else torch.mean
-        state.fieldreduce = field_reduction if field_reduction else torch.sum
+            # register state
+            self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
+            self.decay = math.exp(-self.dt / self.time_constant)
 
-        return state
+        @property
+        def dt(self) -> float:
+            return FoldingReducer.dt.fget(self)
 
-    def register_cell(
+        @dt.setter
+        def dt(self, value: float):
+            FoldingReducer.dt.fset(self, value)
+            self.decay = torch.tensor(exp(-self.dt / self.time_constant))
+
+        def fold(
+            self, obs: torch.Tensor, cond: torch.Tensor, state: torch.Tensor | None
+        ) -> torch.Tensor:
+            if state is None:
+                return torch.sum((obs / self.time_constant) * cond, 0)
+            else:
+                return (self.decay * state) + torch.sum(
+                    (obs / self.time_constant) * cond, 0
+                )
+
+        def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
+            return inputs.fill_(0)
+
+        def interpolate(
+            self,
+            prev_data: torch.Tensor,
+            next_data: torch.Tensor,
+            sample_at: torch.Tensor,
+            step_time: float,
+        ) -> torch.Tensor:
+            return interpolation.expdecay(
+                prev_data, next_data, sample_at, step_time, self.time_constant
+            )
+
+    class State(Module):
+        r"""MSTDPET Auxiliary State
+
+        Args:
+            trainer (MSTDPET): MSTDPET trainer.
+            cell (Cell): cell.
+            **kwargs (Any): default argument overrides.
+        """
+
+        def __init__(self, trainer: MSTDPET, cell: Cell, **kwargs: Any):
+            # call superclass constructor
+            Module.__init__(self)
+
+            # map arguments
+            if "step_time" in kwargs:
+                self.step_time = argtest.gt("step_time", kwargs["step_time"], 0, float)
+            else:
+                self.step_time = trainer.step_time
+
+            if "lr_post" in kwargs:
+                self.lr_post = float(kwargs["lr_post"])
+            else:
+                self.lr_post = trainer.lr_post
+
+            if "lr_pre" in kwargs:
+                self.lr_pre = float(kwargs["lr_pre"])
+            else:
+                self.lr_pre = trainer.lr_pre
+
+            if "tc_post" in kwargs:
+                self.tc_post = argtest.gt("tc_post", kwargs["tc_post"], 0, float)
+            else:
+                self.tc_post = trainer.tc_post
+
+            if "tc_pre" in kwargs:
+                self.tc_pre = argtest.gt("tc_pre", kwargs["tc_pre"], 0, float)
+            else:
+                self.tc_pre = trainer.tc_pre
+
+            if "tc_eligibility" in kwargs:
+                self.tc_eligibility = argtest.gt(
+                    "tc_eligibility", kwargs["tc_eligibility"], 0, float
+                )
+            else:
+                self.tc_eligibility = trainer.tc_eligibility
+
+            if "scale" in kwargs:
+                self.scale = argtest.gt("scale", kwargs["scale"], 0, float)
+            else:
+                self.scale = trainer.scale
+
+            if "delayed" in kwargs:
+                self.delayed = bool(kwargs["delayed"])
+            else:
+                self.delayed = trainer.delayed
+
+            if "interp_tolerance" in kwargs:
+                self.tolerance = argtest.gte(
+                    "interp_tolerance", kwargs["interp_tolerance"], 0, float
+                )
+            else:
+                self.tolerance = trainer.tolerance
+
+            if "batch_reduction" in kwargs:
+                self.batchreduce = (
+                    kwargs["batch_reduction"]
+                    if kwargs["batch_reduction"]
+                    else torch.mean
+                )
+            else:
+                self.batchreduce = trainer.batchreduce
+
+            # eligibility trace reducers
+            self.e_post_trace = self.EligibilityTraceReducer(
+                self.step_time,
+                self.tc_eligibility,
+                duration=cell.connection.delayedby if self.delayed else 0.0,
+            )
+
+            self.e_pre_trace = self.EligibilityTraceReducer(
+                self.step_time,
+                self.tc_eligibility,
+                duration=cell.connection.delayedby if self.delayed else 0.0,
+            )
+
+            # eligibility traces
+            self.add_module("e_post_trace", None)
+            self.add_module("e_pre_trace", None)
+
+    def add_cell(
         self,
         name: str,
         cell: Cell,
-        /,
         **kwargs: Any,
-    ) -> MSTDPET.Unit:
+    ) -> str:
         r"""Adds a cell with required state.
 
         Args:
@@ -301,19 +315,16 @@ class MSTDPET(IndependentTrainer):
                 calculating spike traces.
             batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
                 function to reduce updates over the batch dimension.
-            field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-                function to reduce updates over the receptive field dimension,
-                :py:func:`torch.sum` when None. Defaults to None.
 
         Returns:
-            IndependentTrainer.Unit: specified cell, auxiliary state, and monitors.
+            str: name of the added cell.
 
         Important:
             Any specified keyword arguments will override the default hyperparameters
-            set on initialization. See :py:class:`MSTDPET` for details.
+            set on initialization. See :py:class:`STDP` for details.
         """
         # add the cell with additional hyperparameters
-        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
+        cell, state = self._add_cell(name, cell, self.State(self, **kwargs))
 
         # if delays should be accounted for
         delayed = state.delayed and cell.connection.delayedby is not None
@@ -323,6 +334,7 @@ class MSTDPET(IndependentTrainer):
             "as_prehook": False,
             "train_update": True,
             "eval_update": False,
+            "prepend": True,
         }
 
         # postsynaptic trace monitor (weighs hebbian LTD)
@@ -334,17 +346,16 @@ class MSTDPET(IndependentTrainer):
                 reducer=CumulativeTraceReducer(
                     state.step_time,
                     state.tc_post,
-                    amplitude=state.lr_post.abs().item(),
+                    amplitude=abs(state.lr_post),
                     target=True,
                     duration=0.0,
                 ),
                 **monitor_kwargs,
-                prepend=True,
             ),
             False,
             dt=state.step_time,
-            tc=state.tc_post,
             trace=state.trace,
+            tc=state.tc_post,
         )
 
         # postsynaptic spike monitor (triggers hebbian LTP)
@@ -355,7 +366,6 @@ class MSTDPET(IndependentTrainer):
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(state.step_time, duration=0.0),
                 **monitor_kwargs,
-                prepend=True,
             ),
             False,
             dt=state.step_time,
@@ -372,88 +382,32 @@ class MSTDPET(IndependentTrainer):
                 reducer=CumulativeTraceReducer(
                     state.step_time,
                     state.tc_pre,
-                    amplitude=state.lr_pre.abs().item(),
+                    amplitude=abs(state.lr_pre),
                     target=True,
                     duration=0.0,
                 ),
                 **monitor_kwargs,
-                prepend=True,
             ),
             False,
             dt=state.step_time,
-            tc=state.tc_pre,
             trace=state.trace,
-            delayed=delayed,
+            tc=state.tc_pre,
         )
 
         # presynaptic spike monitor (triggers hebbian LTD)
-        # when the delayed condition is true, using synapse.spike records the raw
-        # spike times rather than the delay adjusted times of synspike.
         self.add_monitor(
             name,
             "spike_pre",
             "synapse.spike" if delayed else "connection.synspike",
-            StateMonitor.partialconstructor(
+            StateMonitor.CumulativeTraceReducer(
                 reducer=PassthroughReducer(
                     state.step_time,
                     duration=0.0,
                 ),
                 **monitor_kwargs,
-                prepend=True,
             ),
             False,
             dt=state.step_time,
-            delayed=delayed,
-        )
-
-        # partial eligibility calculation
-        def eligibility(trace, spike, trs, srs, fr):
-            return (fr()(trs()(trace) * srs()(spike), -1),)
-
-        # presynaptic-scaled postsynaptic-triggered eligibility trace (hebbian LTP)
-        self.add_monitor(
-            name,
-            "elig_post",
-            "monitors",
-            MultiStateMonitor.partialconstructor(
-                reducer=EligibilityTrace(
-                    state.step_time,
-                    state.tc_eligibility,
-                    duration=cell.connection.delayedby if delayed else 0.0,
-                ),
-                subattrs=("trace_pre.peeked", "spike_post.peeked"),
-                **monitor_kwargs,
-                prepend=False,
-                map_=partial(
-                    eligibility,
-                    trs=weakref.WeakMethod(cell.connection.presyn_receptive),
-                    srs=weakref.WeakMethod(cell.connection.postsyn_receptive),
-                    fr=weakref.ref(state.fieldreduce),
-                ),
-            ),
-        )
-
-        # postsynaptic-scaled presynaptic-triggered eligibility trace (hebbian LTD)
-        self.add_monitor(
-            name,
-            "elig_pre",
-            "monitors",
-            MultiStateMonitor.partialconstructor(
-                reducer=EligibilityTrace(
-                    state.step_time,
-                    state.tc_eligibility,
-                    duration=cell.connection.delayedby if delayed else 0.0,
-                ),
-                subattrs=("trace_post.peeked", "spike_pre.peeked"),
-                **monitor_kwargs,
-                prepend=False,
-                map_=partial(
-                    eligibility,
-                    trs=weakref.WeakMethod(cell.connection.postsyn_receptive),
-                    srs=weakref.WeakMethod(cell.connection.presyn_receptive),
-                    fr=weakref.ref(state.fieldreduce),
-                ),
-            ),
         )
 
         return name
@@ -499,29 +453,40 @@ class MSTDPET(IndependentTrainer):
                 * :math:`B` is the batch size.
         """
         # iterate through self
-        for cell, state, monitors in self:
+        for cell, aux, monitors in self:
 
             # skip if self or cell is not in training mode or has no updater
             if not cell.training or not self.training or not cell.updater:
                 continue
 
-            # get eligibility traces
-            if state.delayed and cell.connection.delayedby:
-                zpost = monitors["elig_post"].view(
+            # update eligibility traces
+            aux.e_post_trace(
+                cell.connection.presyn_receptive(monitors["trace_pre"].peek()),
+                cell.connection.postsyn_receptive(monitors["spike_post"].peek()),
+            )
+
+            aux.e_pre_trace(
+                cell.connection.postsyn_receptive(monitors["trace_post"].peek()),
+                cell.connection.presyn_receptive(monitors["spike_pre"].peek()),
+            )
+
+            # retrieve eligbility traces
+            if aux.delayed and cell.connection.delayedby:
+                z_post = aux.e_post_trace.view(
                     cell.connection.delay.unsqueeze(0).expand(
-                        cell.connection.batchsz, *cell.connection.delay.shape
+                        cell.connection.bsize, *cell.connection.delay.shape
                     ),
-                    state.tolerance,
+                    aux.tolerance,
                 )
-                zpre = monitors["elig_pre"].view(
+                z_pre = aux.e_pre_trace.view(
                     cell.connection.delay.unsqueeze(0).expand(
-                        cell.connection.batchsz, *cell.connection.delay.shape
+                        cell.connection.bsize, *cell.connection.delay.shape
                     ),
-                    state.tolerance,
+                    aux.tolerance,
                 )
             else:
-                zpost = monitors["elig_post"].peek()
-                zpre = monitors["elig_pre"].peek()
+                z_post = aux.e_post_trace.peek()
+                z_pre = aux.e_pre_trace.peek()
 
             # process update
             if isinstance(reward, torch.Tensor):
@@ -531,14 +496,14 @@ class MSTDPET(IndependentTrainer):
                 reward_neg = torch.argwhere(reward_abs < 0)
 
                 # partial updates
-                dpost = zpost * (reward_abs * state.scale)
-                dpre = zpre * (reward_abs * state.scale)
+                dpost = z_post * (reward_abs * aux.scale)
+                dpre = z_pre * (reward_abs * aux.scale)
 
                 dpost_reg, dpost_inv = dpost[reward_pos], dpost[reward_neg]
                 dpre_reg, dpre_inv = dpre[reward_pos], dpre[reward_neg]
 
                 # join partials
-                match (state.lr_post >= 0, state.lr_pre >= 0):
+                match (aux.lr_post >= 0, aux.lr_pre >= 0):
                     case (False, False):  # depressive
                         dpos = torch.cat(dpost_inv, dpre_inv, 0)
                         dneg = torch.cat(dpost_reg, dpre_reg, 0)
@@ -554,17 +519,17 @@ class MSTDPET(IndependentTrainer):
 
                 # apply update
                 cell.updater.weight = (
-                    state.batchreduce(dpos, 0) if dpos.numel() else None,
-                    state.batchreduce(dneg, 0) if dneg.numel() else None,
+                    aux.batchreduce(dpos, 0) if dpos.numel() else None,
+                    aux.batchreduce(dneg, 0) if dneg.numel() else None,
                 )
 
             else:
                 # partial updates
-                dpost = state.batchreduce(zpost * abs(reward) * state.scale, 0)
-                dpre = state.batchreduce(zpre * abs(reward) * state.scale, 0)
+                dpost = aux.batchreduce(z_post * abs(reward), 0) * aux.scale
+                dpre = aux.batchreduce(z_pre * abs(reward), 0) * aux.scale
 
                 # accumulate partials with mode condition
-                match (state.lr_post * reward >= 0, state.lr_pre * reward >= 0):
+                match (aux.lr_post * reward >= 0, aux.lr_pre * reward >= 0):
                     case (False, False):  # depressive
                         cell.updater.weight = (None, dpost + dpre)
                     case (False, True):  # anti-hebbian

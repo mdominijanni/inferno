@@ -4,8 +4,8 @@ from typing import Iterator
 
 def enc_poisson_interval(
     inputs: torch.Tensor,
-    steps: int,
-    step_time: float | torch.Tensor,
+    step_time: float,
+    steps: float,
     *,
     generator: torch.Generator | None = None,
 ) -> torch.Tensor:
@@ -17,9 +17,8 @@ def enc_poisson_interval(
 
     Args:
         inputs (torch.Tensor): expected spike frequencies, in :math:`\text{Hz}`.
+        step_time (float): length of time between outputs, in :math:`\text{ms}`.
         steps (int): number of steps for which to generate spikes, :math:`S`.
-        step_time (float | torch.Tensor): length of time between outputs,
-            in :math:`\text{ms}`.
         generator (torch.Generator | None, optional): pseudorandom number generator
             for sampling. Defaults to None.
 
@@ -87,8 +86,8 @@ def enc_poisson_interval(
 
 def enc_poisson_interval_online(
     inputs: torch.Tensor,
-    steps: int,
-    step_time: float | torch.Tensor,
+    step_time: float,
+    steps: float,
     *,
     generator: torch.Generator | None = None,
 ) -> Iterator[torch.Tensor]:
@@ -100,9 +99,8 @@ def enc_poisson_interval_online(
 
     Args:
         inputs (torch.Tensor): expected spike frequencies, in :math:`\text{Hz}`.
+        step_time (float): length of time between outputs, in :math:`\text{ms}`.
         steps (int): number of steps for which to generate spikes, :math:`S`.
-        step_time (float | torch.Tensor): length of time between outputs,
-            in :math:`\text{ms}`.
         generator (torch.Generator | None, optional): pseudorandom number generator
             for sampling. Defaults to None.
 
@@ -164,10 +162,10 @@ def enc_poisson_interval_online(
 
 def enc_homogeneous_poisson_exp_interval(
     inputs: torch.Tensor,
-    steps: int,
-    step_time: float | torch.Tensor,
+    step_time: float,
+    steps: float,
     *,
-    refrac: float | torch.Tensor | None = None,
+    refrac: float | None = None,
     compensate: bool = True,
     generator: torch.Generator | None = None,
 ) -> torch.Tensor:
@@ -180,11 +178,11 @@ def enc_homogeneous_poisson_exp_interval(
     Args:
         inputs (torch.Tensor): expected spike frequencies, :math:`f`,
             in :math:`\text{Hz}`.
+        step_time (float): length of time between outputs, :math:`\Delta t`,
+            in :math:`\text{ms}`.
         steps (int): number of steps for which to generate spikes, :math:`S`.
-        step_time (float | torch.Tensor): length of time between outputs,
-            :math:`\Delta t`, in :math:`\text{ms}`.
-        refrac (float | torch.Tensor | None, optional): minimum interal between spikes
-            set to the step time if None, in :math:`\text{ms}`. Defaults to None.
+        refrac (float | None, optional): minimum interal between spikes set to the step
+            time if None, in :math:`\text{ms}`. Defaults to None.
         compensate (bool, optioonal): if the spike generation rate should be compensate
             for the refractory period. Defaults to True.
         generator (torch.Generator | None, optional): pseudorandom number generator
@@ -225,8 +223,8 @@ def enc_homogeneous_poisson_exp_interval(
     """
     # disable gradient computation
     with torch.no_grad():
-        # implied refractory period
-        refrac = step_time if refrac is None else step_time
+        # assume refrac is dt if unspecified
+        refrac = refrac if refrac is not None else step_time
 
         # get number of steps, convert refrac from ms to dt
         steps, refrac = int(steps), refrac / step_time
@@ -267,10 +265,10 @@ def enc_homogeneous_poisson_exp_interval(
 
 def enc_homogeneous_poisson_exp_interval_online(
     inputs: torch.Tensor,
-    steps: int,
-    step_time: float | torch.Tensor,
+    step_time: float,
+    steps: float | None,
     *,
-    refrac: float | torch.Tensor | None = None,
+    refrac: float | None = None,
     compensate: bool = True,
     generator: torch.Generator | None = None,
 ) -> Iterator[torch.Tensor]:
@@ -283,11 +281,11 @@ def enc_homogeneous_poisson_exp_interval_online(
     Args:
         inputs (torch.Tensor): expected spike frequencies, :math:`f`,
             in :math:`\text{Hz}`.
+        step_time (float): length of time between outputs, :math:`\Delta t`,
+            in :math:`\text{ms}`.
         steps (int): number of steps for which to generate spikes, :math:`S`.
-        step_time (float | torch.Tensor): length of time between outputs,
-            :math:`\Delta t`, in :math:`\text{ms}`.
-        refrac (float | torch.Tensor | None, optional): minimum interal between spikes,
-            set to the step time if None, in :math:`\text{ms}`. Defaults to None.
+        refrac (float | None, optional): minimum interal between spikes set to the step
+            time if None, in :math:`\text{ms}`. Defaults to None.
         compensate (bool, optioonal): if the spike generation rate should be compensate
             for the refractory period. Defaults to True.
         generator (torch.Generator | None, optional): pseudorandom number generator
@@ -327,9 +325,6 @@ def enc_homogeneous_poisson_exp_interval_online(
     """
     # disable gradient computation
     with torch.no_grad():
-        # implied refractory period
-        refrac = step_time if refrac is None else step_time
-
         # get number of steps, convert refrac from ms to dt
         steps, refrac = int(steps), refrac / step_time
 
@@ -369,7 +364,7 @@ def enc_homogeneous_poisson_exp_interval_online(
 
 def enc_inhomogenous_poisson_bernoulli_approx(
     inputs: torch.Tensor,
-    step_time: float | torch.Tensor,
+    step_time: float,
     *,
     generator: torch.Generator | None = None,
 ) -> torch.Tensor:
@@ -380,8 +375,8 @@ def enc_inhomogenous_poisson_bernoulli_approx(
     Args:
         inputs (torch.Tensor): expected spike frequencies, :math:`f`,
             in :math:`\text{Hz}`.
-        step_time (float | torch.Tensor): length of time between outputs,
-            :math:`\Delta t`, in :math:`\text{ms}`.
+        step_time (float): length of time between outputs, :math:`\Delta t`,
+            in :math:`\text{ms}`.
         generator (torch.Generator | None, optional): _description_. Defaults to None.
 
     Returns:

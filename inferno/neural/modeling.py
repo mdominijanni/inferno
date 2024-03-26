@@ -107,8 +107,7 @@ class Accumulator(Module):
         self,
         bound: HalfBounding | None,
         max: float | None = None,
-        /,
-        **kwargs: Any,
+        kwargs: dict[str, Any] | None = None,
     ) -> None:
         r"""Sets the function used for parameter bounding on the upper limit.
 
@@ -119,15 +118,19 @@ class Accumulator(Module):
         Args:
             bound (HalfBounding | None): bounding function.
             max (float | None, optional): upper bound. Defaults to None.
-            **kwargs (Any): keyword arguments for the bounding function.
+            kwargs (dict[str, Any] | None, optional): keyword arguments for the
+                bounding function. Defaults to None.
         """
+        # convert kwargs if required
+        kw = kwargs if kwargs else {}
+
         # convert bounds to tuple
         if not isinstance(self.bind, list):
             self.bind = [lambda x, p: p, lambda x, n: n]
 
         # determine bounding function
         if bound:
-            self.bind[0] = lambda x, p, ub=max, k=kwargs: bound(x, p, ub, **k)
+            self.bind[0] = lambda x, p, ub=max, k=kw: bound(x, p, ub, **k)
         else:
             self.bind[0] = lambda x, p: p
 
@@ -135,8 +138,7 @@ class Accumulator(Module):
         self,
         bound: HalfBounding | None,
         min: float | None = None,
-        /,
-        **kwargs: Any,
+        kwargs: dict[str, Any] | None = None,
     ) -> None:
         r"""Sets the function used for parameter bounding on the lower limit.
 
@@ -147,15 +149,19 @@ class Accumulator(Module):
         Args:
             bound (HalfBounding | None): bounding function.
             min (float | None, optional): lower bound. Defaults to None.
-            **kwargs (Any): keyword arguments for the bounding function.
+            kwargs (dict[str, Any] | None, optional): keyword arguments for the
+                bounding function. Defaults to None.
         """
+        # convert kwargs if required
+        kw = kwargs if kwargs else {}
+
         # convert bounds to tuple
         if not isinstance(self.bind, list):
             self.bind = [lambda x, p: p, lambda x, n: n]
 
         # determine bounding function
         if bound:
-            self.bind[1] = lambda x, n, lb=min, k=kwargs: bound(x, n, lb, **k)
+            self.bind[1] = lambda x, n, lb=min, k=kw: bound(x, n, lb, **k)
         else:
             self.bind[1] = lambda x, n: n
 
@@ -164,8 +170,7 @@ class Accumulator(Module):
         bound: FullBounding | None,
         max: float | None = None,
         min: float | None = None,
-        /,
-        **kwargs: Any,
+        kwargs: dict[str, Any] | None = None,
     ) -> None:
         r"""Sets the function used for parameter bounding on the upper and lower limits.
 
@@ -177,12 +182,15 @@ class Accumulator(Module):
             bound (FullBounding | None): bounding function.
             max (float | None, optional): upper bound. Defaults to None.
             min (float | None, optional): lower bound. Defaults to None.
-            **kwargs (Any): keyword arguments for the bounding function.
+            kwargs (dict[str, Any] | None, optional): keyword arguments for the
+                bounding function. Defaults to None.
         """
+        # convert kwargs if required
+        kw = kwargs if kwargs else {}
 
         # determine bounding function
         if bound:
-            self.bind = lambda x, p, n, ub=max, lb=min, k=kwargs: bound(
+            self.bind = lambda x, p, n, ub=max, lb=min, k=kw: bound(
                 x, p, n, ub, lb, **k
             )
         else:
@@ -411,9 +419,9 @@ class Updater(Module):
 
         if not module:
             raise RuntimeError("'parent' module is no longer a valid reference")
-        else:
-            for p in params:
-                setattr(module, p, self.updates_[p](getattr(module, p), **kwargs))
+
+        for p in params:
+            setattr(module, p, self.updates_[p](getattr(module, p), **kwargs))
 
 
 class Updatable(ABC):
@@ -485,8 +493,8 @@ class Updatable(ABC):
         """
         if self.updatable:
             self.updater(**kwargs)
-            if clear:
-                self.updater.clear(**kwargs)
+        if clear:
+            self.updater.clear(**kwargs)
 
     def updatesome(self, *params, clear: bool = True, **kwargs) -> None:
         r"""Applies accumulated updates to specific parameters.

@@ -383,7 +383,7 @@
             <span class="n">delays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">delays</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">delays</span><span class="p">,</span> <span class="s2">&quot;o i -&gt; 1 i o&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">delays</span><span class="p">,</span> <span class="s2">&quot;o i -&gt; 1 i o&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LinearDense.like_input">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.like_input">[docs]</a>
@@ -524,7 +524,7 @@
 
 <span class="sd">        Outputs are determined as the learned linear transformation applied to synaptic</span>
 <span class="sd">        currents, after new input is applied to the synapse, then reshaped to match</span>
-<span class="sd">        :py:attr:`batched_outshape`.</span>
+<span class="sd">        :py:attr:`boutshape`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            *inputs (torch.Tensor): inputs to the connection.</span>
@@ -715,7 +715,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">delays</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">delays</span><span class="p">,</span> <span class="s2">&quot;n -&gt; 1 n 1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">delays</span><span class="p">,</span> <span class="s2">&quot;n -&gt; 1 n 1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LinearDirect.like_input">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.like_input">[docs]</a>
@@ -843,7 +843,7 @@
 
 <span class="sd">        Outputs are determined as the learned linear transformation applied to synaptic</span>
 <span class="sd">        currents, after new input is applied to the synapse, then reshaped to match</span>
-<span class="sd">        :py:attr:`batched_outshape`.</span>
+<span class="sd">        :py:attr:`boutshape`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): inputs to the connection.</span>
@@ -1198,7 +1198,7 @@
 
 <span class="sd">        Outputs are determined as the learned linear transformation applied to synaptic</span>
 <span class="sd">        currents, after new input is applied to the synapse, then reshaped to match</span>
-<span class="sd">        :py:attr:`batched_outshape`.</span>
+<span class="sd">        :py:attr:`boutshape`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            *inputs (torch.Tensor): inputs to the connection.</span>

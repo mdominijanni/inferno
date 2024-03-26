@@ -14,7 +14,6 @@
     DimensionalModule
     RecordModule
     Hook
-    ContextualHook
     StateHook
 ```
 

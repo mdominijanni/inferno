@@ -11,7 +11,7 @@
     :toctree: generated
 
     CellTrainer
-    IndependentTrainer
+    LayerwiseTrainer
 ```
 
 ## Updaters, Spike-Timing Dependent Plasticity

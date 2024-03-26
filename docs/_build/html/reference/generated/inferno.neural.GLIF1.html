@@ -231,79 +231,10 @@
 <a class="reference internal" href="../../zoo/neurons-linear.html#generalized-leaky-integrate-and-fire-1-glif1"><span class="std std-ref">Generalized Leaky Integrate-and-Fire 1 (GLIF1)</span></a>
 in the zoo.</p>
 </div>
-<p class="rubric">Methods</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.neural.GLIF1.clear">
 <span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/neurons/linear.html#GLIF1.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.GLIF1.clear" title="Link to this definition">#</a></dt>
 <dd><p>Resets neurons to their resting state.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.neural.GLIF1.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">refrac_lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/neurons/linear.html#GLIF1.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.GLIF1.forward" title="Link to this definition">#</a></dt>
-<dd><p>Runs a simulation step of the neuronal dynamics.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>inputs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – presynaptic currents,
-<span class="math notranslate nohighlight">\(I(t)\)</span>, in <span class="math notranslate nohighlight">\(\text{nA}\)</span>.</p></li>
-<li><p><strong>refrac_lock</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if membrane voltages should be fixed while
-in the refractory period. Defaults to True.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>if the corresponding neuron generated an action potential.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<p class="rubric">Properties</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.GLIF1.batchedshape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batchedshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.GLIF1.batchedshape" title="Link to this definition">#</a></dt>
-<dd><p>Batch shape of the module</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Shape of the module, including the batch dimension.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>, …]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.GLIF1.batchsz">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batchsz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.GLIF1.batchsz" title="Link to this definition">#</a></dt>
-<dd><p>Batch size of the neuron group.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – new batch size.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present batch size.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.GLIF1.count">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.GLIF1.count" title="Link to this definition">#</a></dt>
-<dd><p>Number of elements in the module, excluding replication along the batch dim.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>number of elements in the module.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -323,81 +254,21 @@ in the refractory period. Defaults to True.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.GLIF1.refrac">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">refrac</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.GLIF1.refrac" title="Link to this definition">#</a></dt>
-<dd><p>Remaining refractory periods, in milliseconds.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.GLIF1.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">refrac_lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/neurons/linear.html#GLIF1.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.GLIF1.forward" title="Link to this definition">#</a></dt>
+<dd><p>Runs a simulation step of the neuronal dynamics.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – new remaining refractory periods.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present remaining refractory periods.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.GLIF1.shape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.GLIF1.shape" title="Link to this definition">#</a></dt>
-<dd><p>Shape of the module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Shape of the module.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>, …]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.GLIF1.spike">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spike</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.GLIF1.spike" title="Link to this definition">#</a></dt>
-<dd><p>Action potentials last generated.</p>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[\begin{split}f(t) =
-\begin{cases}
-    1, &amp;t_\text{refrac}(t) = \text{ARP} \\
-    0, &amp;\text{otherwise}
-\end{cases}\end{split}\]</div>
-</div>
-<dl class="simple">
-<dt>Where:</dt><dd><ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(f_(t)\)</span> are the postsynaptic spikes.</p></li>
-<li><p><span class="math notranslate nohighlight">\(t_\text{refrac}(t)\)</span> are the remaining refractory periods, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
-<li><p><span class="math notranslate nohighlight">\(\text{ARP}\)</span> is the absolute refractory period, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – presynaptic currents,
+<span class="math notranslate nohighlight">\(I(t)\)</span>, in <span class="math notranslate nohighlight">\(\text{nA}\)</span>.</p></li>
+<li><p><strong>refrac_lock</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if membrane voltages should be fixed while
+in the refractory period. Defaults to True.</p></li>
 </ul>
 </dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>if the corresponding neuron generated an action potential</dt><dd><p>during the prior step.</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.GLIF1.voltage">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">voltage</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.GLIF1.voltage" title="Link to this definition">#</a></dt>
-<dd><p>Membrane voltages in millivolts.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – new membrane voltages.</p>
-</dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>present membrane voltages.</p>
+<dd class="field-even"><p>if the corresponding neuron generated an action potential.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
@@ -467,15 +338,8 @@ in the refractory period. Defaults to True.</p></li>
 <li><a class="reference internal" href="#">GLIF1</a><ul>
 <li><a class="reference internal" href="#inferno.neural.GLIF1"><code class="docutils literal notranslate"><span class="pre">GLIF1</span></code></a><ul>
 <li><a class="reference internal" href="#inferno.neural.GLIF1.clear"><code class="docutils literal notranslate"><span class="pre">GLIF1.clear()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.GLIF1.forward"><code class="docutils literal notranslate"><span class="pre">GLIF1.forward()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.GLIF1.batchedshape"><code class="docutils literal notranslate"><span class="pre">GLIF1.batchedshape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.GLIF1.batchsz"><code class="docutils literal notranslate"><span class="pre">GLIF1.batchsz</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.GLIF1.count"><code class="docutils literal notranslate"><span class="pre">GLIF1.count</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.GLIF1.dt"><code class="docutils literal notranslate"><span class="pre">GLIF1.dt</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.GLIF1.refrac"><code class="docutils literal notranslate"><span class="pre">GLIF1.refrac</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.GLIF1.shape"><code class="docutils literal notranslate"><span class="pre">GLIF1.shape</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.GLIF1.spike"><code class="docutils literal notranslate"><span class="pre">GLIF1.spike</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.GLIF1.voltage"><code class="docutils literal notranslate"><span class="pre">GLIF1.voltage</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.GLIF1.forward"><code class="docutils literal notranslate"><span class="pre">GLIF1.forward()</span></code></a></li>
 </ul>
 </li>
 </ul>

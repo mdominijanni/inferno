@@ -226,8 +226,7 @@
 <p>An extension of PyTorch’s Module class.</p>
 <p>This extends <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a> so that “extra state” is handled in a way
 similar to regular tensor state (e.g. buffers and parameters). This enables simple
-export to and import from a state dictionary. This does not enforce exact matching
-keys, and will insert new keys as required.</p>
+export to and import from a state dictionary.</p>
 <p>Additionally, attribute assignment will check if the name refers to a property in
 the class and if so, uses <code class="docutils literal notranslate"><span class="pre">object.__setattr__</span></code>.</p>
 <div class="admonition note">

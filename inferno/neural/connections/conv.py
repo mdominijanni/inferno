@@ -268,7 +268,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             delays = torch.zeros_like(self.weight)
 
         return ein.rearrange(delays, "f c h w -> 1 (c h w) 1 f").expand(
-            self.batchsz, -1, self.synapse.shape[-1], -1
+            self.bsize, -1, self.synapse.shape[-1], -1
         )
 
     def like_input(self, data: torch.Tensor) -> torch.Tensor:

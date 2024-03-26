@@ -225,7 +225,7 @@
     <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interpolates by selecting the previous state.</span>
@@ -239,8 +239,8 @@
 <span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time,</span>
 <span class="sd">            :math:`D_{t=T}`.</span>
 <span class="sd">        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.</span>
-<span class="sd">        step_time (float | torch.Tensors): length of time between the prior and</span>
-<span class="sd">            ubsequent observations, :math:`T`.</span>
+<span class="sd">        step_data (float): length of time between the prior and subsequent observations,</span>
+<span class="sd">            :math:`T`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.</span>
@@ -255,7 +255,7 @@
     <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interpolates by selecting the nearest state.</span>
@@ -273,8 +273,8 @@
 <span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time,</span>
 <span class="sd">            :math:`D_{t=T}`.</span>
 <span class="sd">        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.</span>
-<span class="sd">        step_time (float | torch.Tensors): length of time between the prior and</span>
-<span class="sd">            ubsequent observations, :math:`T`.</span>
+<span class="sd">        step_data (float): length of time between the prior and subsequent observations,</span>
+<span class="sd">            :math:`T`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.</span>
@@ -289,7 +289,7 @@
     <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interpolates between previous and next states linearlly.</span>
@@ -303,8 +303,8 @@
 <span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time,</span>
 <span class="sd">            :math:`D_{t=T}`.</span>
 <span class="sd">        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.</span>
-<span class="sd">        step_time (float | torch.Tensors): length of time between the prior and</span>
-<span class="sd">            ubsequent observations, :math:`T`.</span>
+<span class="sd">        step_data (float): length of time between the prior and subsequent observations,</span>
+<span class="sd">            :math:`T`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.</span>
@@ -320,9 +320,9 @@
     <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">time_constant</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interpolates by exponentially decaying value from previous state.</span>
@@ -336,10 +336,9 @@
 <span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time,</span>
 <span class="sd">            :math:`D_{t=T}`.</span>
 <span class="sd">        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.</span>
-<span class="sd">        step_time (float | torch.Tensors): length of time between the prior and</span>
-<span class="sd">            ubsequent observations, :math:`T`.</span>
-<span class="sd">        time_constant (float | torch.Tensor): time constant of exponential decay,</span>
-<span class="sd">            :math:`\tau`.</span>
+<span class="sd">        step_data (float): length of time between the prior and subsequent observations,</span>
+<span class="sd">            :math:`T`.</span>
+<span class="sd">        time_constant (float): time constant of exponential decay, :math:`\tau`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.</span>
@@ -354,9 +353,9 @@
     <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">decay_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">decay_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interpolates by exponentially decaying value from previous state.</span>
@@ -370,9 +369,9 @@
 <span class="sd">        next_data (torch.Tensor): most recent observation subsequent to sample time,</span>
 <span class="sd">            :math:`D_{t=T}`.</span>
 <span class="sd">        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.</span>
-<span class="sd">        step_time (float | torch.Tensors): length of time between the prior and</span>
-<span class="sd">            ubsequent observations, :math:`T`.</span>
-<span class="sd">        decay_rate (float | torch.Tensor): rate of exponential decay, :math:`\lambda`.</span>
+<span class="sd">        step_data (float): length of time between the prior and subsequent observations,</span>
+<span class="sd">            :math:`T`.</span>
+<span class="sd">        decay_rate (float): rate of exponential decay, :math:`\lambda`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.</span>

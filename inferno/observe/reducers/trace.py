@@ -1,15 +1,16 @@
 from .base import FoldingReducer
 from ... import (
+    exp,
     interpolation,
     trace_nearest,
     trace_cumulative,
     trace_nearest_scaled,
     trace_cumulative_scaled,
-    scalar,
 )
 from ..._internal import argtest
 from ...types import OneToOne
 from functools import partial
+import math
 import torch
 
 
@@ -53,26 +54,12 @@ class NearestTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, duration)
 
         # reducer attributes
-        self.register_buffer(
-            "time_constant",
-            torch.tensor(argtest.gt("time_constant", time_constant, 0, float)),
-            persistent=False,
-        )
-        self.register_buffer(
-            "decay",
-            torch.exp(-self.dt / self.time_constant),
-            persistent=False,
-        )
-        self.amplitude = amplitude
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
         self.target = target
-        self.register_buffer(
-            "tolerance",
-            (
-                None
-                if tolerance is None
-                else torch.tensor(argtest.gt("tolerance", tolerance, 0, float))
-            ),
-            persistent=False,
+        self.tolerance = (
+            None if tolerance is None else argtest.gt("tolerance", tolerance, 0, float)
         )
 
     @property
@@ -90,7 +77,7 @@ class NearestTraceReducer(FoldingReducer):
     @dt.setter
     def dt(self, value: float):
         FoldingReducer.dt.fset(self, value)
-        self.decay = scalar(torch.exp(-self.dt / self.time_constant), self.decay)
+        self.decay = torch.tensor(exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of nearest trace.
@@ -128,7 +115,7 @@ class NearestTraceReducer(FoldingReducer):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_time: float | torch.Tensor,
+        step_time: float,
     ) -> torch.Tensor:
         r"""Exponential decay interpolation between observations.
 
@@ -136,7 +123,7 @@ class NearestTraceReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float | torch.Tensor): length of time between the prior and
+            step_data (float): length of time between the prior and
                 subsequent observations.
 
         Returns:
@@ -183,26 +170,12 @@ class CumulativeTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, duration)
 
         # reducer attributes
-        self.register_buffer(
-            "time_constant",
-            torch.tensor(argtest.gt("time_constant", time_constant, 0, float)),
-            persistent=False,
-        )
-        self.register_buffer(
-            "decay",
-            torch.exp(-self.dt / self.time_constant),
-            persistent=False,
-        )
-        self.amplitude = amplitude
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
         self.target = target
-        self.register_buffer(
-            "tolerance",
-            (
-                None
-                if tolerance is None
-                else torch.tensor(argtest.gt("tolerance", tolerance, 0, float))
-            ),
-            persistent=False,
+        self.tolerance = (
+            None if tolerance is None else argtest.gt("tolerance", tolerance, 0, float)
         )
 
     @property
@@ -220,7 +193,7 @@ class CumulativeTraceReducer(FoldingReducer):
     @dt.setter
     def dt(self, value: float):
         FoldingReducer.dt.fset(self, value)
-        self.decay = scalar(torch.exp(-self.dt / self.time_constant), self.decay)
+        self.decay = torch.tensor(exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of cumulative trace.
@@ -258,7 +231,7 @@ class CumulativeTraceReducer(FoldingReducer):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_time: float | torch.Tensor,
+        step_time: float,
     ) -> torch.Tensor:
         r"""Exponential decay interpolation between observations.
 
@@ -266,7 +239,7 @@ class CumulativeTraceReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float | torch.Tensor): length of time between the prior and
+            step_data (float): length of time between the prior and
                 subsequent observations.
 
         Returns:
@@ -321,17 +294,9 @@ class ScaledNearestTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, duration)
 
         # reducer attributes
-        self.register_buffer(
-            "time_constant",
-            torch.tensor(argtest.gt("time_constant", time_constant, 0, float)),
-            persistent=False,
-        )
-        self.register_buffer(
-            "decay",
-            torch.exp(-self.dt / self.time_constant),
-            persistent=False,
-        )
-        self.amplitude = amplitude
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
         self.scale = scale
         self.criterion = criterion
 
@@ -350,7 +315,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
     @dt.setter
     def dt(self, value: float):
         FoldingReducer.dt.fset(self, value)
-        self.decay = scalar(torch.exp(-self.dt / self.time_constant), self.decay)
+        self.decay = torch.tensor(exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of scaled nearest trace.
@@ -388,7 +353,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_time: float | torch.Tensor,
+        step_time: float,
     ) -> torch.Tensor:
         r"""Exponential decay interpolation between observations.
 
@@ -396,7 +361,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float | torch.Tensor): length of time between the prior and
+            step_data (float): length of time between the prior and
                 subsequent observations.
 
         Returns:
@@ -447,17 +412,10 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, duration)
 
         # register state
-        self.register_buffer(
-            "time_constant",
-            torch.tensor(argtest.gt("time_constant", time_constant, 0, float)),
-            persistent=False,
-        )
-        self.register_buffer(
-            "decay",
-            torch.exp(-self.dt / self.time_constant),
-            persistent=False,
-        )
-        self.amplitude = amplitude
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
+        self.scale = scale
         self.criterion = criterion
 
     @property
@@ -475,7 +433,7 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
     @dt.setter
     def dt(self, value: float):
         FoldingReducer.dt.fset(self, value)
-        self.decay = scalar(torch.exp(-self.dt / self.time_constant), self.decay)
+        self.decay = torch.tensor(exp(-self.dt / self.time_constant))
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of scaled cumulative trace.
@@ -513,7 +471,7 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_time: float | torch.Tensor,
+        step_time: float,
     ) -> torch.Tensor:
         r"""Exponential decay interpolation between observations.
 
@@ -521,7 +479,7 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float | torch.Tensor): length of time between the prior and
+            step_data (float): length of time between the prior and
                 subsequent observations.
 
         Returns:
@@ -574,17 +532,9 @@ class ConditionalNearestTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, duration)
 
         # reducer attributes
-        self.register_buffer(
-            "time_constant",
-            torch.tensor(argtest.gt("time_constant", time_constant, 0, float)),
-            persistent=False,
-        )
-        self.register_buffer(
-            "decay",
-            torch.exp(-self.dt / self.time_constant),
-            persistent=False,
-        )
-        self.amplitude = amplitude
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
         self.scale = scale
 
     @property
@@ -602,7 +552,7 @@ class ConditionalNearestTraceReducer(FoldingReducer):
     @dt.setter
     def dt(self, value: float):
         FoldingReducer.dt.fset(self, value)
-        self.decay = scalar(torch.exp(-self.dt / self.time_constant), self.decay)
+        self.decay = torch.tensor(exp(-self.dt / self.time_constant))
 
     def fold(
         self, obs: torch.Tensor, cond: torch.Tensor, state: torch.Tensor | None
@@ -643,7 +593,7 @@ class ConditionalNearestTraceReducer(FoldingReducer):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_time: float | torch.Tensor,
+        step_time: float,
     ) -> torch.Tensor:
         r"""Exponential decay interpolation between observations.
 
@@ -651,7 +601,7 @@ class ConditionalNearestTraceReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float | torch.Tensor): length of time between the prior and
+            step_data (float): length of time between the prior and
                 subsequent observations.
 
         Returns:
@@ -700,17 +650,9 @@ class ConditionalCumulativeTraceReducer(FoldingReducer):
         FoldingReducer.__init__(self, step_time, duration)
 
         # register state
-        self.register_buffer(
-            "time_constant",
-            torch.tensor(argtest.gt("time_constant", time_constant, 0, float)),
-            persistent=False,
-        )
-        self.register_buffer(
-            "decay",
-            torch.exp(-self.dt / self.time_constant),
-            persistent=False,
-        )
-        self.amplitude = amplitude
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
         self.scale = scale
 
     @property
@@ -728,7 +670,7 @@ class ConditionalCumulativeTraceReducer(FoldingReducer):
     @dt.setter
     def dt(self, value: float):
         FoldingReducer.dt.fset(self, value)
-        self.decay = scalar(torch.exp(-self.dt / self.time_constant), self.decay)
+        self.decay = torch.tensor(exp(-self.dt / self.time_constant))
 
     def fold(
         self, obs: torch.Tensor, cond: torch.Tensor, state: torch.Tensor | None
@@ -769,7 +711,7 @@ class ConditionalCumulativeTraceReducer(FoldingReducer):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_time: float | torch.Tensor,
+        step_time: float,
     ) -> torch.Tensor:
         r"""Exponential decay interpolation between observations.
 
@@ -777,7 +719,7 @@ class ConditionalCumulativeTraceReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float | torch.Tensor): length of time between the prior and
+            step_data (float): length of time between the prior and
                 subsequent observations.
 
         Returns:
