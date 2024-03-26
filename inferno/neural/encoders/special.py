@@ -1,6 +1,6 @@
 from .mixins import GeneratorMixin, StepMixin
 from .. import functional as nf
-from ... import Module
+from ... import Module, scalar
 from ..._internal import argtest
 import torch
 from typing import Iterator
@@ -14,9 +14,9 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
     the expected rate (i.e. the scale is given as the rate).
 
     Args:
+        steps (int): number of steps for which to generate spikes, :math:`S`.
         step_time (float): length of time between outputs, :math:`\Delta t`,
             in :math:`\text{ms}`.
-        steps (int): number of steps for which to generate spikes, :math:`S`.
         frequency (float): maximum spike frequency (associated with an input of 1),
             :math:`f`, in :math:`\text{Hz}`.
         generator (torch.Generator | None, optional): pseudorandom number generator
@@ -25,8 +25,8 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
 
     def __init__(
         self,
-        step_time: float,
         steps: int,
+        step_time: float,
         frequency: float,
         *,
         generator: torch.Generator | None = None,
@@ -35,7 +35,11 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
         Module.__init__(self)
 
         # set encoder attributes
-        self.freqscale = argtest.gte("frequency", frequency, 0, float)
+        self.register_buffer(
+            "freqscale",
+            torch.tensor(argtest.gte("frequency", frequency, 0, float)),
+            persistent=False,
+        )
 
         # call mixin constructors
         StepMixin.__init__(self, step_time=step_time, steps=steps)
@@ -51,11 +55,13 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
         Returns:
             float: present frequency scale for inputs.
         """
-        return self.freqscale
+        return float(self.freqscale)
 
     @frequency.setter
     def frequency(self, value: float) -> None:
-        self.freqscale = argtest.gte("value", value, 0, float)
+        self.freqscale = scalar(
+            argtest.gte("frequency", value, 0, float), self.freqscale
+        )
 
     def forward(
         self, inputs: torch.Tensor, online: bool = False
@@ -104,15 +110,15 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
         """
         if online:
             return nf.enc_poisson_interval_online(
-                self.frequency * inputs,
-                step_time=self.dt,
+                self.freqscale * inputs,
                 steps=self.steps,
+                step_time=self.step_time,
                 generator=self.generator,
             )
         else:
             return nf.enc_poisson_interval(
-                self.frequency * inputs,
-                step_time=self.dt,
+                self.freqscale * inputs,
                 steps=self.steps,
+                step_time=self.step_time,
                 generator=self.generator,
             )

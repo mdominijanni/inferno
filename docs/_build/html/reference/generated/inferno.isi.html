@@ -226,7 +226,8 @@
 <p>The returned tensor will be padded with <code class="docutils literal notranslate"><span class="pre">NaN</span></code> values where an interval could not
 be computed but the position existed (e.g. padding at the end of) spike trains
 with fewer spikes. If no intervals could be generated at all, a tensor with a
-final dimension of zero will be returned.</p>
+final dimension of zero will be returned. The returned tensor will have a floating
+point type, as required for the padding.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

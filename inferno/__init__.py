@@ -7,9 +7,11 @@ from . import types
 from .core import (
     # infrastructure
     Module,
+    ShapedTensor,
     DimensionalModule,
     RecordModule,
     Hook,
+    ContextualHook,
     StateHook,
     # math
     exp,
@@ -43,9 +45,11 @@ __all__ = [
     "types",
     # infrastructure
     "Module",
+    "ShapedTensor",
     "DimensionalModule",
     "RecordModule",
     "Hook",
+    "ContextualHook",
     "StateHook",
     # math
     "exp",

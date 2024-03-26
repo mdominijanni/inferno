@@ -1,6 +1,0 @@
-﻿voltage\_thresholding\_slope\_intercept
-=======================================
-
-.. currentmodule:: inferno.neural.functional
-
-.. autofunction:: voltage_thresholding_slope_intercept

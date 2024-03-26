@@ -236,7 +236,7 @@
 
 <span class="sd">    Caution:</span>
 <span class="sd">        Module which inherit from this mixin cannot be constrained on ``dim=0``.</span>
-<span class="sd">        Do not manually change this constraint, it is managed through :py:attr:`bsize`.</span>
+<span class="sd">        Do not manually change this constraint, it is managed through :py:attr:`batchsz`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -257,7 +257,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the module.</span>
 
 <span class="sd">        Args:</span>
@@ -268,10 +268,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="nd">@bsize</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">bsize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;bsize&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">:</span>
+    <span class="nd">@batchsz</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;batchsz&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
 
@@ -293,7 +293,7 @@
 
 <span class="sd">    Caution:</span>
 <span class="sd">        Module which inherit from this mixin cannot be constrained on ``dim=0``.</span>
-<span class="sd">        Do not manually change this constraint, it is managed through :py:attr:`bsize`.</span>
+<span class="sd">        Do not manually change this constraint, it is managed through :py:attr:`batchsz`.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        This sets an attribute ``__shape`` which is managed internally.</span>
@@ -319,13 +319,13 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__shape</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">bshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">batchedshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch shape of the module</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int, ...]: Shape of the module, including the batch dimension.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bsize</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__shape</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__shape</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>

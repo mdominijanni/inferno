@@ -3,20 +3,28 @@ from . import Connection, Neuron, Synapse
 from .modeling import Updater
 from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
 from .. import Module
-from .._internal import Proxy, argtest, rgetattr, rgetitem
+from .._internal import Proxy, argtest, rgetitem
 from ..types import OneToOne
-from ..observe import Monitor, MonitorConstructor
+from ..observe import Observable
 from abc import ABC, abstractmethod
-from collections.abc import Iterator, Iterable, Mapping
+from collections.abc import Iterator, Iterable
 import einops as ein
 from itertools import chain
 import torch
 import torch.nn as nn
 from typing import Any, Callable, Literal
-import weakref
 
 
-class Cell(Module):
+class Cell(Module, Observable):
+    r"""Pair of a Connection and Neuron produced used for training.
+
+    Args:
+        layer (Layer): layer which owns this cell.
+        connection (Connection): connection for the cell.
+        neuron (Neuron): neuron for the cell.
+        names (tuple[str, str]): names used by the layer to uniquely identify this cell.
+    """
+
     def __init__(
         self,
         layer: Layer,
@@ -24,52 +32,27 @@ class Cell(Module):
         neuron: Neuron,
         names: tuple[str, str],
     ):
-        # call superclass constructor
+        # call superclass constructors
         Module.__init__(self)
+        Observable.__init__(self, layer, "_realign_attribute", names, None)
 
         # component elements
         self.connection_ = connection
         self.neuron_ = neuron
 
-        # reference to owner and names
-        self._layer = weakref.ref(layer)
-        self._names = names
+    def local_remap(self, attr: str) -> tuple[tuple[Any, ...], dict[str, Any]]:
+        r"""Locally remaps an attribute for pooled monitors.
 
-    def get_monitor(
-        self,
-        name: str,
-        attr: str | None,
-        monitor: MonitorConstructor,
-        pool: Iterable[Cell, Mapping[str, Monitor]] | None = None,
-        **tags: Any,
-    ) -> Monitor:
-        r"""Creates or alias a monitor on the owning layer.
+        This method should alias any local attributes being referenced
+        as required. The callback ``realign`` given on initialization will
+        accept the output of this as positional and keyword arguments.
 
         Args:
-            name (str): name of the monitor to add.
-            attr (str): dot-separated attribute path, relative to this cell, to
-                monitor, when an empty-string, the cell is directly targeted.
-            monitor (MonitorConstructor): partial constructor for the monitor to add.
-            pool (Iterable[Cell, Mapping[str, Monitor]] | None, optional): pool to
-                search for compatible monitor, always creates a new one if None.
-                Defaults to None.
-            **tags (Any): tags to add to the monitor and to test for uniqueness.
-
-        Raises:
-            RuntimeError: attribute must be a member of this trainable.
-            RuntimeError: 'updater.connection' is the only valid head of the attribute
-                chain starting with 'updater'.
+            attr (str): dot-seperated attribute relative to self, to realign.
 
         Returns:
-            Monitor: added monitor.
-
-        Important:
-            All monitors added this way will be hooked to the :py:class:`Layer` which
-            owns this ``Cell`, and therefore will be associated with its ``forward``
-            call. If a monitor targeting an updater should trigger on updating, it
-            should be directly added to the updater. These tags are added via reflection
-            and do not persist in the state dictionary. If no pool is specified, the
-            new monitor will not have added tags, which prevents future aliasing.
+            tuple[tuple[Any, ...], dict[str, Any]]: tuple of positional arguments and
+            keyword arguments for ``realign`` method specified on initialization.
         """
         # check that the attribute is a valid dot-chain identifier if non-empty
         if attr:
@@ -80,7 +63,7 @@ class Cell(Module):
 
         # ensure the top-level attribute is in this cell
         if attr and not hasattr(self, attrchain[0]):
-            raise RuntimeError(f"this cell does not have an attribute '{attrchain[0]}'")
+            raise RuntimeError(f"cell does not have an attribute '{attrchain[0]}'")
 
         # remap the top-level target if pointing to a private attribute
         attrchain[0] = {
@@ -102,48 +85,11 @@ class Cell(Module):
         # split the chain into target and attribute
         match attrchain[0]:
             case "connection":
-                target, attr = "connection", ".".join(attrchain[1:])
+                return ("connection", ".".join(attrchain[1:])), {}
             case "neuron":
-                target, attr = "neuron", ".".join(attrchain[1:])
+                return ("neuron", ".".join(attrchain[1:])), {}
             case _:
-                target, attr = "cell", ".".join(attrchain)
-
-        # get resolved attribute if the layer exists
-        if not self._layer():
-            raise RuntimeError("layer is no longer in memory")
-        else:
-            attr = self._layer()._align_attribute(*self._names, target, attr)
-
-        # return new monitor if pool is undefined (do not tag, guaranteed unique)
-        if not pool:
-            return monitor(attr, self._layer())
-
-        # get test tags
-        tags = {"attr": attr, **tags}
-        found = None
-
-        for cell, monitors in pool:
-            # skip invalid cells or cells from a different layer
-            if not (cell._layer() or id(cell._layer()) == id(self._layer())):
-                continue
-
-            # skip if the named monitor doesn't exist
-            if name not in monitors:
-                continue
-
-            # create the alias if tags match
-            if hasattr(monitors[name], "_tags") and monitors[name]._tags == tags:
-                found = monitors[name]
-                if id(cell) == id(self):  # break if identical cell
-                    break
-
-        # return alias or create new monitor
-        if found:
-            return found
-        else:
-            monitor = monitor(attr, self._layer())
-            monitor._tags = tags
-            return monitor
+                return ("cell", ".".join(attrchain)), {}
 
     @property
     def connection(self) -> Connection:
@@ -250,181 +196,210 @@ class Layer(Module, ABC):
         # inner modules
         self.connections_ = nn.ModuleDict()
         self.neurons_ = nn.ModuleDict()
+        self.cells_ = nn.ModuleDict()
 
         # set cells dict so it is not part of PyTorch's state
-        object.__setattr__(self, "cells_", nn.ModuleDict())
+        # object.__setattr__(self, "cells_", nn.ModuleDict())
 
-    def __getitem__(self, name: str | tuple[str, str]) -> Connection | Neuron | Cell:
-        r"""Retrieves a previously added connection, neuron, or cell.
+    def add_cell(self, connection: str, neuron: str) -> Cell:
+        r"""Creates and adds a cell if it doesn't exist.
 
-        The given ``name`` can either be a string (in which case it checks first for
-        a :py:class:`Connection` then a :py:class:`Neuron`) or a 2-tuple of strings,
-        in which case it expects the first string to be the name of a ``Connection`` and
-        the second to be the name of a ``Neuron``, and the corresponding :py:class`Cell`
-        is retrieved. If the ``Cell`` has not yet been accessed in this way, it will
-        first be created.
+        If a cell already exists with the given connection and neuron, this will
+        return the existing cell rather than create a new one.
 
         Args:
-            name (str | tuple[str, str]): name of the component module to retrieve.
-
-        Returns:
-            Connection | Neuron | Cell: retrieved module.
-        """
-        try:
-            if isinstance(name, tuple):
-                if name[0] in self.connections_:
-                    # create cell group for connection if it does not exist
-                    if name[0] not in self.cells_:
-                        self.cells_[name[0]] = nn.ModuleDict()
-
-                    if name[1] in self.neurons_:
-                        # create cell for neuron if it does not exist
-                        if name[1] not in self.cells_[name[0]]:
-                            self.cells_[name[0]][name[1]] = Cell(
-                                self,
-                                self.connections_[name[0]],
-                                self.neurons_[name[1]],
-                                name,
-                            )
-                        return self.cells_[name[0]][name[1]]
-
-                    else:
-                        raise AttributeError(
-                            f"'name' ('{name}') is not a registered neuron"
-                        )
-
-                else:
-                    raise AttributeError(
-                        f"'name' ('{name}') is not a registered connection"
-                    )
-
-            elif name in self.connections_:
-                return self.connections_[name]
-
-            elif name in self.neurons_:
-                return self.neurons_[name]
-
-            else:
-                raise AttributeError(
-                    f"'name' ('{name}') is not a registered connection or neuron"
-                )
-
-        except IndexError:
-            raise ValueError("tuple 'name' must have exactly two elements")
-
-    def __setitem__(self, name: str, module: Connection | Neuron) -> None:
-        r"""Registers a new connection or neuron.
-
-        The specified ``name`` must be a valid Python identifier, and the ``Layer``
-        must not already have a :py:class:`Connection` or :py:class:`Neuron`
-        registered with the same name.
-
-        If a connection is not updatable (i.e. if it does not contain an
-        :py:class:`Updater`), the default updater will be added to it.
-
-        Args:
-            name (str): attribute name for the connection or neuron.
-            module (Connection | Neuron): connection used for inputs or neuron used for
-                outputs.
-        """
-        # ensure the name is not already assigned
-        if name in self.connections_ or name in self.neurons_:
-            raise ValueError(
-                "item assignment cannot be used to reassign registered modules"
-            )
-
-        # ensure the name is a valid identifier
-        _ = argtest.identifier("name", name)
-
-        if isinstance(module, Connection):
-            self.connections_[name] = module
-
-        elif isinstance(module, Neuron):
-            self.neurons_[name] = module
-
-        else:
-            _ = argtest.instance("module", module, (Connection, Neuron))
-
-    def __delitem__(self, name: str | tuple[str, str]) -> None:
-        """Deletes a connection, neuron, or cell.
-
-        Args:
-            name (str | tuple[str, str]): name of the component module to delete.
+            connection (str): name of the connection for the cell to add.
+            neuron (str): name of the neuron for the cell to add.
 
         Raises:
-            AttributeError: name does not specify a registered connection, neuron, or cell.
-
-        Note:
-            When ``name`` is a tuple, that cell  will be deleted but the associated
-            connection and neuron will not be. Deletion of a cell will only fail if the
-            connection or neuron do not exist, even if that cell doesn't.
-        """
-        connections = []
-        neurons = []
-
-        if isinstance(name, tuple):
-            try:
-                if name[0] in self.connections_:
-                    if name[1] in self.neurons_:
-                        connections.append(name[0])
-                        neurons.append(name[1])
-                    else:
-                        raise AttributeError(f"'name' ('{name}') not an added neuron")
-                else:
-                    raise AttributeError(f"'name' ('{name}') not an added connection")
-
-            except IndexError:
-                raise ValueError("tuple 'name' must have exactly two elements")
-
-        elif name in self.connections_:
-            del self.connections_[name]
-            connections.append(name)
-            neurons.extend(self.neurons_.keys())
-
-        elif name in self.neurons_:
-            del self.neurons_[name]
-            connections.extend(self.connections_.keys())
-            neurons.append(name)
-
-        else:
-            raise AttributeError(
-                f"'name' ('{name}') is not a registered connection or neuron"
-            )
-
-        # clean up cells
-        for c in connections:
-            if c in self.cells_:
-                for n in neurons:
-                    if n in self.cells_[c]:
-                        del self.cells_[c][n]
-
-                if not len(self.cells_[c]):
-                    del self.cells_[c]
-
-        else:
-            raise AttributeError(
-                f"'name' ('{name}') is not a registered connection or neuron"
-            )
-
-    def __contains__(self, name: str | tuple[str, str]) -> bool:
-        r"""Checks if a connection, neuron, or cell is in the layer.
-
-        Args:
-            name (str | tuple[str, str]): name of the connection or neuron, or a tuple
-                of names specifying a cell to test for.
+            AttributeError: ``connection`` does not specify a connection.
+            AttributeError: ``neuron`` does not specify a neuron.
 
         Returns:
-            bool: if the specified connection, neuron, or cell is in the layer.
+            Cell: cell specifyied by the connection and neuron.
         """
-        if isinstance(name, tuple):
-            try:
-                return name[0] in self.cells_ and name[1] in self.cells_[name[0]]
-            except IndexError:
-                raise ValueError("tuple 'name' must have exactly two elements")
-        else:
-            return name in self.connections_ or name in self.neurons_
+        if connection not in self.connections_:
+            raise AttributeError(
+                f"'connection' ('{connection}') is not a registered connection"
+            )
 
-    def _align_attribute(
+        elif neuron not in self.neurons_:
+            raise AttributeError(f"'neuron' ('{neuron}') is not a registered neuron")
+
+        else:
+            if connection not in self.cells_:
+                self.cells_[connection] = nn.ModuleDict()
+
+            if neuron not in self.cells_[connection]:
+                self.cells_[connection][neuron] = Cell(
+                    self,
+                    self.connections_[connection],
+                    self.neurons_[neuron],
+                    (connection, neuron),
+                )
+
+            return self.cells_[connection][neuron]
+
+    def get_cell(self, connection: str, neuron: str) -> Cell:
+        r"""Gets a created cell if it exists.
+
+        Args:
+            connection (str): name of the connection for the cell to get.
+            neuron (str): name of the neuron for the cell to get.
+
+        Raises:
+            AttributeError: no cell has been created with the specified connection
+                and neuron.
+
+        Returns:
+            Cell: cell specifyied by the connection and neuron.
+        """
+        try:
+            return self.cells_[connection][neuron]
+        except KeyError:
+            raise AttributeError(
+                "no cell with the connection-neuron pair "
+                f"('{connection}', '{neuron}') exists"
+            )
+
+    def del_cell(self, connection: str, neuron: str) -> None:
+        r"""Deletes a created cell if it exists.
+
+        Even if a cell hasn't been created with the given pair, if the pair is valid,
+        this will not raise an error.
+
+        Args:
+            connection (str): name of the connection for the cell to delete.
+            neuron (str): name of the neuron for the cell to delete.
+
+        Raises:
+            AttributeError: ``connection`` does not specify a connection.
+            AttributeError: ``neuron`` does not specify a neuron.
+        """
+        if connection not in self.connections_:
+            raise AttributeError(
+                f"'connection' ('{connection}') is not a registered connection"
+            )
+
+        if neuron not in self.neurons_:
+            raise AttributeError(f"'neuron' ('{neuron}') is not a registered neuron")
+
+        if connection in self.cells_:
+            if neuron in self.cells_[connection]:
+                del self.cells_[connection][neuron]
+            if not len(self.cells_[connection]):
+                del self.cells_[connection]
+
+    def add_connection(self, name: str, connection: Connection) -> Connection:
+        r"""Adds a new connection.
+
+        Args:
+            name (str): name of the connection to add.
+            connection (Connection): connection to add.
+
+        Raises:
+            RuntimeError: ``name`` already specifies a connection
+
+        Returns:
+            Connection: added connection.
+        """
+        if name in self.connections_:
+            raise RuntimeError(f"'name' ('{name}') is already a registered connection")
+        else:
+            _ = argtest.identifier("name", name)
+            self.connections_[name] = connection
+            return self.connections_[name]
+
+    def get_connection(self, name: str) -> Connection:
+        r"""Gets an existing connection.
+
+        Args:
+            name (str): name of the connection to get.
+
+        Raises:
+            AttributeError: ``name`` does not specify a connection.
+
+        Returns:
+            Connection: connection with specified name.
+        """
+        try:
+            return self.connections_[name]
+        except KeyError:
+            raise AttributeError(f"'name' ('{name}') is not a registered connection")
+
+    def del_connection(self, name: str) -> None:
+        r"""Deletes an existing connection.
+
+        Args:
+            name (str): name of the connection to delete.
+
+        Raises:
+            AttributeError: ``name`` does not specify a connection.
+        """
+        if name not in self.connections_:
+            raise AttributeError(f"'name' ('{name}') is not a registered connection")
+        else:
+            del self.connections_[name]
+            if name in self.cells_:
+                del self.cells_[name]
+
+    def add_neuron(self, name: str, neuron: Neuron) -> Neuron:
+        r"""Adds a new neuron.
+
+        Args:
+            name (str): name of the neuron to add.
+            neuron (Neuron): neuron to add.
+
+        Raises:
+            RuntimeError: ``name`` already specifies a neuron
+
+        Returns:
+            Neuron: added neuron.
+        """
+        if name in self.neurons_:
+            raise RuntimeError(f"'name' ('{name}') is already a registered neuron")
+        else:
+            _ = argtest.identifier("name", name)
+            self.neurons_[name] = neuron
+            return self.neurons_[name]
+
+    def get_neuron(self, name: str) -> Neuron:
+        r"""Gets an existing neuron.
+
+        Args:
+            name (str): name of the neuron to get.
+
+        Raises:
+            AttributeError: ``name`` does not specify a neuron.
+
+        Returns:
+            Neuron: neuron with specified name
+        """
+        try:
+            return self.neurons_[name]
+        except KeyError:
+            raise AttributeError(f"'name' ('{name}') is not a registered neuron")
+
+    def del_neuron(self, name: str) -> None:
+        r"""Deletes an existing neuron.
+
+        Args:
+            name (str): name of the neuron to delete.
+
+        Raises:
+            ValueError: ``name`` does not specify a neuron.
+        """
+        if name not in self.neurons_:
+            raise ValueError(f"'name' ('{name}') is not a registered neuron")
+        else:
+            del self.neurons_[name]
+            for conn in [*self.cells_]:
+                if name in self.cells_[conn]:
+                    del self.cells_[conn][name]
+                if not len(self.cells_[conn]):
+                    del self.cells_[conn]
+
+    def _realign_attribute(
         self, connection: str, neuron: str, target: str, attr: str
     ) -> str:
         r"""Gets the attribute path for monitoring relative to the layer.
@@ -468,7 +443,7 @@ class Layer(Module, ABC):
         r"""Registred connections.
 
         For a given ``name`` of a :py:class:`Connection` set via
-        ``layer[name] = connection``, it can be accessed as ``layer.connections.name``.
+        ``layer.add_connection(name)``, it can be accessed as ``layer.connections.name``.
 
         It can be modified in-place (including setting other attributes, adding
         monitors, etc), but it can neither be deleted nor reassigned.
@@ -553,15 +528,6 @@ class Layer(Module, ABC):
         return chain.from_iterable(
             (((n0, n1), c) for n1, c in g.items()) for n0, g in self.cells_.items()
         )
-
-    @property
-    def named_updaters(self) -> Iterator[tuple[str, Updater]]:
-        r"""Iterable of registered connection's updaters and their names.
-
-        Yields:
-            tuple[str, Updater]: tuple of a registered updater and its name.
-        """
-        return ((k, v.updater) for k, v in self.connections_.items() if v.updatable)
 
     @abstractmethod
     def wiring(
@@ -651,24 +617,17 @@ class Layer(Module, ABC):
         nkw = neuron_kwargs if neuron_kwargs else {}
 
         # get connection outputs
-        res = {
-            k: rgetattr(self.connections_, k)(*v, **ckw.get(k, {}))
-            for k, v in inputs.items()
-        }
+        res = {k: self.connections_[k](*v, **ckw.get(k, {})) for k, v in inputs.items()}
 
         if capture_intermediate:
             outputs = self.wiring(res, **kwargs)
             outputs = {
-                k: rgetattr(self.neurons_, k)(v, **nkw.get(k, {}))
-                for k, v in outputs.items()
+                k: self.neurons_[k](v, **nkw.get(k, {})) for k, v in outputs.items()
             }
             return (outputs, res)
         else:
             res = self.wiring(res, **kwargs)
-            res = {
-                k: rgetattr(self.neurons_, k)(v, **nkw.get(k, {}))
-                for k, v in res.items()
-            }
+            res = {k: self.neurons_[k](v, **nkw.get(k, {})) for k, v in res.items()}
             return res
 
 
@@ -712,7 +671,7 @@ class Biclique(Layer):
         important when using ``stack``, the tensors are used in "insertion order" based
         on the dictionary passed into ``inputs`` in :py:meth:`Layer.forward`.
 
-        When a custom function is given, keyword arguments passed into :py:meth:`call`,
+        When a custom function is given, keyword arguments passed into :py:meth:`__call__`,
         other than those captured in :py:meth`forward` will be passed in.
     """
 
@@ -774,10 +733,10 @@ class Biclique(Layer):
         for idx, c in enumerate(connections):
             match len(c):
                 case 2:
-                    Layer.__setitem__(self, *c)
+                    Layer.add_connection(self, *c)
                     self.post_input[c[0]] = lambda x: x
                 case 3:
-                    Layer.__setitem__(self, *c[:-1])
+                    Layer.add_connection(self, *c[:-1])
                     self.post_input[c[0]] = c[2]
                 case _:
                     raise ValueError(
@@ -789,10 +748,10 @@ class Biclique(Layer):
         for idx, n in enumerate(neurons):
             match len(n):
                 case 2:
-                    Layer.__setitem__(self, *n)
+                    Layer.add_neuron(self, *n)
                     self.pre_output[n[0]] = lambda x: x
                 case 3:
-                    Layer.__setitem__(self, *n[:-1])
+                    Layer.add_neuron(self, *n[:-1])
                     self.pre_output[n[0]] = n[2]
                 case _:
                     raise ValueError(
@@ -803,16 +762,36 @@ class Biclique(Layer):
         # construct cells
         for c in connections:
             for n in neurons:
-                _ = self[c[0], n[0]]
+                _ = Layer.add_cell(self, c[0], n[0])
 
-    def __setitem__(self, *args, **kwargs) -> None:
+    def add_cell(self, *args, **kwargs) -> None:
         raise RuntimeError(
-            f"{type(self).__name__}(Biclique) does not support item assignment"
+            f"{type(self).__name__}(Biclique) does not support adding cells"
         )
 
-    def __delitem__(self, *args, **kwargs) -> None:
+    def del_cell(self, *args, **kwargs) -> None:
         raise RuntimeError(
-            f"{type(self).__name__}(Biclique) does not support item deletion"
+            f"{type(self).__name__}(Biclique) does not support removing cells"
+        )
+
+    def add_connection(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(Biclique) does not support adding connections"
+        )
+
+    def del_connection(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(Biclique) does not support removing connections"
+        )
+
+    def add_neuron(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(Biclique) does not support adding neurons"
+        )
+
+    def del_neuron(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(Biclique) does not support removing neurons"
         )
 
     def wiring(
@@ -863,8 +842,8 @@ class Serial(Layer):
 
     Note:
         The :py:class:`Layer` object underlying a ``Serial`` object has ``connection``
-        and ``neuron`` registered with names ``"serial_c"`` and ``"serial_n"``
-        respectively. Convenience properties can be used to avoid accessing manually.
+        and ``neuron`` registered with names ``"serial"``. Convenience properties can be
+        used to avoid accessing manually.
     """
 
     def __init__(
@@ -872,19 +851,20 @@ class Serial(Layer):
         connection: Connection,
         neuron: Neuron,
         transform: OneToOne[torch.Tensor] | None = None,
-        connection_name: str = "serial_c",
-        neuron_name: str = "serial_n",
+        connection_name: str = "serial",
+        neuron_name: str = "serial",
     ):
         # call superclass constructor
         Layer.__init__(self)
 
         # set names
-        self._serial_connection_name = connection_name
-        self._serial_neuron_name = neuron_name
+        self.__connection_name = connection_name
+        self.__neuron_name = neuron_name
 
         # add connection and neuron
-        Layer.__setitem__(self, self._serial_connection_name, connection)
-        Layer.__setitem__(self, self._serial_neuron_name, neuron)
+        Layer.add_connection(self, self.__connection_name, connection)
+        Layer.add_neuron(self, self.__neuron_name, neuron)
+        _ = Layer.add_cell(self, self.__connection_name, self.__neuron_name)
 
         # set transformation used
         if transform:
@@ -896,14 +876,34 @@ class Serial(Layer):
 
             self._transform = transfn
 
-    def __setitem__(self, *args, **kwargs) -> None:
+    def add_cell(self, *args, **kwargs) -> None:
         raise RuntimeError(
-            f"{type(self).__name__}(Biclique) does not support item assignment"
+            f"{type(self).__name__}(Serial) does not support adding cells"
         )
 
-    def __delitem__(self, *args, **kwargs) -> None:
+    def del_cell(self, *args, **kwargs) -> None:
         raise RuntimeError(
-            f"{type(self).__name__}(Biclique) does not support item deletion"
+            f"{type(self).__name__}(Serial) does not support removing cells"
+        )
+
+    def add_connection(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(Serial) does not support adding connections"
+        )
+
+    def del_connection(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(Serial) does not support removing connections"
+        )
+
+    def add_neuron(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(Serial) does not support adding neurons"
+        )
+
+    def del_neuron(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(Serial) does not support removing neurons"
         )
 
     @property
@@ -913,7 +913,7 @@ class Serial(Layer):
         Returns:
             Connection: registered connection.
         """
-        return self[self._serial_connection_name]
+        return self.get_connection(self.__connection_name)
 
     @property
     def neuron(self) -> Neuron:
@@ -922,7 +922,7 @@ class Serial(Layer):
         Returns:
             Neuron: registered neuron.
         """
-        return self[self._serial_neuron_name]
+        return self.get_neuron(self.__neuron_name)
 
     @property
     def synapse(self) -> Synapse:
@@ -931,7 +931,7 @@ class Serial(Layer):
         Returns:
             Synapse: registered connection's synapse.
         """
-        return self[self._serial_connection_name].synapse
+        return self.get_connection(self.__connection_name).synapse
 
     @property
     def updater(self) -> Updater:
@@ -940,7 +940,7 @@ class Serial(Layer):
         Returns:
             Updater: registered connection's updater.
         """
-        return self[self._serial_connection_name].updater
+        return self.get_connection(self.__connection_name).updater
 
     @property
     def cell(self) -> Cell:
@@ -949,7 +949,7 @@ class Serial(Layer):
         Returns:
             Cell: registered cell.
         """
-        return self[self._serial_connection_name, self._serial_neuron_name]
+        return self.get_cell(self.__connection_name, self.__neuron_name)
 
     def wiring(
         self, inputs: dict[str, torch.Tensor], **kwargs
@@ -967,8 +967,8 @@ class Serial(Layer):
             dict[str, torch.Tensor]: dictionary of output names to tensors.
         """
         return {
-            self._serial_neuron_name: self._transform(
-                inputs[self._serial_connection_name], **kwargs
+            self.__neuron_name: self._transform(
+                inputs[self.__connection_name], **kwargs
             )
         }
 
@@ -998,21 +998,13 @@ class Serial(Layer):
             being the output from the connection.
         """
         # wrap non-empty dictionaries
-        ckw = (
-            {self._serial_connection_name: connection_kwargs}
-            if connection_kwargs
-            else connection_kwargs
-        )
-        nkw = (
-            {self._serial_neuron_name: neuron_kwargs}
-            if neuron_kwargs
-            else neuron_kwargs
-        )
+        ckw = {self.__connection_name: connection_kwargs} if connection_kwargs else None
+        nkw = {self.__neuron_name: neuron_kwargs} if neuron_kwargs else None
 
         # call parent forward
         res = Layer.forward(
             self,
-            {self._serial_connection_name: inputs},
+            {self.__connection_name: inputs},
             connection_kwargs=ckw,
             neuron_kwargs=nkw,
             capture_intermediate=capture_intermediate,
@@ -1022,8 +1014,8 @@ class Serial(Layer):
         # unpack to sensible output
         if capture_intermediate:
             return (
-                res[0][self._serial_neuron_name],
-                res[1][self._serial_connection_name],
+                res[0][self.__neuron_name],
+                res[1][self.__connection_name],
             )
         else:
-            return res[self._serial_neuron_name]
+            return res[self.__neuron_name]

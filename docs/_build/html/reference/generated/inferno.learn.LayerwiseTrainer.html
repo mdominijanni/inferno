@@ -223,9 +223,20 @@
 <dt class="sig sig-object py" id="inferno.learn.LayerwiseTrainer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LayerwiseTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseTrainer" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="inferno.learn.CellTrainer.html#inferno.learn.CellTrainer" title="inferno.learn.base.CellTrainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">CellTrainer</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<p>Trainer for update methods without inter-layer dependencies.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code> object “owns” the <code class="xref py py-class docutils literal notranslate"><span class="pre">Cell</span></code> objects but not
+the <code class="xref py py-class docutils literal notranslate"><span class="pre">Monitor</span></code> objects.</p>
+<p>If applying a function to <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> objects, e.g.
+via <code class="xref py py-meth docutils literal notranslate"><span class="pre">CellTrainer.to()</span></code> <code class="docutils literal notranslate"><span class="pre">Cell</span></code> objects will not be altered but
+<code class="docutils literal notranslate"><span class="pre">Monitor</span></code> objects will be.</p>
+<p>Likewise, <code class="xref py py-meth docutils literal notranslate"><span class="pre">Layer.to()</span></code> will alter <code class="docutils literal notranslate"><span class="pre">Cell</span></code> objects but not
+<code class="docutils literal notranslate"><span class="pre">Monitor</span></code> objects.</p>
+</div>
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.LayerwiseTrainer.add_cell">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseTrainer.add_cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseTrainer.add_cell" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseTrainer.register_cell">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">register_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseTrainer.register_cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseTrainer.register_cell" title="Link to this definition">#</a></dt>
 <dd><p>Adds a cell with any required state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -241,21 +252,21 @@
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">add_cell</span></code> must be implemented by the subclass.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">register_cell</span></code> must be implemented by the subclass.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.LayerwiseTrainer.add_layer">
-<span class="sig-name descname"><span class="pre">add_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.network.Layer"><span class="pre">Layer</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseTrainer.add_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseTrainer.add_layer" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseTrainer.register_layer">
+<span class="sig-name descname"><span class="pre">register_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.network.Layer"><span class="pre">Layer</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseTrainer.register_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseTrainer.register_layer" title="Link to this definition">#</a></dt>
 <dd><p>Adds all cells from a given layer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – string to prepend to cell name.</p></li>
 <li><p><strong>layer</strong> (<a class="reference internal" href="inferno.neural.Layer.html#inferno.neural.Layer" title="inferno.neural.Layer"><em>Layer</em></a>) – layer from which cells should be added.</p></li>
-<li><p><strong>**kwargs</strong> (<em>Any</em>) – keyword arguments passed to each <a class="reference internal" href="#inferno.learn.LayerwiseTrainer.add_cell" title="inferno.learn.LayerwiseTrainer.add_cell"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_cell()</span></code></a> call.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – keyword arguments passed to each <code class="xref py py-meth docutils literal notranslate"><span class="pre">register_cells()</span></code> call.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -273,6 +284,30 @@ named <code class="docutils literal notranslate"><span class="pre">&quot;alif&qu
 <code class="docutils literal notranslate"><span class="pre">&quot;l0:linear-alif&quot;</span></code>. If <code class="docutils literal notranslate"><span class="pre">prefix</span></code> is an empty string, the name would be
 <code class="docutils literal notranslate"><span class="pre">&quot;linear-alif&quot;</span></code>.</p>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.LayerwiseTrainer.unit">
+<span class="sig-name descname"><span class="pre">unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.ModuleDict.html#torch.nn.ModuleDict" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">ModuleDict</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#LayerwiseTrainer.unit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.LayerwiseTrainer.unit" title="Link to this definition">#</a></dt>
+<dd><p>Gets a trainable unit.</p>
+<p>This can be used if a single trainer should handle training on different
+devices. The returned module dictionary can then be altered in-place with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">to()</span></code> in order to move a cell, its auxiliary state, and
+the monitors used by the trainer to a different device, or change the used
+data type.</p>
+<p>Calling <code class="xref py py-meth docutils literal notranslate"><span class="pre">to()</span></code> on the trainer itself will apply to all
+monitors and auxiliary states, but not to any cells.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the cell to get alongside its auxiliary state.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>specified cell, auxiliary state, and monitors.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.ModuleDict</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -336,8 +371,9 @@ named <code class="docutils literal notranslate"><span class="pre">&quot;alif&qu
             <ul>
 <li><a class="reference internal" href="#">LayerwiseTrainer</a><ul>
 <li><a class="reference internal" href="#inferno.learn.LayerwiseTrainer"><code class="docutils literal notranslate"><span class="pre">LayerwiseTrainer</span></code></a><ul>
-<li><a class="reference internal" href="#inferno.learn.LayerwiseTrainer.add_cell"><code class="docutils literal notranslate"><span class="pre">LayerwiseTrainer.add_cell()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.LayerwiseTrainer.add_layer"><code class="docutils literal notranslate"><span class="pre">LayerwiseTrainer.add_layer()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseTrainer.register_cell"><code class="docutils literal notranslate"><span class="pre">LayerwiseTrainer.register_cell()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseTrainer.register_layer"><code class="docutils literal notranslate"><span class="pre">LayerwiseTrainer.register_layer()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.learn.LayerwiseTrainer.unit"><code class="docutils literal notranslate"><span class="pre">LayerwiseTrainer.unit()</span></code></a></li>
 </ul>
 </li>
 </ul>

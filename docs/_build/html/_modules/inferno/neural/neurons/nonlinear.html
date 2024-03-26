@@ -219,6 +219,7 @@
 <span></span><span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">AdaptationMixin</span><span class="p">,</span> <span class="n">VoltageMixin</span><span class="p">,</span> <span class="n">SpikeRefractoryMixin</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Neuron</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">nf</span>
+<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">scalar</span>
 <span class="kn">from</span> <span class="nn">..._internal</span> <span class="kn">import</span> <span class="n">argtest</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">zip_longest</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -287,19 +288,55 @@
         <span class="n">Neuron</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
 
         <span class="c1"># dynamics attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;crit_v&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">crit_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lte</span><span class="p">(</span><span class="s2">&quot;crit_v&quot;</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">affinity</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;affinity&quot;</span><span class="p">,</span> <span class="n">affinity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">thresh_v</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;step_time&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;crit_v&quot;</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;crit_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">lte</span><span class="p">(</span><span class="s2">&quot;crit_v&quot;</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;affinity&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;affinity&quot;</span><span class="p">,</span> <span class="n">affinity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;reset_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">thresh_v</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;time_constant&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;resistance&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># call mixin constructors</span>
-        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_integrate_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masked_inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding`.&quot;&quot;&quot;</span>
@@ -324,11 +361,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            float: present simulation time step length.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">)</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">)</span>
 
 <div class="viewcode-block" id="QIF.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.QIF.html#inferno.neural.QIF.clear">[docs]</a>
@@ -353,7 +390,7 @@
 <span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># use voltage thresholding function</span>
-        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding</span><span class="p">(</span>
+        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding_constant</span><span class="p">(</span>
             <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
             <span class="n">refracs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
             <span class="n">dynamics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
@@ -501,15 +538,51 @@
         <span class="n">tc_adaptation</span><span class="p">,</span> <span class="n">voltage_coupling</span><span class="p">,</span> <span class="n">spike_increment</span> <span class="o">=</span> <span class="n">tc_list</span><span class="p">,</span> <span class="n">vc_list</span><span class="p">,</span> <span class="n">si_list</span>
 
         <span class="c1"># dynamics attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;crit_v&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">crit_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lte</span><span class="p">(</span><span class="s2">&quot;crit_v&quot;</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">affinity</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;affinity&quot;</span><span class="p">,</span> <span class="n">affinity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">thresh_v</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span> <span class="n">tc_membrane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;step_time&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;crit_v&quot;</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;crit_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">lte</span><span class="p">(</span><span class="s2">&quot;crit_v&quot;</span><span class="p">,</span> <span class="n">crit_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;affinity&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;affinity&quot;</span><span class="p">,</span> <span class="n">affinity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;reset_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">thresh_v</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span> <span class="n">tc_membrane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;resistance&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># register adaptation attributes as buffers (for tensor ops and compatibility)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
@@ -523,8 +596,8 @@
         <span class="p">)</span>
 
         <span class="c1"># call mixin constructors</span>
-        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">AdaptationMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="o">.</span><span class="n">numel</span><span class="p">()),</span>
@@ -533,7 +606,7 @@
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_integrate_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masked_inputs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding_constant`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_integration_quadratic</span><span class="p">(</span>
             <span class="n">masked_inputs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span>
@@ -541,7 +614,7 @@
             <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
             <span class="n">crit_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crit_v</span><span class="p">,</span>
             <span class="n">affinity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">affinity</span><span class="p">,</span>
-            <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span>
+            <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span><span class="p">,</span>
             <span class="n">resistance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -555,11 +628,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            float: present simulation time step length.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">)</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Izhikevich.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.Izhikevich.html#inferno.neural.Izhikevich.clear">[docs]</a>
@@ -603,13 +676,13 @@
 <span class="sd">            is in training mode but not when it is in evaluation mode.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># use voltage thresholding function</span>
-        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding</span><span class="p">(</span>
+        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding_constant</span><span class="p">(</span>
             <span class="n">inputs</span><span class="o">=</span><span class="n">nf</span><span class="o">.</span><span class="n">apply_adaptive_currents</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">),</span>
             <span class="n">refracs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
             <span class="n">dynamics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
             <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
             <span class="n">reset_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span>
-            <span class="n">thresh_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
+            <span class="n">thresh_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span><span class="p">,</span>
             <span class="n">refrac_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span>
             <span class="n">voltages</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
         <span class="p">)</span>
@@ -625,7 +698,7 @@
                 <span class="n">adaptations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
                 <span class="n">voltages</span><span class="o">=</span><span class="n">voltages</span><span class="p">,</span>
                 <span class="n">spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
-                <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
                 <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
                 <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">,</span>
                 <span class="n">voltage_coupling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_vc_coupling</span><span class="p">,</span>
@@ -704,24 +777,60 @@
         <span class="n">Neuron</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
 
         <span class="c1"># dynamics attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;rheobase_v&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rheobase_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lte</span><span class="p">(</span>
-            <span class="s2">&quot;rheobase_v&quot;</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;step_time&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sharpness</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;sharpness&quot;</span><span class="p">,</span> <span class="n">sharpness</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">thresh_v</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;rheobase_v&quot;</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;rheobase_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                <span class="n">argtest</span><span class="o">.</span><span class="n">lte</span><span class="p">(</span><span class="s2">&quot;rheobase_v&quot;</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;sharpness&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;sharpness&quot;</span><span class="p">,</span> <span class="n">sharpness</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;reset_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">thresh_v</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;time_constant&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;resistance&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># call mixin constructors</span>
-        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_integrate_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masked_inputs</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding_constant`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_integration_exponential</span><span class="p">(</span>
             <span class="n">masked_inputs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span>
@@ -743,11 +852,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            float: present simulation time step length.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">)</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">)</span>
 
 <div class="viewcode-block" id="EIF.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.EIF.html#inferno.neural.EIF.clear">[docs]</a>
@@ -772,7 +881,7 @@
 <span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># use voltage thresholding function</span>
-        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding</span><span class="p">(</span>
+        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding_constant</span><span class="p">(</span>
             <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
             <span class="n">refracs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
             <span class="n">dynamics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
@@ -921,17 +1030,53 @@
         <span class="n">tc_adaptation</span><span class="p">,</span> <span class="n">voltage_coupling</span><span class="p">,</span> <span class="n">spike_increment</span> <span class="o">=</span> <span class="n">tc_list</span><span class="p">,</span> <span class="n">vc_list</span><span class="p">,</span> <span class="n">si_list</span>
 
         <span class="c1"># dynamics attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;rheobase_v&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rheobase_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lte</span><span class="p">(</span>
-            <span class="s2">&quot;rheobase_v&quot;</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;step_time&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sharpness</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;sharpness&quot;</span><span class="p">,</span> <span class="n">sharpness</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">thresh_v</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span> <span class="n">tc_membrane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;rest_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;rest_v&quot;</span><span class="p">,</span> <span class="n">rest_v</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;rheobase_v&quot;</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;rheobase_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                <span class="n">argtest</span><span class="o">.</span><span class="n">lte</span><span class="p">(</span><span class="s2">&quot;rheobase_v&quot;</span><span class="p">,</span> <span class="n">rheobase_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;sharpness&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;sharpness&quot;</span><span class="p">,</span> <span class="n">sharpness</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;reset_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="s2">&quot;reset_v&quot;</span><span class="p">,</span> <span class="n">reset_v</span><span class="p">,</span> <span class="n">thresh_v</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;thresh_v&quot;</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;thresh_v&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">thresh_v</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;refrac_t&quot;</span><span class="p">,</span> <span class="n">refrac_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_membrane&quot;</span><span class="p">,</span> <span class="n">tc_membrane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;resistance&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;resistance&quot;</span><span class="p">,</span> <span class="n">resistance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
+            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># register adaptation attributes as buffers (for tensor ops and compatibility)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
@@ -945,8 +1090,8 @@
         <span class="p">)</span>
 
         <span class="c1"># call mixin constructors</span>
-        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">VoltageMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">SpikeRefractoryMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">AdaptationMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="o">.</span><span class="n">numel</span><span class="p">()),</span>
@@ -955,7 +1100,7 @@
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_integrate_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masked_inputs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal, voltage function for :py:func:`~nf.voltage_thresholding_constant`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_integration_exponential</span><span class="p">(</span>
             <span class="n">masked_inputs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">,</span>
@@ -963,7 +1108,7 @@
             <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
             <span class="n">rheobase_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rheobase_v</span><span class="p">,</span>
             <span class="n">sharpness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sharpness</span><span class="p">,</span>
-            <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">,</span>
+            <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_membrane</span><span class="p">,</span>
             <span class="n">resistance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -977,11 +1122,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            float: present simulation time step length.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">)</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AdEx.clear">
 <a class="viewcode-back" href="../../../../reference/generated/inferno.neural.AdEx.html#inferno.neural.AdEx.clear">[docs]</a>
@@ -1025,13 +1170,13 @@
 <span class="sd">            is in training mode but not when it is in evaluation mode.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># use voltage thresholding function</span>
-        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding</span><span class="p">(</span>
+        <span class="n">spikes</span><span class="p">,</span> <span class="n">voltages</span><span class="p">,</span> <span class="n">refracs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">voltage_thresholding_constant</span><span class="p">(</span>
             <span class="n">inputs</span><span class="o">=</span><span class="n">nf</span><span class="o">.</span><span class="n">apply_adaptive_currents</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">),</span>
             <span class="n">refracs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac</span><span class="p">,</span>
             <span class="n">dynamics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_v</span><span class="p">,</span>
             <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
             <span class="n">reset_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_v</span><span class="p">,</span>
-            <span class="n">thresh_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
+            <span class="n">thresh_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thresh_v</span><span class="p">,</span>
             <span class="n">refrac_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span><span class="p">,</span>
             <span class="n">voltages</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span> <span class="k">if</span> <span class="n">refrac_lock</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
         <span class="p">)</span>
@@ -1047,7 +1192,7 @@
                 <span class="n">adaptations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptation</span><span class="p">,</span>
                 <span class="n">voltages</span><span class="o">=</span><span class="n">voltages</span><span class="p">,</span>
                 <span class="n">spikes</span><span class="o">=</span><span class="n">spikes</span><span class="p">,</span>
-                <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                <span class="n">step_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
                 <span class="n">rest_v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rest_v</span><span class="p">,</span>
                 <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc_adaptation</span><span class="p">,</span>
                 <span class="n">voltage_coupling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_vc_coupling</span><span class="p">,</span>

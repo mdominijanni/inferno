@@ -224,6 +224,80 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Layer</span></span><a class="reference internal" href="../../_modules/inferno/neural/network.html#Layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.core.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
 <p>Representation of simultaneously processed connections and neurons.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.add_cell">
+<span class="sig-name descname"><span class="pre">add_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/network.html#Layer.add_cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.add_cell" title="Link to this definition">#</a></dt>
+<dd><p>Creates and adds a cell if it doesn’t exist.</p>
+<p>If a cell already exists with the given connection and neuron, this will
+return the existing cell rather than create a new one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>connection</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the connection for the cell to add.</p></li>
+<li><p><strong>neuron</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the neuron for the cell to add.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.12)"><strong>AttributeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">connection</span></code> does not specify a connection.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.12)"><strong>AttributeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">neuron</span></code> does not specify a neuron.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>cell specifyied by the connection and neuron.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.Cell">Cell</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.add_connection">
+<span class="sig-name descname"><span class="pre">add_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.base.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.base.Connection"><span class="pre">Connection</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/network.html#Layer.add_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.add_connection" title="Link to this definition">#</a></dt>
+<dd><p>Adds a new connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the connection to add.</p></li>
+<li><p><strong>connection</strong> (<a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><em>Connection</em></a>) – connection to add.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">name</span></code> already specifies a connection</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>added connection.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection">Connection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.add_neuron">
+<span class="sig-name descname"><span class="pre">add_neuron</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.base.Neuron"><span class="pre">Neuron</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.base.Neuron"><span class="pre">Neuron</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/network.html#Layer.add_neuron"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.add_neuron" title="Link to this definition">#</a></dt>
+<dd><p>Adds a new neuron.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the neuron to add.</p></li>
+<li><p><strong>neuron</strong> (<a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron"><em>Neuron</em></a>) – neuron to add.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">name</span></code> already specifies a neuron</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>added neuron.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron">Neuron</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.Layer.cells">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Proxy</span></em><a class="headerlink" href="#inferno.neural.Layer.cells" title="Link to this definition">#</a></dt>
@@ -249,7 +323,7 @@ monitors, etc), but it can neither be deleted nor reassigned.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connections</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Proxy</span></em><a class="headerlink" href="#inferno.neural.Layer.connections" title="Link to this definition">#</a></dt>
 <dd><p>Registred connections.</p>
 <p>For a given <code class="docutils literal notranslate"><span class="pre">name</span></code> of a <a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> set via
-<code class="docutils literal notranslate"><span class="pre">layer[name]</span> <span class="pre">=</span> <span class="pre">connection</span></code>, it can be accessed as <code class="docutils literal notranslate"><span class="pre">layer.connections.name</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">layer.add_connection(name)</span></code>, it can be accessed as <code class="docutils literal notranslate"><span class="pre">layer.connections.name</span></code>.</p>
 <p>It can be modified in-place (including setting other attributes, adding
 monitors, etc), but it can neither be deleted nor reassigned.</p>
 <p>This is primarily used when targeting <code class="docutils literal notranslate"><span class="pre">Connection</span></code> objects with a monitor.</p>
@@ -259,6 +333,56 @@ monitors, etc), but it can neither be deleted nor reassigned.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Proxy</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.del_cell">
+<span class="sig-name descname"><span class="pre">del_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/network.html#Layer.del_cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.del_cell" title="Link to this definition">#</a></dt>
+<dd><p>Deletes a created cell if it exists.</p>
+<p>Even if a cell hasn’t been created with the given pair, if the pair is valid,
+this will not raise an error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>connection</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the connection for the cell to delete.</p></li>
+<li><p><strong>neuron</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the neuron for the cell to delete.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.12)"><strong>AttributeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">connection</span></code> does not specify a connection.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.12)"><strong>AttributeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">neuron</span></code> does not specify a neuron.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.del_connection">
+<span class="sig-name descname"><span class="pre">del_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/network.html#Layer.del_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.del_connection" title="Link to this definition">#</a></dt>
+<dd><p>Deletes an existing connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the connection to delete.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.12)"><strong>AttributeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">name</span></code> does not specify a connection.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.del_neuron">
+<span class="sig-name descname"><span class="pre">del_neuron</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/network.html#Layer.del_neuron"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.del_neuron" title="Link to this definition">#</a></dt>
+<dd><p>Deletes an existing neuron.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the neuron to delete.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – <code class="docutils literal notranslate"><span class="pre">name</span></code> does not specify a neuron.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -304,6 +428,70 @@ connections and the associated connection names.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.get_cell">
+<span class="sig-name descname"><span class="pre">get_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/network.html#Layer.get_cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.get_cell" title="Link to this definition">#</a></dt>
+<dd><p>Gets a created cell if it exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>connection</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the connection for the cell to get.</p></li>
+<li><p><strong>neuron</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the neuron for the cell to get.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.12)"><strong>AttributeError</strong></a> – no cell has been created with the specified connection
+    and neuron.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>cell specifyied by the connection and neuron.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.Cell">Cell</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.get_connection">
+<span class="sig-name descname"><span class="pre">get_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.base.Connection"><span class="pre">Connection</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/network.html#Layer.get_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.get_connection" title="Link to this definition">#</a></dt>
+<dd><p>Gets an existing connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the connection to get.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.12)"><strong>AttributeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">name</span></code> does not specify a connection.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>connection with specified name.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection">Connection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.Layer.get_neuron">
+<span class="sig-name descname"><span class="pre">get_neuron</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.base.Neuron"><span class="pre">Neuron</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/network.html#Layer.get_neuron"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.Layer.get_neuron" title="Link to this definition">#</a></dt>
+<dd><p>Gets an existing neuron.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the neuron to get.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.12)"><strong>AttributeError</strong></a> – <code class="docutils literal notranslate"><span class="pre">name</span></code> does not specify a neuron.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>neuron with specified name</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="inferno.neural.Neuron.html#inferno.neural.Neuron" title="inferno.neural.Neuron">Neuron</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.Layer.named_cells">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">named_cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.12)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Layer.named_cells" title="Link to this definition">#</a></dt>
@@ -345,17 +533,6 @@ of the connection name and neuron name corresponding to it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Yields<span class="colon">:</span></dt>
 <dd class="field-odd"><p><em>tuple[str, Synapse]</em> – tuple of a registered synapse and its name.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.Layer.named_updaters">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">named_updaters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.12)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="inferno.neural.Updater.html#inferno.neural.Updater" title="inferno.neural.modeling.Updater"><span class="pre">Updater</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.Layer.named_updaters" title="Link to this definition">#</a></dt>
-<dd><p>Iterable of registered connection’s updaters and their names.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Yields<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>tuple[str, Updater]</em> – tuple of a registered updater and its name.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -478,14 +655,22 @@ value is the tensor to be passed to its <code class="xref py py-meth docutils li
             <ul>
 <li><a class="reference internal" href="#">Layer</a><ul>
 <li><a class="reference internal" href="#inferno.neural.Layer"><code class="docutils literal notranslate"><span class="pre">Layer</span></code></a><ul>
+<li><a class="reference internal" href="#inferno.neural.Layer.add_cell"><code class="docutils literal notranslate"><span class="pre">Layer.add_cell()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.add_connection"><code class="docutils literal notranslate"><span class="pre">Layer.add_connection()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.add_neuron"><code class="docutils literal notranslate"><span class="pre">Layer.add_neuron()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.cells"><code class="docutils literal notranslate"><span class="pre">Layer.cells</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.connections"><code class="docutils literal notranslate"><span class="pre">Layer.connections</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.del_cell"><code class="docutils literal notranslate"><span class="pre">Layer.del_cell()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.del_connection"><code class="docutils literal notranslate"><span class="pre">Layer.del_connection()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.del_neuron"><code class="docutils literal notranslate"><span class="pre">Layer.del_neuron()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.forward"><code class="docutils literal notranslate"><span class="pre">Layer.forward()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.get_cell"><code class="docutils literal notranslate"><span class="pre">Layer.get_cell()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.get_connection"><code class="docutils literal notranslate"><span class="pre">Layer.get_connection()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.Layer.get_neuron"><code class="docutils literal notranslate"><span class="pre">Layer.get_neuron()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.named_cells"><code class="docutils literal notranslate"><span class="pre">Layer.named_cells</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.named_connections"><code class="docutils literal notranslate"><span class="pre">Layer.named_connections</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.named_neurons"><code class="docutils literal notranslate"><span class="pre">Layer.named_neurons</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.named_synapses"><code class="docutils literal notranslate"><span class="pre">Layer.named_synapses</span></code></a></li>
-<li><a class="reference internal" href="#inferno.neural.Layer.named_updaters"><code class="docutils literal notranslate"><span class="pre">Layer.named_updaters</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.neurons"><code class="docutils literal notranslate"><span class="pre">Layer.neurons</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.update"><code class="docutils literal notranslate"><span class="pre">Layer.update()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.Layer.wiring"><code class="docutils literal notranslate"><span class="pre">Layer.wiring()</span></code></a></li>

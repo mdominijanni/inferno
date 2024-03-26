@@ -28,10 +28,10 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
 
     def extra_repr(self) -> str:
         r"""Returns extra information on this module."""
-        return f"shape={self.shape}, bsize={self.bsize}, dt={self.dt}"
+        return f"shape={self.shape}, batchsz={self.batchsz}, dt={self.dt}"
 
     @property
-    def bsize(self) -> int:
+    def batchsz(self) -> int:
         r"""Batch size of the neuron group.
 
         Args:
@@ -40,11 +40,11 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
         Returns:
             int: present batch size.
         """
-        return ShapeMixin.bsize.fget(self)
+        return ShapeMixin.batchsz.fget(self)
 
-    @bsize.setter
-    def bsize(self, value: int) -> None:
-        ShapeMixin.bsize.fset(self, value)
+    @batchsz.setter
+    def batchsz(self, value: int) -> None:
+        ShapeMixin.batchsz.fset(self, value)
         self.clear()
 
     @property
@@ -221,7 +221,7 @@ class Synapse(ShapeMixin, RecordModule, ABC):
     def extra_repr(self) -> str:
         r"""Returns extra information on this module."""
         return (
-            f"shape={self.shape}, bsize={self.bsize}, dt={self.dt}, delay={self.delay}"
+            f"shape={self.shape}, batchsz={self.batchsz}, dt={self.dt}, delay={self.delay}"
         )
 
     @classmethod
@@ -432,7 +432,7 @@ class Connection(Updatable, Module, ABC):
         self.synapses = value
 
     @property
-    def bsize(self) -> int:
+    def batchsz(self) -> int:
         r"""Batch size of the connection.
 
         Args:
@@ -442,14 +442,14 @@ class Connection(Updatable, Module, ABC):
             int: current batch size.
 
         Note:
-            This calls the property :py:attr:`Synapse.bsize` on :py:attr:`synapse`,
+            This calls the property :py:attr:`Synapse.batchsz` on :py:attr:`synapse`,
             assuming the connection has no batch size dependent state.
         """
-        return self.synapse.bsize
+        return self.synapse.batchsz
 
-    @bsize.setter
-    def bsize(self, value: int):
-        self.synapse.bsize = value
+    @batchsz.setter
+    def batchsz(self, value: int):
+        self.synapse.batchsz = value
 
     @property
     def dt(self) -> float:
@@ -504,22 +504,22 @@ class Connection(Updatable, Module, ABC):
         )
 
     @property
-    def binshape(self) -> tuple[int, ...]:
+    def batched_inshape(self) -> tuple[int, ...]:
         r"""Shape of inputs to the connection, including the batch dimension.
 
         Returns:
             tuple[int]: shape of inputs to the connection.
         """
-        return (self.bsize,) + self.inshape
+        return (self.batchsz,) + self.inshape
 
     @property
-    def boutshape(self) -> tuple[int, ...]:
+    def batched_outshape(self) -> tuple[int, ...]:
         r"""Shape of outputs from the connection, including the batch dimension.
 
         Returns:
             tuple[int]: shape of outputs from the connection.
         """
-        return (self.bsize,) + self.outshape
+        return (self.batchsz,) + self.outshape
 
     def insize(self) -> int:
         r"""Number of inputs to the connection, excluding the batch dimension.
@@ -706,6 +706,7 @@ class Connection(Updatable, Module, ABC):
         Updatable.clear(self, **kwargs)
         self.synapse.clear(**kwargs)
 
+    @abstractmethod
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like synapse input to connection input.
 
@@ -727,13 +728,14 @@ class Connection(Updatable, Module, ABC):
 
             ``return``:
 
-            :py:attr:`binshape`
+            :py:attr:`batched_inshape`
         """
         raise NotImplementedError(
             f"{type(self).__name__}(Connection) must implement "
             "the method `like_input`."
         )
 
+    @abstractmethod
     def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection input to synapse input.
 
@@ -751,7 +753,7 @@ class Connection(Updatable, Module, ABC):
 
             ``data``:
 
-            :py:attr:`binshape`
+            :py:attr:`batched_inshape`
 
             ``return``:
 
@@ -762,6 +764,7 @@ class Connection(Updatable, Module, ABC):
             "the method `like_synaptic`."
         )
 
+    @abstractmethod
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection output for pre-post learning methods.
 
@@ -780,7 +783,7 @@ class Connection(Updatable, Module, ABC):
 
             ``data``:
 
-            :py:attr:`boutshape`
+            :py:attr:`batched_outshape`
 
             ``return``:
 
@@ -796,6 +799,7 @@ class Connection(Updatable, Module, ABC):
             "the method `postsyn_receptive`."
         )
 
+    @abstractmethod
     def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like the synapse state for pre-post learning methods.
 

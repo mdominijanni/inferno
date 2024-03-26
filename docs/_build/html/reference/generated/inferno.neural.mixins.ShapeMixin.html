@@ -242,15 +242,15 @@ mixin must be called after the module constructor.</p>
 <div class="admonition caution">
 <p class="admonition-title">Caution</p>
 <p>Module which inherit from this mixin cannot be constrained on <code class="docutils literal notranslate"><span class="pre">dim=0</span></code>.
-Do not manually change this constraint, it is managed through <code class="xref py py-attr docutils literal notranslate"><span class="pre">bsize</span></code>.</p>
+Do not manually change this constraint, it is managed through <code class="xref py py-attr docutils literal notranslate"><span class="pre">batchsz</span></code>.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This sets an attribute <code class="docutils literal notranslate"><span class="pre">__shape</span></code> which is managed internally.</p>
 </div>
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.neural.mixins.ShapeMixin.bshape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.mixins.ShapeMixin.bshape" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.neural.mixins.ShapeMixin.batchedshape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batchedshape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#inferno.neural.mixins.ShapeMixin.batchedshape" title="Link to this definition">#</a></dt>
 <dd><p>Batch shape of the module</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -351,7 +351,7 @@ Do not manually change this constraint, it is managed through <code class="xref 
             <ul>
 <li><a class="reference internal" href="#">ShapeMixin</a><ul>
 <li><a class="reference internal" href="#inferno.neural.mixins.ShapeMixin"><code class="docutils literal notranslate"><span class="pre">ShapeMixin</span></code></a><ul>
-<li><a class="reference internal" href="#inferno.neural.mixins.ShapeMixin.bshape"><code class="docutils literal notranslate"><span class="pre">ShapeMixin.bshape</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.mixins.ShapeMixin.batchedshape"><code class="docutils literal notranslate"><span class="pre">ShapeMixin.batchedshape</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.mixins.ShapeMixin.count"><code class="docutils literal notranslate"><span class="pre">ShapeMixin.count</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.mixins.ShapeMixin.shape"><code class="docutils literal notranslate"><span class="pre">ShapeMixin.shape</span></code></a></li>
 </ul>
