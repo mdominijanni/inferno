@@ -1,7 +1,7 @@
 from .mixins import SpikeCurrentMixin, SpikeDerivedCurrentMixin
 from .mixins import DelayedSpikeCurrentAccessorMixin
 from .. import Synapse, SynapseConstructor
-from ... import interpolation, scalar
+from ... import interpolation
 from ..._internal import argtest
 import torch
 from typing import Literal
@@ -54,16 +54,8 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
         Synapse.__init__(self, shape, step_time, delay, batch_size)
 
         # synapse attributes
-        self.register_buffer(
-            "step_time",
-            torch.tensor(Synapse.dt.fget(self)),
-            persistent=False,
-        )
-        self.register_buffer(
-            "spike_q",
-            torch.tensor(argtest.neq("spike_q", spike_q, 0, float)),
-            persistent=False,
-        )
+        self.step_time = Synapse.dt.fget(self)
+        self.spike_q = argtest.neq("spike_q", spike_q, 0, float)
 
         match interp_mode.lower():
             case "nearest":
@@ -160,7 +152,6 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
     @dt.setter
     def dt(self, value: float):
         Synapse.dt.fset(self, value)
-        self.step_time = scalar(Synapse.dt.fget(self), self.step_time)
         self.clear()
 
     def _to_current(self, spikes: torch.Tensor) -> torch.Tensor:
@@ -241,16 +232,8 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
         Synapse.__init__(self, shape, step_time, delay, batch_size)
 
         # synapse attributes
-        self.register_buffer(
-            "step_time",
-            torch.tensor(Synapse.dt.fget(self)),
-            persistent=False,
-        )
-        self.register_buffer(
-            "spike_q",
-            torch.tensor(argtest.neq("spike_q", spike_q, 0, float)),
-            persistent=False,
-        )
+        self.step_time = Synapse.dt.fget(self)
+        self.spike_q = argtest.neq("spike_q", spike_q, 0, float)
 
         match interp_mode.lower():
             case "nearest":
@@ -348,7 +331,6 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
     @dt.setter
     def dt(self, value: float):
         Synapse.dt.fset(self, value)
-        self.step_time = scalar(Synapse.dt.fget(self), self.step_time)
         self.clear()
 
     def clear(self, **kwargs):

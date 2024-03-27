@@ -198,9 +198,6 @@ class Layer(Module, ABC):
         self.neurons_ = nn.ModuleDict()
         self.cells_ = nn.ModuleDict()
 
-        # set cells dict so it is not part of PyTorch's state
-        # object.__setattr__(self, "cells_", nn.ModuleDict())
-
     def add_cell(self, connection: str, neuron: str) -> Cell:
         r"""Creates and adds a cell if it doesn't exist.
 

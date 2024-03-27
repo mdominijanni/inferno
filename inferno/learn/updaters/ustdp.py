@@ -176,8 +176,8 @@ class STDP(IndependentTrainer):
         state.trace = argtest.oneof(
             "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
         )
-        state.batchreduce = batch_reduction if batch_reduction else torch.mean
-        state.fieldreduce = field_reduction if field_reduction else torch.sum
+        state.batchreduce = batch_reduction if (batch_reduction is not None) else torch.mean
+        state.fieldreduce = field_reduction if (field_reduction is not None) else torch.sum
 
         return state
 
@@ -327,7 +327,6 @@ class STDP(IndependentTrainer):
         """Processes update for given layers based on current monitor stored data."""
         # iterate through self
         for cell, state, monitors in self:
-
             # skip if self or cell is not in training mode or has no updater
             if not cell.training or not self.training or not cell.updater:
                 continue
@@ -359,7 +358,7 @@ class STDP(IndependentTrainer):
             )
 
             # accumulate partials with mode condition
-            match (state.lr_post >= 0, state.lr_pre >= 0):
+            match (state.lr_post.item() >= 0, state.lr_pre.item() >= 0):
                 case (False, False):  # depressive
                     cell.updater.weight = (None, dpost + dpre)
                 case (False, True):  # anti-hebbian

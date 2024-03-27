@@ -1,4 +1,3 @@
-from ... import scalar
 from ..._internal import argtest
 import torch
 
@@ -8,19 +7,10 @@ class StepTimeMixin:
 
     Args:
         step_time (float): length of a simulation time step, in :math:`ms`.
-
-    Note:
-        This creates the property :py:attr:`dt` for managing step time using Python
-        built-ins and the attribute ``step_time`` for access as a :py:class`~torch.Tensor`.
     """
 
     def __init__(self, step_time: float):
-        # encoder attributes
-        self.register_buffer(
-            "step_time",
-            torch.tensor(argtest.gt("step_time", step_time, 0, float)),
-            persistent=False,
-        )
+        self.__step_time = argtest.gt("step_time", step_time, 0, float)
 
     @property
     def dt(self) -> float:
@@ -32,31 +22,23 @@ class StepTimeMixin:
         Returns:
             float: present simulation time step length.
         """
-        return float(self.step_time)
+        return self.__step_time
 
     @dt.setter
     def dt(self, value: float) -> None:
-        self.step_time = scalar(argtest.gt("dt", value, 0, float), self.step_time)
+        self.__step_time = argtest.gt("dt", value, 0, float)
 
 
 class StepMixin(StepTimeMixin):
     r"""Mixin for encoders with a globally meaningful number of steps.
 
     Args:
-        step_time (float): length of a simulation time step, in :math:`ms`.
         steps (int): number of steps over which to generate a spike train.
-
-    Note:
-        This creates the property :py:attr:`dt` for managing step time using Python
-        built-ins and the attribute ``step_time`` for access as a :py:class`~torch.Tensor`.
     """
 
-    def __init__(self, step_time: float, steps: int):
-        # call superclass mixin constructor
+    def __init__(self, steps: int, step_time: float):
         StepTimeMixin.__init__(self, step_time)
-
-        # encoder attributes
-        self.num_steps = argtest.gt("steps", steps, 0, int)
+        self.__num_steps = argtest.gt("steps", steps, 0, int)
 
     @property
     def steps(self) -> int:
@@ -68,11 +50,11 @@ class StepMixin(StepTimeMixin):
         Returns:
             int: present number of steps over which to generate.
         """
-        return self.num_steps
+        return self.__num_steps
 
     @steps.setter
     def steps(self, value: int) -> None:
-        self.num_steps = argtest.gt("steps", value, 0, int)
+        self.__num_steps = argtest.gt("steps", value, 0, int)
 
     @property
     def duration(self) -> float:
@@ -81,43 +63,29 @@ class StepMixin(StepTimeMixin):
         Returns:
             float: length of simulation time for which to generate a spike train.
         """
-        return float(self.steps * self.dt)
+        return self.__num_steps * self.dt
 
 
 class RefractoryStepMixin(StepMixin):
     r"""Mixin for encoders with a refractory period and a notion of global step.
 
     Args:
-        step_time (float): length of a simulation time step, in :math:`ms`.
         steps (int): number of steps over which to generate a spike train.
+        step_time (float): length of a simulation time step, in :math:`ms`.
         refrac (float): refractory period, in :math:`\text{ms}`.
-
-    Note:
-        This creates the properties :py:attr:`dt` and :py:attr:`refrac` for managing
-        step time and refractory period using Python built-ins and the attributes
-        ``step_time`` and ``interval_min`` for access as a :py:class`~torch.Tensor`.
-
     """
 
-    def __init__(self, step_time: float, steps: int, refrac: float | None):
+    def __init__(self, steps: int, step_time: float, refrac: float | None):
         # call superclass mixin constructor
-        StepMixin.__init__(self, step_time, steps)
+        StepMixin.__init__(self, steps, step_time)
 
         # encoder attributes
         if refrac is None:
-            self.autorefrac = True
-            self.register_buffer(
-                "interval_min",
-                torch.tensor(self.dt),
-                persistent=False,
-            )
+            self.__derive_refrac = True
+            self.__refrac_time = self.dt
         else:
-            self.autorefrac = False
-            self.register_buffer(
-                "interval_min",
-                torch.tensor(argtest.gte("refrac", refrac, 0, float)),
-                persistent=False,
-            )
+            self.__derive_refrac = False
+            self.__refrac_time = argtest.gte("refrac", refrac, 0, float)
 
     @property
     def dt(self) -> float:
@@ -134,32 +102,30 @@ class RefractoryStepMixin(StepMixin):
     @dt.setter
     def dt(self, value: float) -> None:
         StepMixin.dt.fset(self, value)
-        if self.autorefrac:
-            self.interval_min = scalar(self.dt, self.interval_min)
+        if self.__derive_refrac:
+            self.__refrac_time = StepMixin.dt.fget(self)
 
     @property
     def refrac(self) -> float:
         r"""Length of the refractory period, in milliseconds.
 
         Args:
-            value (float | None): new refractory period length,
-                pins to the step time if None.
+            value (float | None): new refractory period length, pins to the
+                step time if ``None``.
 
         Returns:
             float: present refractory period length.
         """
-        return float(self.interval_min)
+        return self.__refrac_time
 
     @refrac.setter
     def refrac(self, value: float | None) -> None:
         if value is None:
-            self.autorefrac = True
-            self.interval_min = scalar(self.dt, self.interval_min)
+            self.__derive_refrac = True
+            self.__refrac_time = self.__step_time
         else:
-            self.autorefrac = False
-            self.interval_min = scalar(
-                argtest.gte("refrac", value, 0, float), self.interval_min
-            )
+            self.__derive_refrac = False
+            self.__refrac_time = argtest.gte("refrac", value, 0, float)
 
 
 class GeneratorMixin:
@@ -170,7 +136,7 @@ class GeneratorMixin:
     """
 
     def __init__(self, generator: torch.Generator | None):
-        self.rng = generator
+        self.__rng = generator
 
     @property
     def generator(self) -> torch.Generator | None:
@@ -182,8 +148,8 @@ class GeneratorMixin:
         Returns:
             float: present random number generator.
         """
-        return self.rng
+        return self.__rng
 
     @generator.setter
     def generator(self, value: torch.Generator | None) -> None:
-        self.rng = value
+        self.__rng = value

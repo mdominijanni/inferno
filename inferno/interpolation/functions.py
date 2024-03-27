@@ -5,7 +5,7 @@ def previous(
     prev_data: torch.Tensor,
     next_data: torch.Tensor,
     sample_at: torch.Tensor,
-    step_time: float | torch.Tensor,
+    step_time: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Interpolates by selecting the previous state.
@@ -18,9 +18,10 @@ def previous(
             :math:`D_{t=0}`.
         next_data (torch.Tensor): most recent observation subsequent to sample time,
             :math:`D_{t=T}`.
-        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.
-        step_time (float | torch.Tensors): length of time between the prior and
-            ubsequent observations, :math:`T`.
+        sample_at (torch.Tensor): relative time at which to sample data,
+            :math:`s`.
+        step_time (float): length of time between the prior and subsequent observations,
+            :math:`T`.
 
     Returns:
         torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.
@@ -32,7 +33,7 @@ def nearest(
     prev_data: torch.Tensor,
     next_data: torch.Tensor,
     sample_at: torch.Tensor,
-    step_time: float | torch.Tensor,
+    step_time: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Interpolates by selecting the nearest state.
@@ -49,9 +50,10 @@ def nearest(
             :math:`D_{t=0}`.
         next_data (torch.Tensor): most recent observation subsequent to sample time,
             :math:`D_{t=T}`.
-        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.
-        step_time (float | torch.Tensors): length of time between the prior and
-            ubsequent observations, :math:`T`.
+        sample_at (torch.Tensor): relative time at which to sample data,
+            :math:`s`.
+        step_time (float): length of time between the prior and subsequent observations,
+            :math:`T`.
 
     Returns:
         torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.
@@ -63,7 +65,7 @@ def linear(
     prev_data: torch.Tensor,
     next_data: torch.Tensor,
     sample_at: torch.Tensor,
-    step_time: float | torch.Tensor,
+    step_time: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Interpolates between previous and next states linearlly.
@@ -76,9 +78,10 @@ def linear(
             :math:`D_{t=0}`.
         next_data (torch.Tensor): most recent observation subsequent to sample time,
             :math:`D_{t=T}`.
-        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.
-        step_time (float | torch.Tensors): length of time between the prior and
-            ubsequent observations, :math:`T`.
+        sample_at (torch.Tensor): relative time at which to sample data,
+            :math:`s`.
+        step_time (float): length of time between the prior and subsequent observations,
+            :math:`T`.
 
     Returns:
         torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.
@@ -91,9 +94,9 @@ def expdecay(
     prev_data: torch.Tensor,
     next_data: torch.Tensor,
     sample_at: torch.Tensor,
-    step_time: float | torch.Tensor,
+    step_time: float,
     *,
-    time_constant: float | torch.Tensor,
+    time_constant: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Interpolates by exponentially decaying value from previous state.
@@ -106,11 +109,11 @@ def expdecay(
             :math:`D_{t=0}`.
         next_data (torch.Tensor): most recent observation subsequent to sample time,
             :math:`D_{t=T}`.
-        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.
-        step_time (float | torch.Tensors): length of time between the prior and
-            ubsequent observations, :math:`T`.
-        time_constant (float | torch.Tensor): time constant of exponential decay,
-            :math:`\tau`.
+        sample_at (torch.Tensor): relative time at which to sample data,
+            :math:`s`.
+        step_time (float): length of time between the prior and subsequent observations,
+            :math:`T`.
+        time_constant (float): time constant of exponential decay, :math:`\tau`.
 
     Returns:
         torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.
@@ -122,9 +125,9 @@ def expratedecay(
     prev_data: torch.Tensor,
     next_data: torch.Tensor,
     sample_at: torch.Tensor,
-    step_time: float | torch.Tensor,
+    step_time: float,
     *,
-    decay_rate: float | torch.Tensor,
+    rate_constant: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Interpolates by exponentially decaying value from previous state.
@@ -137,12 +140,14 @@ def expratedecay(
             :math:`D_{t=0}`.
         next_data (torch.Tensor): most recent observation subsequent to sample time,
             :math:`D_{t=T}`.
-        sample_at (torch.Tensor): relative time at which to sample data, :math:`s`.
-        step_time (float | torch.Tensors): length of time between the prior and
-            ubsequent observations, :math:`T`.
-        decay_rate (float | torch.Tensor): rate of exponential decay, :math:`\lambda`.
+        sample_at (torch.Tensor): relative time at which to sample data,
+            :math:`s`.
+        step_time (float): length of time between the prior and subsequent observations,
+            :math:`T`.
+        rate_constant (float): rate constant of exponential decay,
+            :math:`\lambda`.
 
     Returns:
         torch.Tensor: interpolated data at sample time, :math:`D_{t=s}`.
     """
-    return prev_data * torch.exp(-sample_at * decay_rate)
+    return prev_data * torch.exp(-sample_at * rate_constant)

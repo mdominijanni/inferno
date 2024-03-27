@@ -3,7 +3,6 @@ import pytest
 import random
 import torch
 
-from inferno import scalar
 from inferno.neural import Synapse, DeltaCurrent, DeltaPlusCurrent
 
 
@@ -30,11 +29,6 @@ def validate_batchedshape(
     synapse: Synapse, batchsz: int, shape: tuple[int, ...]
 ) -> None:
     assert synapse.batchedshape == (batchsz,) + shape
-
-
-def validate_dt_equivalence(synapse: Synapse) -> None:
-    print(f"---{synapse.step_time}---")
-    assert scalar(Synapse.dt.fget(synapse), synapse.step_time) == synapse.step_time
 
 
 def validate_duration(synapse: Synapse, delay: float) -> None:
@@ -83,13 +77,6 @@ class TestDeltaCurrent:
         synapse = DeltaCurrent(shape, **hyper)
 
         validate_batchedshape(synapse, hyper["batch_size"], shape)
-
-    def test_dt_equivalence(self):
-        shape = random_shape()
-        hyper = self.random_hyper(True)
-        synapse = DeltaCurrent(shape, **hyper)
-
-        validate_dt_equivalence(synapse)
 
     def test_duration(self):
         shape = random_shape()
@@ -191,13 +178,6 @@ class TestDeltaPlusCurrent:
         synapse = DeltaPlusCurrent(shape, **hyper)
 
         validate_batchedshape(synapse, hyper["batch_size"], shape)
-
-    def test_dt_equivalence(self):
-        shape = random_shape()
-        hyper = self.random_hyper(True)
-        synapse = DeltaPlusCurrent(shape, **hyper)
-
-        validate_dt_equivalence(synapse)
 
     def test_duration(self):
         shape = random_shape()

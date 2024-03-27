@@ -1,6 +1,6 @@
 from .mixins import GeneratorMixin, StepMixin
 from .. import functional as nf
-from ... import Module, scalar
+from ... import Module
 from ..._internal import argtest
 import torch
 from typing import Iterator
@@ -35,14 +35,10 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
         Module.__init__(self)
 
         # set encoder attributes
-        self.register_buffer(
-            "freqscale",
-            torch.tensor(argtest.gte("frequency", frequency, 0, float)),
-            persistent=False,
-        )
+        self.__frequency_scale = argtest.gte("frequency", frequency, 0, float)
 
         # call mixin constructors
-        StepMixin.__init__(self, step_time=step_time, steps=steps)
+        StepMixin.__init__(self, steps=steps, step_time=step_time)
         GeneratorMixin.__init__(self, generator=generator)
 
     @property
@@ -55,37 +51,29 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
         Returns:
             float: present frequency scale for inputs.
         """
-        return float(self.freqscale)
+        return self.__frequency_scale
 
     @frequency.setter
     def frequency(self, value: float) -> None:
-        self.freqscale = scalar(
-            argtest.gte("frequency", value, 0, float), self.freqscale
-        )
+        self.__frequency_scale = argtest.gte("frequency", value, 0, float)
 
     def forward(
         self, inputs: torch.Tensor, online: bool = False
     ) -> torch.Tensor | Iterator[torch.Tensor]:
         r"""Generates a spike train from inputs.
 
+        The spike trains are generated with frequencies scaled linearly by the input,
+        with a maximum frequency equal to the hyperparameter defined on initialization.
+
         Args:
             inputs (torch.Tensor): intensities, scaled :math:`[0, 1]`,
                 for spike frequencies.
             online (bool, optional): if spike generation should be computed separately
-                at each time step. Defaults to False.
+                at each time step. Defaults to ``False``.
 
         Returns:
             torch.Tensor | Iterator[torch.Tensor]: tensor spike train (if not online)
             otherwise a generator which yields time slices of the spike train.
-
-        Note:
-            Values in ``inputs`` should be on the interval :math:`[0, 1]`. Where the
-            inputs are ``0``, no spikes will be generated. Where the inputs are ``1``,
-            spikes will be generated with a frequency of :py:attr:`frequency`.
-
-        Note:
-            In general, setting ``online`` to ``False`` will be faster but more
-            more memory-intensive.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -110,15 +98,15 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
         """
         if online:
             return nf.enc_poisson_interval_online(
-                self.freqscale * inputs,
+                self.frequency * inputs,
                 steps=self.steps,
-                step_time=self.step_time,
+                step_time=self.dt,
                 generator=self.generator,
             )
         else:
             return nf.enc_poisson_interval(
-                self.freqscale * inputs,
+                self.frequency * inputs,
                 steps=self.steps,
-                step_time=self.step_time,
+                step_time=self.dt,
                 generator=self.generator,
             )

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from .base import FoldingReducer
-from ... import interpolation, scalar
+from ... import interpolation
 from ...types import OneToOne
 import torch
 
@@ -29,28 +29,8 @@ class EventReducer(FoldingReducer):
         # call superclass constructor
         FoldingReducer.__init__(self, step_time, duration)
 
-        # set state
-        self.register_buffer("step_time", torch.tensor(self.dt), persistent=False)
-
         # set non-persistent function
         self.criterion = criterion
-
-    @property
-    def dt(self) -> float:
-        r"""Length of the simulation time step, in milliseconds.
-
-        Args:
-            value (float): new simulation time step length.
-
-        Returns:
-            float: length of the simulation time step.
-        """
-        return FoldingReducer.dt.fget(self)
-
-    @dt.setter
-    def dt(self, value: float):
-        FoldingReducer.dt.fset(self, value)
-        self.step_time = scalar(FoldingReducer.dt.fget(self), self.step_time)
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of last prior event.
@@ -66,7 +46,7 @@ class EventReducer(FoldingReducer):
         if state is None:
             return torch.where(self.criterion(obs), 0, float("inf"))
         else:
-            return torch.where(self.criterion(obs), 0, state + self.step_time)
+            return torch.where(self.criterion(obs), 0, state + self.dt)
 
     def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
         r"""Setting of entire state history to infinity.
@@ -84,7 +64,7 @@ class EventReducer(FoldingReducer):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_time: float | torch.Tensor,
+        step_time: float,
     ) -> torch.Tensor:
         r"""Exact value interpolation between observations.
 
@@ -92,7 +72,7 @@ class EventReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float | torch.Tensor): length of time between the prior and
+            step_time (float): length of time between the prior and
                 subsequent observations.
 
         Returns:
@@ -146,7 +126,7 @@ class PassthroughReducer(FoldingReducer):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_time: float | torch.Tensor,
+        step_time: float,
     ) -> torch.Tensor:
         r"""Previous value interpolation between observations.
 
@@ -154,7 +134,7 @@ class PassthroughReducer(FoldingReducer):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float | torch.Tensor): length of time between the prior and
+            step_time (float): length of time between the prior and
                 subsequent observations.
 
         Returns:

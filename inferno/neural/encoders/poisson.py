@@ -1,6 +1,6 @@
 from .. import functional as nf
 from .mixins import GeneratorMixin, RefractoryStepMixin
-from ... import Module, scalar
+from ... import Module
 from ..._internal import argtest
 import torch
 from typing import Iterator
@@ -20,11 +20,11 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         frequency (float): maximum spike frequency (associated with an input of 1),
             :math:`f`, in :math:`\text{Hz}`.
         refrac (float | None, optional): minimum interal between spikes set to the step
-            time if None, in :math:`\text{ms}`. Defaults to None.
+            time if ``None``, in :math:`\text{ms}`. Defaults to ``None``.
         compensate (bool, optional): if the spike generation rate should be compensate
             for the refractory period. Defaults to True.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
 
     Note:
         ``refrac`` at its default still allows for a spike to be generated at every
@@ -47,16 +47,12 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         Module.__init__(self)
 
         # set encoder attributes
-        self.register_buffer(
-            "freqscale",
-            torch.tensor(argtest.gte("frequency", frequency, 0, float)),
-            persistent=False,
-        )
-        self.refrac_compensated = bool(compensate)
+        self.__frequency_scale = argtest.gte("frequency", frequency, 0, float)
+        self.__compensate_freq = bool(compensate)
 
         # call mixin constructors
         RefractoryStepMixin.__init__(
-            self, step_time=step_time, steps=steps, refrac=refrac
+            self, steps=steps, step_time=step_time, refrac=refrac
         )
         GeneratorMixin.__init__(self, generator=generator)
 
@@ -70,17 +66,17 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         Returns:
             bool: if the spike frequency compensates for the refractory period.
         """
-        return self.refrac_compensated
+        return self.__compensate_freq
 
     @compensated.setter
     def compensated(self, value: bool) -> None:
         # refrac-frequency compatibility test
         if value:
             _ = argtest.lt(
-                "frequency * refrac", self.frequency * self.refrac, 1000, float
+                "frequency * refrac", self.__frequency_scale * self.refrac, 1000, float
             )
 
-        self.refrac_compensated = bool(value)
+        self.__compensate_freq = bool(value)
 
     @property
     def frequency(self) -> float:
@@ -92,25 +88,23 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         Returns:
             float: present frequency scale for inputs.
         """
-        return float(self.freqscale)
+        return self.__frequency_scale
 
     @frequency.setter
     def frequency(self, value: float) -> None:
         # refrac-frequency compatibility test
-        if self.compensated:
+        if self.__compensate_freq:
             _ = argtest.lt("frequency * refrac", value * self.refrac, 1000, float)
 
-        self.freqscale = scalar(
-            argtest.gte("frequency", value, 0, float), self.freqscale
-        )
+        self.__frequency_scale = argtest.gte("frequency", value, 0, float)
 
     @property
     def refrac(self) -> float:
         r"""Length of the refractory period, in milliseconds.
 
         Args:
-            value (float | None): new refractory period length,
-                pins to the step time if None.
+            value (float | None): new refractory period length, pins to the
+                step time if ``None``.
 
         Returns:
             float: present refractory period length.
@@ -120,39 +114,33 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
     @refrac.setter
     def refrac(self, value: float | None) -> None:
         # refrac-frequency compatibility test
-        if self.compensated:
+        if self.__compensate_freq:
             _ = argtest.lt(
                 "refrac * frequency ",
-                (self.dt if value is None else value) * self.frequency,
+                (self.dt if value is None else value) * self.__frequency_scale,
                 1000,
                 float,
             )
 
-        return RefractoryStepMixin.refrac.fset(self, value)
+        RefractoryStepMixin.refrac.fset(self, value)
 
     def forward(
         self, inputs: torch.Tensor, online: bool = False
     ) -> torch.Tensor | Iterator[torch.Tensor]:
         r"""Generates a spike train from inputs.
 
+        The spike trains are generated with frequencies scaled linearly by the input,
+        with a maximum frequency equal to the hyperparameter defined on initialization.
+
         Args:
             inputs (torch.Tensor): intensities, scaled :math:`[0, 1]`,
                 for spike frequencies.
             online (bool, optional): if spike generation should be computed separately
-                at each time step. Defaults to False.
+                at each time step. Defaults to ``False``.
 
         Returns:
             torch.Tensor | Iterator[torch.Tensor]: tensor spike train (if not online)
             otherwise a generator which yields time slices of the spike train.
-
-        Note:
-            Values in ``inputs`` should be on the interval :math:`[0, 1]`. Where the
-            inputs are ``0``, no spikes will be generated. Where the inputs are ``1``,
-            spikes will be generated with a frequency of :py:attr:`frequency`.
-
-        Note:
-            In general, setting ``online`` to ``False`` will be faster but more
-            more memory-intensive.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -169,7 +157,6 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
 
             :math:`B \times N_0 \times \cdots`
 
-
             Where:
                 * :math:`B` is the batch size.
                 * :math:`N_0, \ldots` are the dimensions of the spikes being generated.
@@ -177,19 +164,19 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
         """
         if online:
             return nf.enc_homogeneous_poisson_exp_interval_online(
-                self.freqscale * inputs,
+                self.frequency * inputs,
                 steps=self.steps,
-                step_time=self.step_time,
-                refrac=self.interval_min,
+                step_time=self.dt,
+                refrac=self.refrac,
                 compensate=self.compensated,
                 generator=self.generator,
             )
         else:
             return nf.enc_homogeneous_poisson_exp_interval(
-                self.freqscale * inputs,
+                self.frequency * inputs,
                 steps=self.steps,
-                step_time=self.step_time,
-                refrac=self.interval_min,
+                step_time=self.dt,
+                refrac=self.refrac,
                 compensate=self.compensated,
                 generator=self.generator,
             )

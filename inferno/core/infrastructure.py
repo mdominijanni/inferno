@@ -1026,6 +1026,29 @@ class ShapedTensor:
         )
 
     @property
+    def __constraints(self) -> dict[int, int]:
+        r"""Module internal constraint getter."""
+        return getattr(self.__owner(), f"_{self.__name}_constraints")
+
+    @property
+    def __data(self) -> torch.Tensor | nn.Parameter | None:
+        r"""Module internal data getter."""
+        return getattr(self.__owner(), f"_{self.__name}_data")
+
+    @__data.setter
+    def __data(self, value: torch.Tensor | nn.Parameter | None) -> None:
+        r"""Module internal data setter."""
+        data = self.__data
+        if (
+            isinstance(data, nn.Parameter)
+            and isinstance(value, torch.Tensor)
+            and not isinstance(value, nn.Parameter | nn.UninitializedBuffer | None)
+        ):
+            data.data = value
+        else:
+            setattr(self.__owner(), f"_{self.__name}_data", value)
+
+    @property
     def owner(self) -> Module | None:
         r"""Module which owns this attribute.
 
@@ -1049,9 +1072,39 @@ class ShapedTensor:
         return self.__name
 
     @property
-    def __constraints(self) -> dict[int, int]:
-        r"""Module internal constraint accessor."""
-        return getattr(self.__owner(), f"_{self.__name}_constraints")
+    def value(self) -> torch.Tensor | nn.Parameter | None:
+        r"""Value of the constrained tensor.
+
+        If ``live`` was set on initialization, every setter call will ensure the tensor
+        being set is valid (constrained or ignored). If the current ``value`` is a
+        :py:class:`~torch.nn.Parameter` but the assigned value is a
+        :py:class:`~torch.Tensor`, it will automatically assign to the ``data`` attribute
+        of ``value``.
+
+        Args:
+            value (value: torch.Tensor | nn.Parameter | None): value to which the
+                constrained attribute will be set.
+
+        Returns:
+            torch.Tensor | nn.Parameter | None: constrained attribute.
+        """
+        return self.__data
+
+    @value.setter
+    def value(self, value: torch.Tensor | nn.Parameter | None) -> None:
+        # live constrain
+        if self.__live:
+            if self.__ignore(value) or self.__compatible(
+                value, self.__constraints, self.__strict
+            ):
+                self.__data = value
+            else:
+                raise ValueError(
+                    f"cannot set a tensor with shape {tuple(value.shape)} with "
+                    f"constraints: {tuple(self.__constraints.items())}"
+                )
+        else:
+            self.__data = value
 
     @property
     def constraints(self) -> dict[int, int]:
@@ -1064,6 +1117,15 @@ class ShapedTensor:
             dict[int, int]: dictionary of constraints.
         """
         return dict(self.__constraints)
+
+    @property
+    def ignored(self) -> bool:
+        r"""If the current tensor is ignored
+
+        Returns:
+            bool: if the current tensor is ignored.
+        """
+        return self.__ignore(self.__data)
 
     @property
     def live(self) -> bool:
@@ -1119,37 +1181,6 @@ class ShapedTensor:
         )
 
     @property
-    def __data(self) -> torch.Tensor | nn.Parameter | None:
-        r"""Module internal data accessor."""
-        return getattr(self.__owner(), f"_{self.__name}_data")
-
-    @property
-    def value(self) -> torch.Tensor | nn.Parameter | None:
-        r"""Value of the constrained tensor.
-
-        If ``live`` was set on initialization, every setter call will ensure the tensor
-        being set is valid (constrained or ignored).
-
-        Args:
-            value (value: torch.Tensor | nn.Parameter | None): value to which the
-                constrained attribute will be set.
-
-        Returns:
-            torch.Tensor | nn.Parameter | None: constrained attribute.
-        """
-        return self.__data
-
-    @value.setter
-    def value(self, value: torch.Tensor | nn.Parameter | None) -> None:
-        if self.__live:
-            if self.__ignore(value) or self.__compatible(
-                value, self.__constraints, self.__strict
-            ):
-                setattr(self.__owner(), f"_{self.__name}_data", value)
-        else:
-            setattr(self.__owner(), f"_{self.__name}_data", value)
-
-    @property
     def dimensionality(self) -> int:
         r"""Minimum number of dimensions a tensor needs to satisfy constraints.
 
@@ -1169,7 +1200,7 @@ class ShapedTensor:
         """
         return self.__compatible(tensor, self.__constraints, self.__strict)
 
-    def ignored(self, tensor: torch.Tensor | nn.Parameter | None) -> bool:
+    def ignores(self, tensor: torch.Tensor | nn.Parameter | None) -> bool:
         r"""Checks if a tensor-like value will be ignored.
 
         Args:
@@ -1353,7 +1384,7 @@ class RecordTensor(ShapedTensor):
         constraints[-1] = size
 
         # reshape value if not ignored
-        if not self.ignored(value):
+        if not self.ignores(value):
             if isinstance(value, nn.Parameter):
                 value.data = value.data.unsqueeze(-1).repeat(
                     *chain(repeat(1, times=value.ndim), (size,))
@@ -1405,13 +1436,13 @@ class RecordTensor(ShapedTensor):
         # register the pointer (always persists)
         if isinstance(owner, Module):
             self.register_extra(
-                f"_{self.__name}_pointer", None if self.ignored(self.__data) else 0
+                f"_{self.__name}_pointer", None if self.ignored else 0
             )
         else:
             setattr(
                 owner,
                 f"_{self.__name}_pointer",
-                None if self.ignored(self.__data) else 0,
+                None if self.ignored else 0,
             )
 
     @classmethod
@@ -1481,28 +1512,45 @@ class RecordTensor(ShapedTensor):
 
     @property
     def __constraints(self) -> dict[int, int]:
-        r"""Module internal constraint accessor."""
+        r"""Module internal constraint getter."""
         return getattr(self.__owner(), f"_{self.__name}_constraints")
 
     @property
     def __data(self) -> torch.Tensor | nn.Parameter | None:
-        r"""Module internal data accessor."""
+        r"""Module internal data getter."""
         return getattr(self.__owner(), f"_{self.__name}_data")
+
+    @__data.setter
+    def __data(self, value: torch.Tensor | nn.Parameter | None) -> None:
+        r"""Module internal data setter."""
+        data = self.__data
+        if (
+            isinstance(data, nn.Parameter)
+            and isinstance(value, torch.Tensor)
+            and not isinstance(value, nn.Parameter | nn.UninitializedBuffer | None)
+        ):
+            data.data = value
+        else:
+            setattr(self.__owner(), f"_{self.__name}_data", value)
 
     @property
     def __dt(self) -> torch.Tensor:
-        r"""Module internal step time accessor."""
+        r"""Module internal step time getter."""
         return getattr(self.__owner(), f"_{self.__name}_dt")
 
     @property
     def __duration(self) -> torch.Tensor:
-        r"""Module internal duration accessor."""
+        r"""Module internal duration getter."""
         return getattr(self.__owner(), f"_{self.__name}_duration")
 
     @property
-    def __pointer(self) -> int | None:
-        r"""Module internal pointer accessor."""
+    def __pointer(self) -> int:
+        r"""Module internal pointer getter."""
         return getattr(self.__owner(), f"_{self.__name}_pointer")
+
+    @__pointer.setter
+    def __pointer(self, value: int) -> None:
+        setattr(self.__owner(), f"_{self.__name}_pointer", int(value))
 
     @property
     def constraints(self) -> dict[int, int]:
@@ -1541,7 +1589,7 @@ class RecordTensor(ShapedTensor):
             If a :py:meth:`reconstrain` operation needs to be performed, all state will
             be overwritten with zeros.
         """
-        return getattr(self.__owner, f"_{self.__name}_dt")
+        return self.__dt
 
     @dt.setter
     def dt(self, value: torch.Tensor | float) -> None:
@@ -1576,10 +1624,8 @@ class RecordTensor(ShapedTensor):
         if size != self.__constraints[-1]:
             with torch.no_grad():
                 res = ShapedTensor.reconstrain(self, -1, size)
-                res.fill_(0)
-
-        # set revised step time
-        self.__step_time = value
+                if not self.ignored:
+                    res.fill_(0)
 
     @property
     def duration(self) -> torch.Tensor:
@@ -1605,18 +1651,38 @@ class RecordTensor(ShapedTensor):
 
     @duration.setter
     def duration(self, value: torch.Tensor | float) -> None:
-        # cast value as float and validate
-        value = argtest.gte("value", value, 0, float)
+        # validate argument, ignore cast
+        _ = argtest.gte("value", value, 0, float)
+
+        # assign updated duration
+        if isinstance(value, torch.Tensor):
+            setattr(
+                self.__owner(), f"_{self.__name}_duration", scalar(value.item(), value)
+            )
+        else:
+            setattr(
+                self.__owner(),
+                f"_{self.__name}_duration",
+                scalar(float(value), self.__duration),
+            )
+
+        # conditionally update step time
+        duration = self.__duration
+        step_time = self.__dt
+        if (step_time.dtype != duration.dtype) or (step_time.device != duration.device):
+            setattr(
+                self.__owner(),
+                f"_{self.__name}_dt",
+                step_time.to(dtype=duration.dtype, device=duration.device),
+            )
+            step_time = self.__dt
 
         # recompute size of the history dimension
-        size = math.ceil(value / self.__step_time) + 1
+        size = int(torch.ceil(duration / step_time) + 1)
 
         # reconstrain if required
-        if size != self.recordsz:
+        if size != self.__constraints[-1]:
             DimensionalModule.reconstrain(self, -1, size)
-
-        # set revised history length
-        self.__duration = value
 
     @property
     def value(self) -> torch.Tensor | nn.Parameter | None:
@@ -1632,15 +1698,24 @@ class RecordTensor(ShapedTensor):
         return ShapedTensor.value.fget(self)
 
     @value.setter
-    def value(self, value: torch.Tensor | nn.Parameter | None) -> None:
+    def value(
+        self, value: torch.Tensor | nn.Parameter | None
+    ) -> torch.Tensor | nn.Parameter | None:
         _ = ShapedTensor.value.fset(self, value)
         if self.__ignore(self.__data):
-            setattr(self.__owner(), f"_{self.__name}_pointer", None)
+            setattr(self.__owner(), f"_{self.__name}_pointer", 0)
 
     def align(self, index: int = 0) -> None:
-        if self.__pointer is not None:
-            if isinstance(self.__data, nn.Parameter):
+        # too tired, todo
+        index = argtest.gte()
+        if not self.ignored:
+            data = self.__data
+            if isinstance(data, nn.Parameter):
                 pass
+            else:
+                if index > self.__pointer:
+                    setattr(self.__owner(), f"_{self.__name}_data", data.roll(self.__pointer, -1))
+            self.__data = self.__data.roll()
         else:
             raise RuntimeError("cannot align uninitialized RecordTensor")
 
