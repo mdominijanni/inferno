@@ -1685,8 +1685,6 @@ class RecordTensor(ShapedTensor):
         # reconstrain if required
         if size != self.__constraints[-1]:
             with torch.no_grad():
-                if not self._ignore(self.__data):
-                    self.align()
                 _ = ShapedTensor.reconstrain(self, -1, size)
 
     @property
