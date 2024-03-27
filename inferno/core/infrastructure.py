@@ -1,9 +1,9 @@
 from __future__ import annotations
-from .tensor import full, scalar, zeros
+from .tensor import full, zeros
 from ..interpolation import Interpolation
 from .._internal import argtest, rsetattr
 from abc import ABC, abstractmethod
-from collections import OrderedDict
+from collections import namedtuple, OrderedDict
 from collections.abc import Iterable
 from functools import cache
 from itertools import chain, repeat, starmap
@@ -739,7 +739,74 @@ class DimensionalModule(Module):
         self._test_constrained()
 
 
+def _constraint_dimensionality(constraints: dict[int, int], strict: bool) -> int:
+    r"""Computes the minimum dimensionality for a set of constraints.
+
+    Args:
+        constraints (dict[int, int]): dictionary of constraints.
+        strict (bool): if constraints should be applied strictly.
+
+    Returns:
+        int: minimum number of dimensions for a constrained tensor.
+    """
+    if not constraints:
+        return 0
+    elif strict:
+        return max(max(constraints) + 1, 0) - min(min(constraints), 0)
+    else:
+        return max(max(constraints) + 1, abs(min(constraints)))
+
+
+def _constraints_compatible(
+    tensor: torch.Tensor | nn.Parameter, constraints: dict[int, int], strict: bool
+) -> bool:
+    r"""Tests if a tensor is compatible with constraints.
+
+    Args:
+        tensor (torch.Tensor | nn.Parameter): tensor to test for compatibility.
+        constraints (dict[int, int]): dictionary of constraints.
+        strict (bool): if constraints should be applied strictly.
+
+    Returns:
+        bool: if the tensor is valid under the dimensional constraints.
+    """
+    if tensor.ndim < _constraint_dimensionality(constraints, strict):
+        return False
+    else:
+        return all(
+            starmap(lambda d, s, shape=tensor.shape: shape[d] == s, constraints.items())
+        )
+
+
+def _constraints_consistent(constraints: dict[int, int], ndims: int) -> bool:
+    r"""Tests if constraints will not conflict.
+
+    When constraints are applied strictly, the constraints must be consistent regardless
+    of the exact sizes. Otherwise, this must check for consistency since specific
+    sizes may create impossible constraints.
+
+    Args:
+        constraints (dict[int, int]): dictionary of constraints.
+        ndims (int): dimensionality of the tensor to constrain.
+
+    Returns:
+        bool: if a tensor of given dimensionality can be constrained consistently.
+    """
+    hypoth = list(repeat(None, times=ndims))
+
+    for dim, size in constraints.items():
+        if hypoth[dim] is None:
+            hypoth[dim] = size
+        elif hypoth[dim] == size:
+            continue
+        else:
+            return False
+
+    return True
+
+
 def _shapedtensor_finalization(owner: weakref.ReferenceType, name: str):
+    r"""Finalizer function for ShapedTensor."""
     owner = owner()
     if owner:
         if hasattr(owner, f"_{name}_data"):
@@ -783,51 +850,113 @@ class ShapedTensor:
         its reference count goes to zero.
     """
 
-    @staticmethod
-    def __dimensionality(constraints: dict[int, int], strict: bool) -> int:
-        r"""Computes minimum dimensionality."""
-        if not constraints:
-            return 0
-        elif strict:
-            return max(max(constraints) + 1, 0) - min(min(constraints), 0)
-        else:
-            return max(max(constraints) + 1, abs(min(constraints)))
+    LinkedAttributes = namedtuple("ShapedTensorAttributes", ("data", "constraints"))
 
-    @staticmethod
-    def __compatible(
-        tensor: torch.Tensor | nn.Parameter, constraints: dict[int, int], strict: bool
-    ) -> bool:
-        r"""Tests if a tensor is compatible with constraints."""
-        if tensor.ndim < ShapedTensor.__dimensionality(constraints, strict):
-            return False
-        else:
-            return all(
-                starmap(
-                    lambda d, s, shape=tensor.shape: shape[d] == s, constraints.items()
-                )
+    def __init__(
+        self,
+        owner: Module,
+        name: str,
+        value: torch.Tensor | nn.Parameter | None,
+        constraints: dict[int, int] | None = None,
+        persist_data: bool = True,
+        persist_constraints: bool = False,
+        strict: bool = True,
+        live: bool = False,
+    ):
+        # ensure the name is a valid identifier
+        _ = argtest.identifier("name", name)
+
+        # internal state
+        self.__owner = weakref.ref(owner)
+        self.__name = name
+        self.__strict = strict
+        self.__live = live
+        self.__finalizer = weakref.finalize(
+            self, _shapedtensor_finalization, self.__owner, self.__name
+        )
+
+        # create constraints dictionary
+        constraints = dict(constraints) if constraints else {}
+
+        # invalid initial constraints
+        if not (
+            self._ignore(value) or _constraints_compatible(value, constraints, strict)
+        ):
+            raise RuntimeError(
+                f"initial value of shape {tuple(value.shape)} is not compatible with "
+                f"constraints: {tuple(constraints.items())}"
             )
 
-    @staticmethod
-    def __noconflicts(constraints: dict[int, int], ndims: int) -> bool:
-        r"""Tests if constraints will conflict, relevant when not strict."""
-        hypoth = list(repeat(None, times=ndims))
+        # registered attribute names
+        self.__attributes = ShapedTensor.LinkedAttributes(
+            f"_{self.__name}_data", f"_{self.__name}_constraints"
+        )
 
-        for dim, size in constraints.items():
-            if hypoth[dim] is None:
-                hypoth[dim] = size
-            elif hypoth[dim] == size:
-                continue
-            else:
-                return False
+        # register data
+        if isinstance(owner, nn.Module) and not isinstance(value, nn.Parameter):
+            owner.register_buffer(
+                self.__attributes.data, value, persistent=persist_data
+            )
+        else:
+            setattr(owner, self.__attributes.data, value)
 
-        return True
+        # register constraints
+        if persist_constraints and isinstance(owner, Module):
+            owner.register_extra(self.__attributes.constraints, constraints)
+        else:
+            setattr(owner, self.__attributes.constraints, constraints)
 
-    @staticmethod
-    def __ignore(tensor: torch.Tensor | nn.Parameter | None) -> bool:
-        r"""Tests if compatibility for the input should be ignored."""
-        return isinstance(
-            tensor, None | nn.UninitializedBuffer | nn.UninitializedParameter
-        ) or not (tensor.numel() or tensor.ndim > 1)
+    @classmethod
+    def create(
+        cls,
+        owner: Module,
+        name: str,
+        value: torch.Tensor | nn.Parameter | None,
+        constraints: dict[int, int] | None = None,
+        persist_data: bool = True,
+        persist_constraints: bool = False,
+        strict: bool = True,
+        live: bool = False,
+    ) -> None:
+        r"""Creates a shaped tensor and adds it as an attribute.
+
+        The following two calls are equivalent.
+
+        .. code-block:: python
+
+            module.attr = ShapedTensor(module, attr, value)
+
+        .. code-block:: python
+
+            ShapedTensor.create(module, attr, value)
+
+        Args:
+            owner (Module): module to which this attribute will belong.
+            name (str): name of the attribute.
+            value (torch.Tensor | nn.Parameter | None): tensor-like data for the
+                attribute.
+            constraints (dict[int, int] | None, optional): constraints given as a
+                dictionary of dimensions to their corresponding size. Defaults to None.
+            persist_data (bool, optional): if the data should persist across the
+                state dictionary, only used with buffers. Defaults to True.
+            persist_constraints (bool, optional): if the constraints should persist
+                across the state dictionary. Defaults to False.
+            strict (bool, optional): if each dimension must specify a unique dimension
+                for the tensor. Defaults to True.
+            live (bool, optional): if constraint validity should be tested on
+                assignment. Defaults to False.
+        """
+        constrained = cls(
+            owner,
+            name,
+            value,
+            constraints,
+            persist_data=persist_data,
+            persist_constraints=persist_constraints,
+            strict=strict,
+            live=live,
+        )
+        setattr(constrained.owner, constrained.name, constrained)
 
     @staticmethod
     def __make_compatible(
@@ -851,6 +980,20 @@ class ShapedTensor:
             return tensor
 
     @staticmethod
+    def _ignore(tensor: torch.Tensor | nn.Parameter | None) -> bool:
+        r"""Tests if compatibility for the input should be ignored.
+
+        Args:
+            tensor (torch.Tensor | nn.Parameter | None): value to check if ignored.
+
+        Returns:
+            bool: if the value will be ignored by constraints.
+        """
+        return isinstance(
+            tensor, None | nn.UninitializedBuffer | nn.UninitializedParameter
+        ) or not (tensor.numel() or tensor.ndim > 1)
+
+    @staticmethod
     def resize(
         value: torch.Tensor | nn.Parameter,
         dim: int,
@@ -860,7 +1003,7 @@ class ShapedTensor:
     ) -> torch.Tensor | nn.Parameter:
         r"""Resizes a tensor's dimension.
 
-        A more generalized version of the build-in automatic resizing, this can be
+        A more generalized version of the built-in automatic resizing, this can be
         used before calling :py:meth:`reconstrain` if more control is needed.
 
         If ``value`` is a tensor, then a tensor will be returned, a new tensor if
@@ -923,117 +1066,15 @@ class ShapedTensor:
         else:
             return data
 
-    def __init__(
-        self,
-        owner: Module,
-        name: str,
-        value: torch.Tensor | nn.Parameter | None,
-        constraints: dict[int, int] | None = None,
-        persist_data: bool = True,
-        persist_constraints: bool = False,
-        strict: bool = True,
-        live: bool = False,
-    ):
-        # ensure the name is a valid identifier
-        _ = argtest.identifier("name", name)
-
-        # internal state
-        self.__owner = weakref.ref(owner)
-        self.__name = name
-        self.__strict = strict
-        self.__live = live
-        self.__finalizer = weakref.finalize(
-            self, _shapedtensor_finalization, self.__owner, self.__name
-        )
-
-        # create constraints dictionary
-        constraints = dict(constraints) if constraints else {}
-
-        # invalid initial constraints
-        if not (self.__ignore(value) or self.__compatible(value, constraints, strict)):
-            raise RuntimeError(
-                f"initial value of shape {tuple(value.shape)} is not compatible with "
-                f"constraints: {tuple(constraints.items())}"
-            )
-
-        # register data
-        if isinstance(owner, nn.Module) and not isinstance(value, nn.Parameter):
-            owner.register_buffer(
-                f"_{self.__name}_data", value, persistent=persist_data
-            )
-        else:
-            setattr(owner, f"_{self.__name}_data", value)
-
-        # register constraints
-        if persist_constraints and isinstance(owner, Module):
-            owner.register_extra(f"_{self.__name}_constraints", constraints)
-        else:
-            setattr(owner, f"_{self.__name}_constraints", constraints)
-
-    @classmethod
-    def create(
-        cls,
-        owner: Module,
-        name: str,
-        value: torch.Tensor | nn.Parameter | None,
-        constraints: dict[int, int] | None = None,
-        persist_data: bool = True,
-        persist_constraints: bool = False,
-        strict: bool = True,
-        live: bool = False,
-    ) -> None:
-        r"""Creates a shaped tensor and adds it as an attribute.
-
-        The following two calls are equivalent.
-
-        .. code-block:: python
-
-            module.attr = ShapedTensor(module, attr, value)
-
-        .. code-block:: python
-
-            ShapedTensor.create(module, attr, value)
-
-        Args:
-            owner (Module): module to which this attribute will belong.
-            name (str): name of the attribute.
-            value (torch.Tensor | nn.Parameter | None): tensor-like data for the
-                attribute.
-            constraints (dict[int, int] | None, optional): constraints given as a
-                dictionary of dimensions to their corresponding size. Defaults to None.
-            persist_data (bool, optional): if the data should persist across the
-                state dictionary, only used with buffers. Defaults to True.
-            persist_constraints (bool, optional): if the constraints should persist
-                across the state dictionary. Defaults to False.
-            strict (bool, optional): if each dimension must specify a unique dimension
-                for the tensor. Defaults to True.
-            live (bool, optional): if constraint validity should be tested on
-                assignment. Defaults to False.
-        """
-        setattr(
-            owner,
-            name,
-            cls(
-                owner,
-                name,
-                value,
-                constraints,
-                persist_data=persist_data,
-                persist_constraints=persist_constraints,
-                strict=strict,
-                live=live,
-            ),
-        )
-
     @property
     def __constraints(self) -> dict[int, int]:
         r"""Module internal constraint getter."""
-        return getattr(self.__owner(), f"_{self.__name}_constraints")
+        return getattr(self.__owner(), self.__attributes.constraints)
 
     @property
     def __data(self) -> torch.Tensor | nn.Parameter | None:
         r"""Module internal data getter."""
-        return getattr(self.__owner(), f"_{self.__name}_data")
+        return getattr(self.__owner(), self.__attributes.data)
 
     @__data.setter
     def __data(self, value: torch.Tensor | nn.Parameter | None) -> None:
@@ -1046,7 +1087,7 @@ class ShapedTensor:
         ):
             data.data = value
         else:
-            setattr(self.__owner(), f"_{self.__name}_data", value)
+            setattr(self.__owner(), self.__attributes.data, value)
 
     @property
     def owner(self) -> Module | None:
@@ -1072,6 +1113,18 @@ class ShapedTensor:
         return self.__name
 
     @property
+    def attributes(self) -> ShapedTensor.LinkedAttributes:
+        r"""Names of the dependent attributes created.
+
+        This is a named tuple with attributes ``data`` and ``constraints``.
+
+        Returns:
+            ShapedTensor.LinkedAttributes: names of the created attributes in the
+            containing module.
+        """
+        return self.__attributes
+
+    @property
     def value(self) -> torch.Tensor | nn.Parameter | None:
         r"""Value of the constrained tensor.
 
@@ -1094,7 +1147,7 @@ class ShapedTensor:
     def value(self, value: torch.Tensor | nn.Parameter | None) -> None:
         # live constrain
         if self.__live:
-            if self.__ignore(value) or self.__compatible(
+            if self._ignore(value) or _constraints_compatible(
                 value, self.__constraints, self.__strict
             ):
                 self.__data = value
@@ -1125,7 +1178,7 @@ class ShapedTensor:
         Returns:
             bool: if the current tensor is ignored.
         """
-        return self.__ignore(self.__data)
+        return self._ignore(self.__data)
 
     @property
     def live(self) -> bool:
@@ -1176,8 +1229,8 @@ class ShapedTensor:
             bool: if the shaped tensor is valid.
         """
         return self.__owner() and (
-            self.__ignore(self.__data)
-            or self.__compatible(self.__data, self.__constraints, self.__strict)
+            self._ignore(self.__data)
+            or _constraints_compatible(self.__data, self.__constraints, self.__strict)
         )
 
     @property
@@ -1187,7 +1240,7 @@ class ShapedTensor:
         Returns:
             int: minimum valid dimensionality.
         """
-        return self.__dimensionality(self.__constraints, self.__strict)
+        return _constraint_dimensionality(self.__constraints, self.__strict)
 
     def compatible(self, tensor: torch.Tensor | nn.Parameter) -> bool:
         r"""Checks if a tensor is compatible.
@@ -1198,18 +1251,7 @@ class ShapedTensor:
         Returns:
             bool: if the given tensor is dimensionally compatible.
         """
-        return self.__compatible(tensor, self.__constraints, self.__strict)
-
-    def ignores(self, tensor: torch.Tensor | nn.Parameter | None) -> bool:
-        r"""Checks if a tensor-like value will be ignored.
-
-        Args:
-            tensor (torch.Tensor | nn.Parameter | None): tensor to test if ignored.
-
-        Returns:
-            bool: if the given tensor will be ignored.
-        """
-        return self.__ignore(tensor)
+        return _constraints_compatible(tensor, self.__constraints, self.__strict)
 
     def reconstrain(
         self, dim: int, size: int | None
@@ -1255,14 +1297,16 @@ class ShapedTensor:
         # create constraint
         elif dim not in constraints:
             # safe to add with an ignored tensor
-            if self.__ignore(data):
+            if self._ignore(data):
                 constraints[dim] = size
 
             # check if the tensor has been invalidated
-            elif self.__compatible(data, constraints, self.__strict):
+            elif _constraints_compatible(data, constraints, self.__strict):
 
                 # add if compatible
-                if self.__compatible(data, constraints | {dim: size}, self.__strict):
+                if _constraints_compatible(
+                    data, constraints | {dim: size}, self.__strict
+                ):
                     constraints[dim] = size
 
                 else:
@@ -1281,35 +1325,28 @@ class ShapedTensor:
 
             # check that tensor is still valid
             if not (
-                self.__ignore(data)
-                or self.__compatible(data, constraints, self.__strict)
+                self._ignore(data)
+                or _constraints_compatible(data, constraints, self.__strict)
             ):
                 raise RuntimeError("constrained tensor has been invalidated")
 
         # alter constraint
         else:
             # safe to edit with an ignored tensor
-            if self.__ignore(data):
+            if self._ignore(data):
                 constraints[dim] = size
 
             # tensor has sufficient dimensionality
-            elif data.ndim >= self.__dimensionality(
+            elif data.ndim >= _constraint_dimensionality(
                 constraints, self.__strict
-            ) and self.__noconflicts(constraints | {dim: size}, data.ndim):
+            ) and _constraints_consistent(constraints | {dim: size}, data.ndim):
                 # edit the constraint
                 constraints[dim] = size
 
                 # alter if not already compatible
-                if not self.__compatible(data, constraints, self.__strict):
-                    if isinstance(data, nn.Parameter):
-                        data.data = self.__make_compatible(data, dim, size)
-                    else:
-                        setattr(
-                            self.__owner(),
-                            f"_{self.__name}_data",
-                            self.__make_compatible(data, dim, size),
-                        )
-                        data = self.__data
+                if not _constraints_compatible(data, constraints, self.__strict):
+                    self.__data = self.__make_compatible(data, dim, size)
+                    data = self.__data
 
             # tensor has insufficient dimensionality
             else:
@@ -1322,6 +1359,7 @@ class ShapedTensor:
 
 
 def _recordtensor_finalization(owner: weakref.ReferenceType, name: str):
+    r"""Finalizer function for RecordTensor."""
     owner = owner()
     if owner:
         if hasattr(owner, f"_{name}_step_time"):
@@ -1355,6 +1393,10 @@ class RecordTensor(ShapedTensor):
             assignment. Defaults to False.
     """
 
+    LinkedAttributes = namedtuple(
+        "RecordTensorAttributes", ("data", "constraints", "dt", "duration", "pointer")
+    )
+
     def __init__(
         self,
         owner: Module,
@@ -1380,11 +1422,10 @@ class RecordTensor(ShapedTensor):
         constraints = {
             (d - 1 if d < 0 else d): s
             for d, s in (constraints if constraints else {}).items()
-        }
-        constraints[-1] = size
+        } | {-1: size}
 
         # reshape value if not ignored
-        if not self.ignores(value):
+        if not self._ignore(value):
             if isinstance(value, nn.Parameter):
                 value.data = value.data.unsqueeze(-1).repeat(
                     *chain(repeat(1, times=value.ndim), (size,))
@@ -1407,43 +1448,37 @@ class RecordTensor(ShapedTensor):
             live=live,
         )
 
-        # internal state (includes duplicate private state)
+        # finalizer state
         self.__owner = weakref.ref(owner)
-        self.__name = name
         self.__finalizer = weakref.finalize(
             self,
             _recordtensor_finalization,
             self.__owner,
-            self.__name,
+            self.name,
         )
 
-        # register time state
-        if isinstance(owner, nn.Module):
-            owner.register_buffer(
-                f"_{self.__name}_dt",
-                torch.tensor(step_time),
-                persistent=persist_temporal,
-            )
-            owner.register_buffer(
-                f"_{self.__name}_duration",
-                torch.tensor(duration),
-                persistent=persist_temporal,
-            )
-        else:
-            setattr(owner, f"_{self.__name}_dt", torch.tensor(step_time))
-            setattr(owner, f"_{self.__name}_duration", torch.tensor(duration))
+        # registered attribute names
+        self.__attributes = RecordTensor.LinkedAttributes(
+            ShapedTensor.attributes.fget(self).data,
+            ShapedTensor.attributes.fget(self).constraints,
+            f"_{self.name}_dt",
+            f"_{self.name}_duration",
+            f"_{self.name}_pointer",
+        )
 
-        # register the pointer (always persists)
-        if isinstance(owner, Module):
-            self.register_extra(
-                f"_{self.__name}_pointer", None if self.ignored else 0
-            )
+        # register temporal state
+        if isinstance(owner, Module) and persist_temporal:
+            owner.register_extra(self.__attributes.dt, step_time)
+            owner.register_extra(self.__attributes.duration, duration)
         else:
-            setattr(
-                owner,
-                f"_{self.__name}_pointer",
-                None if self.ignored else 0,
-            )
+            setattr(owner, self.__attributes.dt, step_time)
+            setattr(owner, self.__attributes.duration, duration)
+
+        # register the pointer (persist if possible)
+        if isinstance(owner, Module):
+            self.register_extra(self.__attributes.pointer, 0)
+        else:
+            setattr(owner, self.__attributes.pointer, 0)
 
     @classmethod
     def create(
@@ -1492,23 +1527,20 @@ class RecordTensor(ShapedTensor):
             live (bool, optional): if constraint validity should be tested on
                 assignment. Defaults to False.
         """
-        setattr(
+        constrained = cls(
             owner,
             name,
-            cls(
-                owner,
-                name,
-                step_time,
-                duration,
-                value,
-                constraints,
-                persist_data=persist_data,
-                persist_constraints=persist_constraints,
-                persist_temporal=persist_temporal,
-                strict=strict,
-                live=live,
-            ),
+            step_time,
+            duration,
+            value,
+            constraints,
+            persist_data=persist_data,
+            persist_constraints=persist_constraints,
+            persist_temporal=persist_temporal,
+            strict=strict,
+            live=live,
         )
+        setattr(constrained.owner, constrained.name, constrained)
 
     @property
     def __constraints(self) -> dict[int, int]:
@@ -1531,26 +1563,39 @@ class RecordTensor(ShapedTensor):
         ):
             data.data = value
         else:
-            setattr(self.__owner(), f"_{self.__name}_data", value)
+            setattr(self.__owner(), self.__attributes.data, value)
 
     @property
     def __dt(self) -> torch.Tensor:
         r"""Module internal step time getter."""
-        return getattr(self.__owner(), f"_{self.__name}_dt")
+        return getattr(self.__owner(), self.__attributes.dt)
 
     @property
     def __duration(self) -> torch.Tensor:
         r"""Module internal duration getter."""
-        return getattr(self.__owner(), f"_{self.__name}_duration")
+        return getattr(self.__owner(), self.__attributes.duration)
 
     @property
     def __pointer(self) -> int:
         r"""Module internal pointer getter."""
-        return getattr(self.__owner(), f"_{self.__name}_pointer")
+        return getattr(self.__owner(), self.__attributes.pointer)
 
     @__pointer.setter
     def __pointer(self, value: int) -> None:
         setattr(self.__owner(), f"_{self.__name}_pointer", int(value))
+
+    @property
+    def attributes(self) -> RecordTensor.LinkedAttributes:
+        r"""Names of the dependent attributes created.
+
+        This is a named tuple with attributes ``data``, ``constraints``, ``dt``,
+        ``duration``, and ``pointer``.
+
+        Returns:
+            RecordTensor.LinkedAttributes: names of the created attributes in the
+            containing module.
+        """
+        return self.__attributes
 
     @property
     def constraints(self) -> dict[int, int]:
@@ -1575,10 +1620,6 @@ class RecordTensor(ShapedTensor):
 
         In the same units as :py:attr:`self.duration`.
 
-        The given ``dt``, if a :py:class:`~torch.Tensor`, must have zero dimensions
-        (i.e. it must be a scalar). :py:attr:`self.duration` is automatically converted
-        to the same data type and device.
-
         Args:
             value (torch.Tensor | float): new time step length.
 
@@ -1586,46 +1627,27 @@ class RecordTensor(ShapedTensor):
             torch.Tensor: length of the time step.
 
         Note:
-            If a :py:meth:`reconstrain` operation needs to be performed, all state will
-            be overwritten with zeros.
+            If a :py:meth:`reconstrain` operation needs to be performed, all values are
+            filled in-place with zeros.
         """
         return self.__dt
 
     @dt.setter
     def dt(self, value: torch.Tensor | float) -> None:
-        # validate argument, ignore cast
-        _ = argtest.gt("dt", value, 0, float)
+        # validate argument
+        value = argtest.gt("dt", value, 0, float)
 
         # assign updated step time
-        if isinstance(value, torch.Tensor):
-            setattr(self.__owner(), f"_{self.__name}_dt", scalar(value.item(), value))
-        else:
-            setattr(
-                self.__owner(),
-                f"_{self.__name}_dt",
-                scalar(float(value), self.__dt),
-            )
-
-        # conditionally update duration
-        step_time = self.__dt
-        duration = self.__duration
-        if (duration.dtype != step_time.dtype) or (duration.device != step_time.device):
-            setattr(
-                self.__owner(),
-                f"_{self.__name}_duration",
-                duration.to(dtype=step_time.dtype, device=step_time.device),
-            )
-            duration = self.__duration
+        setattr(self.__owner(), self.__attributes.dt, value)
 
         # recompute size of the history dimension
-        size = int(torch.ceil(duration / step_time) + 1)
+        size = math.ceil(self.__duration / self.__dt) + 1
 
         # reconstrain if required
         if size != self.__constraints[-1]:
             with torch.no_grad():
-                res = ShapedTensor.reconstrain(self, -1, size)
-                if not self.ignored:
-                    res.fill_(0)
+                _ = ShapedTensor.reconstrain(self, -1, size)
+                self.reset()
 
     @property
     def duration(self) -> torch.Tensor:
@@ -1651,38 +1673,21 @@ class RecordTensor(ShapedTensor):
 
     @duration.setter
     def duration(self, value: torch.Tensor | float) -> None:
-        # validate argument, ignore cast
-        _ = argtest.gte("value", value, 0, float)
+        # validate argument
+        value = argtest.gte("duration", value, 0, float)
 
         # assign updated duration
-        if isinstance(value, torch.Tensor):
-            setattr(
-                self.__owner(), f"_{self.__name}_duration", scalar(value.item(), value)
-            )
-        else:
-            setattr(
-                self.__owner(),
-                f"_{self.__name}_duration",
-                scalar(float(value), self.__duration),
-            )
-
-        # conditionally update step time
-        duration = self.__duration
-        step_time = self.__dt
-        if (step_time.dtype != duration.dtype) or (step_time.device != duration.device):
-            setattr(
-                self.__owner(),
-                f"_{self.__name}_dt",
-                step_time.to(dtype=duration.dtype, device=duration.device),
-            )
-            step_time = self.__dt
+        setattr(self.__owner(), self.__attributes.duration, value)
 
         # recompute size of the history dimension
-        size = int(torch.ceil(duration / step_time) + 1)
+        size = math.ceil(self.__duration / self.__dt) + 1
 
         # reconstrain if required
         if size != self.__constraints[-1]:
-            DimensionalModule.reconstrain(self, -1, size)
+            with torch.no_grad():
+                if not self._ignore(self.__data):
+                    self.align()
+                _ = ShapedTensor.reconstrain(self, -1, size)
 
     @property
     def value(self) -> torch.Tensor | nn.Parameter | None:
@@ -1702,22 +1707,116 @@ class RecordTensor(ShapedTensor):
         self, value: torch.Tensor | nn.Parameter | None
     ) -> torch.Tensor | nn.Parameter | None:
         _ = ShapedTensor.value.fset(self, value)
-        if self.__ignore(self.__data):
+        if self._ignore(self.__data):
             setattr(self.__owner(), f"_{self.__name}_pointer", 0)
 
     def align(self, index: int = 0) -> None:
-        # too tired, todo
-        index = argtest.gte()
-        if not self.ignored:
-            data = self.__data
-            if isinstance(data, nn.Parameter):
-                pass
-            else:
-                if index > self.__pointer:
-                    setattr(self.__owner(), f"_{self.__name}_data", data.roll(self.__pointer, -1))
-            self.__data = self.__data.roll()
+        r"""Aligns the tensor so the pointer points at a specified value.
+
+        The slice specified by the pointer is the oldest recorded value, i.e.
+        the next slice to overwrite.
+
+        Args:
+            index (int, optional): index to align to. Defaults to 0.
+
+        Raises:
+            RuntimeError: cannot align an uninitialized (ignored) value.
+        """
+        # check for a valid index
+        index = argtest.index("index", index, self.__constraints[-1], "recordsz")
+
+        # strongly reference data
+        data = self.__data
+
+        # only constrained state can be aligned
+        if not self._ignore(data):
+            self.__data = data.roll(index - self.__pointer, -1)
+            self.__pointer = index
         else:
-            raise RuntimeError("cannot align uninitialized RecordTensor")
+            raise RuntimeError("cannot align uninitialized value")
+
+    def reset(self, fill: Any = 0) -> None:
+        r"""Resets the tensor so it is filled with a value and aligned to zero.
+
+        Args:
+            fill (Any, optional): value with which to fill the tensor. Defaults to 0.
+        """
+        # strongly reference data
+        data = self.__data
+
+        with torch.no_grad():
+            # only constrained state can be filled
+            if not self._ignore(data):
+                data.fill_(fill)
+
+        # reset pointer to start
+        self.__pointer = 0
+
+    def read(self, offset: int = 1) -> torch.Tensor:
+        r"""Reads the value of the tensor at an index relative to the pointer.
+
+        The pointer specifies the next index to overwrite, and the offset specifies
+        the number of steps before the next index to read from. Therefore with an
+        offset of 1, it will read the most recently pushed slice.
+
+        Args:
+            offset (int, optional): number of steps before the pointer. Defaults to 1.
+
+        Raises:
+            RuntimeError: cannot read from an uninitialized (ignored) value.
+
+        Returns:
+            torch.Tensor: time slice of the underlying tensor.
+        """
+        # strongly reference data
+        data = self.__data
+
+        # cannot read uninitialized value
+        if self._ignore(data):
+            raise RuntimeError("cannot read from uninitialized value")
+        else:
+            return data[..., (self._pointer - int(offset)) % self.__constraints[-1]]
+
+    def write(
+        self, value: torch.Tensor, offset: int = 0, inplace: bool = False
+    ) -> None:
+        r"""Writes a value to the tensor at an index relative to the pointer.
+
+        Args:
+            value (torch.Tensor): values to insert at the specified offset.
+            offset (int, optional): number of steps before the pointer. Defaults to 0.
+            inplace (bool, optional): if the operation should be performed in-place,
+                with :py:func:`torch.no_grad`. Defaults to False.
+
+        Raises:
+            RuntimeError: cannot write to an uninitialized (ignored) value.
+            ValueError: shape of the values must match the shape of the time slice.
+        """
+        # strongly reference data and get record size
+        data, recordsz = self.__data, self.__constraints[-1]
+
+        # cannot write to uninitialized value
+        if self._ignore(data):
+            raise RuntimeError("cannot write to uninitialized value")
+
+        # shape must be the same as a slice
+        elif (*value.shape,) != (*data.shape[:-1],):
+            raise ValueError(
+                f"shape of 'value' {(*value.shape,)} must have the shape "
+                f"{(*data.shape[:-1],)}, like a time slice of the stored value"
+            )
+
+        # in-place overwrite
+        elif inplace:
+            with torch.no_grad():
+                data[..., (self._pointer - int(offset)) % recordsz] = value
+
+        # splice in
+        else:
+            index = (self._pointer - int(offset)) % recordsz
+            self.__data = torch.cat(
+                (data[..., slice(0, index)], value, data[:, slice(index + 1, None)]), -1
+            )
 
     def reconstrain(
         self, dim: int, size: int | None
@@ -1725,7 +1824,8 @@ class RecordTensor(ShapedTensor):
         r"""Add, edit, or remove a constraint.
 
         Like :py:meth:`ShapeTensor.reconstrain`, except ``dim`` is modified
-        to account for the record dimension.
+        to account for the record dimension. Negative values of ``dim`` will have
+        ``1`` subtracted from them.
 
         Args:
             dim (int): dimension on which to modify the constraint.
@@ -1734,7 +1834,11 @@ class RecordTensor(ShapedTensor):
         Returns:
             torch.Tensor | nn.Parameter | None: newly constrained value.
         """
-        pass
+        # align so oldest data are overwritten or prepended to
+        if not self._ignore(self.__data):
+            self.align()
+
+        return ShapedTensor.reconstrain(self, dim - (dim < 0), size)
 
 
 class RecordModule(DimensionalModule):

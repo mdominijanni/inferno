@@ -779,3 +779,62 @@ def nestedidentifier(name: str, value: str, prefix: str | None = None) -> str:
         )
     else:
         return value
+
+
+def index(
+    name: str,
+    value: int,
+    length: int,
+    length_name: str | None = None,
+    prefix: str | None = None,
+) -> int:
+    r"""_summary_
+
+    Args:
+        name (str): display name of the variable tested.
+        value (int): variable being testing.
+        length (int): length of the sequence being tested against
+        length_name (str | None, optional): name of the sequence, if not a constant.
+            Defaults to None.
+        prefix (str | None, optional): error message prefix. Defaults to None.
+
+    Returns:
+        int: value tested
+    """
+    casted = _cast(name, value, int, prefix)
+
+    if not value == casted:
+        pfx = _prefixstr(prefix)
+        raise TypeError(f"{pfx}'{name}' must be an int, but is a {_typename(value)}")
+    if -length <= casted < length:
+        return casted
+    elif casted == 0:
+        pfx = _prefixstr(prefix)
+        if length_name:
+            raise ValueError(
+                f"{pfx}cannot index the zero-length sequence '{length_name}'"
+            )
+        else:
+            raise ValueError(f"{pfx}cannot index a zero-length sequence")
+    elif length_name:
+        val, nlgh, lgh, pfx = (
+            _valuestr(value),
+            _valuestr(-length),
+            _valuestr(length),
+            _prefixstr(prefix),
+        )
+        raise ValueError(
+            f"{pfx}'{name}' ({val}) must be on the interval [{nlgh}, {lgh}) for "
+            f"indexing '{length_name}' of length {lgh}"
+        )
+    else:
+        val, nlgh, lgh, pfx = (
+            _valuestr(value),
+            _valuestr(-length),
+            _valuestr(length),
+            _prefixstr(prefix),
+        )
+        raise ValueError(
+            f"{pfx}'{name}' ({val}) must be on the interval [{nlgh}, {lgh}) for "
+            f"indexing a sequence of length {lgh}"
+        )
