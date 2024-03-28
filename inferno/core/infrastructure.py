@@ -2064,11 +2064,58 @@ class RecordTensor(ShapedTensor):
     def select(
         self,
         time: torch.Tensor | float,
-        interp: Interpolation | None,
+        interp: Interpolation | None = None,
         *,
-        tolerance: float = 1e-7,
+        tolerance: float | torch.Tensor = 1e-7,
         offset: int = 1,
     ) -> torch.Tensor:
+        r"""Selects previously observed elements of the record tensor by time.
+
+        If ``time`` is a scalar and is within tolerance of an integer index, then
+        a slice will be returned without ever attempting interpolation.
+
+        If ``time`` is a tensor, interpolation will be called regardless, and the time
+        passed into the interpolation call will be set to either ``0`` or
+        :py:attr:`self.dt`. Interpolation results are then overwritten with exact values
+        before returning.
+
+        If ``time`` is a tensor, then ``tolerance`` can also be a tensor.
+
+        Args:
+            time (torch.Tensor | float): time or times for each element before present
+                to select.
+            interp (Interpolation | None, optional): method to interpolate between
+                discrete time steps, selects the nearest when ``None``.
+                Defaults to ``None``.
+            tolerance (float | torch.Tensor, optional): maximum difference in time from
+                a discrete sample to consider a time co-occuring with the sample.
+                Defaults to 1e-7.
+            offset (int, optional): number of steps before the pointer to consider the
+                zero point. Defaults to 1.
+
+        Returns:
+            torch.Tensor: interpolated values selected at a prior times.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``time``:
+
+            :math:`N_0 \times \cdots \times [D]`
+
+            ``return``:
+
+            :math:`N_0 \times \cdots \times [D]`
+
+            Where:
+                * :math:`N_0, \ldots` are the dimensions of the constrained tensor.
+                * :math:`D` is the number of times for each value to select.
+
+        Tip:
+            Mimicing the behavior of :py:func:`torch.gather`, if ``time`` is out of the
+            valid range, a :py:class:`ValueError` will be thrown. To avoid this, clamp
+            ``time`` like ``time.clamp(0, recordtensor.duration)``.
+        """
         raise NotImplementedError
 
     @select.register
@@ -2077,7 +2124,7 @@ class RecordTensor(ShapedTensor):
         time: torch.Tensor,
         interp: Interpolation | None = None,
         *,
-        tolerance: float = 1e-7,
+        tolerance: float | torch.Tensor = 1e-7,
         offset: int = 1,
     ) -> torch.Tensor:
         # use nearest interpolation by default
@@ -2110,10 +2157,30 @@ class RecordTensor(ShapedTensor):
         elif time.ndim == data.ndim:
             squeeze = False
         else:
-            raise RuntimeError(
+            raise ValueError(
                 f"'time' has an incompatible number of dimensions ({time.ndim}), "
-                f"it must have either {data.ndim} or {data.ndim - 1} dimensions"
+                f"it must have either {data.ndim - 1} or {data.ndim} dimensions"
             )
+
+        # compute continuous indices
+        index = time / dt
+        rounded = index.round()
+        index = torch.where(torch.abs(dt * rounded - time) < tolerance, rounded, index)
+
+        # access data by index and interpolate
+        prev_idx = (ptr - index.ceil().long()) % recordsz
+        prev_data = torch.gather(data, -1, prev_idx)
+
+        next_idx = (ptr - index.floor().long()) % recordsz
+        next_data = torch.gather(data, -1, next_idx)
+
+        res = interp(prev_data, next_data, dt * (index % 1), dt)
+
+        # bypass interpolation for exact indices
+        res = torch.where(prev_idx == next_idx, prev_data, res)
+
+        # conditionally squeeze and return
+        return res.squeeze(-1) if squeeze else res
 
     @select.register
     def _(
