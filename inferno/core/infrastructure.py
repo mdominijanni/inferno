@@ -1,11 +1,11 @@
 from __future__ import annotations
-from .tensor import full, zeros
-from ..interpolation import Interpolation
+from .tensor import empty, full, zeros
+from ..interpolation import Interpolation, nearest
 from .._internal import argtest, rsetattr
 from abc import ABC, abstractmethod
 from collections import namedtuple, OrderedDict
 from collections.abc import Iterable
-from functools import cache
+from functools import cache, singledispatchmethod
 from itertools import chain, repeat, starmap
 import math
 import torch
@@ -824,7 +824,8 @@ class ShapedTensor:
     dimension (such as if created with ``torch.empty(0)``).
 
     When ``value`` is ``None``, a registered buffer is created, otherwise a parameter
-    will only be added if an :py:class:`~torch.nn.Parameter` is given.
+    will only be added if an :py:class:`~torch.nn.Parameter` is given. Assignment of
+    a parameter to ``None`` is unsupported.
 
     Args:
         owner (Module): module to which this attribute will belong.
@@ -1083,7 +1084,7 @@ class ShapedTensor:
         if (
             isinstance(data, nn.Parameter)
             and isinstance(value, torch.Tensor)
-            and not isinstance(value, nn.Parameter | nn.UninitializedBuffer | None)
+            and not isinstance(value, nn.Parameter | nn.UninitializedBuffer)
         ):
             data.data = value
         else:
@@ -1129,10 +1130,12 @@ class ShapedTensor:
         r"""Value of the constrained tensor.
 
         If ``live`` was set on initialization, every setter call will ensure the tensor
-        being set is valid (constrained or ignored). If the current ``value`` is a
-        :py:class:`~torch.nn.Parameter` but the assigned value is a
-        :py:class:`~torch.Tensor`, it will automatically assign to the ``data`` attribute
-        of ``value``.
+        being set is valid (constrained or ignored).
+
+        When created as a :py:class:`~torch.nn.Parameter`, assignment to ``None`` is
+        prevented. If the current ``value`` is a :py:class:`~torch.nn.Parameter` but
+        the assigned value is a :py:class:`~torch.Tensor`, it will automatically assign
+        to the ``data`` attribute of ``value``.
 
         Args:
             value (value: torch.Tensor | nn.Parameter | None): value to which the
@@ -1145,6 +1148,9 @@ class ShapedTensor:
 
     @value.setter
     def value(self, value: torch.Tensor | nn.Parameter | None) -> None:
+        # cannot assign none to parameter
+        if isinstance(self.__data, nn.Parameter) and value is None:
+            raise RuntimeError("cannot assign None to a constrained parameter")
         # live constrain
         if self.__live:
             if self._ignore(value) or _constraints_compatible(
@@ -1358,12 +1364,16 @@ class ShapedTensor:
         return data
 
 
+def _unwind_ptr(pointer: int, offset: int | float, size: int) -> int:
+    return (pointer - int(offset)) % size
+
+
 def _recordtensor_finalization(owner: weakref.ReferenceType, name: str):
     r"""Finalizer function for RecordTensor."""
     owner = owner()
     if owner:
-        if hasattr(owner, f"_{name}_step_time"):
-            delattr(owner, f"_{name}_step_time")
+        if hasattr(owner, f"_{name}_dt"):
+            delattr(owner, f"_{name}_dt")
         if hasattr(owner, f"_{name}_duration"):
             delattr(owner, f"_{name}_duration")
         if hasattr(owner, f"_{name}_pointer"):
@@ -1476,7 +1486,7 @@ class RecordTensor(ShapedTensor):
 
         # register the pointer (persist if possible)
         if isinstance(owner, Module):
-            self.register_extra(self.__attributes.pointer, 0)
+            owner.register_extra(self.__attributes.pointer, 0)
         else:
             setattr(owner, self.__attributes.pointer, 0)
 
@@ -1559,7 +1569,7 @@ class RecordTensor(ShapedTensor):
         if (
             isinstance(data, nn.Parameter)
             and isinstance(value, torch.Tensor)
-            and not isinstance(value, nn.Parameter | nn.UninitializedBuffer | None)
+            and not isinstance(value, nn.Parameter | nn.UninitializedBuffer)
         ):
             data.data = value
         else:
@@ -1583,6 +1593,10 @@ class RecordTensor(ShapedTensor):
     @__pointer.setter
     def __pointer(self, value: int) -> None:
         setattr(self.__owner(), f"_{self.__name}_pointer", int(value))
+
+    @property
+    def __recordsz(self) -> int:
+        return self.__constraints.get(-1)
 
     @property
     def attributes(self) -> RecordTensor.LinkedAttributes:
@@ -1644,10 +1658,10 @@ class RecordTensor(ShapedTensor):
         size = math.ceil(self.__duration / self.__dt) + 1
 
         # reconstrain if required
-        if size != self.__constraints[-1]:
+        if size != self.__recordsz:
             with torch.no_grad():
                 _ = ShapedTensor.reconstrain(self, -1, size)
-                self.reset()
+                self.reset(0)
 
     @property
     def duration(self) -> torch.Tensor:
@@ -1683,13 +1697,58 @@ class RecordTensor(ShapedTensor):
         size = math.ceil(self.__duration / self.__dt) + 1
 
         # reconstrain if required
-        if size != self.__constraints[-1]:
+        if size != self.__recordsz:
             with torch.no_grad():
                 _ = ShapedTensor.reconstrain(self, -1, size)
 
     @property
+    def recordsz(self) -> int:
+        r"""Number of stored time slices for each record tensor.
+
+        Returns:
+            int: length of the record as the number of stored time slices.
+        """
+        return self.__recordsz
+
+    @property
+    def latest(self) -> torch.Tensor | None:
+        r"""Most recent time slice of the stored tensor.
+
+        When used as a getter, this is an alias for :py:meth:`peek`.
+
+        When used as a setter, this is an alias for :py:meth:`push` with ``inplace`` set
+        to ``False``.
+
+        When used as a deleter, this is an alias for :py:meth:`decr` with ``pos`` set
+        to ``1``.
+
+        Args:
+            value (torch.Tensor): values to insert.
+
+        Returns:
+            torch.Tensor | None: value of the last written time slice.
+        """
+        return self.peek()
+
+    @latest.setter
+    def latest(self, value: torch.Tensor) -> None:
+        self.push(value, inplace=False)
+
+    @latest.deleter
+    def latest(self) -> None:
+        self.decr(1)
+
+    @property
     def value(self) -> torch.Tensor | nn.Parameter | None:
         r"""Value of the constrained tensor.
+
+        When created as a :py:class:`~torch.nn.Parameter`, assignment to ``None`` is
+        prevented. If the current ``value`` is a :py:class:`~torch.nn.Parameter` but
+        the assigned value is a :py:class:`~torch.Tensor`, it will automatically assign
+        to the ``data`` attribute of ``value``.
+
+        When used as a deleter, this acts as an alias for
+        ``self.deinitialize(use_uninitialized=False)``.
 
         Args:
             value (value: torch.Tensor | nn.Parameter | None): value to which the
@@ -1708,6 +1767,10 @@ class RecordTensor(ShapedTensor):
         if self._ignore(self.__data):
             setattr(self.__owner(), f"_{self.__name}_pointer", 0)
 
+    @value.deleter
+    def value(self) -> None:
+        self.deinitialize(False)
+
     def align(self, index: int = 0) -> None:
         r"""Aligns the tensor so the pointer points at a specified value.
 
@@ -1721,7 +1784,7 @@ class RecordTensor(ShapedTensor):
             RuntimeError: cannot align an uninitialized (ignored) value.
         """
         # check for a valid index
-        index = argtest.index("index", index, self.__constraints[-1], "recordsz")
+        index = argtest.index("index", index, self.__recordsz, "recordsz")
 
         # strongly reference data
         data = self.__data
@@ -1733,22 +1796,202 @@ class RecordTensor(ShapedTensor):
         else:
             raise RuntimeError("cannot align uninitialized value")
 
-    def reset(self, fill: Any = 0) -> None:
+    def reset(self, fill: Any | None = 0) -> None:
         r"""Resets the tensor so it is filled with a value and aligned to zero.
 
         Args:
-            fill (Any, optional): value with which to fill the tensor. Defaults to 0.
+            fill (Any | None, optional): value with which to fill the tensor, or if
+                no fill should be applied if ``None``. Defaults to 0.
         """
         # strongly reference data
         data = self.__data
 
-        with torch.no_grad():
-            # only constrained state can be filled
-            if not self._ignore(data):
-                data.fill_(fill)
+        # fill in-place is a value is given and tensor is initialized
+        if fill is not None:
+            with torch.no_grad():
+                if not self._ignore(data):
+                    data.fill_(fill)
 
         # reset pointer to start
         self.__pointer = 0
+
+    def initialize(
+        self,
+        shape: tuple[int, ...],
+        device: torch.device | None = None,
+        dtype: torch.dtype | None = None,
+        fill: Any = 0,
+    ) -> torch.Tensor | nn.Parameter:
+        r"""Initializes storage tensor.
+
+        Args:
+            shape (tuple[int, ...]): shape, excluding the record dimension, of the
+                underlying tensor.
+            device (torch.device | None, optional): overrides device on which to place
+                the tensor when not ``None``. Defaults to ``None``.
+            dtype (torch.dtype | None, optional): overrides data tyoe of the tensor
+                when not ``None``. Defaults to ``None``.
+            fill (Any, optional): value with which to fill the tensor. Defaults to 0.
+
+        Returns:
+            torch.Tensor | nn.Parameter: initialized buffer or parameter.
+        """
+        # strongly reference data and get record size
+        data, recordsz = self.__data, self.__recordsz
+
+        # pytorch uninitialized buffer or parameter
+        if isinstance(data, nn.UninitializedBuffer | nn.UninitializedParameter):
+            # materialize, which alters in-place
+            data.materialize((*shape, recordsz), device=device, dtype=dtype)
+
+            # fill in-place
+            with torch.no_grad():
+                data.fill_(fill)
+
+        # initialized but empty tensor or parameter
+        elif isinstance(data, torch.Tensor):
+            # reassign using value defaults, automatic parameter assignment test
+            self.__data = full(
+                data, fill, shape=(*shape, recordsz), dtype=dtype, device=device
+            )
+
+        # none value, always a buffer, simple overwrite
+        else:
+            self.__data = torch.full(
+                (*shape, recordsz), fill, dtype=dtype, device=device
+            )
+
+        # set pointer to zero and return created or materialized attribute
+        self.__pointer = 0
+        return self.__data
+
+    def deinitialize(
+        self,
+        use_uninitialized: bool = False,
+    ) -> torch.Tensor | nn.Parameter:
+        r"""Deinitializes storage tensor.
+
+        This either assigns an empty tensor with shape ``[0]`` as the value or one
+        of :py:class:`~torch.nn.UninitializedBuffer` or
+        :py:class:`~torch.nn.UninitializedParameter`. The device, data type, and
+        gradient requirement will be preserved. If the storage tensor is ``None``, the
+        defaults of those properties will be used.
+
+        Args:
+            use_uninitialized (bool, optional): if an uninitalized buffer or
+                uninitialized parameter should be used. Defaults to False.
+
+        Returns:
+            torch.Tensor | nn.Parameter: deinitialized storage.
+        """
+        # strongly reference data
+        data = self.__data
+
+        if isinstance(data, nn.Parameter):
+            if use_uninitialized:
+                self.__data = nn.UninitializedParameter(
+                    requires_grad=data.requires_grad,
+                    device=data.device,
+                    dtype=data.dtype,
+                )
+            else:
+                data.data = empty(data, shape=(0,))
+
+        elif isinstance(data, torch.Tensor):
+            if use_uninitialized:
+                self.__data = nn.UninitializedBuffer(
+                    requires_grad=data.requires_grad,
+                    device=data.device,
+                    dtype=data.dtype,
+                )
+            else:
+                self.__data = empty(data, shape=(0,))
+
+        else:
+            if use_uninitialized:
+                self.__data = nn.UninitializedBuffer()
+            else:
+                self.__data = torch.empty(0)
+
+        # set pointer to zero and return created tensor or parameter
+        self.__pointer = 0
+        return self.__data
+
+    def incr(self, pos: int = 1) -> None:
+        r"""Moves the pointer forward.
+
+        Args:
+            pos (int, optional): number of steps by which to move the pointer
+                forward. Defaults to 1.
+
+        Raises:
+            RuntimeError: cannot modify the point when the value is uninitialized (ignored).
+        """
+        if self._ignore(self.__data):
+            raise RuntimeError("cannot modify pointer when value is uninitialized")
+        else:
+            self.__pointer = _unwind_ptr(self.__pointer, -pos, self.__recordsz)
+
+    def decr(self, pos: int = 1) -> None:
+        r"""Moves the pointer backward.
+
+        Args:
+            pos (int, optional): number of steps by which to move the pointer
+                backward. Defaults to 1.
+
+        Raises:
+            RuntimeError: cannot modify the point when the value is uninitialized (ignored).
+        """
+        if self._ignore(self.__data):
+            raise RuntimeError("cannot modify pointer when value is uninitialized")
+        else:
+            self.__pointer = _unwind_ptr(self.__pointer, pos, self.__recordsz)
+
+    def peek(self) -> torch.Tensor | None:
+        r"""Retrieves the time slice last written.
+
+        If the state is uninitialized, then ``None`` will be returned. Otherwise this
+        is an alias for ``self.read(offset=1)``.
+
+        Returns:
+            torch.Tensor | None: value of the last written time slice.
+        """
+        if self._ignore(self.__data):
+            return None
+        else:
+            return self.read(1)
+
+    def push(self, value: torch.Tensor, inplace: bool = False) -> None:
+        r"""Writes a time slice to the current location and advances the pointer.
+
+        This is an alias for the following code.
+
+        .. code-block:: python
+
+            self.write(value, offset=0)
+            self.incr(pos=1)
+
+        Args:
+            value (torch.Tensor): values to insert.
+            inplace (bool, optional): if the operation should be performed in-place,
+                with :py:func:`torch.no_grad`. Defaults to False.
+        """
+        self.write(value, offset=0, inplace=inplace)
+        self.incr(1)
+
+    def pop(self) -> torch.Tensor | None:
+        r"""Retrieves the time slice last written and decrements the pointer.
+
+        If the state is uninitialized, then ``None`` will be returned.
+
+        Returns:
+            torch.Tensor | None: value of the last written time slice.
+        """
+        if self._ignore(self.__data):
+            return None
+        else:
+            self.decr(1)
+            return self.read(0)
 
     def read(self, offset: int = 1) -> torch.Tensor:
         r"""Reads the value of the tensor at an index relative to the pointer.
@@ -1773,7 +2016,7 @@ class RecordTensor(ShapedTensor):
         if self._ignore(data):
             raise RuntimeError("cannot read from uninitialized value")
         else:
-            return data[..., (self._pointer - int(offset)) % self.__constraints[-1]]
+            return data[..., _unwind_ptr(self.__pointer, offset, self.__recordsz)]
 
     def write(
         self, value: torch.Tensor, offset: int = 0, inplace: bool = False
@@ -1791,7 +2034,7 @@ class RecordTensor(ShapedTensor):
             ValueError: shape of the values must match the shape of the time slice.
         """
         # strongly reference data and get record size
-        data, recordsz = self.__data, self.__constraints[-1]
+        data, recordsz = self.__data, self.__recordsz
 
         # cannot write to uninitialized value
         if self._ignore(data):
@@ -1807,13 +2050,113 @@ class RecordTensor(ShapedTensor):
         # in-place overwrite
         elif inplace:
             with torch.no_grad():
-                data[..., (self._pointer - int(offset)) % recordsz] = value
+                index = _unwind_ptr(self.__pointer, offset, recordsz)
+                data[..., index] = value
 
         # splice in
         else:
-            index = (self._pointer - int(offset)) % recordsz
+            index = _unwind_ptr(self.__pointer, offset, recordsz)
             self.__data = torch.cat(
                 (data[..., slice(0, index)], value, data[:, slice(index + 1, None)]), -1
+            )
+
+    @singledispatchmethod
+    def select(
+        self,
+        time: torch.Tensor | float,
+        interp: Interpolation | None,
+        *,
+        tolerance: float = 1e-7,
+        offset: int = 1,
+    ) -> torch.Tensor:
+        raise NotImplementedError
+
+    @select.register
+    def _(
+        self,
+        time: torch.Tensor,
+        interp: Interpolation | None = None,
+        *,
+        tolerance: float = 1e-7,
+        offset: int = 1,
+    ) -> torch.Tensor:
+        # use nearest interpolation by default
+        if not interp:
+            interp = nearest
+
+        # strongly reference data and get record size and step time
+        data, recordsz, dt = self.__data, self.__recordsz, self.__dt
+
+        # apply offset to the pointer
+        ptr = _unwind_ptr(self.__pointer, offset, recordsz)
+
+        # cast time indices and check for a valid range
+        time = time.to(device=data.device)
+        if not time.is_floating_point():
+            time = time.to(dtype=torch.get_default_dtype())
+
+        tmin, tmax = time.amin(), time.amax()
+        if -tolerance <= tmin or tmax <= dt * (recordsz - 1) + tolerance:
+            raise ValueError(
+                f"all elements of 'time' (min={tmin}, max={tmax}) must be within "
+                f" the valid range of observations including tolerance, the interval "
+                f"[{-tolerance}, {dt * (recordsz - 1) + tolerance}]"
+            )
+
+        # check if the output should be squeezed
+        if time.ndim == data.ndim - 1:
+            squeeze = True
+            time = time.unsqueeze(-1)
+        elif time.ndim == data.ndim:
+            squeeze = False
+        else:
+            raise RuntimeError(
+                f"'time' has an incompatible number of dimensions ({time.ndim}), "
+                f"it must have either {data.ndim} or {data.ndim - 1} dimensions"
+            )
+
+    @select.register
+    def _(
+        self,
+        time: float,
+        interp: Interpolation | None = None,
+        *,
+        tolerance: float = 1e-7,
+        offset: int = 1,
+    ) -> torch.Tensor:
+        # use nearest interpolation by default
+        if not interp:
+            interp = nearest
+
+        # strongly reference data and get record size and step time
+        data, recordsz, dt = self.__data, self.__recordsz, self.__dt
+
+        # apply offset to the pointer
+        ptr = _unwind_ptr(self.__pointer, offset, recordsz)
+
+        # cast time indices and check for a valid range
+        disptime, time = time, float(time)
+        if -tolerance <= time <= dt * (recordsz - 1) + tolerance:
+            raise ValueError(
+                f"'time' ({disptime}) must be within the valid range of observations "
+                f"including tolerance, the interval [{-tolerance}, "
+                f"{dt * (recordsz - 1) + tolerance}]"
+            )
+
+        # compute continuous index
+        index = time / dt
+
+        # index is within tolerance of an observation
+        if abs(dt * round(index) - time) < tolerance:
+            return data[..., _unwind_ptr(ptr, index, recordsz)]
+
+        # interpolate between observation
+        else:
+            return interp(
+                data[..., _unwind_ptr(ptr, index + 1, recordsz)],
+                data[..., _unwind_ptr(ptr, index, recordsz)],
+                full(data, dt * (index % 1), shape=data.shape[:-1]),
+                dt,
             )
 
     def reconstrain(

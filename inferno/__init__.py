@@ -8,6 +8,7 @@ from .core import (
     # infrastructure
     Module,
     ShapedTensor,
+    RecordTensor,
     DimensionalModule,
     RecordModule,
     Hook,
@@ -46,6 +47,7 @@ __all__ = [
     # infrastructure
     "Module",
     "ShapedTensor",
+    "RecordTensor",
     "DimensionalModule",
     "RecordModule",
     "Hook",
