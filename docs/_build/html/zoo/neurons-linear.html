@@ -1,13 +1,13 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Neuron Models, Nonlinear" href="neurons-nonlinear.html" /><link rel="prev" title="Neuronal Adaptation" href="neurons-adaptation.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>Neuron Models, Linear - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -160,6 +160,7 @@
   <ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn.html">inferno.learn</a></li>
@@ -218,11 +219,11 @@
         </div>
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="neuron-models-linear">
-<h1>Neuron Models, Linear<a class="headerlink" href="#neuron-models-linear" title="Link to this heading">#</a></h1>
+<h1>Neuron Models, Linear<a class="headerlink" href="#neuron-models-linear" title="Permalink to this heading">#</a></h1>
 <section id="leaky-integrate-and-fire-lif">
-<h2>Leaky Integrate-and-Fire (LIF)<a class="headerlink" href="#leaky-integrate-and-fire-lif" title="Link to this heading">#</a></h2>
+<h2>Leaky Integrate-and-Fire (LIF)<a class="headerlink" href="#leaky-integrate-and-fire-lif" title="Permalink to this heading">#</a></h2>
 <section id="formulation">
-<h3>Formulation<a class="headerlink" href="#formulation" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#formulation" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
@@ -253,7 +254,7 @@ V_m(t + \Delta t) = \left[V_m(t) - V_\text{rest} - R_mI(t)\right] \exp\left(-\fr
 </ul>
 </section>
 <section id="description">
-<h3>Description<a class="headerlink" href="#description" title="Link to this heading">#</a></h3>
+<h3>Description<a class="headerlink" href="#description" title="Permalink to this heading">#</a></h3>
 <p>This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or “biologically defined reset rules”. This is equivalent to the <a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">GLIF<sub>1</sub></a> (generalized leaky integrate-and-fire) model. Without presynaptic current, the membrane
 voltage decays back towards the rest voltage with rate in inverse proportion to the membrane time constant.</p>
 <a class="bg-primary reference internal image-reference" href="../_images/lif_slope_field.png"><img alt="Linear Integrate-and-Fire Slope Field of Memrane Voltage" class="bg-primary align-center" src="../_images/lif_slope_field.png" style="width: 565.5px; height: 422.4px;" /></a>
@@ -262,7 +263,7 @@ the rest voltage <span class="math notranslate nohighlight">\((V_R = -60 \text{ 
 over a time of <span class="math notranslate nohighlight">\(2 \text{ ms}\)</span>.</p>
 </section>
 <section id="alternative-formulations">
-<h3>Alternative Formulations<a class="headerlink" href="#alternative-formulations" title="Link to this heading">#</a></h3>
+<h3>Alternative Formulations<a class="headerlink" href="#alternative-formulations" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -286,7 +287,7 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 </div>
 </section>
 <section id="references">
-<h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch1.S3.html">DOI:10.1017/CBO9781107447615 (§1.3)</a></p></li>
 <li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083</a></p></li>
@@ -295,9 +296,9 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 </section>
 </section>
 <section id="adaptive-leaky-integrate-and-fire-alif">
-<h2>Adaptive Leaky Integrate-and-Fire (ALIF)<a class="headerlink" href="#adaptive-leaky-integrate-and-fire-alif" title="Link to this heading">#</a></h2>
+<h2>Adaptive Leaky Integrate-and-Fire (ALIF)<a class="headerlink" href="#adaptive-leaky-integrate-and-fire-alif" title="Permalink to this heading">#</a></h2>
 <section id="id1">
-<h3>Formulation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -345,11 +346,11 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 </ul>
 </section>
 <section id="id2">
-<h3>Description<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<h3>Description<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
 <p>This model uses the underlying dynamics of the leaky integrate-and-fire neuron, but it incorporates a spike-dependent adaptive threshold. This is equivalent to the <a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">GLIF<sub>2</sub></a> (generalized leaky integrate-and-fire) model with the exception of membrane reset voltage behavior.</p>
 </section>
 <section id="id3">
-<h3>References<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">DOI:10.1038/s41467-017-02717-4</a></p></li>
 <li><p><a class="reference external" href="https://www.nature.com/articles/s41467-020-17236-y">DOI:10.1038/s41467-020-17236-y</a></p></li>
@@ -358,13 +359,13 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 </section>
 </section>
 <section id="generalized-leaky-integrate-and-fire-1-glif1">
-<h2>Generalized Leaky Integrate-and-Fire 1 (GLIF<sub>1</sub>)<a class="headerlink" href="#generalized-leaky-integrate-and-fire-1-glif1" title="Link to this heading">#</a></h2>
+<h2>Generalized Leaky Integrate-and-Fire 1 (GLIF<sub>1</sub>)<a class="headerlink" href="#generalized-leaky-integrate-and-fire-1-glif1" title="Permalink to this heading">#</a></h2>
 <p>See: <a class="reference internal" href="#leaky-integrate-and-fire-lif">Leaky Integrate-and-Fire (LIF)</a></p>
 </section>
 <section id="generalized-leaky-integrate-and-fire-2-glif2">
-<h2>Generalized Leaky Integrate-and-Fire 2 (GLIF<sub>2</sub>)<a class="headerlink" href="#generalized-leaky-integrate-and-fire-2-glif2" title="Link to this heading">#</a></h2>
+<h2>Generalized Leaky Integrate-and-Fire 2 (GLIF<sub>2</sub>)<a class="headerlink" href="#generalized-leaky-integrate-and-fire-2-glif2" title="Permalink to this heading">#</a></h2>
 <section id="id4">
-<h3>Formulation<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -414,11 +415,11 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 </ul>
 </section>
 <section id="id5">
-<h3>Description<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<h3>Description<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
 <p>Also called “leaky integrate-and-fire with biologically defined reset rules (LIF-R)”, this model uses conventional LIF dynamics, with a linear spike-dependent adaptive threshold and a reset voltage which is contingent on the membrane voltage reached when spiking. Note that the adaptation decay is defined in terms of a rate constant <span class="math notranslate nohighlight">\(\lambda_k\)</span> rather than a time constant <span class="math notranslate nohighlight">\(\tau_k\)</span>.</p>
 </section>
 <section id="id6">
-<h3>References<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">DOI:10.1038/s41467-017-02717-4</a></p></li>
 <li><p><a class="reference external" href="http://web.archive.org/web/20230428012128/https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf">Allen Institute GLIF Whitepaper</a></p></li>
@@ -426,15 +427,15 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
 </section>
 </section>
 <section id="generalized-leaky-integrate-and-fire-3-glif3">
-<h2>Generalized Leaky Integrate-and-Fire 3 (GLIF<sub>3</sub>)<a class="headerlink" href="#generalized-leaky-integrate-and-fire-3-glif3" title="Link to this heading">#</a></h2>
+<h2>Generalized Leaky Integrate-and-Fire 3 (GLIF<sub>3</sub>)<a class="headerlink" href="#generalized-leaky-integrate-and-fire-3-glif3" title="Permalink to this heading">#</a></h2>
 <p><em><strong>(To Be Implemented)</strong></em></p>
 </section>
 <section id="generalized-leaky-integrate-and-fire-4-glif4">
-<h2>Generalized Leaky Integrate-and-Fire 4 (GLIF<sub>4</sub>)<a class="headerlink" href="#generalized-leaky-integrate-and-fire-4-glif4" title="Link to this heading">#</a></h2>
+<h2>Generalized Leaky Integrate-and-Fire 4 (GLIF<sub>4</sub>)<a class="headerlink" href="#generalized-leaky-integrate-and-fire-4-glif4" title="Permalink to this heading">#</a></h2>
 <p><em><strong>(To Be Implemented)</strong></em></p>
 </section>
 <section id="generalized-leaky-integrate-and-fire-5-glif5">
-<h2>Generalized Leaky Integrate-and-Fire 5 (GLIF<sub>5</sub>)<a class="headerlink" href="#generalized-leaky-integrate-and-fire-5-glif5" title="Link to this heading">#</a></h2>
+<h2>Generalized Leaky Integrate-and-Fire 5 (GLIF<sub>5</sub>)<a class="headerlink" href="#generalized-leaky-integrate-and-fire-5-glif5" title="Permalink to this heading">#</a></h2>
 <p><em><strong>(To Be Implemented)</strong></em></p>
 </section>
 </section>
@@ -529,9 +530,9 @@ C_m \frac{dV_m(t)}{dt} &amp;= - \frac{1}{R_m}\left[V_m(t) - V_\text{rest}\right]
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>

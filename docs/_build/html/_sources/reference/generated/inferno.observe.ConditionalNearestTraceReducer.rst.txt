@@ -1,0 +1,8 @@
+﻿ConditionalNearestTraceReducer
+==============================
+
+.. currentmodule:: inferno.observe
+
+.. autoclass:: ConditionalNearestTraceReducer
+    :members:
+    :show-inheritance:

@@ -1,0 +1,6 @@
+﻿extrap\_next
+============
+
+.. currentmodule:: inferno.functional
+
+.. autofunction:: extrap_next

@@ -1,0 +1,53 @@
+name: infernodev
+channels:
+  - pytorch
+  - plotly
+  - domdfcoding
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  # pytorch
+  - pytorch
+  - torchvision
+  - torchaudio
+  # math-sci
+  - einops
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  # plotting
+  - matplotlib
+  - seaborn
+  - plotly
+  # ui
+  - tqdm
+  - streamlit
+  # mlops
+  - tensorboard
+  - wandb
+  # devtools
+  - black
+  - flake8
+  - pytest
+  # sphinx
+  - sphinx
+  - antlr4-python3-runtime
+  - docutils
+  - esbonio
+  - myst-parser
+  - sphinx-design
+  - sphinx-autoapi
+  - sphinx-remove-toctrees
+  - sphinx-toolbox
+  - furo
+  - pydata-sphinx-theme
+  - sphinx-book-theme
+  # jupyter and spyder
+  - ipykernel
+  - ipympl
+  - ipywidgets
+  - spyder-kernels
+  # other
+  - tomli-w

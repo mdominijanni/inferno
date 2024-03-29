@@ -1,0 +1,6 @@
+﻿extrap\_linear\_forward
+=======================
+
+.. currentmodule:: inferno.functional
+
+.. autofunction:: extrap_linear_forward

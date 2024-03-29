@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.bounding.functions - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
@@ -220,9 +221,7 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
-<div class="viewcode-block" id="upper_power">
-<a class="viewcode-back" href="../../../reference/generated/inferno.bounding.upper_power.html#inferno.bounding.upper_power">[docs]</a>
-<span class="k">def</span> <span class="nf">upper_power</span><span class="p">(</span>
+<div class="viewcode-block" id="upper_power"><a class="viewcode-back" href="../../../reference/generated/inferno.bounding.upper_power.html#inferno.bounding.upper_power">[docs]</a><span class="k">def</span> <span class="nf">upper_power</span><span class="p">(</span>
     <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">update</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -230,7 +229,7 @@
     <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of upper-bound power parameter dependence.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of upper-bound power parameter dependence.</span>
 
 <span class="sd">    This is sometimes also referred to as &quot;soft parameter dependence&quot;.</span>
 
@@ -249,10 +248,7 @@
     <span class="k">return</span> <span class="p">((</span><span class="n">limit</span> <span class="o">-</span> <span class="n">param</span><span class="p">)</span> <span class="o">**</span> <span class="n">power</span><span class="p">)</span> <span class="o">*</span> <span class="n">update</span></div>
 
 
-
-<div class="viewcode-block" id="lower_power">
-<a class="viewcode-back" href="../../../reference/generated/inferno.bounding.lower_power.html#inferno.bounding.lower_power">[docs]</a>
-<span class="k">def</span> <span class="nf">lower_power</span><span class="p">(</span>
+<div class="viewcode-block" id="lower_power"><a class="viewcode-back" href="../../../reference/generated/inferno.bounding.lower_power.html#inferno.bounding.lower_power">[docs]</a><span class="k">def</span> <span class="nf">lower_power</span><span class="p">(</span>
     <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">update</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -260,7 +256,7 @@
     <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of lower-bound power parameter dependence.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of lower-bound power parameter dependence.</span>
 
 <span class="sd">    This is sometimes also referred to as &quot;soft parameter dependence&quot;.</span>
 
@@ -279,10 +275,7 @@
     <span class="k">return</span> <span class="p">((</span><span class="n">param</span> <span class="o">-</span> <span class="n">limit</span><span class="p">)</span> <span class="o">**</span> <span class="n">power</span><span class="p">)</span> <span class="o">*</span> <span class="n">update</span></div>
 
 
-
-<div class="viewcode-block" id="power">
-<a class="viewcode-back" href="../../../reference/generated/inferno.bounding.power.html#inferno.bounding.power">[docs]</a>
-<span class="k">def</span> <span class="nf">power</span><span class="p">(</span>
+<div class="viewcode-block" id="power"><a class="viewcode-back" href="../../../reference/generated/inferno.bounding.power.html#inferno.bounding.power">[docs]</a><span class="k">def</span> <span class="nf">power</span><span class="p">(</span>
     <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">pos</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">neg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -293,7 +286,7 @@
     <span class="n">lower_power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of power parameter dependence.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of power parameter dependence.</span>
 
 <span class="sd">    This is sometimes also referred to as &quot;soft parameter dependence&quot;.</span>
 
@@ -326,16 +319,13 @@
     <span class="k">return</span> <span class="n">pos</span> <span class="o">-</span> <span class="n">neg</span></div>
 
 
-
-<div class="viewcode-block" id="upper_multiplicative">
-<a class="viewcode-back" href="../../../reference/generated/inferno.bounding.upper_multiplicative.html#inferno.bounding.upper_multiplicative">[docs]</a>
-<span class="k">def</span> <span class="nf">upper_multiplicative</span><span class="p">(</span>
+<div class="viewcode-block" id="upper_multiplicative"><a class="viewcode-back" href="../../../reference/generated/inferno.bounding.upper_multiplicative.html#inferno.bounding.upper_multiplicative">[docs]</a><span class="k">def</span> <span class="nf">upper_multiplicative</span><span class="p">(</span>
     <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">update</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of upper-bound multiplicative parameter dependence.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of upper-bound multiplicative parameter dependence.</span>
 
 <span class="sd">    This is sometimes also referred to as &quot;soft parameter dependence&quot; and is equivalent</span>
 <span class="sd">    to power dependence with an exponent of 1.</span>
@@ -354,16 +344,13 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">limit</span> <span class="o">-</span> <span class="n">param</span><span class="p">)</span> <span class="o">*</span> <span class="n">update</span></div>
 
 
-
-<div class="viewcode-block" id="lower_multiplicative">
-<a class="viewcode-back" href="../../../reference/generated/inferno.bounding.lower_multiplicative.html#inferno.bounding.lower_multiplicative">[docs]</a>
-<span class="k">def</span> <span class="nf">lower_multiplicative</span><span class="p">(</span>
+<div class="viewcode-block" id="lower_multiplicative"><a class="viewcode-back" href="../../../reference/generated/inferno.bounding.lower_multiplicative.html#inferno.bounding.lower_multiplicative">[docs]</a><span class="k">def</span> <span class="nf">lower_multiplicative</span><span class="p">(</span>
     <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">update</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of lower-bound multiplicative parameter dependence.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of lower-bound multiplicative parameter dependence.</span>
 
 <span class="sd">    This is sometimes also referred to as &quot;soft parameter dependence&quot; and is equivalent</span>
 <span class="sd">    to power dependence with an exponent of 1.</span>
@@ -382,10 +369,7 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">param</span> <span class="o">-</span> <span class="n">limit</span><span class="p">)</span> <span class="o">*</span> <span class="n">update</span></div>
 
 
-
-<div class="viewcode-block" id="multiplicative">
-<a class="viewcode-back" href="../../../reference/generated/inferno.bounding.multiplicative.html#inferno.bounding.multiplicative">[docs]</a>
-<span class="k">def</span> <span class="nf">multiplicative</span><span class="p">(</span>
+<div class="viewcode-block" id="multiplicative"><a class="viewcode-back" href="../../../reference/generated/inferno.bounding.multiplicative.html#inferno.bounding.multiplicative">[docs]</a><span class="k">def</span> <span class="nf">multiplicative</span><span class="p">(</span>
     <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">pos</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">neg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -393,7 +377,7 @@
     <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of multiplicative parameter dependence.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of multiplicative parameter dependence.</span>
 
 <span class="sd">    This is sometimes also referred to as &quot;soft parameter dependence&quot; and is equivalent</span>
 <span class="sd">    to power dependence with an exponent of 1.</span>
@@ -423,16 +407,13 @@
     <span class="k">return</span> <span class="n">pos</span> <span class="o">-</span> <span class="n">neg</span></div>
 
 
-
-<div class="viewcode-block" id="upper_sharp">
-<a class="viewcode-back" href="../../../reference/generated/inferno.bounding.upper_sharp.html#inferno.bounding.upper_sharp">[docs]</a>
-<span class="k">def</span> <span class="nf">upper_sharp</span><span class="p">(</span>
+<div class="viewcode-block" id="upper_sharp"><a class="viewcode-back" href="../../../reference/generated/inferno.bounding.upper_sharp.html#inferno.bounding.upper_sharp">[docs]</a><span class="k">def</span> <span class="nf">upper_sharp</span><span class="p">(</span>
     <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">update</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of upper-bound sharp parameter dependence.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of upper-bound sharp parameter dependence.</span>
 
 <span class="sd">    This is sometimes also referred to as &quot;hard parameter dependence&quot;.</span>
 
@@ -460,16 +441,13 @@
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">heaviside</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">zeros</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">()))</span> <span class="o">*</span> <span class="n">update</span></div>
 
 
-
-<div class="viewcode-block" id="lower_sharp">
-<a class="viewcode-back" href="../../../reference/generated/inferno.bounding.lower_sharp.html#inferno.bounding.lower_sharp">[docs]</a>
-<span class="k">def</span> <span class="nf">lower_sharp</span><span class="p">(</span>
+<div class="viewcode-block" id="lower_sharp"><a class="viewcode-back" href="../../../reference/generated/inferno.bounding.lower_sharp.html#inferno.bounding.lower_sharp">[docs]</a><span class="k">def</span> <span class="nf">lower_sharp</span><span class="p">(</span>
     <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">update</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of lower-bound sharp parameter dependence.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of lower-bound sharp parameter dependence.</span>
 
 <span class="sd">    This is sometimes also referred to as &quot;hard parameter dependence&quot;.</span>
 
@@ -497,10 +475,7 @@
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">heaviside</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">zeros</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">()))</span> <span class="o">*</span> <span class="n">update</span></div>
 
 
-
-<div class="viewcode-block" id="sharp">
-<a class="viewcode-back" href="../../../reference/generated/inferno.bounding.sharp.html#inferno.bounding.sharp">[docs]</a>
-<span class="k">def</span> <span class="nf">sharp</span><span class="p">(</span>
+<div class="viewcode-block" id="sharp"><a class="viewcode-back" href="../../../reference/generated/inferno.bounding.sharp.html#inferno.bounding.sharp">[docs]</a><span class="k">def</span> <span class="nf">sharp</span><span class="p">(</span>
     <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">pos</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">neg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -508,7 +483,7 @@
     <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of sharp parameter dependence.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the scaled update of sharp parameter dependence.</span>
 
 <span class="sd">    This is sometimes also referred to as &quot;hard parameter dependence&quot;.</span>
 
@@ -545,7 +520,6 @@
 
     <span class="c1"># combined update</span>
     <span class="k">return</span> <span class="n">pos</span> <span class="o">-</span> <span class="n">neg</span></div>
-
 </pre></div>
         </article>
       </div>
@@ -578,9 +552,9 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
     </body>

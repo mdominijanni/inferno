@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.neural.base - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
@@ -226,10 +227,8 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Protocol</span>
 
 
-<div class="viewcode-block" id="Neuron">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron">[docs]</a>
-<span class="k">class</span> <span class="nc">Neuron</span><span class="p">(</span><span class="n">ShapeMixin</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing a group of neurons with a common mode of dynamics.</span>
+<div class="viewcode-block" id="Neuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron">[docs]</a><span class="k">class</span> <span class="nc">Neuron</span><span class="p">(</span><span class="n">ShapeMixin</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing a group of neurons with a common mode of dynamics.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of neurons,</span>
@@ -246,16 +245,13 @@
         <span class="n">DimensionalModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">ShapeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Neuron.extra_repr">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.extra_repr">[docs]</a>
-    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns extra information on this module.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Neuron.extra_repr"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.extra_repr">[docs]</a>    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns extra information on this module.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, batchsz=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="si">}</span><span class="s2">, dt=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2">&quot;</span></div>
-
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the neuron group.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the neuron group.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (int): new batch size.</span>
@@ -273,7 +269,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (float): new simulation time step length.</span>
@@ -300,7 +296,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane voltages in millivolts.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane voltages in millivolts.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new membrane voltages.</span>
@@ -325,7 +321,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">refrac</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remaining refractory periods, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remaining refractory periods, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new remaining refractory periods.</span>
@@ -351,7 +347,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Action potentials last generated.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Action potentials last generated.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential</span>
@@ -365,11 +361,9 @@
             <span class="s2">&quot;the getter for property `spike`.&quot;</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Neuron.clear">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.clear">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Neuron.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.clear">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets neurons to their resting state.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets neurons to their resting state.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``clear`` must be implemented by the subclass.</span>
@@ -378,12 +372,9 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement the method `clear`.&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Neuron.forward">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.forward">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Neuron.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.forward">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the neuronal dynamics.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the neuronal dynamics.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): input currents to the neurons.</span>
@@ -396,15 +387,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement the method `forward`.&quot;</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span></div></div>
 
 
-
-<div class="viewcode-block" id="SynapseConstructor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.SynapseConstructor.html#inferno.neural.SynapseConstructor">[docs]</a>
-<span class="k">class</span> <span class="nc">SynapseConstructor</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Common constructor for synapses, used by :py:class:`Connection` objects.</span>
+<div class="viewcode-block" id="SynapseConstructor"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.SynapseConstructor.html#inferno.neural.SynapseConstructor">[docs]</a><span class="k">class</span> <span class="nc">SynapseConstructor</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Common constructor for synapses, used by :py:class:`Connection` objects.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of synapses,</span>
@@ -424,15 +411,12 @@
         <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Synapse</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Callback protocol function.&quot;&quot;&quot;</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Callback protocol function.&quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
 
-
-<div class="viewcode-block" id="Synapse">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse">[docs]</a>
-<span class="k">class</span> <span class="nc">Synapse</span><span class="p">(</span><span class="n">ShapeMixin</span><span class="p">,</span> <span class="n">RecordModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing the input synapses for a connection.</span>
+<div class="viewcode-block" id="Synapse"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse">[docs]</a><span class="k">class</span> <span class="nc">Synapse</span><span class="p">(</span><span class="n">ShapeMixin</span><span class="p">,</span> <span class="n">RecordModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing the input synapses for a connection.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of synapses,</span>
@@ -453,21 +437,16 @@
         <span class="n">RecordModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
         <span class="n">ShapeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Synapse.extra_repr">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.extra_repr">[docs]</a>
-    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns extra information on this module.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Synapse.extra_repr"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.extra_repr">[docs]</a>    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns extra information on this module.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, batchsz=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="si">}</span><span class="s2">, dt=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2">, delay=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Synapse.partialconstructor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.partialconstructor">[docs]</a>
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Synapse.partialconstructor"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.partialconstructor">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynapseConstructor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for synapse construction.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for synapse construction.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``partialconstructor`` must be implemented</span>
@@ -481,10 +460,9 @@
             <span class="s2">&quot;the method `partialconstructor`.&quot;</span>
         <span class="p">)</span></div>
 
-
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (float): new simulation time step length.</span>
@@ -501,7 +479,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maximum supported delay, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maximum supported delay, in milliseconds.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            float: maximum supported delay.</span>
@@ -518,7 +496,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses at present, in nanoamperes.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses at present, in nanoamperes.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new synapse currents.</span>
@@ -545,7 +523,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike input to the synapses at present.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike input to the synapses at present.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new spike input.</span>
@@ -569,11 +547,9 @@
             <span class="s2">&quot;the setter for property `spike`.&quot;</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Synapse.current_at">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.current_at">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Synapse.current_at"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.current_at">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">current_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents, in nanoamperes, at times specified by delays, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents, in nanoamperes, at times specified by delays, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            selector (torch.Tensor): delays for selection of currents.</span>
@@ -588,12 +564,9 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method `current_at`.&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Synapse.spike_at">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.spike_at">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Synapse.spike_at"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.spike_at">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">spike_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes, as booleans, at times specified by delays, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes, as booleans, at times specified by delays, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            selector (torch.Tensor): delays for selection of spikes.</span>
@@ -608,12 +581,9 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method `spike_at`.&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Synapse.clear">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.clear">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Synapse.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.clear">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets synapses to their resting state.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets synapses to their resting state.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``clear`` must be implemented by the subclass.</span>
@@ -622,12 +592,9 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method `clear`.&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Synapse.forward">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.forward">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Synapse.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.forward">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the synaptic dynamics.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the synaptic dynamics.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            *inputs (torch.Tensor): tensors shaped like the synapse.</span>
@@ -640,15 +607,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method `forward`.&quot;</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span></div></div>
 
 
-
-<div class="viewcode-block" id="Connection">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection">[docs]</a>
-<span class="k">class</span> <span class="nc">Connection</span><span class="p">(</span><span class="n">Updatable</span><span class="p">,</span> <span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing a weighted connection between two groups of neurons.</span>
+<div class="viewcode-block" id="Connection"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection">[docs]</a><span class="k">class</span> <span class="nc">Connection</span><span class="p">(</span><span class="n">Updatable</span><span class="p">,</span> <span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing a weighted connection between two groups of neurons.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        synapse (Synapse): synapse used to generate currents from inputs.</span>
@@ -665,18 +628,15 @@
         <span class="c1"># register submodule</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="s2">&quot;synapse_&quot;</span><span class="p">,</span> <span class="n">synapse</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Connection.extra_repr">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.extra_repr">[docs]</a>
-    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns extra information on this module.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Connection.extra_repr"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.extra_repr">[docs]</a>    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns extra information on this module.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;inshape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">inshape</span><span class="si">}</span><span class="s2">, outshape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="si">}</span><span class="s2">, delay=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">delayedby</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span></div>
 
-
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">synapse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Synapse</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Synapse registered with this connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Synapse registered with this connection.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (Synapse): new synapse for this connection.</span>
@@ -692,7 +652,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the connection.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (int): new batch size.</span>
@@ -712,7 +672,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (float): new length of the simulation time step.</span>
@@ -733,7 +693,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of inputs to the connection.</span>
@@ -749,7 +709,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of outputs from the connection.</span>
@@ -764,7 +724,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">batched_inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, including the batch dimension.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, including the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of inputs to the connection.</span>
@@ -773,17 +733,15 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">batched_outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, including the batch dimension.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, including the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of outputs from the connection.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">outshape</span>
 
-<div class="viewcode-block" id="Connection.insize">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.insize">[docs]</a>
-    <span class="k">def</span> <span class="nf">insize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of inputs to the connection, excluding the batch dimension.</span>
+<div class="viewcode-block" id="Connection.insize"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.insize">[docs]</a>    <span class="k">def</span> <span class="nf">insize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of inputs to the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: number of inputs to the connection.</span>
@@ -795,11 +753,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inshape</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Connection.outsize">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.outsize">[docs]</a>
-    <span class="k">def</span> <span class="nf">outsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of outputs from the connection, excluding the batch dimension.</span>
+<div class="viewcode-block" id="Connection.outsize"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.outsize">[docs]</a>    <span class="k">def</span> <span class="nf">outsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of outputs from the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: number of outputs from the connection.</span>
@@ -811,11 +766,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span></div>
 
-
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable connection weights.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable connection weights.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new weights.</span>
@@ -842,7 +796,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable connection biases.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable connection biases.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new biases.</span>
@@ -869,7 +823,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable delays of the connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable delays of the connection.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new delays.</span>
@@ -896,7 +850,7 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">selector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learned delays as a selector for synaptic currents and delays.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learned delays as a selector for synaptic currents and delays.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor | None: delay selector if the connection has learnable delays.</span>
@@ -911,7 +865,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">biased</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;If the connection has learnable biases.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;If the connection has learnable biases.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if the connection has learnable biases.</span>
@@ -920,7 +874,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">delayedby</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maxmimum valid learned delay, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maxmimum valid learned delay, in milliseconds.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            float: maxmimum valid learned delays.</span>
@@ -934,7 +888,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">syncurrent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents from the synapse at the time last used by the connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents from the synapse at the time last used by the connection.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: delay-offset synaptic currents.</span>
@@ -950,7 +904,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">synspike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes to the synapse at the time last used by the connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes to the synapse at the time last used by the connection.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: delay-offset synaptic spikes.</span>
@@ -960,10 +914,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">spike</span>
 
-<div class="viewcode-block" id="Connection.clear">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.clear">[docs]</a>
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets the state of the connection.</span>
+<div class="viewcode-block" id="Connection.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets the state of the connection.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            This calls the method :py:meth:`Synapse.clear` on :py:attr:`synapse` and</span>
@@ -973,12 +925,9 @@
         <span class="n">Updatable</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Connection.like_input">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.like_input">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Connection.like_input"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.like_input">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like synapse input to connection input.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like synapse input to connection input.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like synapse input.</span>
@@ -1005,12 +954,9 @@
             <span class="s2">&quot;the method `like_input`.&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Connection.like_synaptic">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.like_synaptic">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Connection.like_synaptic"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.like_synaptic">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection input to synapse input.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection input to synapse input.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like connection input.</span>
@@ -1037,12 +983,9 @@
             <span class="s2">&quot;the method `like_synaptic`.&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Connection.postsyn_receptive">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.postsyn_receptive">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Connection.postsyn_receptive"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.postsyn_receptive">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like output of :py:meth:`forward`.</span>
@@ -1075,12 +1018,9 @@
             <span class="s2">&quot;the method `postsyn_receptive`.&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Connection.presyn_receptive">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.presyn_receptive">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Connection.presyn_receptive"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.presyn_receptive">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like output of :py:meth:`like_synaptic`.</span>
@@ -1113,17 +1053,14 @@
             <span class="s2">&quot;the method `presyn_receptive`.&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Connection.defaultupdater">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.defaultupdater">[docs]</a>
-    <span class="k">def</span> <span class="nf">defaultupdater</span><span class="p">(</span>
+<div class="viewcode-block" id="Connection.defaultupdater"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.defaultupdater">[docs]</a>    <span class="k">def</span> <span class="nf">defaultupdater</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="n">includes</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">exclude_weight</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">exclude_bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">exclude_delay</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Updater</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Default updater for this connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Default updater for this connection.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            *includes (str): additional instance-specific parameters to include.</span>
@@ -1155,12 +1092,9 @@
         <span class="c1"># return the updater</span>
         <span class="k">return</span> <span class="n">Updater</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">params</span><span class="p">,</span> <span class="o">*</span><span class="n">includes</span><span class="p">))</span></div>
 
-
-<div class="viewcode-block" id="Connection.forward">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.forward">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Connection.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.forward">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the connection.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            *inputs (torch.Tensor): inputs which will be reshaped like the composed</span>
@@ -1178,9 +1112,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Connection) must implement the method `forward`.&quot;</span>
-        <span class="p">)</span></div>
-</div>
-
+        <span class="p">)</span></div></div>
 </pre></div>
         </article>
       </div>
@@ -1213,9 +1145,9 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
     </body>

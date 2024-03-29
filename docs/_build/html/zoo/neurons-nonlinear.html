@@ -1,13 +1,13 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Synapse Models, Current-Based" href="synapses-current.html" /><link rel="prev" title="Neuron Models, Linear" href="neurons-linear.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>Neuron Models, Nonlinear - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -160,6 +160,7 @@
   <ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn.html">inferno.learn</a></li>
@@ -218,11 +219,11 @@
         </div>
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="neuron-models-nonlinear">
-<h1>Neuron Models, Nonlinear<a class="headerlink" href="#neuron-models-nonlinear" title="Link to this heading">#</a></h1>
+<h1>Neuron Models, Nonlinear<a class="headerlink" href="#neuron-models-nonlinear" title="Permalink to this heading">#</a></h1>
 <section id="quadratic-integrate-and-fire-qif">
-<h2>Quadratic Integrate-and-Fire (QIF)<a class="headerlink" href="#quadratic-integrate-and-fire-qif" title="Link to this heading">#</a></h2>
+<h2>Quadratic Integrate-and-Fire (QIF)<a class="headerlink" href="#quadratic-integrate-and-fire-qif" title="Permalink to this heading">#</a></h2>
 <section id="formulation">
-<h3>Formulation<a class="headerlink" href="#formulation" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#formulation" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
@@ -256,7 +257,7 @@ V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[ a \left(V_m(t) - V_\tex
 <p>Under the conditions <span class="math notranslate nohighlight">\(a &gt; 0\)</span> and <span class="math notranslate nohighlight">\(V_\text{crit} &gt; V_\text{rest}\)</span>.</p>
 </section>
 <section id="description">
-<h3>Description<a class="headerlink" href="#description" title="Link to this heading">#</a></h3>
+<h3>Description<a class="headerlink" href="#description" title="Permalink to this heading">#</a></h3>
 <p>This model approximates exponential integrate-and-fire using a quadratic dynamics. It has
 two fixed points: the stable <span class="math notranslate nohighlight">\(V_\text{rest}\)</span> and unstable <span class="math notranslate nohighlight">\(V_\text{crit}\)</span>. The rate at which
 the membrane voltage is attracted towards <span class="math notranslate nohighlight">\(V_\text{rest}\)</span> and repelled away from <span class="math notranslate nohighlight">\(V_\text{crit}\)</span>
@@ -267,16 +268,16 @@ and the critical voltage <span class="math notranslate nohighlight">\((V_C = -50
 parameters. Plotted with values <span class="math notranslate nohighlight">\(\tau_m=1 \text{ ms}\)</span> and <span class="math notranslate nohighlight">\(a=1\)</span> over a time of <span class="math notranslate nohighlight">\(1 \text{ ms}\)</span>.</p>
 </section>
 <section id="references">
-<h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch5.S3.html">DOI:10.1017/CBO9781107447615 (§5.3)</a></p></li>
 </ol>
 </section>
 </section>
 <section id="izhikevich-adaptive-quadratic">
-<h2>Izhikevich (Adaptive Quadratic)<a class="headerlink" href="#izhikevich-adaptive-quadratic" title="Link to this heading">#</a></h2>
+<h2>Izhikevich (Adaptive Quadratic)<a class="headerlink" href="#izhikevich-adaptive-quadratic" title="Permalink to this heading">#</a></h2>
 <section id="id1">
-<h3>Formulation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -331,12 +332,12 @@ parameters. Plotted with values <span class="math notranslate nohighlight">\(\ta
 <p>Under the conditions <span class="math notranslate nohighlight">\(a &gt; 0\)</span> and <span class="math notranslate nohighlight">\(V_\text{crit} &gt; V_\text{rest}\)</span>.</p>
 </section>
 <section id="id2">
-<h3>Description<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<h3>Description<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
 <p>This model uses the same underlying dynamics of the quadratic integrate-and-fire neuron, but
 incorporates a linear adaptive current depeendent upon output spikes and the membrane voltage.</p>
 </section>
 <section id="id3">
-<h3>References<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (§6.1)</a></p></li>
 <li><p><a class="reference external" href="https://www.mdpi.com/2076-3425/12/7/863/pdf">DOI:10.3390/brainsci12070863</a></p></li>
@@ -345,9 +346,9 @@ incorporates a linear adaptive current depeendent upon output spikes and the mem
 </section>
 </section>
 <section id="exponential-integrate-and-fire-eif">
-<h2>Exponential Integrate-and-Fire (EIF)<a class="headerlink" href="#exponential-integrate-and-fire-eif" title="Link to this heading">#</a></h2>
+<h2>Exponential Integrate-and-Fire (EIF)<a class="headerlink" href="#exponential-integrate-and-fire-eif" title="Permalink to this heading">#</a></h2>
 <section id="id4">
-<h3>Formulation<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
@@ -387,7 +388,7 @@ V_m(t + \Delta t) \approx \frac{\Delta t}{\tau_m} \left[
 <p>Under the conditions <span class="math notranslate nohighlight">\(\Delta_T &gt; 0\)</span> and <span class="math notranslate nohighlight">\(V_T &gt; V_\text{rest}\)</span>.</p>
 </section>
 <section id="id5">
-<h3>Description<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<h3>Description<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
 <p>This model uses exponential dynamics to model the rapid increase in membrane voltage before
 (and at the start of) the generation of an action potential. This upswing occurs at a voltage
 above <span class="math notranslate nohighlight">\(V_T\)</span>, specifically, as <span class="math notranslate nohighlight">\(\Delta_T \rightarrow 0\)</span>, the voltage at which this upswing occurs
@@ -419,7 +420,7 @@ are used to illustrate its effect.</p>
 <span class="math notranslate nohighlight">\(V_T = -50\)</span>, <span class="math notranslate nohighlight">\(\Delta_T = 2\)</span>, and <span class="math notranslate nohighlight">\(\tau_m=1 \text{ ms}\)</span> over a time of <span class="math notranslate nohighlight">\(1 \text{ ms}\)</span>.</p>
 </section>
 <section id="id6">
-<h3>References<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (§6.1)</a></p></li>
 <li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083</a></p></li>
@@ -427,9 +428,9 @@ are used to illustrate its effect.</p>
 </section>
 </section>
 <section id="adaptive-exponential-integrate-and-fire-adex">
-<h2>Adaptive Exponential Integrate-and-Fire (AdEx)<a class="headerlink" href="#adaptive-exponential-integrate-and-fire-adex" title="Link to this heading">#</a></h2>
+<h2>Adaptive Exponential Integrate-and-Fire (AdEx)<a class="headerlink" href="#adaptive-exponential-integrate-and-fire-adex" title="Permalink to this heading">#</a></h2>
 <section id="id7">
-<h3>Formulation<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -481,12 +482,12 @@ are used to illustrate its effect.</p>
 <p>Under the conditions <span class="math notranslate nohighlight">\(\Delta_T &gt; 0\)</span> and <span class="math notranslate nohighlight">\(V_T &gt; V_\text{rest}\)</span>.</p>
 </section>
 <section id="id8">
-<h3>Description<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<h3>Description<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
 <p>This model uses the same underlying dynamics of the exponential integrate-and-fire neuron, but
 incorporates a linear adaptive current depeendent upon output spikes and the membrane voltage.</p>
 </section>
 <section id="id9">
-<h3>References<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (§6.1)</a></p></li>
 <li><p><a class="reference external" href="https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf">ISBN:9780262548083</a></p></li>
@@ -588,9 +589,9 @@ incorporates a linear adaptive current depeendent upon output spikes and the mem
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>

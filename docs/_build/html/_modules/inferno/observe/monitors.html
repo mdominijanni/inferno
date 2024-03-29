@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.observe.monitors - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
@@ -225,10 +226,8 @@
 <span class="kn">import</span> <span class="nn">weakref</span>
 
 
-<div class="viewcode-block" id="MonitorConstructor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.MonitorConstructor.html#inferno.observe.MonitorConstructor">[docs]</a>
-<span class="k">class</span> <span class="nc">MonitorConstructor</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Common constructor for monitors, used in updaters.</span>
+<div class="viewcode-block" id="MonitorConstructor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.MonitorConstructor.html#inferno.observe.MonitorConstructor">[docs]</a><span class="k">class</span> <span class="nc">MonitorConstructor</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Common constructor for monitors, used in updaters.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        attr (str): attribute or nested attribute to target.</span>
@@ -251,15 +250,12 @@
         <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Monitor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Callback protocol function&quot;&quot;&quot;</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Callback protocol function&quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
 
-
-<div class="viewcode-block" id="Monitor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor">[docs]</a>
-<span class="k">class</span> <span class="nc">Monitor</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ContextualHook</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for recording input, output, or state of a Module.</span>
+<div class="viewcode-block" id="Monitor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor">[docs]</a><span class="k">class</span> <span class="nc">Monitor</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ContextualHook</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for recording input, output, or state of a Module.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
@@ -322,11 +318,9 @@
         <span class="c1"># register submodule</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span> <span class="o">=</span> <span class="n">reducer</span>
 
-<div class="viewcode-block" id="Monitor.partialconstructor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.partialconstructor">[docs]</a>
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Monitor.partialconstructor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.partialconstructor">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``partialconstructor`` must be implemented</span>
@@ -340,10 +334,9 @@
             <span class="s2">&quot;the method `partialconstructor`.&quot;</span>
         <span class="p">)</span></div>
 
-
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">peekvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return&#39;s the reducer&#39;s current state.</span>
+    <span class="k">def</span> <span class="nf">peeked</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return&#39;s the reducer&#39;s current state.</span>
 
 <span class="sd">        If :py:meth:`peek` has multiple options, this should be considered as the</span>
 <span class="sd">        default. Unless overridden, :py:meth:`peek` is called without arguments.</span>
@@ -351,49 +344,35 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: reducer&#39;s current state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">peekvalue</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">peeked</span>
 
-<div class="viewcode-block" id="Monitor.clear">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.clear">[docs]</a>
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reinitializes the reducer&#39;s state.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Monitor.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reinitializes the reducer&#39;s state.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Monitor.view">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.view">[docs]</a>
-    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state at a given time.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Monitor.view"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.view">[docs]</a>    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state at a given time.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Monitor.dump">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.dump">[docs]</a>
-    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state over all observations.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Monitor.dump"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state over all observations.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Monitor.peek">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.peek">[docs]</a>
-    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s current state.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Monitor.peek"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.peek">[docs]</a>    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s current state.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">peek</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">reducer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reducer</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Underlying reducer used by the monitor.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Underlying reducer used by the monitor.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Reducer: underlying reducer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span>
 
-<div class="viewcode-block" id="Monitor.register">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.register">[docs]</a>
-    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registers the monitor as a forward hook/prehook.</span>
+<div class="viewcode-block" id="Monitor.register"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registers the monitor as a forward hook/prehook.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            module (Module | None, optional): module with which to register, last</span>
@@ -425,15 +404,11 @@
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="s2">&quot;weak reference to monitored module does not exist, &quot;</span>
                     <span class="s2">&quot;cannot infer argument &#39;module&#39;&quot;</span>
-                <span class="p">)</span></div>
-</div>
+                <span class="p">)</span></div></div>
 
 
-
-<div class="viewcode-block" id="InputMonitor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.InputMonitor.html#inferno.observe.InputMonitor">[docs]</a>
-<span class="k">class</span> <span class="nc">InputMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records the inputs passed to a Module.</span>
+<div class="viewcode-block" id="InputMonitor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.InputMonitor.html#inferno.observe.InputMonitor">[docs]</a><span class="k">class</span> <span class="nc">InputMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records the inputs passed to a Module.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
@@ -487,9 +462,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
 
-<div class="viewcode-block" id="InputMonitor.partialconstructor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.InputMonitor.html#inferno.observe.InputMonitor.partialconstructor">[docs]</a>
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="InputMonitor.partialconstructor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.InputMonitor.html#inferno.observe.InputMonitor.partialconstructor">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
@@ -499,7 +472,7 @@
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            reducer (Reducer): underlying means for reducing samples over time</span>
@@ -531,15 +504,11 @@
                 <span class="n">map_</span><span class="o">=</span><span class="n">map_</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">constructor</span></div>
-</div>
+        <span class="k">return</span> <span class="n">constructor</span></div></div>
 
 
-
-<div class="viewcode-block" id="OutputMonitor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.OutputMonitor.html#inferno.observe.OutputMonitor">[docs]</a>
-<span class="k">class</span> <span class="nc">OutputMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records the outputs returned from a Module.</span>
+<div class="viewcode-block" id="OutputMonitor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.OutputMonitor.html#inferno.observe.OutputMonitor">[docs]</a><span class="k">class</span> <span class="nc">OutputMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records the outputs returned from a Module.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
@@ -594,9 +563,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reducer</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
 
-<div class="viewcode-block" id="OutputMonitor.partialconstructor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.OutputMonitor.html#inferno.observe.OutputMonitor.partialconstructor">[docs]</a>
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="OutputMonitor.partialconstructor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.OutputMonitor.html#inferno.observe.OutputMonitor.partialconstructor">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
@@ -606,7 +573,7 @@
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            reducer (Reducer): underlying means for reducing samples over time</span>
@@ -638,15 +605,11 @@
                 <span class="n">map_</span><span class="o">=</span><span class="n">map_</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">constructor</span></div>
-</div>
+        <span class="k">return</span> <span class="n">constructor</span></div></div>
 
 
-
-<div class="viewcode-block" id="StateMonitor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.StateMonitor.html#inferno.observe.StateMonitor">[docs]</a>
-<span class="k">class</span> <span class="nc">StateMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records the state of an attribute in a Module.</span>
+<div class="viewcode-block" id="StateMonitor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.StateMonitor.html#inferno.observe.StateMonitor">[docs]</a><span class="k">class</span> <span class="nc">StateMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records the state of an attribute in a Module.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
@@ -715,9 +678,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
 
-<div class="viewcode-block" id="StateMonitor.partialconstructor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.StateMonitor.html#inferno.observe.StateMonitor.partialconstructor">[docs]</a>
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="StateMonitor.partialconstructor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.StateMonitor.html#inferno.observe.StateMonitor.partialconstructor">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
@@ -728,7 +689,7 @@
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            reducer (Reducer): underlying means for reducing samples over time</span>
@@ -764,15 +725,11 @@
                 <span class="n">map_</span><span class="o">=</span><span class="n">map_</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">constructor</span></div>
-</div>
+        <span class="k">return</span> <span class="n">constructor</span></div></div>
 
 
-
-<div class="viewcode-block" id="DifferenceMonitor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor">[docs]</a>
-<span class="k">class</span> <span class="nc">DifferenceMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Records the difference of an attribute in a Module before and after its forward call.</span>
+<div class="viewcode-block" id="DifferenceMonitor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor">[docs]</a><span class="k">class</span> <span class="nc">DifferenceMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Records the difference of an attribute in a Module before and after its forward call.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        reducer (Reducer): underlying means for reducing samples over time</span>
@@ -866,9 +823,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">))</span>
 
-<div class="viewcode-block" id="DifferenceMonitor.partialconstructor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor.partialconstructor">[docs]</a>
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="DifferenceMonitor.partialconstructor"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor.partialconstructor">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">reducer</span><span class="p">:</span> <span class="n">Reducer</span><span class="p">,</span>
@@ -879,7 +834,7 @@
         <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">op_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            reducer (Reducer): underlying means for reducing samples over time</span>
@@ -917,19 +872,14 @@
 
         <span class="k">return</span> <span class="n">constructor</span></div>
 
-
-<div class="viewcode-block" id="DifferenceMonitor.clear">
-<a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor.clear">[docs]</a>
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears monitor state and reinitializes the reducer&#39;s state.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DifferenceMonitor.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears monitor state and reinitializes the reducer&#39;s state.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-</div>
-
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducer_</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 
 <span class="k">class</span> <span class="nc">MultiStateMonitor</span><span class="p">(</span><span class="n">Monitor</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records a combination of the state of multiple attributes in a Module.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records a combination of the state of multiple attributes in a Module.</span>
 
 <span class="sd">    Attributes are passed to the reducer in-order.</span>
 
@@ -1018,7 +968,7 @@
         <span class="n">filter_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">map_</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitorConstructor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for monitor construction.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            reducer (Reducer): underlying means for reducing samples over time</span>
@@ -1089,9 +1039,9 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
     </body>

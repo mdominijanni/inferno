@@ -1,13 +1,13 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Pragmatic Considerations" href="considerations.html" /><link rel="prev" title="Mathematical Notes" href="mathematics.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>Neurons and Neuronal Systems - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -160,6 +160,7 @@
   <ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn.html">inferno.learn</a></li>
@@ -218,14 +219,14 @@
         </div>
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="neurons-and-neuronal-systems">
-<h1>Neurons and Neuronal Systems<a class="headerlink" href="#neurons-and-neuronal-systems" title="Link to this heading">#</a></h1>
+<h1>Neurons and Neuronal Systems<a class="headerlink" href="#neurons-and-neuronal-systems" title="Permalink to this heading">#</a></h1>
 <section id="dynamics-of-a-neuron">
-<h2>Dynamics of a Neuron<a class="headerlink" href="#dynamics-of-a-neuron" title="Link to this heading">#</a></h2>
+<h2>Dynamics of a Neuron<a class="headerlink" href="#dynamics-of-a-neuron" title="Permalink to this heading">#</a></h2>
 <section id="id1">
-<h3><a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<h3><a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
 </section>
 <section id="refractory-periods">
-<h3>Refractory Periods<a class="headerlink" href="#refractory-periods" title="Link to this heading">#</a></h3>
+<h3>Refractory Periods<a class="headerlink" href="#refractory-periods" title="Permalink to this heading">#</a></h3>
 <p>Biological neurons have two kinds of refractory periods— an absolute refractory period (ARP) and a relative refractory period (RRP).</p>
 <p>The ARP is a period during which action potentials cannot be generated, and any presynaptic current does not affect the membrane potential (this is the period in which the neuron depolarizes and then repolarizes). The RRP is a period during which the neuron is hyperpolarized, meaning that while it is more difficult for the neuron to fire in this period, it is not impossible.</p>
 <p>The ARP is modeled using a refractory period (in integer multiples of the simulation step time) in which a neuron cannot fire and the voltage of neurons in this period is fixed. This can also apply to neuronal adaptations. Meanwhile, RRP is modeled through the reset voltage, which determines how strongly the neuron is hyperpolarized following the action potential. In some models, this reset voltage is a constant value whereas in others it may be parameterized by some state of the model.</p>
@@ -305,9 +306,9 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
     </body>

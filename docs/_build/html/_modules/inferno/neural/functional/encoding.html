@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.neural.functional.encoding - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn.html">inferno.learn</a></li>
@@ -220,16 +221,14 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span>
 
 
-<div class="viewcode-block" id="enc_poisson_interval">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.enc_poisson_interval.html#inferno.neural.functional.enc_poisson_interval">[docs]</a>
-<span class="k">def</span> <span class="nf">enc_poisson_interval</span><span class="p">(</span>
+<div class="viewcode-block" id="enc_poisson_interval"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.enc_poisson_interval.html#inferno.neural.functional.enc_poisson_interval">[docs]</a><span class="k">def</span> <span class="nf">enc_poisson_interval</span><span class="p">(</span>
     <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">steps</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a tensor of spikes with Poisson determined intervals.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a tensor of spikes with Poisson determined intervals.</span>
 
 <span class="sd">    This is included to replicate BindsNET&#39;s Poisson spike generation. The intervals</span>
 <span class="sd">    between spikes follow the Poisson distribution parameterized with the inverse of</span>
@@ -237,8 +236,8 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        inputs (torch.Tensor): expected spike frequencies, in :math:`\text{Hz}`.</span>
-<span class="sd">        step_time (float): length of time between outputs, in :math:`\text{ms}`.</span>
 <span class="sd">        steps (int): number of steps for which to generate spikes, :math:`S`.</span>
+<span class="sd">        step_time (float): length of time between outputs, in :math:`\text{ms}`.</span>
 <span class="sd">        generator (torch.Generator | None, optional): pseudorandom number generator</span>
 <span class="sd">            for sampling. Defaults to None.</span>
 
@@ -263,9 +262,6 @@
 
 <span class="sd">    Important:</span>
 <span class="sd">        All elements of ``inputs`` must be nonnegative.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        Frequency is never compensated for based on the refractory period.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># disable gradient computation</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
@@ -304,17 +300,14 @@
     <span class="k">return</span> <span class="n">res</span></div>
 
 
-
-<div class="viewcode-block" id="enc_poisson_interval_online">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.enc_poisson_interval_online.html#inferno.neural.functional.enc_poisson_interval_online">[docs]</a>
-<span class="k">def</span> <span class="nf">enc_poisson_interval_online</span><span class="p">(</span>
+<div class="viewcode-block" id="enc_poisson_interval_online"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.enc_poisson_interval_online.html#inferno.neural.functional.enc_poisson_interval_online">[docs]</a><span class="k">def</span> <span class="nf">enc_poisson_interval_online</span><span class="p">(</span>
     <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">steps</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Yields a generator for tensor slices of a spike train with Poisson-sampled intervals.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Yields a generator for tensor slices of a spike train with Poisson-sampled intervals.</span>
 
 <span class="sd">    This is included to replicate BindsNET&#39;s Poisson spike generation. The intervals</span>
 <span class="sd">    between spikes follow the Poisson distribution parameterized with the inverse of</span>
@@ -322,8 +315,8 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        inputs (torch.Tensor): expected spike frequencies, in :math:`\text{Hz}`.</span>
-<span class="sd">        step_time (float): length of time between outputs, in :math:`\text{ms}`.</span>
 <span class="sd">        steps (int): number of steps for which to generate spikes, :math:`S`.</span>
+<span class="sd">        step_time (float): length of time between outputs, in :math:`\text{ms}`.</span>
 <span class="sd">        generator (torch.Generator | None, optional): pseudorandom number generator</span>
 <span class="sd">            for sampling. Defaults to None.</span>
 
@@ -347,9 +340,6 @@
 
 <span class="sd">    Important:</span>
 <span class="sd">        All elements of ``inputs`` must be nonnegative.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        Frequency is never compensated for based on the refractory period.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># disable gradient computation</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
@@ -383,19 +373,16 @@
             <span class="k">yield</span> <span class="n">spikes</span></div>
 
 
-
-<div class="viewcode-block" id="enc_homogeneous_poisson_exp_interval">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.enc_homogeneous_poisson_exp_interval.html#inferno.neural.functional.enc_homogeneous_poisson_exp_interval">[docs]</a>
-<span class="k">def</span> <span class="nf">enc_homogeneous_poisson_exp_interval</span><span class="p">(</span>
+<div class="viewcode-block" id="enc_homogeneous_poisson_exp_interval"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.enc_homogeneous_poisson_exp_interval.html#inferno.neural.functional.enc_homogeneous_poisson_exp_interval">[docs]</a><span class="k">def</span> <span class="nf">enc_homogeneous_poisson_exp_interval</span><span class="p">(</span>
     <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">steps</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">refrac</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">compensate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a tensor of spikes using a Poisson distribution.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a tensor of spikes using a Poisson distribution.</span>
 
 <span class="sd">    This method samples randomly from an exponential distribution (the interval</span>
 <span class="sd">    between samples in a Poisson point process), adding an additional refractory</span>
@@ -404,9 +391,9 @@
 <span class="sd">    Args:</span>
 <span class="sd">        inputs (torch.Tensor): expected spike frequencies, :math:`f`,</span>
 <span class="sd">            in :math:`\text{Hz}`.</span>
+<span class="sd">        steps (int): number of steps for which to generate spikes, :math:`S`.</span>
 <span class="sd">        step_time (float): length of time between outputs, :math:`\Delta t`,</span>
 <span class="sd">            in :math:`\text{ms}`.</span>
-<span class="sd">        steps (int): number of steps for which to generate spikes, :math:`S`.</span>
 <span class="sd">        refrac (float | None, optional): minimum interal between spikes set to the step</span>
 <span class="sd">            time if None, in :math:`\text{ms}`. Defaults to None.</span>
 <span class="sd">        compensate (bool, optioonal): if the spike generation rate should be compensate</span>
@@ -450,7 +437,7 @@
     <span class="c1"># disable gradient computation</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
         <span class="c1"># assume refrac is dt if unspecified</span>
-        <span class="n">refrac</span> <span class="o">=</span> <span class="n">refrac</span> <span class="k">if</span> <span class="n">refrac</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">step_time</span>
+        <span class="n">refrac</span> <span class="o">=</span> <span class="n">step_time</span> <span class="k">if</span> <span class="n">refrac</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">step_time</span>
 
         <span class="c1"># get number of steps, convert refrac from ms to dt</span>
         <span class="n">steps</span><span class="p">,</span> <span class="n">refrac</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">steps</span><span class="p">),</span> <span class="n">refrac</span> <span class="o">/</span> <span class="n">step_time</span>
@@ -489,19 +476,16 @@
     <span class="k">return</span> <span class="n">res</span></div>
 
 
-
-<div class="viewcode-block" id="enc_homogeneous_poisson_exp_interval_online">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.enc_homogeneous_poisson_exp_interval_online.html#inferno.neural.functional.enc_homogeneous_poisson_exp_interval_online">[docs]</a>
-<span class="k">def</span> <span class="nf">enc_homogeneous_poisson_exp_interval_online</span><span class="p">(</span>
+<div class="viewcode-block" id="enc_homogeneous_poisson_exp_interval_online"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.enc_homogeneous_poisson_exp_interval_online.html#inferno.neural.functional.enc_homogeneous_poisson_exp_interval_online">[docs]</a><span class="k">def</span> <span class="nf">enc_homogeneous_poisson_exp_interval_online</span><span class="p">(</span>
     <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">steps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">refrac</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">compensate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Yields a generator for tensor slices of a Poisson spike train.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Yields a generator for tensor slices of a Poisson spike train.</span>
 
 <span class="sd">    This method samples randomly from an exponential distribution (the interval</span>
 <span class="sd">    between samples in a Poisson point process), adding an additional refractory</span>
@@ -510,9 +494,9 @@
 <span class="sd">    Args:</span>
 <span class="sd">        inputs (torch.Tensor): expected spike frequencies, :math:`f`,</span>
 <span class="sd">            in :math:`\text{Hz}`.</span>
+<span class="sd">        steps (int): number of steps for which to generate spikes, :math:`S`.</span>
 <span class="sd">        step_time (float): length of time between outputs, :math:`\Delta t`,</span>
 <span class="sd">            in :math:`\text{ms}`.</span>
-<span class="sd">        steps (int): number of steps for which to generate spikes, :math:`S`.</span>
 <span class="sd">        refrac (float | None, optional): minimum interal between spikes set to the step</span>
 <span class="sd">            time if None, in :math:`\text{ms}`. Defaults to None.</span>
 <span class="sd">        compensate (bool, optioonal): if the spike generation rate should be compensate</span>
@@ -554,6 +538,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># disable gradient computation</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="c1"># assume refrac is dt if unspecified</span>
+        <span class="n">refrac</span> <span class="o">=</span> <span class="n">step_time</span> <span class="k">if</span> <span class="n">refrac</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">step_time</span>
+
         <span class="c1"># get number of steps, convert refrac from ms to dt</span>
         <span class="n">steps</span><span class="p">,</span> <span class="n">refrac</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">steps</span><span class="p">),</span> <span class="n">refrac</span> <span class="o">/</span> <span class="n">step_time</span>
 
@@ -591,18 +578,15 @@
             <span class="k">yield</span> <span class="n">spikes</span></div>
 
 
-
-<div class="viewcode-block" id="enc_inhomogenous_poisson_bernoulli_approx">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.enc_inhomogenous_poisson_bernoulli_approx.html#inferno.neural.functional.enc_inhomogenous_poisson_bernoulli_approx">[docs]</a>
-<span class="k">def</span> <span class="nf">enc_inhomogenous_poisson_bernoulli_approx</span><span class="p">(</span>
+<div class="viewcode-block" id="enc_inhomogenous_poisson_bernoulli_approx"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.functional.enc_inhomogenous_poisson_bernoulli_approx.html#inferno.neural.functional.enc_inhomogenous_poisson_bernoulli_approx">[docs]</a><span class="k">def</span> <span class="nf">enc_inhomogenous_poisson_bernoulli_approx</span><span class="p">(</span>
     <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">generator</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a tensor of spikes approximating an inhomogeneous Poisson distribution.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a tensor of spikes approximating an inhomogeneous Poisson distribution.</span>
 
-<span class="sd">    This method takes in a tensor of frequencies</span>
+<span class="sd">    This method takes in a tensor of frequencies over a number of time steps.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        inputs (torch.Tensor): expected spike frequencies, :math:`f`,</span>
@@ -642,7 +626,6 @@
 
         <span class="c1"># sample directly from Bernoulli distribution. clamping max probability</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">bernoulli</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">clamp_max_</span><span class="p">(</span><span class="mf">1.0</span><span class="p">),</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">)</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span></div>
-
 </pre></div>
         </article>
       </div>
@@ -675,9 +658,9 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/design-tabs.js?v=36754332"></script>
     </body>

@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.neural.neurons.mixins - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn.html">inferno.learn</a></li>
@@ -223,10 +224,8 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 
-<div class="viewcode-block" id="AdaptationMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.AdaptationMixin.html#inferno.neural.neurons.mixins.AdaptationMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">AdaptationMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with membrane adaptations.</span>
+<div class="viewcode-block" id="AdaptationMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.AdaptationMixin.html#inferno.neural.neurons.mixins.AdaptationMixin">[docs]</a><span class="k">class</span> <span class="nc">AdaptationMixin</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with membrane adaptations.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        data (torch.Tensor): initial membrane adaptations.</span>
@@ -267,7 +266,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">adaptation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane adaptations.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane adaptations.</span>
 
 <span class="sd">        If the value the setter attempts to assign has the same shape but with an</span>
 <span class="sd">        additonal leading dimension, it will assume that is an unreduced batch dimension</span>
@@ -292,11 +291,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">adaptation_</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span></div>
 
 
-
-<div class="viewcode-block" id="CurrentMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.CurrentMixin.html#inferno.neural.neurons.mixins.CurrentMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">CurrentMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with membrane currents.</span>
+<div class="viewcode-block" id="CurrentMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.CurrentMixin.html#inferno.neural.neurons.mixins.CurrentMixin">[docs]</a><span class="k">class</span> <span class="nc">CurrentMixin</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with membrane currents.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        data (torch.Tensor): initial currents, in :math:`\text{nA}`.</span>
@@ -319,7 +315,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane current in nanoamperes.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane current in nanoamperes.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new membrane currents.</span>
@@ -334,11 +330,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">current_</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span></div>
 
 
-
-<div class="viewcode-block" id="VoltageMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.VoltageMixin.html#inferno.neural.neurons.mixins.VoltageMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">VoltageMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons driven by membrane voltage.</span>
+<div class="viewcode-block" id="VoltageMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.VoltageMixin.html#inferno.neural.neurons.mixins.VoltageMixin">[docs]</a><span class="k">class</span> <span class="nc">VoltageMixin</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons driven by membrane voltage.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        data (torch.Tensor): initial membrane voltages, in :math:`\text{mV}`.</span>
@@ -361,7 +354,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane voltages in millivolts.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane voltages in millivolts.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new membrane voltages.</span>
@@ -376,11 +369,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">voltage_</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span></div>
 
 
-
-<div class="viewcode-block" id="RefractoryMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.RefractoryMixin.html#inferno.neural.neurons.mixins.RefractoryMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">RefractoryMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with refractory periods.</span>
+<div class="viewcode-block" id="RefractoryMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.RefractoryMixin.html#inferno.neural.neurons.mixins.RefractoryMixin">[docs]</a><span class="k">class</span> <span class="nc">RefractoryMixin</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with refractory periods.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.</span>
@@ -403,7 +393,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">refrac</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remaining refractory periods, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remaining refractory periods, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new remaining refractory periods.</span>
@@ -418,11 +408,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">refrac_</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span></div>
 
 
-
-<div class="viewcode-block" id="SpikeRefractoryMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.SpikeRefractoryMixin.html#inferno.neural.neurons.mixins.SpikeRefractoryMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">SpikeRefractoryMixin</span><span class="p">(</span><span class="n">RefractoryMixin</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with refractory periods with spikes based off of them.</span>
+<div class="viewcode-block" id="SpikeRefractoryMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.neurons.mixins.SpikeRefractoryMixin.html#inferno.neural.neurons.mixins.SpikeRefractoryMixin">[docs]</a><span class="k">class</span> <span class="nc">SpikeRefractoryMixin</span><span class="p">(</span><span class="n">RefractoryMixin</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for neurons with refractory periods with spikes based off of them.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.</span>
@@ -448,7 +435,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Action potentials last generated.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Action potentials last generated.</span>
 
 <span class="sd">        .. math::</span>
 <span class="sd">            f(t) =</span>
@@ -467,7 +454,6 @@
 <span class="sd">                during the prior step.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">refrac</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">refrac_t</span></div>
-
 </pre></div>
         </article>
       </div>
@@ -500,9 +486,9 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/design-tabs.js?v=36754332"></script>
     </body>

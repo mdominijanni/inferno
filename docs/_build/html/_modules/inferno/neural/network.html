@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.neural.network - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
@@ -233,10 +234,8 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Literal</span>
 
 
-<div class="viewcode-block" id="Cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Cell.html#inferno.neural.Cell">[docs]</a>
-<span class="k">class</span> <span class="nc">Cell</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">Observable</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Pair of a Connection and Neuron produced used for training.</span>
+<div class="viewcode-block" id="Cell"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Cell.html#inferno.neural.Cell">[docs]</a><span class="k">class</span> <span class="nc">Cell</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">Observable</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Pair of a Connection and Neuron produced used for training.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        layer (Layer): layer which owns this cell.</span>
@@ -260,10 +259,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">connection_</span> <span class="o">=</span> <span class="n">connection</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">neuron_</span> <span class="o">=</span> <span class="n">neuron</span>
 
-<div class="viewcode-block" id="Cell.local_remap">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Cell.html#inferno.neural.Cell.local_remap">[docs]</a>
-    <span class="k">def</span> <span class="nf">local_remap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Locally remaps an attribute for pooled monitors.</span>
+<div class="viewcode-block" id="Cell.local_remap"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Cell.html#inferno.neural.Cell.local_remap">[docs]</a>    <span class="k">def</span> <span class="nf">local_remap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Locally remaps an attribute for pooled monitors.</span>
 
 <span class="sd">        This method should alias any local attributes being referenced</span>
 <span class="sd">        as required. The callback ``realign`` given on initialization will</span>
@@ -285,7 +282,7 @@
 
         <span class="c1"># ensure the top-level attribute is in this cell</span>
         <span class="k">if</span> <span class="n">attr</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrchain</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;this cell does not have an attribute &#39;</span><span class="si">{</span><span class="n">attrchain</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cell does not have an attribute &#39;</span><span class="si">{</span><span class="n">attrchain</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
         <span class="c1"># remap the top-level target if pointing to a private attribute</span>
         <span class="n">attrchain</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
@@ -310,13 +307,12 @@
                 <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;connection&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrchain</span><span class="p">[</span><span class="mi">1</span><span class="p">:])),</span> <span class="p">{}</span>
             <span class="k">case</span> <span class="s2">&quot;neuron&quot;</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;neuron&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrchain</span><span class="p">[</span><span class="mi">1</span><span class="p">:])),</span> <span class="p">{}</span>
-            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">case</span> <span class="k">_</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;cell&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrchain</span><span class="p">)),</span> <span class="p">{}</span></div>
-
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">connection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Connection</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Connection submodule.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Connection submodule.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Connection: composed connection.</span>
@@ -325,7 +321,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neuron</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Neuron submodule.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Neuron submodule.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Neuron: composed neuron.</span>
@@ -334,7 +330,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">synapse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Synapse</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Synapse submodule.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Synapse submodule.</span>
 
 <span class="sd">        Alias for ``connection.synapse``.</span>
 
@@ -345,7 +341,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">updater</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Updater</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updater submodule.</span>
+        <span class="sd">&quot;&quot;&quot;Updater submodule.</span>
 
 <span class="sd">        Alias for ``connection.updater``.</span>
 
@@ -356,7 +352,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">precurrent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents from the synapse at the time last used by the connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents from the synapse at the time last used by the connection.</span>
 
 <span class="sd">        Alias for ``connection.syncurrent``.</span>
 
@@ -367,7 +363,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">prespike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes to the synapse at the time last used by the connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes to the synapse at the time last used by the connection.</span>
 
 <span class="sd">        Alias for ``connection.synspike``.</span>
 
@@ -378,7 +374,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">postvoltage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane voltages in millivolts.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane voltages in millivolts.</span>
 
 <span class="sd">        Alias for ``neuron.voltage``.</span>
 
@@ -389,7 +385,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">postspike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Action potentials last generated.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Action potentials last generated.</span>
 
 <span class="sd">        Alias for ``neuron.spike``.</span>
 
@@ -398,25 +394,19 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="o">.</span><span class="n">spike</span>
 
-<div class="viewcode-block" id="Cell.forward">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Cell.html#inferno.neural.Cell.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward call.</span>
+<div class="viewcode-block" id="Cell.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Cell.html#inferno.neural.Cell.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Forward call.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            RuntimeError: Cell cannot have its forward method called.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;&#39;forward&#39; method of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Cell) cannot be called&quot;</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span></div></div>
 
 
-
-<div class="viewcode-block" id="Layer">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer">[docs]</a>
-<span class="k">class</span> <span class="nc">Layer</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Representation of simultaneously processed connections and neurons.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Layer"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer">[docs]</a><span class="k">class</span> <span class="nc">Layer</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Representation of simultaneously processed connections and neurons.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
@@ -425,14 +415,10 @@
         <span class="c1"># inner modules</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connections_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">neurons_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
 
-        <span class="c1"># set cells dict so it is not part of PyTorch&#39;s state</span>
-        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;cells_&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">())</span>
-
-<div class="viewcode-block" id="Layer.add_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.add_cell">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">neuron</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Creates and adds a cell if it doesn&#39;t exist.</span>
+<div class="viewcode-block" id="Layer.add_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.add_cell">[docs]</a>    <span class="k">def</span> <span class="nf">add_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">neuron</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Creates and adds a cell if it doesn&#39;t exist.</span>
 
 <span class="sd">        If a cell already exists with the given connection and neuron, this will</span>
 <span class="sd">        return the existing cell rather than create a new one.</span>
@@ -470,11 +456,8 @@
 
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">[</span><span class="n">connection</span><span class="p">][</span><span class="n">neuron</span><span class="p">]</span></div>
 
-
-<div class="viewcode-block" id="Layer.get_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.get_cell">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">neuron</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets a created cell if it exists.</span>
+<div class="viewcode-block" id="Layer.get_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.get_cell">[docs]</a>    <span class="k">def</span> <span class="nf">get_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">neuron</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets a created cell if it exists.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            connection (str): name of the connection for the cell to get.</span>
@@ -495,11 +478,8 @@
                 <span class="sa">f</span><span class="s2">&quot;(&#39;</span><span class="si">{</span><span class="n">connection</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">neuron</span><span class="si">}</span><span class="s2">&#39;) exists&quot;</span>
             <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Layer.del_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.del_cell">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">neuron</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes a created cell if it exists.</span>
+<div class="viewcode-block" id="Layer.del_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.del_cell">[docs]</a>    <span class="k">def</span> <span class="nf">del_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">neuron</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes a created cell if it exists.</span>
 
 <span class="sd">        Even if a cell hasn&#39;t been created with the given pair, if the pair is valid,</span>
 <span class="sd">        this will not raise an error.</span>
@@ -526,11 +506,8 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">[</span><span class="n">connection</span><span class="p">]):</span>
                 <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">[</span><span class="n">connection</span><span class="p">]</span></div>
 
-
-<div class="viewcode-block" id="Layer.add_connection">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.add_connection">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Connection</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a new connection.</span>
+<div class="viewcode-block" id="Layer.add_connection"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.add_connection">[docs]</a>    <span class="k">def</span> <span class="nf">add_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Connection</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a new connection.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the connection to add.</span>
@@ -549,11 +526,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">connections_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">connection</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
 
-
-<div class="viewcode-block" id="Layer.get_connection">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.get_connection">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Connection</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets an existing connection.</span>
+<div class="viewcode-block" id="Layer.get_connection"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.get_connection">[docs]</a>    <span class="k">def</span> <span class="nf">get_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Connection</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets an existing connection.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the connection to get.</span>
@@ -569,11 +543,8 @@
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;name&#39; (&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;) is not a registered connection&quot;</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Layer.del_connection">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.del_connection">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes an existing connection.</span>
+<div class="viewcode-block" id="Layer.del_connection"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.del_connection">[docs]</a>    <span class="k">def</span> <span class="nf">del_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes an existing connection.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the connection to delete.</span>
@@ -588,11 +559,8 @@
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">:</span>
                 <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
 
-
-<div class="viewcode-block" id="Layer.add_neuron">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.add_neuron">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">neuron</span><span class="p">:</span> <span class="n">Neuron</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neuron</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a new neuron.</span>
+<div class="viewcode-block" id="Layer.add_neuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.add_neuron">[docs]</a>    <span class="k">def</span> <span class="nf">add_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">neuron</span><span class="p">:</span> <span class="n">Neuron</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neuron</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a new neuron.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the neuron to add.</span>
@@ -611,11 +579,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">neurons_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">neuron</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neurons_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
 
-
-<div class="viewcode-block" id="Layer.get_neuron">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.get_neuron">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neuron</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets an existing neuron.</span>
+<div class="viewcode-block" id="Layer.get_neuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.get_neuron">[docs]</a>    <span class="k">def</span> <span class="nf">get_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neuron</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets an existing neuron.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the neuron to get.</span>
@@ -631,11 +596,8 @@
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;name&#39; (&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;) is not a registered neuron&quot;</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Layer.del_neuron">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.del_neuron">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes an existing neuron.</span>
+<div class="viewcode-block" id="Layer.del_neuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.del_neuron">[docs]</a>    <span class="k">def</span> <span class="nf">del_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes an existing neuron.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the neuron to delete.</span>
@@ -653,11 +615,10 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">[</span><span class="n">conn</span><span class="p">]):</span>
                     <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">[</span><span class="n">conn</span><span class="p">]</span></div>
 
-
     <span class="k">def</span> <span class="nf">_realign_attribute</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">neuron</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets the attribute path for monitoring relative to the layer.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets the attribute path for monitoring relative to the layer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            connection (str): name of the associated connection.</span>
@@ -674,20 +635,20 @@
                 <span class="k">if</span> <span class="n">connection</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections_</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;connection&#39; (&#39;</span><span class="si">{</span><span class="n">connection</span><span class="si">}</span><span class="s2">&#39;) is not valid&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;connections_.</span><span class="si">{</span><span class="n">connection</span><span class="si">}{</span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">attr</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;connections_.</span><span class="si">{</span><span class="n">connection</span><span class="si">}{</span><span class="s1">&#39;.&#39;</span> <span class="k">if</span> <span class="n">attr</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">case</span> <span class="s2">&quot;neuron&quot;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">neuron</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neurons_</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;neuron&#39; (&#39;</span><span class="si">{</span><span class="n">neuron</span><span class="si">}</span><span class="s2">&#39;) is not valid&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;neurons_.</span><span class="si">{</span><span class="n">neuron</span><span class="si">}{</span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">attr</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;neurons_.</span><span class="si">{</span><span class="n">neuron</span><span class="si">}{</span><span class="s1">&#39;.&#39;</span> <span class="k">if</span> <span class="n">attr</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">case</span> <span class="s2">&quot;cell&quot;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">rgetitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cells</span><span class="p">,</span> <span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">neuron</span><span class="p">),</span> <span class="kc">None</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;cell &#39;connection&#39;, &#39;neuron&#39; (&#39;</span><span class="si">{</span><span class="n">connection</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">neuron</span><span class="si">}</span><span class="s2">&#39;) is not valid&quot;</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;cells_.</span><span class="si">{</span><span class="n">connection</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">neuron</span><span class="si">}{</span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">attr</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;cells_.</span><span class="si">{</span><span class="n">connection</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">neuron</span><span class="si">}{</span><span class="s1">&#39;.&#39;</span> <span class="k">if</span> <span class="n">attr</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">case</span> <span class="k">_</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;invalid &#39;target&#39; (&#39;</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">&#39;) specified, expected one of: &quot;</span>
                     <span class="s2">&quot;&#39;neuron&#39;, &#39;connection&#39;, &#39;cell&#39;&quot;</span>
@@ -695,7 +656,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">connections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Proxy</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registred connections.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registred connections.</span>
 
 <span class="sd">        For a given ``name`` of a :py:class:`Connection` set via</span>
 <span class="sd">        ``layer.add_connection(name)``, it can be accessed as ``layer.connections.name``.</span>
@@ -712,7 +673,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">neurons</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Proxy</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registred neurons.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registred neurons.</span>
 
 <span class="sd">        For a given ``name`` of a :py:class:`Neuron` set via</span>
 <span class="sd">        ``layer[name] = neuron``, it can be accessed as ``layer.neurons.name``.</span>
@@ -729,7 +690,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">cells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Proxy</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered cells.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered cells.</span>
 
 <span class="sd">        For a given ``connection_name`` and ``neuron_name``, the :py:class:`Cell`</span>
 <span class="sd">        automatically constructed on ``cell = layer[connection_name, neuron_name]``,</span>
@@ -747,7 +708,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">named_connections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Connection</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterable of registered connections and their names.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterable of registered connections and their names.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            tuple[str, Connection]: tuple of a registered connection and its name.</span>
@@ -756,7 +717,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">named_neurons</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterable of registered neurons and their names.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterable of registered neurons and their names.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            tuple[str, Neuron]: tuple of a registered neuron and its name.</span>
@@ -765,7 +726,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">named_synapses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Synapse</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterable of registered connection&#39;s synapses and their names.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterable of registered connection&#39;s synapses and their names.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            tuple[str, Synapse]: tuple of a registered synapse and its name.</span>
@@ -774,7 +735,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">named_cells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Cell</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterable of registered cells and tuples of the connection and neuron names.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterable of registered cells and tuples of the connection and neuron names.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            tuple[tuple[str, str], torch.Tensor]: tuple of a registered cell and a tuple</span>
@@ -784,13 +745,11 @@
             <span class="p">(((</span><span class="n">n0</span><span class="p">,</span> <span class="n">n1</span><span class="p">),</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">n1</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">for</span> <span class="n">n0</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Layer.wiring">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.wiring">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Layer.wiring"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.wiring">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">wiring</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Connection logic between connection outputs and neuron inputs.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Connection logic between connection outputs and neuron inputs.</span>
 
 <span class="sd">        The inputs are given as a dictionary where each key is a registered input name</span>
 <span class="sd">        and the value is the tensor output from that connection. This is expected to</span>
@@ -810,11 +769,8 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Layer) must implement &quot;</span> <span class="s2">&quot;the method `wiring`.&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Layer.update">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.update">[docs]</a>
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies all cumulative updates.</span>
+<div class="viewcode-block" id="Layer.update"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies all cumulative updates.</span>
 
 <span class="sd">        This calls every updated which applies cumulative updates and any updater</span>
 <span class="sd">        hooks are automatically called (e.g. parameter clamping).</span>
@@ -826,10 +782,7 @@
         <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections_</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">connection</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">clear</span><span class="o">=</span><span class="n">clear</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Layer.forward">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="Layer.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span>
         <span class="n">connection_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -840,7 +793,7 @@
         <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
         <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes a forward pass.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes a forward pass.</span>
 
 <span class="sd">        The keys for ``inputs`` and ``connection_kwargs`` are the names of registered</span>
 <span class="sd">        :py:class:`Connection` objects.</span>
@@ -891,15 +844,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">neurons_</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">v</span><span class="p">,</span> <span class="o">**</span><span class="n">nkw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">{}))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-            <span class="k">return</span> <span class="n">res</span></div>
-</div>
+            <span class="k">return</span> <span class="n">res</span></div></div>
 
 
-
-<div class="viewcode-block" id="Biclique">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique">[docs]</a>
-<span class="k">class</span> <span class="nc">Biclique</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Layer structured as a complete bipartite graph.</span>
+<div class="viewcode-block" id="Biclique"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique">[docs]</a><span class="k">class</span> <span class="nc">Biclique</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Layer structured as a complete bipartite graph.</span>
 
 <span class="sd">    Each input is processed by its corresponding connection, with an optional</span>
 <span class="sd">    transformation applied, before being combined with the results of all other</span>
@@ -978,7 +927,7 @@
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_combine</span> <span class="o">=</span> <span class="n">combinefn</span>
 
-            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">case</span> <span class="k">_</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">combine</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;&#39;combine&#39; (&#39;</span><span class="si">{</span><span class="n">combine</span><span class="si">}</span><span class="s2">&#39;), when a string, must be one of: &quot;</span>
@@ -1005,7 +954,7 @@
                 <span class="k">case</span> <span class="mi">3</span><span class="p">:</span>
                     <span class="n">Layer</span><span class="o">.</span><span class="n">add_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">c</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">post_input</span><span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-                <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">case</span> <span class="k">_</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;element at position </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> in &#39;connections&#39; has invalid &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;number of elements </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -1020,7 +969,7 @@
                 <span class="k">case</span> <span class="mi">3</span><span class="p">:</span>
                     <span class="n">Layer</span><span class="o">.</span><span class="n">add_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">pre_output</span><span class="p">[</span><span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">n</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-                <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">case</span> <span class="k">_</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;element at position </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> in &#39;neurons&#39; has invalid &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;number of elements </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -1031,60 +980,40 @@
             <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neurons</span><span class="p">:</span>
                 <span class="n">_</span> <span class="o">=</span> <span class="n">Layer</span><span class="o">.</span><span class="n">add_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-<div class="viewcode-block" id="Biclique.add_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.add_cell">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Biclique.add_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.add_cell">[docs]</a>    <span class="k">def</span> <span class="nf">add_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Biclique) does not support adding cells&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Biclique.del_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.del_cell">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Biclique.del_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.del_cell">[docs]</a>    <span class="k">def</span> <span class="nf">del_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Biclique) does not support removing cells&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Biclique.add_connection">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.add_connection">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Biclique.add_connection"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.add_connection">[docs]</a>    <span class="k">def</span> <span class="nf">add_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Biclique) does not support adding connections&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Biclique.del_connection">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.del_connection">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Biclique.del_connection"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.del_connection">[docs]</a>    <span class="k">def</span> <span class="nf">del_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Biclique) does not support removing connections&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Biclique.add_neuron">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.add_neuron">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Biclique.add_neuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.add_neuron">[docs]</a>    <span class="k">def</span> <span class="nf">add_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Biclique) does not support adding neurons&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Biclique.del_neuron">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.del_neuron">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Biclique.del_neuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.del_neuron">[docs]</a>    <span class="k">def</span> <span class="nf">del_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Biclique) does not support removing neurons&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Biclique.wiring">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.wiring">[docs]</a>
-    <span class="k">def</span> <span class="nf">wiring</span><span class="p">(</span>
+<div class="viewcode-block" id="Biclique.wiring"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.wiring">[docs]</a>    <span class="k">def</span> <span class="nf">wiring</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Connection logic between connection outputs and neuron inputs.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Connection logic between connection outputs and neuron inputs.</span>
 
 <span class="sd">        This implements the forward logic of the biclique topology where the tensors</span>
 <span class="sd">        from the inputs are transformed, combined, and transformed again before</span>
@@ -1104,15 +1033,11 @@
                 <span class="p">)</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_output</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="p">}</span></div>
-</div>
+        <span class="p">}</span></div></div>
 
 
-
-<div class="viewcode-block" id="Serial">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial">[docs]</a>
-<span class="k">class</span> <span class="nc">Serial</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Layer with a single connection and single neuron group.</span>
+<div class="viewcode-block" id="Serial"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial">[docs]</a><span class="k">class</span> <span class="nc">Serial</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Layer with a single connection and single neuron group.</span>
 
 <span class="sd">    This wraps :py:class:`Layer` to provid</span>
 
@@ -1167,57 +1092,39 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span> <span class="o">=</span> <span class="n">transfn</span>
 
-<div class="viewcode-block" id="Serial.add_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.add_cell">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Serial.add_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.add_cell">[docs]</a>    <span class="k">def</span> <span class="nf">add_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Serial) does not support adding cells&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Serial.del_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.del_cell">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Serial.del_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.del_cell">[docs]</a>    <span class="k">def</span> <span class="nf">del_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Serial) does not support removing cells&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Serial.add_connection">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.add_connection">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Serial.add_connection"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.add_connection">[docs]</a>    <span class="k">def</span> <span class="nf">add_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Serial) does not support adding connections&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Serial.del_connection">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.del_connection">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Serial.del_connection"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.del_connection">[docs]</a>    <span class="k">def</span> <span class="nf">del_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Serial) does not support removing connections&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Serial.add_neuron">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.add_neuron">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Serial.add_neuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.add_neuron">[docs]</a>    <span class="k">def</span> <span class="nf">add_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Serial) does not support adding neurons&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Serial.del_neuron">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.del_neuron">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Serial.del_neuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.del_neuron">[docs]</a>    <span class="k">def</span> <span class="nf">del_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Serial) does not support removing neurons&quot;</span>
         <span class="p">)</span></div>
 
-
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">connection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Connection</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered connection.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Connection: registered connection.</span>
@@ -1226,7 +1133,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neuron</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered neuron.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered neuron.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Neuron: registered neuron.</span>
@@ -1235,7 +1142,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">synapse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Synapse</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered synapse.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered synapse.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Synapse: registered connection&#39;s synapse.</span>
@@ -1244,7 +1151,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">updater</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Updater</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered updater.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered updater.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Updater: registered connection&#39;s updater.</span>
@@ -1253,19 +1160,17 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">cell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered cell.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Registered cell.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Cell: registered cell.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__connection_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__neuron_name</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Serial.wiring">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.wiring">[docs]</a>
-    <span class="k">def</span> <span class="nf">wiring</span><span class="p">(</span>
+<div class="viewcode-block" id="Serial.wiring"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.wiring">[docs]</a>    <span class="k">def</span> <span class="nf">wiring</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Connection logic between connection outputs and neuron inputs.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Connection logic between connection outputs and neuron inputs.</span>
 
 <span class="sd">        This implements the forward logic of the serial topology. The ``transform`` is</span>
 <span class="sd">        applied to the result of the connection before being passed to the neuron. If</span>
@@ -1283,10 +1188,7 @@
             <span class="p">)</span>
         <span class="p">}</span></div>
 
-
-<div class="viewcode-block" id="Serial.forward">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="Serial.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">connection_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1294,7 +1196,7 @@
         <span class="n">capture_intermediate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes a forward pass.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes a forward pass.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            *inputs (torch.Tensor): values passed to the connection.</span>
@@ -1332,9 +1234,7 @@
                 <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">__connection_name</span><span class="p">],</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__neuron_name</span><span class="p">]</span></div>
-</div>
-
+            <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__neuron_name</span><span class="p">]</span></div></div>
 </pre></div>
         </article>
       </div>
@@ -1367,9 +1267,9 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
     </body>

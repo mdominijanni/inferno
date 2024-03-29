@@ -1,0 +1,8 @@
+﻿Extrapolation
+=============
+
+.. currentmodule:: inferno.functional
+
+.. autoclass:: Extrapolation
+    :members:
+    :show-inheritance:

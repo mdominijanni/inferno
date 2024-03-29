@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.learn.base - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
@@ -218,8 +219,8 @@
           <h1>Source code for inferno.learn.base</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Module</span>
-<span class="kn">from</span> <span class="nn">.._internal</span> <span class="kn">import</span> <span class="n">fzip</span><span class="p">,</span> <span class="n">getitem</span><span class="p">,</span> <span class="n">unique</span>
-<span class="kn">from</span> <span class="nn">..neural</span> <span class="kn">import</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">Layer</span>
+<span class="kn">from</span> <span class="nn">.._internal</span> <span class="kn">import</span> <span class="n">getitem</span><span class="p">,</span> <span class="n">unique</span>
+<span class="kn">from</span> <span class="nn">..neural</span> <span class="kn">import</span> <span class="n">Cell</span>
 <span class="kn">from</span> <span class="nn">..observe</span> <span class="kn">import</span> <span class="n">Monitor</span><span class="p">,</span> <span class="n">MonitorConstructor</span><span class="p">,</span> <span class="n">MonitorPool</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterator</span>
@@ -229,10 +230,8 @@
 <span class="kn">import</span> <span class="nn">weakref</span>
 
 
-<div class="viewcode-block" id="CellTrainer">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer">[docs]</a>
-<span class="k">class</span> <span class="nc">CellTrainer</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base trainer for updating cell parameters.</span>
+<div class="viewcode-block" id="CellTrainer"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer">[docs]</a><span class="k">class</span> <span class="nc">CellTrainer</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base trainer for updating cell parameters.</span>
 
 <span class="sd">    Important:</span>
 <span class="sd">        The :py:class:`Layer` object &quot;owns&quot; the :py:class:`Cell` objects whereas</span>
@@ -257,7 +256,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Monitor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Added monitors.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Added monitors.</span>
 
 <span class="sd">        Because monitors for each ``CellTrainer`` are pooled together for each trainer,</span>
 <span class="sd">        duplicate monitors are not created where possible. The number of monitors here</span>
@@ -270,7 +269,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">named_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Monitor</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterable of added monitors and tuples of the cell and monitor name.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterable of added monitors and tuples of the cell and monitor name.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            tuple[tuple[str, str], Monitor]: tuple of an added monitor and a tuple</span>
@@ -278,10 +277,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor_pool_</span><span class="o">.</span><span class="n">named_monitors</span><span class="p">()</span>
 
-<div class="viewcode-block" id="CellTrainer.named_monitors_of">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.named_monitors_of">[docs]</a>
-    <span class="k">def</span> <span class="nf">named_monitors_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Monitor</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Monitors associated with a given cell.</span>
+<div class="viewcode-block" id="CellTrainer.named_monitors_of"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.named_monitors_of">[docs]</a>    <span class="k">def</span> <span class="nf">named_monitors_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Monitor</span><span class="p">]]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Monitors associated with a given cell.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            cell (str): name of the cell to get associted monitors of.</span>
@@ -291,10 +288,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor_pool_</span><span class="o">.</span><span class="n">named_monitors_of</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span></div>
 
-
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">cells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Added cells and their auxiliary states.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Added cells and their auxiliary states.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            Cell: added cells and their auxiliary states.</span>
@@ -303,7 +299,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">named_cells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Added cell, their auxiliary states, and their names.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Added cell, their auxiliary states, and their names.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            tuple[str, Cell]: tuple of an added cell, their auxiliary states, and its name.</span>
@@ -312,12 +308,10 @@
             <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_states_</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="CellTrainer.add_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.add_cell">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_cell</span><span class="p">(</span>
+<div class="viewcode-block" id="CellTrainer.add_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.add_cell">[docs]</a>    <span class="k">def</span> <span class="nf">add_cell</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a cell and any auxiliary state.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a cell and any auxiliary state.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the cell to add.</span>
@@ -357,11 +351,8 @@
 
         <span class="k">return</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_states_</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="CellTrainer.get_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.get_cell">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets an added cell and any added state.</span>
+<div class="viewcode-block" id="CellTrainer.get_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.get_cell">[docs]</a>    <span class="k">def</span> <span class="nf">get_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets an added cell and any added state.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the trainable to get.</span>
@@ -371,11 +362,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_states_</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="CellTrainer.del_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.del_cell">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes an added cell.</span>
+<div class="viewcode-block" id="CellTrainer.del_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.del_cell">[docs]</a>    <span class="k">def</span> <span class="nf">del_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes an added cell.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the cell to delete.</span>
@@ -402,10 +390,7 @@
         <span class="c1"># delete the cell</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
 
-
-<div class="viewcode-block" id="CellTrainer.add_monitor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.add_monitor">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_monitor</span><span class="p">(</span>
+<div class="viewcode-block" id="CellTrainer.add_monitor"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.add_monitor">[docs]</a>    <span class="k">def</span> <span class="nf">add_monitor</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -415,7 +400,7 @@
         <span class="o">/</span><span class="p">,</span>
         <span class="o">**</span><span class="n">tags</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Monitor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a monitor to a trainable.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a monitor to a trainable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            cell (str): name of the cell to which the monitor will be added.</span>
@@ -451,11 +436,8 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor_pool_</span><span class="o">.</span><span class="n">add_monitor</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">unique</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="CellTrainer.get_monitor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.get_monitor">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Monitor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets an added monitor.</span>
+<div class="viewcode-block" id="CellTrainer.get_monitor"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.get_monitor">[docs]</a>    <span class="k">def</span> <span class="nf">get_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Monitor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets an added monitor.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            cell (str): name of the cell to which the monitor was added.</span>
@@ -466,11 +448,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor_pool_</span><span class="o">.</span><span class="n">get_monitor</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="CellTrainer.del_monitor">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.del_monitor">[docs]</a>
-    <span class="k">def</span> <span class="nf">del_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes an added monitor.</span>
+<div class="viewcode-block" id="CellTrainer.del_monitor"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.del_monitor">[docs]</a>    <span class="k">def</span> <span class="nf">del_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deletes an added monitor.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            cell (str): name of the cell to which the monitor was added.</span>
@@ -482,11 +461,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">monitor_pool_</span><span class="o">.</span><span class="n">del_monitor</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="CellTrainer.train">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.train">[docs]</a>
-    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CellTrainer</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Override of module&#39;s train method.</span>
+<div class="viewcode-block" id="CellTrainer.train"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CellTrainer</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Override of module&#39;s train method.</span>
 
 <span class="sd">        Automatically registers and deregisters monitors. Does not put :py:class:`Cell`</span>
 <span class="sd">        objects into training mode. Does not clear monitor state (call :py:meth:`clear`</span>
@@ -512,11 +488,8 @@
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
-
-<div class="viewcode-block" id="CellTrainer.clear">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.clear">[docs]</a>
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clears all of the monitors for the trainer.</span>
+<div class="viewcode-block" id="CellTrainer.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Clears all of the monitors for the trainer.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            Keyword arguments are passed to :py:meth:`Monitor.clear` call.</span>
@@ -529,11 +502,8 @@
         <span class="k">for</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor_pool_</span><span class="o">.</span><span class="n">monitors</span><span class="p">:</span>
             <span class="n">monitor</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="CellTrainer.update">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.update">[docs]</a>
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies all cumulative updates.</span>
+<div class="viewcode-block" id="CellTrainer.update"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies all cumulative updates.</span>
 
 <span class="sd">        This calls every updater which applies cumulative updates and any updater</span>
 <span class="sd">        hooks are automatically called (e.g. parameter clamping). The updaters will</span>
@@ -546,26 +516,19 @@
         <span class="p">):</span>
             <span class="n">updater</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="CellTrainer.forward">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Processes a training step.</span>
+<div class="viewcode-block" id="CellTrainer.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Processes a training step.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(CellTrainer) must implement the method &#39;forward&#39;&quot;</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span></div></div>
 
 
-
-<div class="viewcode-block" id="LayerwiseTrainer">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseTrainer.html#inferno.learn.LayerwiseTrainer">[docs]</a>
-<span class="k">class</span> <span class="nc">LayerwiseTrainer</span><span class="p">(</span><span class="n">CellTrainer</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Trainer for update methods without inter-layer dependencies.</span>
+<div class="viewcode-block" id="IndependentTrainer"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.IndependentTrainer.html#inferno.learn.IndependentTrainer">[docs]</a><span class="k">class</span> <span class="nc">IndependentTrainer</span><span class="p">(</span><span class="n">CellTrainer</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Trainer for update methods without inter-cell dependencies.</span>
 
 <span class="sd">    Important:</span>
 <span class="sd">        The :py:class:`Layer` object &quot;owns&quot; the :py:class:`Cell` objects but not</span>
@@ -579,6 +542,25 @@
 <span class="sd">        ``Monitor`` objects.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="IndependentTrainer.Unit"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.IndependentTrainer.html#inferno.learn.IndependentTrainer.Unit">[docs]</a>    <span class="k">class</span> <span class="nc">Unit</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Trainable units.</span>
+
+<span class="sd">        Attributes:</span>
+<span class="sd">            cell (Cell): registered cell.</span>
+<span class="sd">            state (nn.Module): auxiliary state.</span>
+<span class="sd">            monitors (nn.ModuleDict): associated monitors.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cell (Cell): registered cell.</span>
+<span class="sd">            state (nn.Module): auxiliary state.</span>
+<span class="sd">            monitors (dict[str, Monitor]): associated monitors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">monitors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Monitor</span><span class="p">]):</span>
+            <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">monitors</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">(</span><span class="n">monitors</span><span class="p">)</span></div>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># call superclass</span>
         <span class="n">CellTrainer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -586,7 +568,7 @@
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Monitor</span><span class="p">]]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterates over trainer contents.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterates over trainer contents.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            tuple[Cell, nn.Module | None, dict[str, Monitor]]: trainable unit, containing</span>
@@ -599,16 +581,14 @@
                 <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_pool_</span><span class="o">.</span><span class="n">named_monitors_of</span><span class="p">(</span><span class="n">name</span><span class="p">)),</span>
             <span class="p">)</span>
 
-<div class="viewcode-block" id="LayerwiseTrainer.unit">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseTrainer.html#inferno.learn.LayerwiseTrainer.unit">[docs]</a>
-    <span class="k">def</span> <span class="nf">unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets a trainable unit.</span>
+<div class="viewcode-block" id="IndependentTrainer.unit"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.IndependentTrainer.html#inferno.learn.IndependentTrainer.unit">[docs]</a>    <span class="k">def</span> <span class="nf">unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IndependentTrainer</span><span class="o">.</span><span class="n">Unit</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets a trainable unit.</span>
 
 <span class="sd">        This can be used if a single trainer should handle training on different</span>
 <span class="sd">        devices. The returned module dictionary can then be altered in-place with</span>
-<span class="sd">        :py:meth:`~nn.Module.to` in order to move a cell, its auxiliary state, and</span>
-<span class="sd">        the monitors used by the trainer to a different device, or change the used</span>
-<span class="sd">        data type.</span>
+<span class="sd">        :py:meth:`~nn.Module.to` in order to move a cell (``cell``), its auxiliary</span>
+<span class="sd">        state (``state``), and monitors (``monitors``) used by the trainer to a</span>
+<span class="sd">        different device, or change the used data type.</span>
 
 <span class="sd">        Calling :py:meth:`~nn.Module.to` on the trainer itself will apply to all</span>
 <span class="sd">        monitors and auxiliary states, but not to any cells.</span>
@@ -617,78 +597,33 @@
 <span class="sd">            name (str): name of the cell to get alongside its auxiliary state.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            nn.ModuleDict: specified cell, auxiliary state, and monitors.</span>
+<span class="sd">            IndependentTrainer.Unit: specified cell, auxiliary state, and monitors.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;cell&quot;</span><span class="p">:</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
-                <span class="s2">&quot;auxstate&quot;</span><span class="p">:</span> <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_states_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
-                <span class="s2">&quot;monitors&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">(</span>
-                    <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_pool_</span><span class="o">.</span><span class="n">named_monitors_of</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-                <span class="p">),</span>
-            <span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span>
+            <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells_</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+            <span class="n">getitem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_states_</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_pool_</span><span class="o">.</span><span class="n">named_monitors_of</span><span class="p">(</span><span class="n">name</span><span class="p">)),</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LayerwiseTrainer.register_cell">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseTrainer.html#inferno.learn.LayerwiseTrainer.register_cell">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">register_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a cell with any required state.</span>
+<div class="viewcode-block" id="IndependentTrainer.register_cell"><a class="viewcode-back" href="../../../reference/generated/inferno.learn.IndependentTrainer.html#inferno.learn.IndependentTrainer.register_cell">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">register_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IndependentTrainer</span><span class="o">.</span><span class="n">Unit</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds a cell with any required state.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of the cell to add.</span>
 <span class="sd">            cell (Cell): cell to add.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            str: name of the added cell.</span>
+<span class="sd">            IndependentTrainer.Unit: specified cell, auxiliary state, and monitors,</span>
+<span class="sd">            as returned by :py:meth:`unit`.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``register_cell`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(LayerwiseTrainer) must implement &quot;</span>
-            <span class="s2">&quot;the method `add_cell`.&quot;</span>
-        <span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="LayerwiseTrainer.register_layer">
-<a class="viewcode-back" href="../../../reference/generated/inferno.learn.LayerwiseTrainer.html#inferno.learn.LayerwiseTrainer.register_layer">[docs]</a>
-    <span class="k">def</span> <span class="nf">register_layer</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">layer</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds all cells from a given layer.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            prefix (str): string to prepend to cell name.</span>
-<span class="sd">            layer (Layer): layer from which cells should be added.</span>
-<span class="sd">            **kwargs (Any): keyword arguments passed to each :py:meth:`register_cells` call.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            tuple[str, ...]: names of the added cells.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            The names used are automatically generated based on the name of the cell in</span>
-<span class="sd">            the layer. For example, with a connection named ``&quot;linear&quot;`` and a neuron</span>
-<span class="sd">            named ``&quot;alif&quot;``, and a ``prefix`` of ``&quot;l0&quot;``, the cell name will be</span>
-<span class="sd">            ``&quot;l0:linear-alif&quot;``. If ``prefix`` is an empty string, the name would be</span>
-<span class="sd">            ``&quot;linear-alif&quot;``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">:&quot;</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">add_cell</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">fzip</span><span class="p">(</span>
-                <span class="n">layer</span><span class="o">.</span><span class="n">named_cells</span><span class="p">,</span>
-                <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">nc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">nc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="n">nc</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                <span class="n">identity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">)</span></div>
-</div>
-
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(IndependentTrainer) must implement &quot;</span>
+            <span class="s2">&quot;the method &#39;register_cell&#39;&quot;</span>
+        <span class="p">)</span></div></div>
 </pre></div>
         </article>
       </div>
@@ -721,9 +656,9 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
     </body>

@@ -1,13 +1,13 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Neuron Models, Linear" href="neurons-linear.html" /><link rel="prev" title="Model and Method Zoo" href="index.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>Neuronal Adaptation - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -160,6 +160,7 @@
   <ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn.html">inferno.learn</a></li>
@@ -218,17 +219,17 @@
         </div>
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="neuronal-adaptation">
-<h1>Neuronal Adaptation<a class="headerlink" href="#neuronal-adaptation" title="Link to this heading">#</a></h1>
+<h1>Neuronal Adaptation<a class="headerlink" href="#neuronal-adaptation" title="Permalink to this heading">#</a></h1>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h2>
 <p>The dynamics imposed by most neuron models (without adaptation) cannot respond to changes with regard to their input. This implies that, for a given constant input, the neuron’s firing frequency will remain steady over time. Adaptation, in this context, gives the neuron model one or more additional degrees of freedom, allowing it to respond to the presented input.</p>
 <p>Generally, this will either be applied as a modification to the presynaptic current (either dampening or amplifying the input) or as a modification to the membrane voltage threshold at which the neuron will fire (either raising or lowering this threshold). Dampening the input or raising the threshold will depress the neuron’s spiking behavior, and amplifying the input or lowering the threshold will potentiate it.</p>
 <p>Additionally, two different parameters of a neuron are typically monitored to inform this adaptation—postsynaptic spikes and membrane potential. The former will potentiate the firing rate as said rate decreases and depress it as it increases. The latter will potentiate the firing rate as the membrane voltage when the voltage is below the equilibrium (rest) voltage and depress the firing rate as it goes above the rest voltage. These effects are in proportion to the magnitude of the difference.</p>
 </section>
 <section id="adaptive-current-linear">
-<h2>Adaptive Current, Linear<a class="headerlink" href="#adaptive-current-linear" title="Link to this heading">#</a></h2>
+<h2>Adaptive Current, Linear<a class="headerlink" href="#adaptive-current-linear" title="Permalink to this heading">#</a></h2>
 <section id="formulation">
-<h3>Formulation<a class="headerlink" href="#formulation" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#formulation" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -262,7 +263,7 @@
 </ul>
 </section>
 <section id="references">
-<h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://neuronaldynamics.epfl.ch/online/Ch6.S1.html">DOI:10.1017/CBO9781107447615 (§6.1)</a></p></li>
 <li><p><a class="reference external" href="https://journals.physiology.org/doi/full/10.1152/jn.00686.2005">DOI:10.1152/jn.00686.2005</a></p></li>
@@ -270,10 +271,10 @@
 </section>
 </section>
 <section id="adaptive-current-linear-spike-dependent">
-<h2>Adaptive Current, Linear Spike-Dependent<a class="headerlink" href="#adaptive-current-linear-spike-dependent" title="Link to this heading">#</a></h2>
+<h2>Adaptive Current, Linear Spike-Dependent<a class="headerlink" href="#adaptive-current-linear-spike-dependent" title="Permalink to this heading">#</a></h2>
 <p><em><strong>(To Be Implemented)</strong></em></p>
 <section id="id1">
-<h3>Formulation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -304,7 +305,7 @@
 </ul>
 </section>
 <section id="id2">
-<h3>References<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://www.nature.com/articles/s41467-017-02717-4">DOI:10.1038/s41467-017-02717-4</a></p></li>
 <li><p><a class="reference external" href="http://web.archive.org/web/20230428012128/https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf">Allen Institute GLIF Whitepaper</a></p></li>
@@ -312,9 +313,9 @@
 </section>
 </section>
 <section id="adaptive-threshold-linear-voltage-dependent">
-<h2>Adaptive Threshold, Linear Voltage-Dependent<a class="headerlink" href="#adaptive-threshold-linear-voltage-dependent" title="Link to this heading">#</a></h2>
+<h2>Adaptive Threshold, Linear Voltage-Dependent<a class="headerlink" href="#adaptive-threshold-linear-voltage-dependent" title="Permalink to this heading">#</a></h2>
 <section id="id3">
-<h3>Formulation<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -351,7 +352,7 @@
 </ul>
 </section>
 <section id="id4">
-<h3>References<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2954058/">DOI:10.1162/neco.2008.12-07-680</a></p></li>
 <li><p><a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3513351/">DOI:10.1162/NECO_a_00196</a></p></li>
@@ -359,9 +360,9 @@
 </section>
 </section>
 <section id="adaptive-threshold-linear-spike-dependent">
-<h2>Adaptive Threshold, Linear Spike-Dependent<a class="headerlink" href="#adaptive-threshold-linear-spike-dependent" title="Link to this heading">#</a></h2>
+<h2>Adaptive Threshold, Linear Spike-Dependent<a class="headerlink" href="#adaptive-threshold-linear-spike-dependent" title="Permalink to this heading">#</a></h2>
 <section id="id5">
-<h3>Formulation<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -394,7 +395,7 @@
 </ul>
 </section>
 <section id="id6">
-<h3>References<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://arxiv.org/abs/1803.09574">arXiv:1803.09574</a></p></li>
 <li><p><a class="reference external" href="https://www.nature.com/articles/s41467-021-24427-8">DOI:10.1038/s41467-021-24427-8</a></p></li>
@@ -493,9 +494,9 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>

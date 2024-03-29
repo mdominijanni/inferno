@@ -1,0 +1,6 @@
+﻿bound\_lower\_sharp
+===================
+
+.. currentmodule:: inferno.functional
+
+.. autofunction:: bound_lower_sharp

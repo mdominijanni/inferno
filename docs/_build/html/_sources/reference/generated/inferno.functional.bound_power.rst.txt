@@ -1,0 +1,6 @@
+﻿bound\_power
+============
+
+.. currentmodule:: inferno.functional
+
+.. autofunction:: bound_power

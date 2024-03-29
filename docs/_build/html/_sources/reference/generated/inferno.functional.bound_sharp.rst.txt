@@ -1,0 +1,6 @@
+﻿bound\_sharp
+============
+
+.. currentmodule:: inferno.functional
+
+.. autofunction:: bound_sharp

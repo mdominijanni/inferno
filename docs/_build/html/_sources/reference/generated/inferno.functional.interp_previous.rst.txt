@@ -1,0 +1,6 @@
+﻿interp\_previous
+================
+
+.. currentmodule:: inferno.functional
+
+.. autofunction:: interp_previous

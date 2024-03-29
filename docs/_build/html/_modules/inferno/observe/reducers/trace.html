@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.observe.reducers.trace - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn.html">inferno.learn</a></li>
@@ -232,10 +233,8 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
-<div class="viewcode-block" id="NearestTraceReducer">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer">[docs]</a>
-<span class="k">class</span> <span class="nc">NearestTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace over time, considering the latest match.</span>
+<div class="viewcode-block" id="NearestTraceReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer">[docs]</a><span class="k">class</span> <span class="nc">NearestTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace over time, considering the latest match.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        x(t) =</span>
@@ -284,7 +283,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (float): new simulation time step length.</span>
@@ -297,12 +296,10 @@
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
 
-<div class="viewcode-block" id="NearestTraceReducer.fold">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer.fold">[docs]</a>
-    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of nearest trace.</span>
+<div class="viewcode-block" id="NearestTraceReducer.fold"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer.fold">[docs]</a>    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of nearest trace.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            obs (torch.Tensor): observation to incorporate into state.</span>
@@ -321,11 +318,8 @@
             <span class="n">tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="NearestTraceReducer.initialize">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer.initialize">[docs]</a>
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
+<div class="viewcode-block" id="NearestTraceReducer.initialize"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): empty tensor of state.</span>
@@ -335,23 +329,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="NearestTraceReducer.interpolate">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer.interpolate">[docs]</a>
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
+<div class="viewcode-block" id="NearestTraceReducer.interpolate"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">            step_time (float): length of time between the prior and</span>
 <span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
@@ -359,15 +350,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">expdecay</span><span class="p">(</span>
             <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span></div></div>
 
 
-
-<div class="viewcode-block" id="CumulativeTraceReducer">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.CumulativeTraceReducer.html#inferno.observe.CumulativeTraceReducer">[docs]</a>
-<span class="k">class</span> <span class="nc">CumulativeTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace over time, considering all prior matches.</span>
+<div class="viewcode-block" id="CumulativeTraceReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.CumulativeTraceReducer.html#inferno.observe.CumulativeTraceReducer">[docs]</a><span class="k">class</span> <span class="nc">CumulativeTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace over time, considering all prior matches.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)</span>
@@ -412,7 +399,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (float): new simulation time step length.</span>
@@ -425,12 +412,10 @@
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CumulativeTraceReducer.fold">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.CumulativeTraceReducer.html#inferno.observe.CumulativeTraceReducer.fold">[docs]</a>
-    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of cumulative trace.</span>
+<div class="viewcode-block" id="CumulativeTraceReducer.fold"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.CumulativeTraceReducer.html#inferno.observe.CumulativeTraceReducer.fold">[docs]</a>    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of cumulative trace.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            obs (torch.Tensor): observation to incorporate into state.</span>
@@ -449,11 +434,8 @@
             <span class="n">tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="CumulativeTraceReducer.initialize">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.CumulativeTraceReducer.html#inferno.observe.CumulativeTraceReducer.initialize">[docs]</a>
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
+<div class="viewcode-block" id="CumulativeTraceReducer.initialize"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.CumulativeTraceReducer.html#inferno.observe.CumulativeTraceReducer.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): empty tensor of state.</span>
@@ -463,23 +445,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="CumulativeTraceReducer.interpolate">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.CumulativeTraceReducer.html#inferno.observe.CumulativeTraceReducer.interpolate">[docs]</a>
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
+<div class="viewcode-block" id="CumulativeTraceReducer.interpolate"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.CumulativeTraceReducer.html#inferno.observe.CumulativeTraceReducer.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">            step_time (float): length of time between the prior and</span>
 <span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
@@ -487,15 +466,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">expdecay</span><span class="p">(</span>
             <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span></div></div>
 
 
-
-<div class="viewcode-block" id="ScaledNearestTraceReducer">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer">[docs]</a>
-<span class="k">class</span> <span class="nc">ScaledNearestTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace over time, scaled by the input, considering the latest match.</span>
+<div class="viewcode-block" id="ScaledNearestTraceReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer">[docs]</a><span class="k">class</span> <span class="nc">ScaledNearestTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace over time, scaled by the input, considering the latest match.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        x(t) =</span>
@@ -546,7 +521,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (float): new simulation time step length.</span>
@@ -559,12 +534,10 @@
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ScaledNearestTraceReducer.fold">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer.fold">[docs]</a>
-    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of scaled nearest trace.</span>
+<div class="viewcode-block" id="ScaledNearestTraceReducer.fold"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer.fold">[docs]</a>    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of scaled nearest trace.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            obs (torch.Tensor): observation to incorporate into state.</span>
@@ -583,11 +556,8 @@
             <span class="n">matchfn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="ScaledNearestTraceReducer.initialize">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer.initialize">[docs]</a>
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
+<div class="viewcode-block" id="ScaledNearestTraceReducer.initialize"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): empty tensor of state.</span>
@@ -597,23 +567,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="ScaledNearestTraceReducer.interpolate">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer.interpolate">[docs]</a>
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
+<div class="viewcode-block" id="ScaledNearestTraceReducer.interpolate"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledNearestTraceReducer.html#inferno.observe.ScaledNearestTraceReducer.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">            step_time (float): length of time between the prior and</span>
 <span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
@@ -621,15 +588,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">expdecay</span><span class="p">(</span>
             <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span></div></div>
 
 
-
-<div class="viewcode-block" id="ScaledCumulativeTraceReducer">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer">[docs]</a>
-<span class="k">class</span> <span class="nc">ScaledCumulativeTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace over time, scaled by the input, considering all prior matches.</span>
+<div class="viewcode-block" id="ScaledCumulativeTraceReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer">[docs]</a><span class="k">class</span> <span class="nc">ScaledCumulativeTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace over time, scaled by the input, considering all prior matches.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)</span>
@@ -676,7 +639,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (float): new simulation time step length.</span>
@@ -689,12 +652,10 @@
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ScaledCumulativeTraceReducer.fold">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer.fold">[docs]</a>
-    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of scaled cumulative trace.</span>
+<div class="viewcode-block" id="ScaledCumulativeTraceReducer.fold"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer.fold">[docs]</a>    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of scaled cumulative trace.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            obs (torch.Tensor): observation to incorporate into state.</span>
@@ -713,11 +674,8 @@
             <span class="n">matchfn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="ScaledCumulativeTraceReducer.initialize">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer.initialize">[docs]</a>
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
+<div class="viewcode-block" id="ScaledCumulativeTraceReducer.initialize"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): empty tensor of state.</span>
@@ -727,23 +685,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="ScaledCumulativeTraceReducer.interpolate">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer.interpolate">[docs]</a>
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
+<div class="viewcode-block" id="ScaledCumulativeTraceReducer.interpolate"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ScaledCumulativeTraceReducer.html#inferno.observe.ScaledCumulativeTraceReducer.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">            step_time (float): length of time between the prior and</span>
 <span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
@@ -751,13 +706,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">expdecay</span><span class="p">(</span>
             <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span></div></div>
 
 
-
-<span class="k">class</span> <span class="nc">ConditionalNearestTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace of over time, scaled by the input, considering the latest condition.</span>
+<div class="viewcode-block" id="ConditionalNearestTraceReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ConditionalNearestTraceReducer.html#inferno.observe.ConditionalNearestTraceReducer">[docs]</a><span class="k">class</span> <span class="nc">ConditionalNearestTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace of over time, scaled by the input, considering the latest condition.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        x(t) =</span>
@@ -805,7 +758,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (float): new simulation time step length.</span>
@@ -818,12 +771,12 @@
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span>
+<div class="viewcode-block" id="ConditionalNearestTraceReducer.fold"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ConditionalNearestTraceReducer.html#inferno.observe.ConditionalNearestTraceReducer.fold">[docs]</a>    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">cond</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of scaled nearest trace.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of scaled nearest trace.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            obs (torch.Tensor): observation to incorporate into state.</span>
@@ -841,10 +794,10 @@
             <span class="n">amplitude</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="p">,</span>
             <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>
             <span class="n">matchfn</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="k">lambda</span> <span class="n">o</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">cond</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
+<div class="viewcode-block" id="ConditionalNearestTraceReducer.initialize"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ConditionalNearestTraceReducer.html#inferno.observe.ConditionalNearestTraceReducer.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): empty tensor of state.</span>
@@ -852,22 +805,22 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: filled state tensor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
+<div class="viewcode-block" id="ConditionalNearestTraceReducer.interpolate"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ConditionalNearestTraceReducer.html#inferno.observe.ConditionalNearestTraceReducer.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">            step_time (float): length of time between the prior and</span>
 <span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
@@ -875,11 +828,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">expdecay</span><span class="p">(</span>
             <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">ConditionalCumulativeTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace over time, scaled by the input, considering all prior conditions.</span>
+<div class="viewcode-block" id="ConditionalCumulativeTraceReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ConditionalCumulativeTraceReducer.html#inferno.observe.ConditionalCumulativeTraceReducer">[docs]</a><span class="k">class</span> <span class="nc">ConditionalCumulativeTraceReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the trace over time, scaled by the input, considering all prior conditions.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)</span>
@@ -923,7 +876,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (float): new simulation time step length.</span>
@@ -936,12 +889,12 @@
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="n">FoldingReducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span>
+<div class="viewcode-block" id="ConditionalCumulativeTraceReducer.fold"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ConditionalCumulativeTraceReducer.html#inferno.observe.ConditionalCumulativeTraceReducer.fold">[docs]</a>    <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">cond</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of scaled cumulative trace.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Application of scaled cumulative trace.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            obs (torch.Tensor): observation to incorporate into state.</span>
@@ -959,10 +912,10 @@
             <span class="n">amplitude</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="p">,</span>
             <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>
             <span class="n">matchfn</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="k">lambda</span> <span class="n">o</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">cond</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
+<div class="viewcode-block" id="ConditionalCumulativeTraceReducer.initialize"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ConditionalCumulativeTraceReducer.html#inferno.observe.ConditionalCumulativeTraceReducer.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): empty tensor of state.</span>
@@ -970,22 +923,22 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: filled state tensor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
+<div class="viewcode-block" id="ConditionalCumulativeTraceReducer.interpolate"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.ConditionalCumulativeTraceReducer.html#inferno.observe.ConditionalCumulativeTraceReducer.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">next_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">sample_at</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential decay interpolation between observations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float): length of time between the prior and</span>
+<span class="sd">            step_time (float): length of time between the prior and</span>
 <span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Returns:</span>
@@ -993,7 +946,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">expdecay</span><span class="p">(</span>
             <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div></div>
 </pre></div>
         </article>
       </div>
@@ -1026,9 +979,9 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/design-tabs.js?v=36754332"></script>
     </body>

@@ -1,0 +1,8 @@
+﻿ConditionalCumulativeTraceReducer
+=================================
+
+.. currentmodule:: inferno.observe
+
+.. autoclass:: ConditionalCumulativeTraceReducer
+    :members:
+    :show-inheritance:

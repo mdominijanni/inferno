@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.neural.connections.linear - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn.html">inferno.learn</a></li>
@@ -227,10 +228,8 @@
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 
 
-<div class="viewcode-block" id="LinearDense">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense">[docs]</a>
-<span class="k">class</span> <span class="nc">LinearDense</span><span class="p">(</span><span class="n">WeightBiasDelayMixin</span><span class="p">,</span> <span class="n">Connection</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linear all-to-all connection.</span>
+<div class="viewcode-block" id="LinearDense"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense">[docs]</a><span class="k">class</span> <span class="nc">LinearDense</span><span class="p">(</span><span class="n">WeightBiasDelayMixin</span><span class="p">,</span> <span class="n">Connection</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linear all-to-all connection.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        y = x W^\intercal + b</span>
@@ -346,7 +345,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of inputs to the connection.</span>
@@ -355,7 +354,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of outputs from the connection.</span>
@@ -364,7 +363,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">selector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learned delays as a selector for synaptic currents and delays.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learned delays as a selector for synaptic currents and delays.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor | None: delay selector if the connection has learnable delays.</span>
@@ -385,10 +384,8 @@
             <span class="n">delays</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">delays</span><span class="p">,</span> <span class="s2">&quot;o i -&gt; 1 i o&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-<div class="viewcode-block" id="LinearDense.like_input">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.like_input">[docs]</a>
-    <span class="k">def</span> <span class="nf">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like synapse input to connection input.</span>
+<div class="viewcode-block" id="LinearDense.like_input"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.like_input">[docs]</a>    <span class="k">def</span> <span class="nf">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like synapse input to connection input.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like synapse input.</span>
@@ -414,11 +411,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">inshape</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearDense.like_synaptic">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.like_synaptic">[docs]</a>
-    <span class="k">def</span> <span class="nf">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection input to synapse input.</span>
+<div class="viewcode-block" id="LinearDense.like_synaptic"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.like_synaptic">[docs]</a>    <span class="k">def</span> <span class="nf">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection input to synapse input.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like connection input.</span>
@@ -444,11 +438,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearDense.presyn_receptive">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.presyn_receptive">[docs]</a>
-    <span class="k">def</span> <span class="nf">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
+<div class="viewcode-block" id="LinearDense.presyn_receptive"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.presyn_receptive">[docs]</a>    <span class="k">def</span> <span class="nf">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like output of :py:meth:`like_synaptic`.</span>
@@ -481,16 +472,13 @@
                 <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b i o -&gt; b o i 1&quot;</span><span class="p">)</span>
             <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b i -&gt; b 1 i 1&quot;</span><span class="p">)</span>
-            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">case</span> <span class="k">_</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;data with invalid number of dimensions </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> received.&quot;</span>
                 <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearDense.postsyn_receptive">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.postsyn_receptive">[docs]</a>
-    <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>
+<div class="viewcode-block" id="LinearDense.postsyn_receptive"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.postsyn_receptive">[docs]</a>    <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like output of :py:meth:`forward`.</span>
@@ -516,11 +504,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...) 1 1&quot;</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearDense.forward">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates connection output from inputs, after passing through the synapse.</span>
+<div class="viewcode-block" id="LinearDense.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDense.html#inferno.neural.LinearDense.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates connection output from inputs, after passing through the synapse.</span>
 
 <span class="sd">        Outputs are determined as the learned linear transformation applied to synaptic</span>
 <span class="sd">        currents, after new input is applied to the synapse, then reshaped to match</span>
@@ -569,15 +554,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span></div>
-</div>
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span></div></div>
 
 
-
-<div class="viewcode-block" id="LinearDirect">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect">[docs]</a>
-<span class="k">class</span> <span class="nc">LinearDirect</span><span class="p">(</span><span class="n">WeightBiasDelayMixin</span><span class="p">,</span> <span class="n">Connection</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linear one-to-one connection.</span>
+<div class="viewcode-block" id="LinearDirect"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect">[docs]</a><span class="k">class</span> <span class="nc">LinearDirect</span><span class="p">(</span><span class="n">WeightBiasDelayMixin</span><span class="p">,</span> <span class="n">Connection</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linear one-to-one connection.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        y = x \odot W + b</span>
@@ -678,7 +659,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of inputs to the connection.</span>
@@ -687,7 +668,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of outputs from the connection.</span>
@@ -696,7 +677,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">selector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learned delays as a selector for synaptic currents and delays.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learned delays as a selector for synaptic currents and delays.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor | None: delay selector if the connection has learnable delays.</span>
@@ -717,10 +698,8 @@
 
         <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">delays</span><span class="p">,</span> <span class="s2">&quot;n -&gt; 1 n 1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-<div class="viewcode-block" id="LinearDirect.like_input">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.like_input">[docs]</a>
-    <span class="k">def</span> <span class="nf">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like synapse input to connection input.</span>
+<div class="viewcode-block" id="LinearDirect.like_input"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.like_input">[docs]</a>    <span class="k">def</span> <span class="nf">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like synapse input to connection input.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like synapse input.</span>
@@ -746,11 +725,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">inshape</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearDirect.like_synaptic">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.like_synaptic">[docs]</a>
-    <span class="k">def</span> <span class="nf">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection input to synapse input.</span>
+<div class="viewcode-block" id="LinearDirect.like_synaptic"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.like_synaptic">[docs]</a>    <span class="k">def</span> <span class="nf">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection input to synapse input.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like connection input.</span>
@@ -776,11 +752,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...)&quot;</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearDirect.presyn_receptive">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.presyn_receptive">[docs]</a>
-    <span class="k">def</span> <span class="nf">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
+<div class="viewcode-block" id="LinearDirect.presyn_receptive"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.presyn_receptive">[docs]</a>    <span class="k">def</span> <span class="nf">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like output of :py:meth:`like_synaptic`.</span>
@@ -805,11 +778,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b n -&gt; b n 1&quot;</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearDirect.postsyn_receptive">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.postsyn_receptive">[docs]</a>
-    <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>
+<div class="viewcode-block" id="LinearDirect.postsyn_receptive"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.postsyn_receptive">[docs]</a>    <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like output of :py:meth:`forward`.</span>
@@ -835,11 +805,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b ... -&gt; b (...) 1&quot;</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearDirect.forward">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates connection output from inputs, after passing through the synapse.</span>
+<div class="viewcode-block" id="LinearDirect.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates connection output from inputs, after passing through the synapse.</span>
 
 <span class="sd">        Outputs are determined as the learned linear transformation applied to synaptic</span>
 <span class="sd">        currents, after new input is applied to the synapse, then reshaped to match</span>
@@ -884,15 +851,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">res</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span>
 
-        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span></div>
-</div>
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">outshape</span><span class="p">)</span></div></div>
 
 
-
-<div class="viewcode-block" id="LinearLateral">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral">[docs]</a>
-<span class="k">class</span> <span class="nc">LinearLateral</span><span class="p">(</span><span class="n">WeightBiasDelayMixin</span><span class="p">,</span> <span class="n">Connection</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linear all-to-&quot;all but one&quot; connection.</span>
+<div class="viewcode-block" id="LinearLateral"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral">[docs]</a><span class="k">class</span> <span class="nc">LinearLateral</span><span class="p">(</span><span class="n">WeightBiasDelayMixin</span><span class="p">,</span> <span class="n">Connection</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linear all-to-&quot;all but one&quot; connection.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        y = x \left(W^\intercal \odot (1 - I_N\right)) + b</span>
@@ -996,7 +959,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable connection weights.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable connection weights.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new weights.</span>
@@ -1015,7 +978,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable delays of the connection.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable delays of the connection.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new delays.</span>
@@ -1034,7 +997,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of inputs to the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of inputs to the connection.</span>
@@ -1043,7 +1006,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">outshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of outputs from the connection, excluding the batch dimension.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[int]: shape of outputs from the connection.</span>
@@ -1052,7 +1015,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">selector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learned delays as a selector for synaptic currents and delays.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learned delays as a selector for synaptic currents and delays.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor | None: delay selector if the connection has learnable delays.</span>
@@ -1068,10 +1031,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">LinearDense</span><span class="o">.</span><span class="n">selector</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<div class="viewcode-block" id="LinearLateral.like_input">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.like_input">[docs]</a>
-    <span class="k">def</span> <span class="nf">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like synapse input to connection input.</span>
+<div class="viewcode-block" id="LinearLateral.like_input"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.like_input">[docs]</a>    <span class="k">def</span> <span class="nf">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like synapse input to connection input.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like synapse input.</span>
@@ -1097,11 +1058,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">LinearDense</span><span class="o">.</span><span class="n">like_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearLateral.like_synaptic">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.like_synaptic">[docs]</a>
-    <span class="k">def</span> <span class="nf">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection input to synapse input.</span>
+<div class="viewcode-block" id="LinearLateral.like_synaptic"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.like_synaptic">[docs]</a>    <span class="k">def</span> <span class="nf">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection input to synapse input.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like connection input.</span>
@@ -1127,11 +1085,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">LinearDense</span><span class="o">.</span><span class="n">like_synaptic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearLateral.presyn_receptive">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.presyn_receptive">[docs]</a>
-    <span class="k">def</span> <span class="nf">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
+<div class="viewcode-block" id="LinearLateral.presyn_receptive"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.presyn_receptive">[docs]</a>    <span class="k">def</span> <span class="nf">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like the synapse state for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like output of :py:meth:`like_synaptic`.</span>
@@ -1160,11 +1115,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">LinearDense</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearLateral.postsyn_receptive">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.postsyn_receptive">[docs]</a>
-    <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>
+<div class="viewcode-block" id="LinearLateral.postsyn_receptive"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.postsyn_receptive">[docs]</a>    <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (torch.Tensor): data shaped like output of :py:meth:`forward`.</span>
@@ -1190,11 +1142,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">LinearDense</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="LinearLateral.forward">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates connection output from inputs, after passing through the synapse.</span>
+<div class="viewcode-block" id="LinearLateral.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates connection output from inputs, after passing through the synapse.</span>
 
 <span class="sd">        Outputs are determined as the learned linear transformation applied to synaptic</span>
 <span class="sd">        currents, after new input is applied to the synapse, then reshaped to match</span>
@@ -1227,9 +1176,7 @@
 <span class="sd">            py:meth:`Synapse.forward` of :py:attr:`synapse`. Keyword arguments are</span>
 <span class="sd">            also passed through.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">LinearDense</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-</div>
-
+        <span class="k">return</span> <span class="n">LinearDense</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 </pre></div>
         </article>
       </div>
@@ -1262,9 +1209,9 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/design-tabs.js?v=36754332"></script>
     </body>

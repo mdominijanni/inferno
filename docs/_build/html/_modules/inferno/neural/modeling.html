@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.neural.modeling - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../reference/learn.html">inferno.learn</a></li>
@@ -229,7 +230,7 @@
 
 
 <span class="k">class</span> <span class="nc">Accumulator</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Used by :py:class:`Updater`, accumulated updates for a parameter.&quot;&quot;&quot;</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Used by :py:class:`Updater`, accumulated updates for a parameter.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
@@ -261,7 +262,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Positive update component.</span>
+        <span class="sd">&quot;&quot;&quot;Positive update component.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor | None): appends to update component.</span>
@@ -284,7 +285,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">neg</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Negative update component.</span>
+        <span class="sd">&quot;&quot;&quot;Negative update component.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor | None): appends to update component.</span>
@@ -308,7 +309,7 @@
     <span class="k">def</span> <span class="nf">reduction</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for reducing multiple updates.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for reducing multiple updates.</span>
 
 <span class="sd">        When ``fn`` is ``None``, it sets the default reducer, :py:func:`torch.sum`.</span>
 
@@ -328,7 +329,7 @@
         <span class="o">/</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for parameter bounding on the upper limit.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for parameter bounding on the upper limit.</span>
 
 <span class="sd">        When ``bound`` is ``None``, no upper bound will be applied (and will remove</span>
 <span class="sd">        any full bound present). When ``bound`` is not ``None``, them ``max`` cannot</span>
@@ -356,7 +357,7 @@
         <span class="o">/</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for parameter bounding on the lower limit.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for parameter bounding on the lower limit.</span>
 
 <span class="sd">        When ``bound`` is ``None``, no lower bound will be applied (and will remove</span>
 <span class="sd">        any full bound present). When ``bound`` is not ``None``, them ``min`` cannot</span>
@@ -385,7 +386,7 @@
         <span class="o">/</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for parameter bounding on the upper and lower limits.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets the function used for parameter bounding on the upper and lower limits.</span>
 
 <span class="sd">        When ``bound`` is ``None``, no full bound will be applied (and will remove</span>
 <span class="sd">        any upper or lower bound present). When ``bound`` is not ``None``, then</span>
@@ -407,12 +408,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">bind</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">p</span> <span class="o">-</span> <span class="n">n</span>
 
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears the accumulator&#39;s state.&quot;&quot;&quot;</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears the accumulator&#39;s state.&quot;&quot;&quot;</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">neg</span>
 
     <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the update.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the update.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            param (torch.Tensor): parameter being updated.</span>
@@ -449,7 +450,7 @@
             <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the update and returns a tensor with it applied.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the update and returns a tensor with it applied.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            param (torch.Tensor): parameter being updated.</span>
@@ -464,10 +465,8 @@
             <span class="k">return</span> <span class="n">param</span>
 
 
-<div class="viewcode-block" id="Updater">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updater.html#inferno.neural.Updater">[docs]</a>
-<span class="k">class</span> <span class="nc">Updater</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Managed accumulated updates for module parameters.</span>
+<div class="viewcode-block" id="Updater"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updater.html#inferno.neural.Updater">[docs]</a><span class="k">class</span> <span class="nc">Updater</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Managed accumulated updates for module parameters.</span>
 
 <span class="sd">    The added parameters are all set as properties which return an</span>
 <span class="sd">    :py:class:`Accumulator` corresponding to that parameter. Care must be taken to</span>
@@ -531,7 +530,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_get_</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Updater</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Accumulator</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets the accumulator for a given attribute.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gets the accumulator for a given attribute.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            self (Updater): updater, self via the associated property.</span>
@@ -548,7 +547,7 @@
         <span class="n">value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Updates the accumulator values for a given attribute.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Updates the accumulator values for a given attribute.</span>
 
 <span class="sd">        As a property, setting with a 2-tuple assumes the first term is the positive</span>
 <span class="sd">        portion of the update and the second term is the negative portion. If instead</span>
@@ -582,7 +581,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_del_</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Updater</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears the accumulator state for a given attribute.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears the accumulator state for a given attribute.</span>
 
 <span class="sd">        As a property, this is equivalent to using ``del`` on the</span>
 <span class="sd">        :py:attr:`Accumulator.pos` and :py:attr:`Accumulator.neg` properties directly,</span>
@@ -597,7 +596,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parent module, if valid.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parent module, if valid.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Module | None: parent module if the reference to it still exists.</span>
@@ -606,25 +605,20 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Names of updatable attributes.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Names of updatable attributes.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[str, ...]: names of updatable parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
-<div class="viewcode-block" id="Updater.clear">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.clear">[docs]</a>
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears all of the accumulators&#39; states.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Updater.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears all of the accumulators&#39; states.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">acc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">acc</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Updater.forward">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies accumulated updates.</span>
+<div class="viewcode-block" id="Updater.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies accumulated updates.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            *params (str): parameters to update, all parameters when none are specified.</span>
@@ -638,22 +632,18 @@
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;&#39;parent&#39; module is no longer a valid reference&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="p">[</span><span class="n">p</span><span class="p">](</span><span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div>
-</div>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates_</span><span class="p">[</span><span class="n">p</span><span class="p">](</span><span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div></div>
 
 
-
-<div class="viewcode-block" id="Updatable">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable">[docs]</a>
-<span class="k">class</span> <span class="nc">Updatable</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds parameter updating functionality to a module.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Updatable"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable">[docs]</a><span class="k">class</span> <span class="nc">Updatable</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Adds parameter updating functionality to a module.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">updater_</span><span class="p">:</span> <span class="n">Updater</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">updatable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;If the module is updatable.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;If the module is updatable.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if the module is updatable.</span>
@@ -662,7 +652,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">updater</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Updater</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Updater for the module.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Updater for the module.</span>
 
 <span class="sd">        Deleting this attribute deletes the associated updater.</span>
 
@@ -682,11 +672,9 @@
     <span class="k">def</span> <span class="nf">updater</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">updater_</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="Updatable.defaultupdater">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.defaultupdater">[docs]</a>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Updatable.defaultupdater"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.defaultupdater">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">defaultupdater</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">includes</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Updater</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Default updater for this object.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Default updater for this object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            *includes (str): additional instance-specific parameters to include.</span>
@@ -702,19 +690,13 @@
             <span class="s2">&quot;the method &#39;defaultupdater&#39;&quot;</span>
         <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Updatable.clear">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.clear">[docs]</a>
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears the updater&#39;s state.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Updatable.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clears the updater&#39;s state.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatable</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Updatable.update">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.update">[docs]</a>
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies all accumulated updates.</span>
+<div class="viewcode-block" id="Updatable.update"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies all accumulated updates.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            clear (bool, optional): if accumulators should be cleared after updating.</span>
@@ -725,11 +707,8 @@
             <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="Updatable.updatesome">
-<a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.updatesome">[docs]</a>
-    <span class="k">def</span> <span class="nf">updatesome</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies accumulated updates to specific parameters.</span>
+<div class="viewcode-block" id="Updatable.updatesome"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable.updatesome">[docs]</a>    <span class="k">def</span> <span class="nf">updatesome</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies accumulated updates to specific parameters.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            *params (str): parameters to update.</span>
@@ -739,9 +718,7 @@
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
-                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-</div>
-
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 </pre></div>
         </article>
       </div>
@@ -774,9 +751,9 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
     </body>

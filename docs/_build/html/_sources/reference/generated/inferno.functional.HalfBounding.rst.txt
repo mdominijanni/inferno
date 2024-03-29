@@ -1,0 +1,8 @@
+﻿HalfBounding
+============
+
+.. currentmodule:: inferno.functional
+
+.. autoclass:: HalfBounding
+    :members:
+    :show-inheritance:

@@ -4,6 +4,7 @@
 :hidden:
 
 inferno
+functional
 neural
 neural-functional
 learn

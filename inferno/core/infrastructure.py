@@ -805,7 +805,7 @@ def _constraints_consistent(constraints: dict[int, int], ndims: int) -> bool:
     return True
 
 
-def _shapedtensor_finalization(owner: weakref.ReferenceType, name: str):
+def _shapedtensor_finalization(owner: weakref.ReferenceType, name: str) -> None:
     r"""Finalizer function for ShapedTensor."""
     owner = owner()
     if owner:
@@ -1368,7 +1368,7 @@ def _unwind_ptr(pointer: int, offset: int | float, size: int) -> int:
     return (pointer - int(offset)) % size
 
 
-def _recordtensor_finalization(owner: weakref.ReferenceType, name: str):
+def _recordtensor_finalization(owner: weakref.ReferenceType, name: str) -> None:
     r"""Finalizer function for RecordTensor."""
     owner = owner()
     if owner:
@@ -2068,6 +2068,7 @@ class RecordTensor(ShapedTensor):
         *,
         tolerance: float | torch.Tensor = 1e-7,
         offset: int = 1,
+        interp_kwargs: dict[str, Any] | None = None,
     ) -> torch.Tensor:
         r"""Selects previously observed elements of the record tensor by time.
 
@@ -2092,6 +2093,8 @@ class RecordTensor(ShapedTensor):
                 Defaults to 1e-7.
             offset (int, optional): number of steps before the pointer to consider the
                 zero point. Defaults to 1.
+            interp_kwargs (dict[str, Any] | None, optional): dictionary of keyword
+                arguments to pass to ``interp``. Defaults to ``None``.
 
         Returns:
             torch.Tensor: interpolated values selected at a prior times.
@@ -2126,6 +2129,7 @@ class RecordTensor(ShapedTensor):
         *,
         tolerance: float | torch.Tensor = 1e-7,
         offset: int = 1,
+        interp_kwargs: dict[str, Any] | None = None,
     ) -> torch.Tensor:
         # use nearest interpolation by default
         if not interp:
@@ -2174,7 +2178,13 @@ class RecordTensor(ShapedTensor):
         next_idx = (ptr - index.floor().long()) % recordsz
         next_data = torch.gather(data, -1, next_idx)
 
-        res = interp(prev_data, next_data, dt * (index % 1), dt)
+        res = interp(
+            prev_data,
+            next_data,
+            dt * (index % 1),
+            dt,
+            **(interp_kwargs if interp_kwargs else {}),
+        )
 
         # bypass interpolation for exact indices
         res = torch.where(prev_idx == next_idx, prev_data, res)
@@ -2190,6 +2200,7 @@ class RecordTensor(ShapedTensor):
         *,
         tolerance: float = 1e-7,
         offset: int = 1,
+        interp_kwargs: dict[str, Any] | None = None,
     ) -> torch.Tensor:
         # use nearest interpolation by default
         if not interp:
@@ -2224,6 +2235,7 @@ class RecordTensor(ShapedTensor):
                 data[..., _unwind_ptr(ptr, index, recordsz)],
                 full(data, dt * (index % 1), shape=data.shape[:-1]),
                 dt,
+                **(interp_kwargs if interp_kwargs else {}),
             )
 
     def reconstrain(

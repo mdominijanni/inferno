@@ -1,13 +1,13 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Neurons and Neuronal Systems" href="neurons.html" /><link rel="prev" title="Guidebook" href="index.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>Mathematical Notes - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -160,6 +160,7 @@
   <ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn.html">inferno.learn</a></li>
@@ -218,9 +219,9 @@
         </div>
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="mathematical-notes">
-<h1>Mathematical Notes<a class="headerlink" href="#mathematical-notes" title="Link to this heading">#</a></h1>
+<h1>Mathematical Notes<a class="headerlink" href="#mathematical-notes" title="Permalink to this heading">#</a></h1>
 <section id="exponential-decay-and-time-constants">
-<h2>Exponential Decay and Time Constants<a class="headerlink" href="#exponential-decay-and-time-constants" title="Link to this heading">#</a></h2>
+<h2>Exponential Decay and Time Constants<a class="headerlink" href="#exponential-decay-and-time-constants" title="Permalink to this heading">#</a></h2>
 <p>Exponential decay is defined as a phenomenon where the rate at which a quantity decreases is proportional to its current value. It can be described by the differential equation</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -268,7 +269,7 @@ Nb^{-k} = N \left[\exp\left(-\frac{\Delta t}{\tau}\right)\right]^{k \tau_b / \De
 “rate” parameter <span class="math notranslate nohighlight">\(\lambda\)</span>, such that <span class="math notranslate nohighlight">\(\lambda = \tau^{-1}\)</span>.</p>
 </section>
 <section id="trace">
-<h2>Trace<a class="headerlink" href="#trace" title="Link to this heading">#</a></h2>
+<h2>Trace<a class="headerlink" href="#trace" title="Permalink to this heading">#</a></h2>
 <p>In the context of spiking neural networks, the notion of “trace” frequently arises. When performing computations which care about the history of spiking activity, they may be formally described as summing over all the previous times in which a spike occurred. However, this is not practical for the purposes of simulation, as an all-to-all comparison grows in complexity quadratically with respect to the length of the simulation time.</p>
 <p>In the interest of biological plausibility, and to the benefit of computational feasibility, rather than considering every prior spike, it is instead modeled as each prior spike leaving behind a <em>trace</em>. A trace is typically represented by the differential equation</p>
 <div class="math-wrapper docutils container">
@@ -280,7 +281,7 @@ Nb^{-k} = N \left[\exp\left(-\frac{\Delta t}{\tau}\right)\right]^{k \tau_b / \De
 <p>where <span class="math notranslate nohighlight">\(x\)</span> is the trace, <span class="math notranslate nohighlight">\(A\)</span> is the amplitude of the trace, <span class="math notranslate nohighlight">\(\tau_x\)</span> is the time constant of exponential decay, <span class="math notranslate nohighlight">\(t\)</span> is the simulation time, <span class="math notranslate nohighlight">\(t^f\)</span> are the times at which spikes occurred (over the set of spikes <span class="math notranslate nohighlight">\(f\)</span>), and <span class="math notranslate nohighlight">\(\delta\)</span> is the Dirac delta function. This construction <span class="math notranslate nohighlight">\(\delta (t - t^f)\)</span>, when in the solution of the differential equation, evaluates to <span class="math notranslate nohighlight">\(1\)</span> if the current time <span class="math notranslate nohighlight">\(t\)</span> is a time at which an action potential was generated and <span class="math notranslate nohighlight">\(0\)</span> otherwise.</p>
 <p>This equation can be interpreted as follows: whenever a spike occurs, add some value <span class="math notranslate nohighlight">\(A\)</span> to the trace <span class="math notranslate nohighlight">\(x\)</span>, and let this trace decay exponentially with some time constant <span class="math notranslate nohighlight">\(\tau_x\)</span>. Instead of only considering spikes, <span class="math notranslate nohighlight">\(j\)</span> is the set of true events, occuring at times <span class="math notranslate nohighlight">\(t^j\)</span>.</p>
 <section id="cumulative-trace">
-<h3>Cumulative Trace<a class="headerlink" href="#cumulative-trace" title="Link to this heading">#</a></h3>
+<h3>Cumulative Trace<a class="headerlink" href="#cumulative-trace" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
@@ -306,7 +307,7 @@ x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) + A \left[t = 
 <p><span class="math notranslate nohighlight">\([\cdots]\)</span> is the Iverson bracket and equals <span class="math notranslate nohighlight">\(1\)</span> if the inner statement is true and <span class="math notranslate nohighlight">\(0\)</span> if it is false.</p>
 </section>
 <section id="nearest-trace">
-<h3>Nearest Trace<a class="headerlink" href="#nearest-trace" title="Link to this heading">#</a></h3>
+<h3>Nearest Trace<a class="headerlink" href="#nearest-trace" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -328,15 +329,15 @@ x(t) =
 </ul>
 </section>
 <section id="scaling-trace">
-<h3>Scaling Trace<a class="headerlink" href="#scaling-trace" title="Link to this heading">#</a></h3>
+<h3>Scaling Trace<a class="headerlink" href="#scaling-trace" title="Permalink to this heading">#</a></h3>
 <p>Generalizing trace further, if a new observation <span class="math notranslate nohighlight">\(h\)</span> meets a criterion function <span class="math notranslate nohighlight">\(J\)</span>, then an amplitude proportional to the observation is added to trace. So for <span class="math notranslate nohighlight">\(t^j = \{t \mid  J(h^{(t)})\}\)</span> an observation-dependent amplitude <span class="math notranslate nohighlight">\(f_A(t) = h^{(t)}s + A\)</span> is used.</p>
 </section>
 </section>
 <section id="parameter-dependence">
-<h2>Parameter Dependence<a class="headerlink" href="#parameter-dependence" title="Link to this heading">#</a></h2>
+<h2>Parameter Dependence<a class="headerlink" href="#parameter-dependence" title="Permalink to this heading">#</a></h2>
 <p>Traditionally applied to connection weights, especially with learning methods which contain a potentiative and depressive component, parameter dependence is a technique which limits the range of values for a parameter.</p>
 <section id="soft-dependence">
-<h3>Soft Dependence<a class="headerlink" href="#soft-dependence" title="Link to this heading">#</a></h3>
+<h3>Soft Dependence<a class="headerlink" href="#soft-dependence" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -361,7 +362,7 @@ x(t) =
 <p>This penalizes parameter that are out of specified bounds by applying a penalty proportional to the amount by which the current weight is over/under the bound. The order parameters <span class="math notranslate nohighlight">\(\mu_+\)</span> and <span class="math notranslate nohighlight">\(\mu_-\)</span> control the rate of this penalty. When <span class="math notranslate nohighlight">\(\mu_+\)</span> and <span class="math notranslate nohighlight">\(\mu_-\)</span> are set to <span class="math notranslate nohighlight">\(1\)</span>, this is referred to as “multiplicative dependence”, and when not set to <span class="math notranslate nohighlight">\(1\)</span> is often referred to as “power law dependence”.</p>
 </section>
 <section id="hard-dependence">
-<h3>Hard Dependence<a class="headerlink" href="#hard-dependence" title="Link to this heading">#</a></h3>
+<h3>Hard Dependence<a class="headerlink" href="#hard-dependence" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -386,9 +387,9 @@ x(t) =
 </section>
 </section>
 <section id="dirac-delta-and-heaviside-step-functions">
-<h2>Dirac Delta and Heaviside Step Functions<a class="headerlink" href="#dirac-delta-and-heaviside-step-functions" title="Link to this heading">#</a></h2>
+<h2>Dirac Delta and Heaviside Step Functions<a class="headerlink" href="#dirac-delta-and-heaviside-step-functions" title="Permalink to this heading">#</a></h2>
 <section id="dirac-delta-function">
-<h3>Dirac Delta Function<a class="headerlink" href="#dirac-delta-function" title="Link to this heading">#</a></h3>
+<h3>Dirac Delta Function<a class="headerlink" href="#dirac-delta-function" title="Permalink to this heading">#</a></h3>
 <p>The Dirac delta function <span class="math notranslate nohighlight">\(\delta(x)\)</span> is a generalized function in which the following properties hold.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -402,7 +403,7 @@ x(t) =
 </div>
 </section>
 <section id="heaviside-step-function">
-<h3>Heaviside Step Function<a class="headerlink" href="#heaviside-step-function" title="Link to this heading">#</a></h3>
+<h3>Heaviside Step Function<a class="headerlink" href="#heaviside-step-function" title="Permalink to this heading">#</a></h3>
 <p>The Heaviside step function <span class="math notranslate nohighlight">\(\Theta(x)\)</span> is a step function which is <span class="math notranslate nohighlight">\(0\)</span> for negative arguments and <span class="math notranslate nohighlight">\(1\)</span> for positive arguments.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -416,7 +417,7 @@ x(t) =
 </div>
 </section>
 <section id="relationship">
-<h3>Relationship<a class="headerlink" href="#relationship" title="Link to this heading">#</a></h3>
+<h3>Relationship<a class="headerlink" href="#relationship" title="Permalink to this heading">#</a></h3>
 <p>The Dirac delta function is the derivative of the Heaviside step function.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -516,9 +517,9 @@ x(t) =
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>

@@ -1,0 +1,6 @@
+﻿extrap\_expratedecay
+====================
+
+.. currentmodule:: inferno.functional
+
+.. autofunction:: extrap_expratedecay

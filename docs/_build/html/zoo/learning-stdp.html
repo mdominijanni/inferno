@@ -1,13 +1,13 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="ReSuMe-Like Learning Methods" href="learning-resume.html" /><link rel="prev" title="Synapse Models, Conductance-Based" href="synapses-conductance.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>STDP-Like Learning Methods - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -160,6 +160,7 @@
   <ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn.html">inferno.learn</a></li>
@@ -218,16 +219,16 @@
         </div>
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="stdp-like-learning-methods">
-<h1>STDP-Like Learning Methods<a class="headerlink" href="#stdp-like-learning-methods" title="Link to this heading">#</a></h1>
+<h1>STDP-Like Learning Methods<a class="headerlink" href="#stdp-like-learning-methods" title="Permalink to this heading">#</a></h1>
 <section id="hebbian-learning">
-<h2>Hebbian Learning<a class="headerlink" href="#hebbian-learning" title="Link to this heading">#</a></h2>
+<h2>Hebbian Learning<a class="headerlink" href="#hebbian-learning" title="Permalink to this heading">#</a></h2>
 <p>Typically STDP is parameterized such that it performs Hebbian learning (often summarized as “cells that fire together wire together”). In Hebbian learning methods, if there exists a “postsynaptic” neuron which receives input from a “presynaptic” neuron, then if the presynaptic neuron fires and afterwards the postsynaptic neuron fires, its considered to be “causal”. Likewise, if the postsynaptic neuron fires then the presynaptic neuron fires, its considered to be “anti-causal”. Hebbian learning increases the connection weight on neuron firings which are causal and decreases it on anti-causal firings.</p>
 <p>Most STDP methods are phrased in the context of Hebbian learning, although they do not need to be. For instance, STDP can reverse the direction of the weight updates for causal and anti-causal firings (this is called anti-Hebbian learning). For the below methods, they will be written as they are most commonly described, although Inferno typically supports generalization.</p>
 </section>
 <section id="spike-timing-dependent-plasticity-stdp">
-<h2>Spike Timing-Dependent Plasticity (STDP)<a class="headerlink" href="#spike-timing-dependent-plasticity-stdp" title="Link to this heading">#</a></h2>
+<h2>Spike Timing-Dependent Plasticity (STDP)<a class="headerlink" href="#spike-timing-dependent-plasticity-stdp" title="Permalink to this heading">#</a></h2>
 <section id="formulation">
-<h3>Formulation<a class="headerlink" href="#formulation" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#formulation" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
@@ -260,9 +261,9 @@ w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
 </section>
 </section>
 <section id="delayed-spike-timing-dependent-plasticity-delayed-stdp">
-<h2>Delayed Spike Timing-Dependent Plasticity (Delayed STDP)<a class="headerlink" href="#delayed-spike-timing-dependent-plasticity-delayed-stdp" title="Link to this heading">#</a></h2>
+<h2>Delayed Spike Timing-Dependent Plasticity (Delayed STDP)<a class="headerlink" href="#delayed-spike-timing-dependent-plasticity-delayed-stdp" title="Permalink to this heading">#</a></h2>
 <section id="id1">
-<h3>Formulation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -295,9 +296,9 @@ w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
 </section>
 </section>
 <section id="modulated-spike-timing-dependent-plasticity-mstdp">
-<h2>Modulated Spike-Timing Dependent Plasticity (MSTDP)<a class="headerlink" href="#modulated-spike-timing-dependent-plasticity-mstdp" title="Link to this heading">#</a></h2>
+<h2>Modulated Spike-Timing Dependent Plasticity (MSTDP)<a class="headerlink" href="#modulated-spike-timing-dependent-plasticity-mstdp" title="Permalink to this heading">#</a></h2>
 <section id="id2">
-<h3>Formulation<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<h3>Formulation<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -317,7 +318,7 @@ w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
 \begin{align*}
     w(t + \Delta t) - w(t) &amp;= \gamma \, r(t) \, \zeta(t) \\
     \zeta(t) &amp;= P^+ \left[t = t_\text{post}^f\right] + P^- \left[t = t_\text{pre}^f\right] \\
-    P^-(t) &amp;= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\left[t = t_\text{pre}^f\right] \\
+    P^+(t) &amp;= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\left[t = t_\text{pre}^f\right] \\
     P^-(t) &amp;= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \left[t = t_\text{post}^f\right]
 \end{align*}
 \end{split}\]</div>
@@ -341,18 +342,18 @@ w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
 </ul>
 </section>
 <section id="description">
-<h3>Description<a class="headerlink" href="#description" title="Link to this heading">#</a></h3>
+<h3>Description<a class="headerlink" href="#description" title="Permalink to this heading">#</a></h3>
 <p>This is equivalent to <a class="reference internal" href="#spike-timing-dependent-plasticity-stdp">STDP</a> except scaled by a time-dependent reward term <span class="math notranslate nohighlight">\(r\)</span>. Note that <span class="math notranslate nohighlight">\(P^+\)</span> is the presynaptic spike trace and <span class="math notranslate nohighlight">\(P^-\)</span> is the postsynaptic spike trace (calculated as <a class="reference internal" href="../guide/mathematics.html#cumulative-trace"><span class="std std-ref">cumulative trace</span></a>).</p>
 </section>
 <section id="references">
-<h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://florian.io/papers/2007_Florian_Modulated_STDP.pdf">10.1162/neco.2007.19.6.1468</a></p></li>
 </ol>
 </section>
 </section>
 <section id="modulated-spike-timing-dependent-plasticity-with-eligibility-trace-mstdpet">
-<h2>Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)<a class="headerlink" href="#modulated-spike-timing-dependent-plasticity-with-eligibility-trace-mstdpet" title="Link to this heading">#</a></h2>
+<h2>Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)<a class="headerlink" href="#modulated-spike-timing-dependent-plasticity-with-eligibility-trace-mstdpet" title="Permalink to this heading">#</a></h2>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -397,14 +398,14 @@ w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
 <li><p><span class="math notranslate nohighlight">\(\delta\)</span>, <a class="reference internal" href="../guide/mathematics.html#dirac-delta-function"><span class="std std-ref">Dirac delta function</span></a></p></li>
 </ul>
 <section id="id3">
-<h3>References<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://florian.io/papers/2007_Florian_Modulated_STDP.pdf">10.1162/neco.2007.19.6.1468</a></p></li>
 </ol>
 </section>
 </section>
 <section id="triplet-spike-timing-dependent-plasticity-stdp">
-<h2>Triplet Spike-Timing Dependent Plasticity (STDP)<a class="headerlink" href="#triplet-spike-timing-dependent-plasticity-stdp" title="Link to this heading">#</a></h2>
+<h2>Triplet Spike-Timing Dependent Plasticity (STDP)<a class="headerlink" href="#triplet-spike-timing-dependent-plasticity-stdp" title="Permalink to this heading">#</a></h2>
 </section>
 </section>
 
@@ -495,9 +496,9 @@ w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>

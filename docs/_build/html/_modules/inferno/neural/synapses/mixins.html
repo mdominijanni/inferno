@@ -1,12 +1,12 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../../../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>inferno.neural.synapses.mixins - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -159,6 +159,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../reference/learn.html">inferno.learn</a></li>
@@ -225,10 +226,8 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 
 
-<div class="viewcode-block" id="CurrentMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.CurrentMixin.html#inferno.neural.synapses.mixins.CurrentMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">CurrentMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current primitive.</span>
+<div class="viewcode-block" id="CurrentMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.CurrentMixin.html#inferno.neural.synapses.mixins.CurrentMixin">[docs]</a><span class="k">class</span> <span class="nc">CurrentMixin</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current primitive.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.</span>
@@ -255,7 +254,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses at present, in nanoamperes.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses at present, in nanoamperes.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new synapse currents.</span>
@@ -270,11 +269,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
 
-
-<div class="viewcode-block" id="SpikeMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.SpikeMixin.html#inferno.neural.synapses.mixins.SpikeMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">SpikeMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with spike primitive.</span>
+<div class="viewcode-block" id="SpikeMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.SpikeMixin.html#inferno.neural.synapses.mixins.SpikeMixin">[docs]</a><span class="k">class</span> <span class="nc">SpikeMixin</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with spike primitive.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        spikes (torch.Tensor): initial input spikes.</span>
@@ -303,7 +299,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike input to the synapses at present.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike input to the synapses at present.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new spike input.</span>
@@ -318,11 +314,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="s2">&quot;spike_&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
 
-
-<div class="viewcode-block" id="CurrentDerivedSpikeMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin.html#inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">CurrentDerivedSpikeMixin</span><span class="p">(</span><span class="n">CurrentMixin</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current and spikes derived therefrom.</span>
+<div class="viewcode-block" id="CurrentDerivedSpikeMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin.html#inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin">[docs]</a><span class="k">class</span> <span class="nc">CurrentDerivedSpikeMixin</span><span class="p">(</span><span class="n">CurrentMixin</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with current and spikes derived therefrom.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.</span>
@@ -355,7 +348,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike input to the synapses at present.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike input to the synapses at present.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new spike input.</span>
@@ -373,11 +366,8 @@
         <span class="k">pass</span></div>
 
 
-
-<div class="viewcode-block" id="SpikeDerivedCurrentMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin.html#inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">SpikeDerivedCurrentMixin</span><span class="p">(</span><span class="n">SpikeMixin</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with spikes and currents derived therefrom.</span>
+<div class="viewcode-block" id="SpikeDerivedCurrentMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin.html#inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin">[docs]</a><span class="k">class</span> <span class="nc">SpikeDerivedCurrentMixin</span><span class="p">(</span><span class="n">SpikeMixin</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with spikes and currents derived therefrom.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        spikes (torch.Tensor): initial input spikes.</span>
@@ -410,7 +400,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses at present, in nanoamperes.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses at present, in nanoamperes.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor): new synapse currents.</span>
@@ -428,11 +418,8 @@
         <span class="k">pass</span></div>
 
 
-
-<div class="viewcode-block" id="SpikeCurrentMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.SpikeCurrentMixin.html#inferno.neural.synapses.mixins.SpikeCurrentMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">SpikeCurrentMixin</span><span class="p">(</span><span class="n">CurrentMixin</span><span class="p">,</span> <span class="n">SpikeMixin</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with primitive current and spikes.</span>
+<div class="viewcode-block" id="SpikeCurrentMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.SpikeCurrentMixin.html#inferno.neural.synapses.mixins.SpikeCurrentMixin">[docs]</a><span class="k">class</span> <span class="nc">SpikeCurrentMixin</span><span class="p">(</span><span class="n">CurrentMixin</span><span class="p">,</span> <span class="n">SpikeMixin</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with primitive current and spikes.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.</span>
@@ -461,7 +448,6 @@
         <span class="n">SpikeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spikes</span><span class="p">,</span> <span class="n">requires_grad</span><span class="p">)</span></div>
 
 
-
 <span class="k">def</span> <span class="nf">_synparam_at</span><span class="p">(</span>
     <span class="n">module</span><span class="p">:</span> <span class="n">RecordModule</span><span class="p">,</span>
     <span class="n">dataloc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -471,7 +457,7 @@
     <span class="n">overbound</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">transform</span><span class="p">:</span> <span class="n">OneToOne</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Internal, generalized selector function for synaptic parameters.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Internal, generalized selector function for synaptic parameters.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        module (RecordModule): module from which to access parameters.</span>
@@ -527,10 +513,8 @@
     <span class="k">return</span> <span class="n">res</span>
 
 
-<div class="viewcode-block" id="DelayedSpikeCurrentAccessorMixin">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">DelayedSpikeCurrentAccessorMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with delayed current and spike selector methods.</span>
+<div class="viewcode-block" id="DelayedSpikeCurrentAccessorMixin"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin">[docs]</a><span class="k">class</span> <span class="nc">DelayedSpikeCurrentAccessorMixin</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin for synapses with delayed current and spike selector methods.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        primitive_currents (bool): if the synaptic currents are not derived from</span>
@@ -609,10 +593,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_spike_ob_val</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">spike_overval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">bool</span><span class="p">(</span><span class="n">spike_overval</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_interp_tol</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>  <span class="nb">float</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DelayedSpikeCurrentAccessorMixin.current_at">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.current_at">[docs]</a>
-    <span class="k">def</span> <span class="nf">current_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves previous synaptic currents, in nanoamperes.</span>
+<div class="viewcode-block" id="DelayedSpikeCurrentAccessorMixin.current_at"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.current_at">[docs]</a>    <span class="k">def</span> <span class="nf">current_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves previous synaptic currents, in nanoamperes.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            selector (torch.Tensor): time before present for which synaptic currents</span>
@@ -658,11 +640,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_to_current</span><span class="p">,</span>
             <span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="DelayedSpikeCurrentAccessorMixin.spike_at">
-<a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.spike_at">[docs]</a>
-    <span class="k">def</span> <span class="nf">spike_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves previous spike inputs.</span>
+<div class="viewcode-block" id="DelayedSpikeCurrentAccessorMixin.spike_at"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.spike_at">[docs]</a>    <span class="k">def</span> <span class="nf">spike_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves previous spike inputs.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            selector (torch.Tensor): time before present for which spike inputs</span>
@@ -706,9 +685,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_interp_tol</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_spike_ob_val</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_to_spike</span><span class="p">,</span>
-            <span class="p">)</span></div>
-</div>
-
+            <span class="p">)</span></div></div>
 </pre></div>
         </article>
       </div>
@@ -741,9 +718,9 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/design-tabs.js?v=36754332"></script>
     </body>

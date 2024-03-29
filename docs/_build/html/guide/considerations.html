@@ -1,13 +1,13 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Model and Method Zoo" href="../zoo/index.html" /><link rel="prev" title="Neurons and Neuronal Systems" href="neurons.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>Pragmatic Considerations - Inferno</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
@@ -160,6 +160,7 @@
   <ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/inferno.html">inferno</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/functional.html">inferno.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural.html">inferno.neural</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/neural-functional.html">inferno.neural.functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/learn.html">inferno.learn</a></li>
@@ -218,9 +219,9 @@
         </div>
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="pragmatic-considerations">
-<h1>Pragmatic Considerations<a class="headerlink" href="#pragmatic-considerations" title="Link to this heading">#</a></h1>
+<h1>Pragmatic Considerations<a class="headerlink" href="#pragmatic-considerations" title="Permalink to this heading">#</a></h1>
 <section id="minibatching">
-<h2>Minibatching<a class="headerlink" href="#minibatching" title="Link to this heading">#</a></h2>
+<h2>Minibatching<a class="headerlink" href="#minibatching" title="Permalink to this heading">#</a></h2>
 <p>Unlike the artificial neurons typically found in ANNs, the neurons in SNNs are fundamentally stateful. In biological neurons, the electric potential difference between the interior and exterior of a cell is the driving force behind the generation of action potentials. This extends to the simplified models used in SNNs.</p>
 <p>When using minibatches with SNNs, it’s important to treat these state variables as separated for each of the samples presented during a minibatch. Fixed hyperparameters meanwhile do not need to be duplicated and instead will be broadcast to each sample in the batch.</p>
 <p>In some models, parameters may be included to adapt the behavior of a neuron based on the inputs. A common example of this is the use of an adaptive threshold, where the threshold is defined as the minimum membrane potential at which a spike is generated. These parameters should be shared across all samples in a minibatch. Each sample the contributes to a portion of the update. This also applies to the adaptive parameters found in ANNs, such as weights and biases, and are handled the same way in SNNs.</p>
@@ -228,15 +229,15 @@
 <p>Detailed information on minibatch processing with SNNs can be found at <a class="reference external" href="https://arxiv.org/abs/1909.02549">arXiv:1909.02549</a>.</p>
 </section>
 <section id="discrete-time-simulations">
-<h2>Discrete Time Simulations<a class="headerlink" href="#discrete-time-simulations" title="Link to this heading">#</a></h2>
+<h2>Discrete Time Simulations<a class="headerlink" href="#discrete-time-simulations" title="Permalink to this heading">#</a></h2>
 <p>Because Inferno performs simulations over discrete units of time, there are relevant considerations for how the computations match with the theoretical continuous-time descriptions.</p>
 <section id="refractory-periods">
-<h3>Refractory Periods<a class="headerlink" href="#refractory-periods" title="Link to this heading">#</a></h3>
+<h3>Refractory Periods<a class="headerlink" href="#refractory-periods" title="Permalink to this heading">#</a></h3>
 <p>Refractory periods are specified using some length of time, given in milliseconds. On each simulation step, the amount of time that has elapsed is subtracted from the remaining time in the neurons will be in their refractory period (inclusive minimum bound of zero). When equal to zero, a neuron is considered to be out of its refractory period. Therefore, if the refractory period is not evenly divisible by the length of the simualted step time, the practical length of the refractory period is “rounded up” to the next integer multiple of the step time.</p>
 </section>
 </section>
 <section id="model-saving-and-restoring">
-<h2>Model Saving and Restoring<a class="headerlink" href="#model-saving-and-restoring" title="Link to this heading">#</a></h2>
+<h2>Model Saving and Restoring<a class="headerlink" href="#model-saving-and-restoring" title="Permalink to this heading">#</a></h2>
 <p>Because batch size affects not only the data passed through a model, but the model itself, special consideration must be given when saving and loading models. The batch size of a model saved must match the batch size of the model loaded. This same principle extends to modules which record state over time (e.g. reducers and synapses). While a step time and duration are specified, this changes the underlying structure of the data and therefore should match on load and restore. Note that the included property setters can be used to modify this state after loading.</p>
 </section>
 </section>
@@ -314,9 +315,9 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
     </body>
