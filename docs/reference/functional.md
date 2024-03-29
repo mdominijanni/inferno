@@ -48,7 +48,6 @@
 ```
 
 ## Extrapolation
-## Interpolation
 ```{eval-rst}
 .. autosummary::
     :nosignatures:

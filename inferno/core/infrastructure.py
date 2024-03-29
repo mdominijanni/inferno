@@ -1,11 +1,11 @@
 from __future__ import annotations
 from .tensor import empty, full, zeros
-from ..interpolation import Interpolation, nearest
+from ..functional import Interpolation, Extrapolation, interp_nearest, extrap_nearest
 from .._internal import argtest, rsetattr
 from abc import ABC, abstractmethod
 from collections import namedtuple, OrderedDict
 from collections.abc import Iterable
-from functools import cache, singledispatchmethod
+from functools import cache
 from itertools import chain, repeat, starmap
 import math
 import torch
@@ -2032,6 +2032,11 @@ class RecordTensor(ShapedTensor):
         Raises:
             RuntimeError: cannot write to an uninitialized (ignored) value.
             ValueError: shape of the values must match the shape of the time slice.
+
+        Important:
+            The :py:class:`~torch.dtype` of ``value`` is not changed, so when ``inplace``
+            is set to ``False``, this may cause the data type of the stored tensor to
+            change.
         """
         # strongly reference data and get record size
         data, recordsz = self.__data, self.__recordsz
@@ -2057,16 +2062,436 @@ class RecordTensor(ShapedTensor):
         else:
             index = _unwind_ptr(self.__pointer, offset, recordsz)
             self.__data = torch.cat(
-                (data[..., slice(0, index)], value, data[:, slice(index + 1, None)]), -1
+                (
+                    data[..., slice(0, index)],
+                    value.unsqueeze(-1),
+                    data[..., slice(index + 1, None)],
+                ),
+                -1,
             )
 
-    @singledispatchmethod
+    def readrange(
+        self,
+        length: int,
+        offset: int | torch.Tensor = 1,
+        forward: bool = False,
+    ) -> torch.Tensor:
+        # strongly reference data and get record size and pointer
+        data, recordsz, ptr = self.__data, self.__recordsz, self.__pointer
+
+        # cannot read from uninitialized value
+        if self._ignore(data):
+            raise RuntimeError("cannot read from an uninitialized value")
+
+        # shift offset if using noninitial offset
+        if not forward:
+            offset = offset + (length - 1)
+
+        # scalar offset
+        elif not isinstance(offset, torch.Tensor):
+            start = _unwind_ptr(ptr, offset, recordsz)
+            end = _unwind_ptr(ptr, offset - length, recordsz)
+            if start > end:
+                return torch.cat(
+                    (data[..., slice(start, None)], data[..., slice(0, end)]), -1
+                )
+            else:
+                return data[..., slice(start, end)]
+
+        # shape must be the same as a slice
+        elif (*offset.shape,) != (*data.shape[:-1],):
+            raise ValueError(
+                f"shape of 'offset' {(*offset.shape,)} must have the shape "
+                f"{(*data.shape[:-1],)}, like a time slice of the stored value"
+            )
+
+        # tensor offset
+        else:
+            indices = (
+                ptr
+                - offset.long().unsqueeze(-1)
+                + torch.arange(0, length, dtype=torch.int64, device=offset.device)
+            ) % recordsz
+            return torch.gather(data, -1, indices).squeeze(-1)
+
+    def writerange(
+        self,
+        value: torch.Tensor,
+        offset: int | torch.Tensor = 1,
+        forward: bool = False,
+        inplace: bool = False,
+    ) -> None:
+        # strongly reference data and get record size and pointer
+        data, recordsz, ptr = self.__data, self.__recordsz, self.__pointer
+
+        # shift offset if using noninitial offset
+        if not forward:
+            offset = offset + (value.shape[-1] - 1)
+
+        # cannot write to uninitialized value
+        if self._ignore(data):
+            raise RuntimeError("cannot write to an uninitialized value")
+
+        # test shape of value
+        if value.shape[:-1] != data.shape[:-1]:
+            raise ValueError(
+                "'value' must have the same number of dimensions as the underlying"
+                "data and must have the same shape in all but the final dimension,"
+                f"shapes are {(*value.shape,)} and {(*data.shape,)} respectively"
+            )
+
+        # cannot write beyond the data shape
+        if value.shape[-1] > data.shape[-1]:
+            raise ValueError(
+                f"size of the final dimension of 'value' ({value.shape[-1]}) cannot "
+                f"exceed the length of the record ({data.shape[-1]})"
+            )
+
+        # scalar offset
+        elif not isinstance(offset, torch.Tensor):
+            ptr = _unwind_ptr(ptr, offset, recordsz)
+            length = value.shape[-1]
+
+            # in-place
+            if inplace:
+                with torch.no_grad():
+                    indices = (
+                        ptr
+                        + torch.arange(
+                            0, length, dtype=torch.int64, device=value.device
+                        )
+                    ) % recordsz
+                    data[indices] = value
+
+            # noncontiguous range
+            elif ptr + length > recordsz:
+                pass
+
+            # contiguous range
+            else:
+                self.__data = torch.cat(
+                    (
+                        data[..., slice(0, ptr)],
+                        value,
+                        data[..., slice(ptr + length, None)],
+                    ),
+                    -1,
+                )
+
+        # shape must be the same as a slice
+        elif (*offset.shape,) != (*data.shape[:-1],):
+            raise ValueError(
+                f"shape of 'offset' {(*offset.shape,)} must have the shape "
+                f"{(*data.shape[:-1],)}, like a time slice of the stored value"
+            )
+
+        # tensor offset
+        else:
+            pass
+
+    def insert(
+        self,
+        value: torch.Tensor,
+        time: torch.Tensor | float,
+        extrap: Extrapolation | None = None,
+        *,
+        tolerance: float = 1e-6,
+        offset: int = 0,
+        inplace: bool = False,
+        extrap_kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        r"""Inserts new elements into the record tensor by time.
+
+        If ``time`` is a scalar and is within tolerance of an integer index, then
+        the slice will be inserted (with a scalar time, multiple inserts are not
+        supported).
+
+        If ``time`` is a tensor, interpolation will be called regardless, and the time
+        passed into the extrapolation call will be set to either ``0`` or
+        :py:attr:`self.dt`. Extrapolation results are then overwritten with exact values
+        before returning.
+
+        The :py:class:`~torch.dtype` of elements inserted into the underlying tensor
+        will be cast back to the type of that tensor after extrapolation.
+
+        Args:
+            value (torch.Tensor): _description_
+            time (torch.Tensor | float): _description_
+            extrap (Extrapolation | None, optional): _description_. Defaults to None.
+            tolerance (float, optional): _description_. Defaults to 1e-6.
+            offset (int, optional): _description_. Defaults to 0.
+            inplace (bool, optional): _description_. Defaults to False.
+            extrap_kwargs (dict[str, Any] | None, optional): _description_. Defaults to None.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``value``, ``time``:
+
+            :math:`N_0 \times \cdots \times [D]`
+
+            Where:
+                * :math:`N_0, \ldots` are the dimensions of the underlying tensor,
+                  excluding the record dimension.
+                * :math:`D` is the number of times for each value to select.
+
+        Warning:
+            If there are multiple values/indices for each element being inserted (i.e.
+            :math:`D > 1`), if the indices are not unique, then the one of the values
+            will be non-deterministically chosen and the gradient will be propagated
+            incorrectly. Each ``time`` will correspond to two indices. If multiple
+            values for each observation are to be inserted at once, there must be no
+            overlap in the resultant indices. Use of :py:meth:`writerange` is suggested
+            as an alternative.
+        """
+        if isinstance(time, torch.Tensor):
+            self.__insert_tensor(
+                value,
+                time,
+                extrap,
+                tolerance=tolerance,
+                offset=offset,
+                inplace=inplace,
+                extrap_kwargs=extrap_kwargs,
+            )
+        else:
+            self.__insert_scalar(
+                value,
+                time,
+                extrap,
+                tolerance=tolerance,
+                offset=offset,
+                inplace=inplace,
+                extrap_kwargs=extrap_kwargs,
+            )
+
+    def __insert_tensor(
+        self,
+        value: torch.Tensor,
+        time: torch.Tensor,
+        extrap: Extrapolation | None = None,
+        *,
+        tolerance: float = 1e-6,
+        offset: int = 0,
+        inplace: bool = False,
+        extrap_kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        # use nearest extrapolation by default
+        if not extrap:
+            extrap = extrap_nearest
+
+        # strongly reference data and get record size and step time
+        data, recordsz, dt = self.__data, self.__recordsz, self.__dt
+
+        # cannot insert into uninitialized value
+        if self._ignore(data):
+            raise RuntimeError("cannot insert into uninitialized value")
+
+        # apply offset to the pointer
+        ptr = _unwind_ptr(self.__pointer, offset, recordsz)
+
+        # conditionally unsqueeze value
+        if value.ndim == data.ndim - 1:
+            value = value.unsqueeze(-1)
+        elif value.ndim != data.ndim:
+            raise ValueError(
+                f"'value' has an incompatible number of dimensions ({value.ndim}), "
+                f"it must have either {data.ndim - 1} or {data.ndim} dimensions"
+            )
+
+        # conditionally unsqueeze time
+        if time.ndim == data.ndim - 1:
+            time = time.unsqueeze(-1)
+        elif time.ndim != data.ndim:
+            raise ValueError(
+                f"'time' has an incompatible number of dimensions ({time.ndim}), "
+                f"it must have either {data.ndim - 1} or {data.ndim} dimensions"
+            )
+
+        # check that value and time are compatible
+        if not value.shape != time.shape:
+            raise ValueError(
+                "'value' and 'time' must be of the same shape, or only differ by a "
+                "final singleton dimension"
+            )
+
+        # check that times are in range
+        tmin, tmax = time.amin(), time.amax()
+        if -tolerance <= tmin or tmax <= dt * (recordsz - 1) + tolerance:
+            raise ValueError(
+                f"all elements of 'time' (min={tmin}, max={tmax}) must be within "
+                f" the valid range of observations including tolerance, the interval "
+                f"[{-tolerance}, {dt * (recordsz - 1) + tolerance}]"
+            )
+
+        # compute continuous offsets
+        offset = time / dt
+        rounded = offset.round()
+        offset = torch.where(
+            torch.abs(dt * rounded - time) <= tolerance, rounded, offset
+        )
+
+        # access data by index and extrapolate
+        prev_idx = (ptr - offset.ceil().long()) % recordsz
+        next_idx = (ptr - offset.floor().long()) % recordsz
+
+        prev_data, next_data = torch.tensor_split(
+            torch.gather(data, -1, torch.cat((prev_idx, next_idx), -1)),
+            (offset.shape[-1],),
+        )
+
+        prev_exdata, next_exdata = extrap(
+            value,
+            dt * (offset % 1),
+            prev_data,
+            next_data,
+            dt,
+            **({extrap_kwargs if extrap_kwargs else {}}),
+        )
+
+        # bypass extrapolation for exact indices
+        bypass = prev_idx == next_idx
+        prev_exdata = torch.where(bypass, prev_data, prev_exdata)
+        next_exdata = torch.where(bypass, next_data, next_exdata)
+
+        # write to storage
+        if inplace:
+            with torch.no_grad():
+                data.scatter_(
+                    -1,
+                    torch.cat((prev_idx, next_idx), -1),
+                    torch.cat((prev_exdata, next_exdata), -1).to(dtype=data.dtype),
+                )
+
+        else:
+            self.__data = torch.scatter(
+                data,
+                -1,
+                torch.cat((prev_idx, next_idx), -1),
+                torch.cat((prev_exdata, next_exdata), -1).to(dtype=data.dtype),
+            )
+
+    def __insert_scalar(
+        self,
+        value: torch.Tensor,
+        time: float,
+        extrap: Extrapolation | None = None,
+        *,
+        tolerance: float = 1e-6,
+        offset: int = 0,
+        inplace: bool = False,
+        extrap_kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        # use nearest extrapolation by default
+        if not extrap:
+            extrap = extrap_nearest
+
+        # strongly reference data and get record size and step time
+        data, recordsz, dt = self.__data, self.__recordsz, self.__dt
+
+        # cannot insert into uninitialized value
+        if self._ignore(data):
+            raise RuntimeError("cannot insert into uninitialized value")
+
+        # apply offset to the pointer
+        ptr = _unwind_ptr(self.__pointer, offset, recordsz)
+
+        # conditionally unsqueeze value
+        if value.ndim == data.ndim - 1:
+            value = value.unsqueeze(-1)
+        elif value.ndim == data.ndim:
+            if value.shape[-1] != 1:
+                raise ValueError(
+                    f"when specified with {value.ndim} dimensions, 'value' must have a "
+                    "final dimension of size 1"
+                )
+        else:
+            raise ValueError(
+                f"'value' has an incompatible number of dimensions ({value.ndim}), "
+                f"it must have either {data.ndim - 1} or {data.ndim} dimensions"
+            )
+
+        # cast time and check for a valid range
+        disptime, time = time, float(time)
+        if -tolerance <= time <= dt * (recordsz - 1) + tolerance:
+            raise ValueError(
+                f"'time' ({disptime}) must be within the valid range of observations "
+                f"including tolerance, the interval [{-tolerance}, "
+                f"{dt * (recordsz - 1) + tolerance}]"
+            )
+
+        # compute continuous offset
+        offset = time / dt
+
+        # index is within tolerance of an observation
+        if abs(dt * round(offset) - time) <= tolerance:
+            # index of the observation to replace
+            index = _unwind_ptr(ptr, round(offset), recordsz)
+
+            if inplace:
+                with torch.no_grad():
+                    data[..., index] = value.squeeze(-1)
+
+            else:
+                self.__data = torch.cat(
+                    (
+                        data[..., slice(0, index)],
+                        value.squeeze(-1).to(dtype=data.dtype),
+                        data[:, slice(index + 1, None)],
+                    ),
+                    -1,
+                )
+
+        # extrapolate to neighboring observations
+        else:
+            # indices of the nearest observations
+            prev_idx = _unwind_ptr(ptr, offset + 1, recordsz)
+            next_idx = _unwind_ptr(ptr, offset, recordsz)
+
+            # extrapolates data to write
+            prev_exdata, next_exdata = extrap(
+                value,
+                full(data, dt * (offset % 1), shape=(*data.shape[:-1], 1)),
+                data[..., prev_idx].unsqueeze(-1),
+                data[..., next_idx].unsqueeze(-1),
+                dt,
+                **({extrap_kwargs if extrap_kwargs else {}}),
+            )
+
+            if inplace:
+                with torch.no_grad():
+                    data[..., prev_idx] = prev_exdata.squeeze(-1)
+                    data[..., next_idx] = next_exdata.squeeze(-1)
+
+            # previous sample is at the final tensor index
+            elif prev_idx > next_idx:
+                self.__data = torch.cat(
+                    (
+                        next_exdata.to(dtype=data.dtype),
+                        data[..., slice(next_idx + 1, prev_idx - 1)],
+                        prev_exdata.to(dtype=data.dtype),
+                    ),
+                    -1,
+                )
+
+            # previous sample is not at the final tensor index
+            else:
+                self.__data = torch.cat(
+                    (
+                        data[..., slice(0, prev_idx)],
+                        prev_exdata.to(dtype=data.dtype),
+                        next_exdata.to(dtype=data.dtype),
+                        data[..., slice(next_idx + 1, None)],
+                    ),
+                    -1,
+                )
+
     def select(
         self,
         time: torch.Tensor | float,
         interp: Interpolation | None = None,
         *,
-        tolerance: float | torch.Tensor = 1e-7,
+        tolerance: float = 1e-6,
         offset: int = 1,
         interp_kwargs: dict[str, Any] | None = None,
     ) -> torch.Tensor:
@@ -2088,9 +2513,9 @@ class RecordTensor(ShapedTensor):
             interp (Interpolation | None, optional): method to interpolate between
                 discrete time steps, selects the nearest when ``None``.
                 Defaults to ``None``.
-            tolerance (float | torch.Tensor, optional): maximum difference in time from
+            tolerance (float, optional): maximum difference in time from
                 a discrete sample to consider a time co-occuring with the sample.
-                Defaults to 1e-7.
+                Defaults to 1e-6.
             offset (int, optional): number of steps before the pointer to consider the
                 zero point. Defaults to 1.
             interp_kwargs (dict[str, Any] | None, optional): dictionary of keyword
@@ -2119,33 +2544,47 @@ class RecordTensor(ShapedTensor):
             valid range, a :py:class:`ValueError` will be thrown. To avoid this, clamp
             ``time`` like ``time.clamp(0, recordtensor.duration)``.
         """
-        raise NotImplementedError
+        if isinstance(time, torch.Tensor):
+            self.__select_tensor(
+                time,
+                interp,
+                tolerance=tolerance,
+                offset=offset,
+                interp_kwargs=interp_kwargs,
+            )
+        else:
+            self.__select_scalar(
+                time,
+                interp,
+                tolerance=tolerance,
+                offset=offset,
+                interp_kwargs=interp_kwargs,
+            )
 
-    @select.register
-    def _(
+    def __select_tensor(
         self,
         time: torch.Tensor,
         interp: Interpolation | None = None,
         *,
-        tolerance: float | torch.Tensor = 1e-7,
+        tolerance: float = 1e-6,
         offset: int = 1,
         interp_kwargs: dict[str, Any] | None = None,
     ) -> torch.Tensor:
         # use nearest interpolation by default
         if not interp:
-            interp = nearest
+            interp = interp_nearest
 
         # strongly reference data and get record size and step time
         data, recordsz, dt = self.__data, self.__recordsz, self.__dt
 
+        # cannot select from uninitialized value
+        if self._ignore(data):
+            raise RuntimeError("cannot select from uninitialized value")
+
         # apply offset to the pointer
         ptr = _unwind_ptr(self.__pointer, offset, recordsz)
 
-        # cast time indices and check for a valid range
-        time = time.to(device=data.device)
-        if not time.is_floating_point():
-            time = time.to(dtype=torch.get_default_dtype())
-
+        # check that times are in range
         tmin, tmax = time.amin(), time.amax()
         if -tolerance <= tmin or tmax <= dt * (recordsz - 1) + tolerance:
             raise ValueError(
@@ -2166,22 +2605,26 @@ class RecordTensor(ShapedTensor):
                 f"it must have either {data.ndim - 1} or {data.ndim} dimensions"
             )
 
-        # compute continuous indices
-        index = time / dt
-        rounded = index.round()
-        index = torch.where(torch.abs(dt * rounded - time) < tolerance, rounded, index)
+        # compute continuous offsets
+        offset = time / dt
+        rounded = offset.round()
+        offset = torch.where(
+            torch.abs(dt * rounded - time) <= tolerance, rounded, offset
+        )
 
         # access data by index and interpolate
-        prev_idx = (ptr - index.ceil().long()) % recordsz
-        prev_data = torch.gather(data, -1, prev_idx)
+        prev_idx = (ptr - offset.ceil().long()) % recordsz
+        next_idx = (ptr - offset.floor().long()) % recordsz
 
-        next_idx = (ptr - index.floor().long()) % recordsz
-        next_data = torch.gather(data, -1, next_idx)
+        prev_data, next_data = torch.tensor_split(
+            torch.gather(data, -1, torch.cat((prev_idx, next_idx), -1)),
+            (offset.shape[-1],),
+        )
 
         res = interp(
             prev_data,
             next_data,
-            dt * (index % 1),
+            dt * (offset % 1),
             dt,
             **(interp_kwargs if interp_kwargs else {}),
         )
@@ -2192,27 +2635,30 @@ class RecordTensor(ShapedTensor):
         # conditionally squeeze and return
         return res.squeeze(-1) if squeeze else res
 
-    @select.register
-    def _(
+    def __select_scalar(
         self,
         time: float,
         interp: Interpolation | None = None,
         *,
-        tolerance: float = 1e-7,
+        tolerance: float = 1e-6,
         offset: int = 1,
         interp_kwargs: dict[str, Any] | None = None,
     ) -> torch.Tensor:
         # use nearest interpolation by default
         if not interp:
-            interp = nearest
+            interp = interp_nearest
 
         # strongly reference data and get record size and step time
         data, recordsz, dt = self.__data, self.__recordsz, self.__dt
 
+        # cannot select from uninitialized value
+        if self._ignore(data):
+            raise RuntimeError("cannot select from uninitialized value")
+
         # apply offset to the pointer
         ptr = _unwind_ptr(self.__pointer, offset, recordsz)
 
-        # cast time indices and check for a valid range
+        # cast time and check for a valid range
         disptime, time = time, float(time)
         if -tolerance <= time <= dt * (recordsz - 1) + tolerance:
             raise ValueError(
@@ -2221,19 +2667,19 @@ class RecordTensor(ShapedTensor):
                 f"{dt * (recordsz - 1) + tolerance}]"
             )
 
-        # compute continuous index
-        index = time / dt
+        # compute continuous offset
+        offset = time / dt
 
         # index is within tolerance of an observation
-        if abs(dt * round(index) - time) < tolerance:
-            return data[..., _unwind_ptr(ptr, index, recordsz)]
+        if abs(dt * round(offset) - time) <= tolerance:
+            return data[..., _unwind_ptr(ptr, round(offset), recordsz)]
 
         # interpolate between observation
         else:
             return interp(
-                data[..., _unwind_ptr(ptr, index + 1, recordsz)],
-                data[..., _unwind_ptr(ptr, index, recordsz)],
-                full(data, dt * (index % 1), shape=data.shape[:-1]),
+                data[..., _unwind_ptr(ptr, offset + 1, recordsz)],
+                data[..., _unwind_ptr(ptr, offset, recordsz)],
+                full(data, dt * (offset % 1), shape=(*data.shape[:-1], 1)),
                 dt,
                 **(interp_kwargs if interp_kwargs else {}),
             )
@@ -2515,7 +2961,7 @@ class RecordModule(DimensionalModule):
         time: float | torch.Tensor,
         interp: Interpolation,
         *,
-        tolerance: float | torch.Tensor = 1e-7,
+        tolerance: float = 1e-6,
         offset: int = 1,
     ) -> torch.Tensor:
         r"""Selects elements of a constrained attribute based on prior time.
@@ -2533,9 +2979,9 @@ class RecordModule(DimensionalModule):
             name (str): name of the attribute from which to select.
             time (float | torch.Tensor): time(s) before present to select from.
             interp (Interpolation): method to interpolate between discrete time steps.
-            tolerance (float | torch.Tensor, optional): maximum difference in time from
+            tolerance (float, optional): maximum difference in time from
                 a discrete sample to consider a time co-occuring with the sample.
-                Defaults to 1e-7.
+                Defaults to 1e-6.
             offset (int, optional): window index offset as number of steps prior to the
                 location of the next time slice to overwrite. Defaults to 1.
 
@@ -2595,7 +3041,7 @@ class RecordModule(DimensionalModule):
             index = time / self.dt
             rindex = index.round()
             index = torch.where(
-                (self.dt * rindex - time).abs() < tolerance, rindex, index
+                (self.dt * rindex - time).abs() <= tolerance, rindex, index
             )
 
             # access data by index and interpolate
@@ -2627,7 +3073,7 @@ class RecordModule(DimensionalModule):
             # compute continuous index
             index = time / self.dt
             rindex = round(index)
-            if abs(self.dt * rindex - time) < tolerance:
+            if abs(self.dt * rindex - time) <= tolerance:
                 index = rindex
 
             # integer index (no interpolation)
