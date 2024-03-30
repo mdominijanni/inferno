@@ -1565,12 +1565,12 @@ class RecordTensor(ShapedTensor):
     @property
     def __constraints(self) -> dict[int, int]:
         r"""Module internal constraint getter."""
-        return getattr(self.__owner(), f"_{self.__name}_constraints")
+        return getattr(self.__owner(), self.__attributes.constraints)
 
     @property
     def __data(self) -> torch.Tensor | nn.Parameter | None:
         r"""Module internal data getter."""
-        return getattr(self.__owner(), f"_{self.__name}_data")
+        return getattr(self.__owner(), self.__attributes.data)
 
     @__data.setter
     def __data(self, value: torch.Tensor | nn.Parameter | None) -> None:
@@ -1603,7 +1603,7 @@ class RecordTensor(ShapedTensor):
     @__pointer.setter
     def __pointer(self, value: int) -> None:
         r"""Module internal pointer setter."""
-        setattr(self.__owner(), f"_{self.__name}_pointer", int(value))
+        setattr(self.__owner(), self.__attributes.pointer, int(value))
 
     @property
     def __recordsz(self) -> int:
@@ -1967,6 +1967,11 @@ class RecordTensor(ShapedTensor):
                     device=data.device,
                     dtype=data.dtype,
                 )
+            elif isinstance(data, nn.UninitializedParameter):
+                self.__data = nn.Parameter(
+                    torch.empty(0, dtype=data.dtype, device=data.device),
+                    data.requires_grad,
+                )
             else:
                 data.data = empty(data, shape=(0,))
 
@@ -1976,6 +1981,13 @@ class RecordTensor(ShapedTensor):
                     requires_grad=data.requires_grad,
                     device=data.device,
                     dtype=data.dtype,
+                )
+            elif isinstance(data, nn.UninitializedBuffer):
+                self.__data = torch.empty(
+                    0,
+                    dtype=data.dtype,
+                    device=data.device,
+                    requires_grad=data.requires_grad,
                 )
             else:
                 self.__data = empty(data, shape=(0,))
@@ -2076,11 +2088,19 @@ class RecordTensor(ShapedTensor):
             self.write(value, offset=0, inplace=inplace)
             self.incr(pos=1)
 
+        If the storage is uninitialized, then it will be made automatically. The
+        data type and gradient requirement will be preserved, but the storage
+        will be put on the same device as ``obs``. If ``inplace`` is ``False``, the
+        data type may be promoted to that of ``obs`` by PyTorch. Storage will be
+        zero-filled.
+
         Args:
             obs (torch.Tensor): observation to write.
             inplace (bool, optional): if the operation should be performed in-place
                 with :py:func:`torch.no_grad`. Defaults to ``False``.
         """
+        if self._ignore(self.__data):
+            self.initialize(obs.shape, device=obs.device, fill=0)
         self.write(obs, offset=0, inplace=inplace)
         self.incr(1)
 

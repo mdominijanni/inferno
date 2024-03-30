@@ -682,6 +682,32 @@ class TestRecordTensor:
             assert dtname not in infmodule._extras
             assert durname not in infmodule._extras
 
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    def test_init_reshapes(self, infmodule, name, asparam):
+        data = torch.rand(randshape())
+        if asparam:
+            d2 = nn.Parameter(data.clone().detach(), True)
+        else:
+            d2 = data.clone().detach()
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=d2,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        assert tuple(rt.value.shape) == (*data.shape, rt.recordsz)
+
     def test_create(self, infmodule, name):
         RecordTensor.create(
             infmodule,
@@ -706,16 +732,28 @@ class TestRecordTensor:
         ids=("parameter", "buffer"),
     )
     def test_finalizer(self, infmodule, name, asparam):
-        RecordTensor.create(
-            infmodule,
-            name,
-            step_time=random.uniform(0.75, 1.25),
-            duration=random.uniform(3.25, 5.0),
-            value=torch.rand(randshape()),
-            persist_data=True,
-            persist_constraints=True,
-            persist_temporal=True,
-        )
+        if asparam:
+            RecordTensor.create(
+                infmodule,
+                name,
+                step_time=random.uniform(0.75, 1.25),
+                duration=random.uniform(3.25, 5.0),
+                value=nn.Parameter(torch.rand(randshape()), True),
+                persist_data=True,
+                persist_constraints=True,
+                persist_temporal=True,
+            )
+        else:
+            RecordTensor.create(
+                infmodule,
+                name,
+                step_time=random.uniform(0.75, 1.25),
+                duration=random.uniform(3.25, 5.0),
+                value=torch.rand(randshape()),
+                persist_data=True,
+                persist_constraints=True,
+                persist_temporal=True,
+            )
 
         attributes = (*getattr(infmodule, name).attributes,)
 
@@ -728,3 +766,552 @@ class TestRecordTensor:
         assert not hasattr(infmodule, name)
         for attr in attributes:
             assert not hasattr(infmodule, attr)
+
+    def test_constraint_mapping(self, infmodule, name):
+        constraints, adjusted = {}, {}
+        for d in range(-3, 4):
+            constraints[d] = random.randint(1, 9)
+            adjusted[d - (d < 0)] = constraints[d]
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=None,
+            constraints=constraints,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        assert rt.constraints == constraints
+        assert ShapedTensor.constraints.fget(rt) == (adjusted | {-1: rt.recordsz})
+
+    def test_tensor_parameter_assignment(self, infmodule, name):
+        data = nn.Parameter(torch.rand(randshape()), False)
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=data,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        assert isinstance(rt.value, nn.Parameter)
+
+        newdata = torch.rand_like(rt.value)
+        rt.value = newdata
+
+        assert isinstance(rt.value, nn.Parameter)
+        assert torch.all(rt.value == newdata)
+
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    def test_align(self, infmodule, name, asparam):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=(nn.Parameter(torch.empty(0), True) if asparam else torch.empty(0)),
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        data = torch.rand(*randshape(), rt.recordsz)
+        rt.value = data.clone().detach()
+
+        index = random.randint(-rt.recordsz, rt.recordsz - 1)
+        rt.align(index)
+
+        assert torch.all(rt.value == torch.roll(data, index, -1))
+
+        if asparam:
+            assert isinstance(rt.value, nn.Parameter)
+
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize(
+        "fill",
+        (None, 2.7182818),
+        ids=("parameter", "buffer"),
+    )
+    def test_reset(self, infmodule, name, asparam, fill):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=(nn.Parameter(torch.empty(0), True) if asparam else torch.empty(0)),
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        data = torch.rand(*randshape(), rt.recordsz)
+        rt.value = data.clone().detach()
+
+        ptr = random.randint(1, rt.recordsz)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+        rt.reset(fill)
+
+        assert rt.pointer == 0
+
+        if fill:
+            assert torch.all(rt.value == fill)
+        else:
+            assert torch.all(rt.value == data.roll(-ptr, -1))
+
+        if asparam:
+            assert isinstance(rt.value, nn.Parameter)
+            assert rt.value.requires_grad
+
+    @pytest.mark.parametrize(
+        "valuetype",
+        (
+            None,
+            torch.Tensor,
+            nn.Parameter,
+            nn.UninitializedBuffer,
+            nn.UninitializedParameter,
+        ),
+        ids=(
+            "type=None",
+            "type=Tensor",
+            "type=Parameter",
+            "type=UninitializedBuffer",
+            "type=UninitializedParameter",
+        ),
+    )
+    @pytest.mark.parametrize(
+        "usespec",
+        (True, False),
+        ids=("override=True", "override=False"),
+    )
+    def test_initialize(self, infmodule, name, valuetype, usespec):
+        dtylist = [torch.float16, torch.float32, torch.int32, torch.complex64]
+        devlist = ["cpu"]
+        # if hascuda:
+        #    devlist.append("cuda")
+        # if hasmps:
+        #    devlist.append("mps")
+
+        shape = randshape(mindims=2, maxdims=4)
+        dtype = dtylist[random.randint(0, len(dtylist) - 1)]
+        device = devlist[random.randint(0, len(devlist) - 1)]
+
+        or_dtype = dtylist[random.randint(0, len(dtylist) - 1)] if usespec else None
+        or_device = devlist[random.randint(0, len(devlist) - 1)] if usespec else None
+
+        checktype = (
+            or_dtype if usespec else (torch.float32 if valuetype is None else dtype)
+        )
+        checkdevice = or_device if usespec else ("cpu" if valuetype is None else device)
+
+        match valuetype:
+            case None:
+                data = None
+            case torch.Tensor:
+                data = torch.empty(0, dtype=dtype, device=device)
+            case nn.Parameter:
+                data = nn.Parameter(torch.empty(0, dtype=dtype, device=device), False)
+            case nn.UninitializedBuffer:
+                data = nn.UninitializedBuffer(dtype=dtype, device=device)
+            case nn.UninitializedParameter:
+                data = nn.UninitializedParameter(
+                    dtype=dtype, device=device, requires_grad=False
+                )
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=data,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        rt.initialize(shape, device=or_device, dtype=or_dtype, fill=1.0)
+
+        assert rt.value.dtype == checktype
+        assert str(rt.value.device).partition(":")[0] == checkdevice
+        assert (*rt.value.shape,) == (*shape, rt.recordsz)
+        assert torch.all(rt.value == 1)
+
+        if valuetype in (nn.Parameter, nn.UninitializedParameter):
+            assert isinstance(rt.value, nn.Parameter)
+        else:
+            assert not isinstance(rt.value, nn.Parameter)
+            assert isinstance(rt.value, torch.Tensor)
+
+    @pytest.mark.parametrize(
+        "valuetype",
+        (
+            None,
+            torch.Tensor,
+            nn.Parameter,
+            nn.UninitializedBuffer,
+            nn.UninitializedParameter,
+        ),
+        ids=(
+            "type=None",
+            "type=Tensor",
+            "type=Parameter",
+            "type=UninitializedBuffer",
+            "type=UninitializedParameter",
+        ),
+    )
+    @pytest.mark.parametrize(
+        "useuninit",
+        (True, False),
+        ids=("useinit=True", "usinit=False"),
+    )
+    def test_deinitialize(self, infmodule, name, valuetype, useuninit):
+        dtylist = [torch.float16, torch.float32, torch.int32, torch.complex64]
+        devlist = ["cpu"]
+        # if hascuda:
+        #    devlist.append("cuda")
+        # if hasmps:
+        #    devlist.append("mps")
+
+        shape = randshape(mindims=2, maxdims=4)
+        dtype = dtylist[random.randint(0, len(dtylist) - 1)]
+        device = devlist[random.randint(0, len(devlist) - 1)]
+
+        checktype = torch.float32 if valuetype is None else dtype
+        checkdevice = "cpu" if valuetype is None else device
+
+        match valuetype:
+            case None:
+                data = None
+            case torch.Tensor:
+                data = torch.empty(shape, dtype=dtype, device=device)
+            case nn.Parameter:
+                data = nn.Parameter(
+                    torch.empty(shape, dtype=dtype, device=device), False
+                )
+            case nn.UninitializedBuffer:
+                data = nn.UninitializedBuffer(dtype=dtype, device=device)
+            case nn.UninitializedParameter:
+                data = nn.UninitializedParameter(
+                    dtype=dtype, device=device, requires_grad=False
+                )
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=data,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        rt.deinitialize(use_uninitialized=useuninit)
+
+        assert rt.value.dtype == checktype
+        assert str(rt.value.device).partition(":")[0] == checkdevice
+
+        if valuetype in (nn.Parameter, nn.UninitializedParameter):
+            if useuninit:
+                assert isinstance(rt.value, nn.UninitializedParameter)
+            else:
+                assert isinstance(rt.value, nn.Parameter)
+                assert not isinstance(rt.value, nn.UninitializedParameter)
+        else:
+            if useuninit:
+                assert isinstance(rt.value, nn.UninitializedBuffer)
+            else:
+                assert isinstance(rt.value, torch.Tensor)
+                assert not isinstance(rt.value, nn.UninitializedBuffer)
+
+    def test_peek_latest_get(self, infmodule, name):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        rt.value = torch.rand(*randshape(), rt.recordsz)
+        ptr = random.randint(1, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        assert torch.all(rt.peek() == rt.value[..., (ptr - 1) % rt.recordsz])
+        assert torch.all(rt.latest == rt.value[..., (ptr - 1) % rt.recordsz])
+
+    def test_pop(self, infmodule, name):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        rt.value = torch.rand(*randshape(), rt.recordsz)
+        ptr = random.randint(1, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        assert torch.all(rt.pop() == rt.value[..., (ptr - 1) % rt.recordsz])
+        assert rt.pointer == ptr - 1
+
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        assert torch.all(rt.latest == rt.value[..., (ptr - 1) % rt.recordsz])
+
+    def test_latest_del(self, infmodule, name):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        data = torch.rand(*randshape(), rt.recordsz)
+        rt.value = data.clone().detach()
+        ptr = random.randint(1, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        del rt.latest
+
+        assert rt.pointer == ptr - 1
+        assert torch.all(rt.value == data)
+
+    @pytest.mark.parametrize(
+        "inplace",
+        (True, False),
+        ids=("inplace", "normal"),
+    )
+    def test_push(self, infmodule, name, inplace):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape()
+
+        data = torch.rand(*shape, rt.recordsz)
+        rt.value = data.clone().detach()
+        ptr = random.randint(1, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        obs = torch.rand(shape)
+        obsclone = obs.clone().detach()
+        obsclone.requires_grad = True
+        rt.push(obsclone, inplace)
+
+        assert rt.pointer == (ptr + 1) % rt.recordsz
+        for d in range(rt.recordsz):
+            if d == ptr:
+                assert torch.all(rt.value[..., d] == obs)
+            else:
+                assert torch.all(rt.value[..., d] == data[..., d])
+
+    @pytest.mark.parametrize(
+        "inplace",
+        (True, False),
+        ids=("inplace", "normal"),
+    )
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    def test_push_init(self, infmodule, name, inplace, asparam):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=(nn.Parameter(torch.empty(0), True) if asparam else torch.empty(0)),
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape()
+
+        obs = torch.rand(*shape)
+        rt.push(obs.clone().detach(), inplace)
+
+        if asparam:
+            assert isinstance(rt.value, nn.Parameter)
+            assert rt.value.requires_grad
+
+        assert (*rt.value.shape,) == (*shape, rt.recordsz)
+        assert torch.all(rt.value[..., 0] == obs)
+        assert torch.all(rt.value[..., 1:] == 0)
+
+    def test_latest_set(self, infmodule, name):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape()
+
+        data = torch.rand(*shape, rt.recordsz)
+        rt.value = data.clone().detach()
+        ptr = random.randint(1, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        obs = torch.rand(shape)
+        obsclone = obs.clone().detach()
+        obsclone.requires_grad = True
+        rt.latest = obsclone
+
+        assert rt.pointer == (ptr + 1) % rt.recordsz
+        for d in range(rt.recordsz):
+            if d == ptr:
+                assert torch.all(rt.value[..., d] == obs)
+            else:
+                assert torch.all(rt.value[..., d] == data[..., d])
+
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    def test_read(self, infmodule, name, asparam):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        if asparam:
+            rt.value = nn.Parameter(torch.zeros(*shape, rt.recordsz).float(), True)
+        else:
+            rt.value = torch.zeros(*shape, rt.recordsz).float()
+
+        data = [torch.rand(shape) for _ in range(rt.recordsz)]
+        for d in data:
+            rt.push(d)
+
+        for idx, d in enumerate(data):
+            torch.all(d == rt.read(rt.recordsz - idx - 1))
+
+    @pytest.mark.parametrize(
+        "inplace",
+        (True, False),
+        ids=("inplace", "normal"),
+    )
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    def test_write(self, infmodule, name, asparam, inplace):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(3.25, 5.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        if asparam:
+            rt.value = nn.Parameter(torch.zeros(*shape, rt.recordsz).float(), True)
+        else:
+            rt.value = torch.zeros(*shape, rt.recordsz).float()
+
+        data = [torch.rand(shape) for _ in range(rt.recordsz)]
+        for idx, d in enumerate(data):
+            rt.write(d, idx, inplace)
+
+        for idx, d in enumerate(data):
+            torch.all(d == rt.value[..., rt.recordsz - idx - 1])
+
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize(
+        "forward",
+        (True, False),
+        ids=("forward", "backward"),
+    )
+    def test_readrange_contiguous_int(self, infmodule, name, asparam, forward):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        setattr(infmodule, rt.attributes.pointer, rt.recordsz - 1)
