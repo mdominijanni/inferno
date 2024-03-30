@@ -2160,7 +2160,7 @@ class RecordTensor(ShapedTensor):
         if self._ignore(data):
             raise RuntimeError("cannot write to uninitialized storage")
 
-        # shape must be the same as a observation
+        # shape must be the same as an observation
         elif (*obs.shape,) != (*data.shape[:-1],):
             raise ValueError(
                 f"shape of 'obs' {(*obs.shape,)} must have the shape "
@@ -2178,7 +2178,7 @@ class RecordTensor(ShapedTensor):
             index = _unwind_ptr(ptr, offset, recordsz)
             self.__data = torch.cat(
                 (
-                    data[..., slice(0, index)],
+                    data[..., slice(None, index)],
                     obs.unsqueeze(-1),
                     data[..., slice(index + 1, None)],
                 ),
@@ -2226,11 +2226,11 @@ class RecordTensor(ShapedTensor):
 
             ``offset``:
 
-            `:math:`S_0 \times \cdots`
+            :math:`S_0 \times \cdots`
 
             ``return``:
 
-            `:math:`S_0 \times \cdots \times L`
+            :math:`S_0 \times \cdots \times L`
 
             Where:
                 * :math:`S_0, \ldots` are the dimensions of each observation, given
@@ -2277,7 +2277,7 @@ class RecordTensor(ShapedTensor):
     def writerange(
         self,
         obs: torch.Tensor,
-        offset: int | torch.Tensor = 1,
+        offset: int | torch.Tensor = 0,
         forward: bool = False,
         inplace: bool = False,
     ) -> None:
@@ -2300,11 +2300,11 @@ class RecordTensor(ShapedTensor):
         Args:
             obs (torch.Tensor): observation to write at the specified offsets.
             offset (int | torch.Tensor, optional): number of steps before the pointer.
-                Defaults to 1.
+                Defaults to 0.
             forward (bool, optional): if the offset pointer indicates the index of the
                 first observation. Defaults to ``False``.
             inplace (bool, optional): if the operation should be performed in-place
-                with :py:func:`torch.no_grad`. Defaults to False.
+                with :py:func:`torch.no_grad`. Defaults to ``False``.
 
         Raises:
             RuntimeError: cannot write to uninitialized (ignored) storage.
@@ -2325,15 +2325,15 @@ class RecordTensor(ShapedTensor):
 
             ``obs``:
 
-            `:math:`S_0 \times \cdots \times L`
+            :math:`S_0 \times \cdots \times L`
 
             ``offset``:
 
-            `:math:`S_0 \times \cdots`
+            :math:`S_0 \times \cdots`
 
             ``return``:
 
-            `:math:`S_0 \times \cdots \times L`
+            :math:`S_0 \times \cdots \times L`
 
             Where:
                 * :math:`S_0, \ldots` are the dimensions of each observation, given
@@ -2422,6 +2422,165 @@ class RecordTensor(ShapedTensor):
             else:
                 self.__data = torch.scatter(data, -1, indices, obs.unsqueeze(-1))
 
+    def select(
+        self,
+        time: torch.Tensor | float,
+        interp: Interpolation | None = None,
+        *,
+        tolerance: float = 1e-6,
+        offset: int = 1,
+        interp_kwargs: dict[str, Any] | None = None,
+    ) -> torch.Tensor:
+        r"""Selects previously observed elements of the record tensor by time.
+
+        If ``time`` is a scalar and is within tolerance of an integer index, then
+        a observation will be returned without ever attempting interpolation.
+
+        If ``time`` is a tensor, interpolation will be called regardless, and the time
+        passed into the interpolation call will be set to either ``0`` or
+        :py:attr:`self.dt`. Interpolation results are then overwritten with exact values
+        before returning.
+
+        Args:
+            time (torch.Tensor | float): time at which to read each element from the
+                underlying storage.
+            interp (Interpolation | None, optional): function to interpolate between
+                neighboring observations, nearest when ``None``. Defaults to ``None``.
+            tolerance (float, optional): maximum difference in time from a discrete
+                sample to consider a time co-occuring with the sample. Defaults to 1e-6.
+            offset (int, optional): number of steps before the pointer. Defaults to 1.
+            interp_kwargs (dict[str, Any] | None, optional): dictionary of keyword
+                arguments to pass to ``interp``. Defaults to ``None``.
+
+        Raises:
+            RuntimeError: cannot select from uninitialized (ignored) storage.
+            ValueError: ``time`` must have the same number of dimensions as an
+                observation or that number plus one.
+            ValueError: all elements of ``time`` must be within the range of observation
+                times plus the tolerance.
+
+        Returns:
+            torch.Tensor: interpolated values selected at a prior times.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``time``:
+
+            :math:`S_0 \times \cdots \times [D]`
+
+            ``return``:
+
+            :math:`S_0 \times \cdots \times [D]`
+
+            Where:
+                * :math:`S_0, \ldots` are the dimensions of each observation, given
+                  by :py:attr:`shape`.
+                * :math:`D` are the number of distinct observations to select.
+        """
+        # use nearest interpolation by default
+        if not interp:
+            interp = interp_nearest
+
+        # strongly reference data and get from internal properties
+        data = self.__data
+        ptr, recordsz, dt = self.__pointer, self.__recordsz, self.__dt
+
+        # cannot select from uninitialized storage
+        if self._ignore(data):
+            raise RuntimeError("cannot select from uninitialized storage")
+
+        # tensor time
+        elif isinstance(time, torch.Tensor):
+            # check if the output should be squeezed
+            if time.ndim == data.ndim - 1:
+                squeeze = True
+                time = time.unsqueeze(-1)
+            elif time.ndim == data.ndim:
+                squeeze = False
+            else:
+                raise ValueError(
+                    f"'time' has an incompatible number of dimensions ({time.ndim}), "
+                    f"it must have either {data.ndim - 1} or {data.ndim} dimensions"
+                )
+
+            # check that times are in range
+            tmin, tmax = time.amin(), time.amax()
+            if -tolerance <= tmin or tmax <= dt * (recordsz - 1) + tolerance:
+                raise ValueError(
+                    f"all elements of 'time' (min={tmin}, max={tmax}) must be within "
+                    f"the valid range of observations including tolerance, the "
+                    f"interval [{-tolerance}, {dt * (recordsz - 1) + tolerance}]"
+                )
+
+            # compute continuous shft
+            shift = time / dt
+            shiftr = shift.round()
+            shift = torch.where(
+                torch.abs(dt * shiftr - time) <= tolerance, shiftr, offset
+            )
+
+            # update offset with shift
+            offset = offset + shift
+
+            # indices of the nearest observations
+            stacked_idx = _unwind_tensor_ptr(
+                ptr, torch.stack((offset.ceil(), offset.floor()), -1), recordsz
+            )
+
+            # get stored observations at specified indices
+            prev_data, next_data = torch.tensor_split(
+                torch.gather(data.unsqueeze(-1), -1, stacked_idx),
+                (offset.shape[-1],),
+                -1,
+            )
+
+            # interpolate from neighboring observations
+            res = interp(
+                prev_data,
+                next_data,
+                dt * (shift % 1),
+                dt,
+                **(interp_kwargs if interp_kwargs else {}),
+            )
+
+            # bypass interpolation for exact indices
+            res = torch.where(stacked_idx[0] == stacked_idx[1], prev_data, res)
+
+            # conditionally squeeze and return
+            return res.squeeze(-1) if squeeze else res
+
+        # scalar time
+        else:
+            # cast time and check for a valid range
+            disptime, time = time, float(time)
+            if -tolerance <= time <= dt * (recordsz - 1) + tolerance:
+                raise ValueError(
+                    f"'time' ({disptime}) must be within the valid range of "
+                    "observations, including tolerance, the interval "
+                    f"[{-tolerance}, {dt * (recordsz - 1) + tolerance}]"
+                )
+
+            # compute continuous shift
+            shift = time / dt
+
+            # directly read when within tolerance
+            if abs(dt * round(shift) - time) <= tolerance:
+                return data[..., _unwind_ptr(ptr, offset + round(shift), recordsz)]
+
+            # interpolate between observation
+            else:
+                # update offset with shift
+                offset = offset + shift
+
+                return interp(
+                    data[..., _unwind_ptr(ptr, math.ceil(offset), recordsz)],
+                    data[..., _unwind_ptr(ptr, math.floor(offset), recordsz)],
+                    full(data, dt * (shift % 1), shape=data.shape[:-1]),
+                    dt,
+                    **(interp_kwargs if interp_kwargs else {}),
+                )
+
     def insert(
         self,
         obs: torch.Tensor,
@@ -2436,25 +2595,37 @@ class RecordTensor(ShapedTensor):
         r"""Inserts new elements into the record tensor by time.
 
         If ``time`` is a scalar and is within tolerance of an integer index, then
-        the slice will be inserted (with a scalar time, multiple inserts are not
-        supported).
+        the observation will be written without ever attempting extrapolation.
 
         If ``time`` is a tensor, interpolation will be called regardless, and the time
         passed into the extrapolation call will be set to either ``0`` or
         :py:attr:`self.dt`. Extrapolation results are then overwritten with exact values
-        before returning.
+        before writing.
 
         The :py:class:`~torch.dtype` of elements inserted into the underlying storage
         will be cast back to the data type of the storage after extrapolation.
 
         Args:
-            obs (torch.Tensor): _description_
-            time (torch.Tensor | float): _description_
-            extrap (Extrapolation | None, optional): _description_. Defaults to None.
-            tolerance (float, optional): _description_. Defaults to 1e-6.
-            offset (int, optional): _description_. Defaults to 0.
-            inplace (bool, optional): _description_. Defaults to False.
-            extrap_kwargs (dict[str, Any] | None, optional): _description_. Defaults to None.
+            obs (torch.Tensor): observation to write at the specified times.
+            time (torch.Tensor | float): time at which to write each element of the
+                observation.
+            extrap (Extrapolation | None, optional): function to interpolate from the
+                observation to its neighbors, nearest when ``None``.
+                Defaults to ``None``.
+            tolerance (float, optional): maximum difference in time from a discrete
+                sample to consider a time co-occuring with the sample. Defaults to 1e-6.
+            offset (int, optional): number of steps before the pointer. Defaults to 0.
+            inplace (bool, optional): if the operation should be performed in-place
+                with :py:func:`torch.no_grad`. Defaults to ``False``.
+            extrap_kwargs (dict[str, Any] | None, optional): dictionary of keyword
+                arguments to pass to ``extrap``. Defaults to ``None``.
+
+        Raises:
+            RuntimeError: cannot insert into uninitialized (ignored) storage.
+            ValueError: shape of ``obs`` must match the shape of an observation.
+            ValueError: shape of ``time`` must match the shape of an observation.
+            ValueError: all elements of ``time`` must be within the range of observation
+                times plus the tolerance.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -2466,460 +2637,152 @@ class RecordTensor(ShapedTensor):
             Where:
                 * :math:`S_0, \ldots` are the dimensions of each observation, given
                   by :py:attr:`shape`.
+
+        Tip:
+            Limitations on :py:func:`torch.scatter` make it risky to insert multiple
+            observations at once and is therefore unsupported. To write multiple values
+            at once, consider using :py:meth:`writerange`.
         """
         # use nearest extrapolation by default
         if not extrap:
             extrap = extrap_nearest
 
         # strongly reference data and get from internal properties
-        data, recordsz, dt = self.__data, self.__recordsz, self.__dt
-
-        # apply offset to the pointer
-        ptr = _unwind_ptr(self.__pointer, offset, recordsz)
+        data = self.__data
+        ptr, recordsz, dt = self.__pointer, self.__recordsz, self.__dt
 
         # cannot insert into uninitialized storage
         if self._ignore(data):
             raise RuntimeError("cannot insert into uninitialized storage")
 
-        if isinstance(time, torch.Tensor):
-            self.__insert_tensor(
-                value,
-                time,
-                extrap,
-                tolerance=tolerance,
-                offset=offset,
-                inplace=inplace,
-                extrap_kwargs=extrap_kwargs,
-            )
-        else:
-            self.__insert_scalar(
-                value,
-                time,
-                extrap,
-                tolerance=tolerance,
-                offset=offset,
-                inplace=inplace,
-                extrap_kwargs=extrap_kwargs,
-            )
-
-    def __insert_tensor(
-        self,
-        value: torch.Tensor,
-        time: torch.Tensor,
-        extrap: Extrapolation | None = None,
-        *,
-        tolerance: float = 1e-6,
-        offset: int = 0,
-        inplace: bool = False,
-        extrap_kwargs: dict[str, Any] | None = None,
-    ) -> None:
-        # use nearest extrapolation by default
-        if not extrap:
-            extrap = extrap_nearest
-
-        # strongly reference data and get from internal properties
-        data, recordsz, dt = self.__data, self.__recordsz, self.__dt
-
-        # cannot insert into uninitialized storage
-        if self._ignore(data):
-            raise RuntimeError("cannot insert into uninitialized storage")
-
-        # apply offset to the pointer
-        ptr = _unwind_ptr(self.__pointer, offset, recordsz)
-
-        # conditionally unsqueeze value
-        if value.ndim == data.ndim - 1:
-            value = value.unsqueeze(-1)
-        elif value.ndim != data.ndim:
+        # shape must be the same as an observation
+        elif (*obs.shape,) != (*data.shape[:-1],):
             raise ValueError(
-                f"'value' has an incompatible number of dimensions ({value.ndim}), "
-                f"it must have either {data.ndim - 1} or {data.ndim} dimensions"
+                f"shape of 'obs' {(*obs.shape,)} must have the shape "
+                f"{(*data.shape[:-1],)}, like a stored observation"
             )
 
-        # conditionally unsqueeze time
-        if time.ndim == data.ndim - 1:
-            time = time.unsqueeze(-1)
-        elif time.ndim != data.ndim:
-            raise ValueError(
-                f"'time' has an incompatible number of dimensions ({time.ndim}), "
-                f"it must have either {data.ndim - 1} or {data.ndim} dimensions"
-            )
-
-        # check that value and time are compatible
-        if not value.shape != time.shape:
-            raise ValueError(
-                "'value' and 'time' must be of the same shape, or only differ by a "
-                "final singleton dimension"
-            )
-
-        # check that times are in range
-        tmin, tmax = time.amin(), time.amax()
-        if -tolerance <= tmin or tmax <= dt * (recordsz - 1) + tolerance:
-            raise ValueError(
-                f"all elements of 'time' (min={tmin}, max={tmax}) must be within "
-                f" the valid range of observations including tolerance, the interval "
-                f"[{-tolerance}, {dt * (recordsz - 1) + tolerance}]"
-            )
-
-        # compute continuous offsets
-        offset = time / dt
-        rounded = offset.round()
-        offset = torch.where(
-            torch.abs(dt * rounded - time) <= tolerance, rounded, offset
-        )
-
-        # access data by index and extrapolate
-        prev_idx = _unwind_tensor_ptr(ptr, offset.ceil(), recordsz)
-        next_idx = _unwind_tensor_ptr(ptr, offset.floor(), recordsz)
-
-        prev_data, next_data = torch.tensor_split(
-            torch.gather(data, -1, torch.cat((prev_idx, next_idx), -1)),
-            (offset.shape[-1],),
-        )
-
-        prev_exdata, next_exdata = extrap(
-            value,
-            dt * (offset % 1),
-            prev_data,
-            next_data,
-            dt,
-            **({extrap_kwargs if extrap_kwargs else {}}),
-        )
-
-        # bypass extrapolation for exact indices
-        bypass = prev_idx == next_idx
-        prev_exdata = torch.where(bypass, prev_data, prev_exdata)
-        next_exdata = torch.where(bypass, next_data, next_exdata)
-
-        # write to storage
-        if inplace:
-            with torch.no_grad():
-                data.scatter_(
-                    -1,
-                    torch.cat((prev_idx, next_idx), -1),
-                    torch.cat((prev_exdata, next_exdata), -1).to(dtype=data.dtype),
-                )
-
-        else:
-            self.__data = torch.scatter(
-                data,
-                -1,
-                torch.cat((prev_idx, next_idx), -1),
-                torch.cat((prev_exdata, next_exdata), -1).to(dtype=data.dtype),
-            )
-
-    def __insert_scalar(
-        self,
-        value: torch.Tensor,
-        time: float,
-        extrap: Extrapolation | None = None,
-        *,
-        tolerance: float = 1e-6,
-        offset: int = 0,
-        inplace: bool = False,
-        extrap_kwargs: dict[str, Any] | None = None,
-    ) -> None:
-        # use nearest extrapolation by default
-        if not extrap:
-            extrap = extrap_nearest
-
-        # strongly reference data and get record size and step time
-        data, recordsz, dt = self.__data, self.__recordsz, self.__dt
-
-        # cannot insert into uninitialized storage
-        if self._ignore(data):
-            raise RuntimeError("cannot insert into uninitialized storage")
-
-        # apply offset to the pointer
-        ptr = _unwind_ptr(self.__pointer, offset, recordsz)
-
-        # conditionally unsqueeze value
-        if value.ndim == data.ndim - 1:
-            value = value.unsqueeze(-1)
-        elif value.ndim == data.ndim:
-            if value.shape[-1] != 1:
+        # tensor time
+        elif isinstance(time, torch.Tensor):
+            # shape must be the same as an observation
+            if (*time.shape,) != (*data.shape[:-1],):
                 raise ValueError(
-                    f"when specified with {value.ndim} dimensions, 'value' must have a "
-                    "final dimension of size 1"
-                )
-        else:
-            raise ValueError(
-                f"'value' has an incompatible number of dimensions ({value.ndim}), "
-                f"it must have either {data.ndim - 1} or {data.ndim} dimensions"
-            )
-
-        # cast time and check for a valid range
-        disptime, time = time, float(time)
-        if -tolerance <= time <= dt * (recordsz - 1) + tolerance:
-            raise ValueError(
-                f"'time' ({disptime}) must be within the valid range of observations "
-                f"including tolerance, the interval [{-tolerance}, "
-                f"{dt * (recordsz - 1) + tolerance}]"
-            )
-
-        # compute continuous offset
-        offset = time / dt
-
-        # index is within tolerance of an observation
-        if abs(dt * round(offset) - time) <= tolerance:
-            # index of the observation to replace
-            index = _unwind_ptr(ptr, round(offset), recordsz)
-
-            if inplace:
-                with torch.no_grad():
-                    data[..., index] = value.squeeze(-1)
-
-            else:
-                self.__data = torch.cat(
-                    (
-                        data[..., slice(0, index)],
-                        value.squeeze(-1).to(dtype=data.dtype),
-                        data[:, slice(index + 1, None)],
-                    ),
-                    -1,
+                    f"shape of 'time' {(*time.shape,)} must have the shape "
+                    f"{(*data.shape[:-1],)}, like a stored observation"
                 )
 
-        # extrapolate to neighboring observations
-        else:
+            # check that times are in range
+            tmin, tmax = time.amin(), time.amax()
+            if -tolerance <= tmin or tmax <= dt * (recordsz - 1) + tolerance:
+                raise ValueError(
+                    f"all elements of 'time' (min={tmin}, max={tmax}) must be within "
+                    f"the valid range of observations including tolerance, the "
+                    f"interval [{-tolerance}, {dt * (recordsz - 1) + tolerance}]"
+                )
+
+            # compute continuous shft
+            shift = time / dt
+            shiftr = shift.round()
+            shift = torch.where(
+                torch.abs(dt * shiftr - time) <= tolerance, shiftr, offset
+            )
+
+            # update offset with shift
+            offset = offset + shift
+
             # indices of the nearest observations
-            prev_idx = _unwind_ptr(ptr, offset + 1, recordsz)
-            next_idx = _unwind_ptr(ptr, offset, recordsz)
+            stacked_idx = _unwind_tensor_ptr(
+                ptr, torch.stack((offset.ceil(), offset.floor()), -1), recordsz
+            )
 
-            # extrapolates data to write
-            prev_exdata, next_exdata = extrap(
-                value,
-                full(data, dt * (offset % 1), shape=(*data.shape[:-1], 1)),
-                data[..., prev_idx].unsqueeze(-1),
-                data[..., next_idx].unsqueeze(-1),
+            # get stored observations at specified indices
+            prev_data, next_data = torch.tensor_split(
+                torch.gather(data.unsqueeze(-1), -1, stacked_idx), 2, -1
+            )
+
+            # extrapolate data to write
+            prev_exobs, next_exobs = extrap(
+                obs,
+                dt * (shift % 1),
+                prev_data,
+                next_data,
                 dt,
                 **({extrap_kwargs if extrap_kwargs else {}}),
             )
 
+            # bypass extrapolation for exact indices
+            bypass = stacked_idx[0] == stacked_idx[1]
+            prev_exobs = torch.where(bypass, prev_data, prev_exobs)
+            next_exobs = torch.where(bypass, next_data, next_exobs)
+
+            # write to storage
             if inplace:
                 with torch.no_grad():
-                    data[..., prev_idx] = prev_exdata.squeeze(-1)
-                    data[..., next_idx] = next_exdata.squeeze(-1)
+                    data.scatter_(
+                        -1,
+                        stacked_idx,
+                        torch.cat((prev_exobs, next_exobs), -1).to(dtype=data.dtype),
+                    )
 
-            # previous sample is at the final tensor index
-            elif prev_idx > next_idx:
-                self.__data = torch.cat(
-                    (
-                        next_exdata.to(dtype=data.dtype),
-                        data[..., slice(next_idx + 1, prev_idx - 1)],
-                        prev_exdata.to(dtype=data.dtype),
-                    ),
-                    -1,
-                )
-
-            # previous sample is not at the final tensor index
             else:
-                self.__data = torch.cat(
-                    (
-                        data[..., slice(0, prev_idx)],
-                        prev_exdata.to(dtype=data.dtype),
-                        next_exdata.to(dtype=data.dtype),
-                        data[..., slice(next_idx + 1, None)],
-                    ),
+                self.__data = torch.scatter(
+                    data,
                     -1,
+                    stacked_idx,
+                    torch.cat((prev_exobs, next_exobs), -1).to(dtype=data.dtype),
                 )
 
-    def select(
-        self,
-        time: torch.Tensor | float,
-        interp: Interpolation | None = None,
-        *,
-        tolerance: float = 1e-6,
-        offset: int = 1,
-        interp_kwargs: dict[str, Any] | None = None,
-    ) -> torch.Tensor:
-        r"""Selects previously observed elements of the record tensor by time.
-
-        If ``time`` is a scalar and is within tolerance of an integer index, then
-        a slice will be returned without ever attempting interpolation.
-
-        If ``time`` is a tensor, interpolation will be called regardless, and the time
-        passed into the interpolation call will be set to either ``0`` or
-        :py:attr:`self.dt`. Interpolation results are then overwritten with exact values
-        before returning.
-
-        If ``time`` is a tensor, then ``tolerance`` can also be a tensor.
-
-        Args:
-            time (torch.Tensor | float): time or times for each element before present
-                to select.
-            interp (Interpolation | None, optional): method to interpolate between
-                discrete time steps, selects the nearest when ``None``.
-                Defaults to ``None``.
-            tolerance (float, optional): maximum difference in time from
-                a discrete sample to consider a time co-occuring with the sample.
-                Defaults to 1e-6.
-            offset (int, optional): number of steps before the pointer to consider the
-                zero point. Defaults to 1.
-            interp_kwargs (dict[str, Any] | None, optional): dictionary of keyword
-                arguments to pass to ``interp``. Defaults to ``None``.
-
-        Returns:
-            torch.Tensor: interpolated values selected at a prior times.
-
-        .. admonition:: Shape
-            :class: tensorshape
-
-            ``time``:
-
-            :math:`N_0 \times \cdots \times [D]`
-
-            ``return``:
-
-            :math:`N_0 \times \cdots \times [D]`
-
-            Where:
-                * :math:`N_0, \ldots` are the dimensions of the constrained tensor.
-                * :math:`D` is the number of times for each value to select.
-
-        Tip:
-            Mimicing the behavior of :py:func:`torch.gather`, if ``time`` is out of the
-            valid range, a :py:class:`ValueError` will be thrown. To avoid this, clamp
-            ``time`` like ``time.clamp(0, recordtensor.duration)``.
-        """
-        if isinstance(time, torch.Tensor):
-            self.__select_tensor(
-                time,
-                interp,
-                tolerance=tolerance,
-                offset=offset,
-                interp_kwargs=interp_kwargs,
-            )
+        # scalar time
         else:
-            self.__select_scalar(
-                time,
-                interp,
-                tolerance=tolerance,
-                offset=offset,
-                interp_kwargs=interp_kwargs,
-            )
+            # cast time and check for a valid range
+            disptime, time = time, float(time)
+            if -tolerance <= time <= dt * (recordsz - 1) + tolerance:
+                raise ValueError(
+                    f"'time' ({disptime}) must be within the valid range of "
+                    "observations, including tolerance, the interval "
+                    f"[{-tolerance}, {dt * (recordsz - 1) + tolerance}]"
+                )
 
-    def __select_tensor(
-        self,
-        time: torch.Tensor,
-        interp: Interpolation | None = None,
-        *,
-        tolerance: float = 1e-6,
-        offset: int = 1,
-        interp_kwargs: dict[str, Any] | None = None,
-    ) -> torch.Tensor:
-        # use nearest interpolation by default
-        if not interp:
-            interp = interp_nearest
+            # compute continuous shift
+            shift = time / dt
 
-        # strongly reference data and get record size and step time
-        data, recordsz, dt = self.__data, self.__recordsz, self.__dt
+            # directly write when within tolerance
+            if abs(dt * round(shift) - time) <= tolerance:
+                self.write(obs, offset + round(shift), inplace=inplace)
 
-        # cannot select from uninitialized storage
-        if self._ignore(data):
-            raise RuntimeError("cannot select from uninitialized storage")
+            # extrapolate to neighbors
+            else:
+                # update offset with shift
+                offset = offset + shift
 
-        # apply offset to the pointer
-        ptr = _unwind_ptr(self.__pointer, offset, recordsz)
+                # indices of the nearest observations
+                prev_idx = _unwind_ptr(ptr, math.ceil(offset), recordsz)
+                next_idx = _unwind_ptr(ptr, math.floor(offset), recordsz)
 
-        # check that times are in range
-        tmin, tmax = time.amin(), time.amax()
-        if -tolerance <= tmin or tmax <= dt * (recordsz - 1) + tolerance:
-            raise ValueError(
-                f"all elements of 'time' (min={tmin}, max={tmax}) must be within "
-                f" the valid range of observations including tolerance, the interval "
-                f"[{-tolerance}, {dt * (recordsz - 1) + tolerance}]"
-            )
+                # extrapolate data to write
+                prev_exobs, next_exobs = extrap(
+                    obs,
+                    full(data, dt * (shift % 1), shape=data.shape[:-1]),
+                    data[..., prev_idx],
+                    data[..., next_idx],
+                    dt,
+                    **({extrap_kwargs if extrap_kwargs else {}}),
+                )
 
-        # check if the output should be squeezed
-        if time.ndim == data.ndim - 1:
-            squeeze = True
-            time = time.unsqueeze(-1)
-        elif time.ndim == data.ndim:
-            squeeze = False
-        else:
-            raise ValueError(
-                f"'time' has an incompatible number of dimensions ({time.ndim}), "
-                f"it must have either {data.ndim - 1} or {data.ndim} dimensions"
-            )
+                # in-place write
+                if inplace:
+                    with torch.no_grad():
+                        data[..., prev_idx] = prev_exobs
+                        data[..., next_idx] = next_exobs
 
-        # compute continuous offsets
-        offset = time / dt
-        rounded = offset.round()
-        offset = torch.where(
-            torch.abs(dt * rounded - time) <= tolerance, rounded, offset
-        )
-
-        # access data by index and interpolate
-        prev_idx = _unwind_tensor_ptr(ptr, offset.ceil(), recordsz)
-        next_idx = _unwind_tensor_ptr(ptr, offset.floor(), recordsz)
-
-        prev_data, next_data = torch.tensor_split(
-            torch.gather(data, -1, torch.cat((prev_idx, next_idx), -1)),
-            (offset.shape[-1],),
-        )
-
-        res = interp(
-            prev_data,
-            next_data,
-            dt * (offset % 1),
-            dt,
-            **(interp_kwargs if interp_kwargs else {}),
-        )
-
-        # bypass interpolation for exact indices
-        res = torch.where(prev_idx == next_idx, prev_data, res)
-
-        # conditionally squeeze and return
-        return res.squeeze(-1) if squeeze else res
-
-    def __select_scalar(
-        self,
-        time: float,
-        interp: Interpolation | None = None,
-        *,
-        tolerance: float = 1e-6,
-        offset: int = 1,
-        interp_kwargs: dict[str, Any] | None = None,
-    ) -> torch.Tensor:
-        # use nearest interpolation by default
-        if not interp:
-            interp = interp_nearest
-
-        # strongly reference data and get record size and step time
-        data, recordsz, dt = self.__data, self.__recordsz, self.__dt
-
-        # cannot select from uninitialized storage
-        if self._ignore(data):
-            raise RuntimeError("cannot select from uninitialized storage")
-
-        # apply offset to the pointer
-        ptr = _unwind_ptr(self.__pointer, offset, recordsz)
-
-        # cast time and check for a valid range
-        disptime, time = time, float(time)
-        if -tolerance <= time <= dt * (recordsz - 1) + tolerance:
-            raise ValueError(
-                f"'time' ({disptime}) must be within the valid range of observations "
-                f"including tolerance, the interval [{-tolerance}, "
-                f"{dt * (recordsz - 1) + tolerance}]"
-            )
-
-        # compute continuous offset
-        offset = time / dt
-
-        # index is within tolerance of an observation
-        if abs(dt * round(offset) - time) <= tolerance:
-            return data[..., _unwind_ptr(ptr, round(offset), recordsz)]
-
-        # interpolate between observation
-        else:
-            return interp(
-                data[..., _unwind_ptr(ptr, offset + 1, recordsz)],
-                data[..., _unwind_ptr(ptr, offset, recordsz)],
-                full(data, dt * (offset % 1), shape=(*data.shape[:-1], 1)),
-                dt,
-                **(interp_kwargs if interp_kwargs else {}),
-            )
+                # write as contiguous range
+                else:
+                    self.writerange(
+                        torch.stack((prev_exobs, next_exobs), -1).to(dtype=data.dtype),
+                        math.ceil(offset),
+                        forward=True,
+                        inplace=False,
+                    )
 
     def reconstrain(
         self, dim: int, size: int | None

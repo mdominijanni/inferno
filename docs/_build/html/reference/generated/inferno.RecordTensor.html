@@ -227,7 +227,7 @@
 <p>Tensor attribute with recorded history.</p>
 <p>Read Operations: <a class="reference internal" href="#inferno.RecordTensor.peek" title="inferno.RecordTensor.peek"><code class="xref py py-meth docutils literal notranslate"><span class="pre">peek()</span></code></a>, <a class="reference internal" href="#inferno.RecordTensor.pop" title="inferno.RecordTensor.pop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pop()</span></code></a>, <a class="reference internal" href="#inferno.RecordTensor.read" title="inferno.RecordTensor.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a>,
 <a class="reference internal" href="#inferno.RecordTensor.readrange" title="inferno.RecordTensor.readrange"><code class="xref py py-meth docutils literal notranslate"><span class="pre">readrange()</span></code></a>, <a class="reference internal" href="#inferno.RecordTensor.select" title="inferno.RecordTensor.select"><code class="xref py py-meth docutils literal notranslate"><span class="pre">select()</span></code></a></p>
-<p>Write Operations: <a class="reference internal" href="#inferno.RecordTensor.push" title="inferno.RecordTensor.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a>, <a class="reference internal" href="#inferno.RecordTensor.write" title="inferno.RecordTensor.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">writerange()</span></code>,
+<p>Write Operations: <a class="reference internal" href="#inferno.RecordTensor.push" title="inferno.RecordTensor.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a>, <a class="reference internal" href="#inferno.RecordTensor.write" title="inferno.RecordTensor.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>, <a class="reference internal" href="#inferno.RecordTensor.writerange" title="inferno.RecordTensor.writerange"><code class="xref py py-meth docutils literal notranslate"><span class="pre">writerange()</span></code></a>,
 <a class="reference internal" href="#inferno.RecordTensor.insert" title="inferno.RecordTensor.insert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">insert()</span></code></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -488,52 +488,61 @@ when not <code class="docutils literal notranslate"><span class="pre">None</span
 
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.RecordTensor.insert">
-<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.functional.Extrapolation.html#inferno.functional.Extrapolation" title="inferno.functional.protocols.Extrapolation"><span class="pre">Extrapolation</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrap_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/core/infrastructure.html#RecordTensor.insert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.RecordTensor.insert" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.functional.Extrapolation.html#inferno.functional.Extrapolation" title="inferno.functional.protocols.Extrapolation"><span class="pre">Extrapolation</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrap_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/core/infrastructure.html#RecordTensor.insert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.RecordTensor.insert" title="Permalink to this definition">#</a></dt>
 <dd><p>Inserts new elements into the record tensor by time.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is a scalar and is within tolerance of an integer index, then
-the slice will be inserted (with a scalar time, multiple inserts are not
-supported).</p>
+the observation will be written without ever attempting extrapolation.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is a tensor, interpolation will be called regardless, and the time
 passed into the extrapolation call will be set to either <code class="docutils literal notranslate"><span class="pre">0</span></code> or
 <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.dt</span></code>. Extrapolation results are then overwritten with exact values
-before returning.</p>
-<p>The <a class="reference external" href="https://pytorch.org/docs/master/tensor_attributes.html#torch.dtype" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> of elements inserted into the underlying tensor
-will be cast back to the type of that tensor after extrapolation.</p>
+before writing.</p>
+<p>The <a class="reference external" href="https://pytorch.org/docs/master/tensor_attributes.html#torch.dtype" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> of elements inserted into the underlying storage
+will be cast back to the data type of the storage after extrapolation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>value</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – _description_</p></li>
-<li><p><strong>time</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – _description_</p></li>
-<li><p><strong>extrap</strong> (<a class="reference internal" href="inferno.functional.Extrapolation.html#inferno.functional.Extrapolation" title="inferno.functional.Extrapolation"><em>Extrapolation</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – _description_. Defaults to 1e-6.</p></li>
-<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – _description_. Defaults to 0.</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – _description_. Defaults to False.</p></li>
-<li><p><strong>extrap_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
+<li><p><strong>obs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – observation to write at the specified times.</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time at which to write each element of the
+observation.</p></li>
+<li><p><strong>extrap</strong> (<a class="reference internal" href="inferno.functional.Extrapolation.html#inferno.functional.Extrapolation" title="inferno.functional.Extrapolation"><em>Extrapolation</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – function to interpolate from the
+observation to its neighbors, nearest when <code class="docutils literal notranslate"><span class="pre">None</span></code>.
+Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – maximum difference in time from a discrete
+sample to consider a time co-occuring with the sample. Defaults to 1e-6.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – number of steps before the pointer. Defaults to 0.</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the operation should be performed in-place
+with <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.no_grad()</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>extrap_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – dictionary of keyword
+arguments to pass to <code class="docutils literal notranslate"><span class="pre">extrap</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – cannot insert into uninitialized (ignored) storage.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – shape of <code class="docutils literal notranslate"><span class="pre">obs</span></code> must match the shape of an observation.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – shape of <code class="docutils literal notranslate"><span class="pre">time</span></code> must match the shape of an observation.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – all elements of <code class="docutils literal notranslate"><span class="pre">time</span></code> must be within the range of observation
+    times plus the tolerance.</p></li>
 </ul>
 </dd>
 </dl>
 <div class="tensorshape admonition">
 <p class="admonition-title">Shape</p>
-<p><code class="docutils literal notranslate"><span class="pre">value</span></code>, <code class="docutils literal notranslate"><span class="pre">time</span></code>:</p>
-<p><span class="math notranslate nohighlight">\(N_0 \times \cdots \times [D]\)</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">obs</span></code>, <code class="docutils literal notranslate"><span class="pre">time</span></code>:</p>
+<p><span class="math notranslate nohighlight">\(S_0 \times \cdots\)</span></p>
 <dl class="simple">
 <dt>Where:</dt><dd><ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(N_0, \ldots\)</span> are the dimensions of the underlying tensor,
-excluding the record dimension.</p></li>
-<li><p><span class="math notranslate nohighlight">\(D\)</span> is the number of times for each value to select.</p></li>
+<li><p><span class="math notranslate nohighlight">\(S_0, \ldots\)</span> are the dimensions of each observation, given
+by <a class="reference internal" href="#inferno.RecordTensor.shape" title="inferno.RecordTensor.shape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">shape</span></code></a>.</p></li>
 </ul>
 </dd>
 </dl>
 </div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>If there are multiple values/indices for each element being inserted (i.e.
-<span class="math notranslate nohighlight">\(D &gt; 1\)</span>), if the indices are not unique, then the one of the values
-will be non-deterministically chosen and the gradient will be propagated
-incorrectly. Each <code class="docutils literal notranslate"><span class="pre">time</span></code> will correspond to two indices. If multiple
-values for each observation are to be inserted at once, there must be no
-overlap in the resultant indices. Use of <code class="xref py py-meth docutils literal notranslate"><span class="pre">writerange()</span></code> is suggested
-as an alternative.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Limitations on <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.scatter.html#torch.scatter" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.scatter()</span></code></a> make it risky to insert multiple
+observations at once and is therefore unsupported. To write multiple values
+at once, consider using <a class="reference internal" href="#inferno.RecordTensor.writerange" title="inferno.RecordTensor.writerange"><code class="xref py py-meth docutils literal notranslate"><span class="pre">writerange()</span></code></a>.</p>
 </div>
 </dd></dl>
 
@@ -627,7 +636,7 @@ underlying storage. It only moves the pointer back so the next
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>obs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – observation to write.</p></li>
 <li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the operation should be performed in-place
-with <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.no_grad()</span></code>. Defaults to False.</p></li>
+with <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.no_grad()</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -674,7 +683,7 @@ by <a class="reference internal" href="#inferno.RecordTensor.shape" title="infer
 <dd><p>Reads multiple sequential observations.</p>
 <p>When <code class="docutils literal notranslate"><span class="pre">forward</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, then <code class="docutils literal notranslate"><span class="pre">length</span></code> observations will be read
 from the following interval.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">pointer</span> <span class="o">-</span> <span class="n">offset</span> <span class="o">-</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pointer</span> <span class="o">-</span> <span class="n">offset</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">pointer</span> <span class="o">-</span> <span class="n">offset</span> <span class="o">-</span> <span class="n">length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pointer</span> <span class="o">-</span> <span class="n">offset</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>When <code class="docutils literal notranslate"><span class="pre">forward</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, then <code class="docutils literal notranslate"><span class="pre">length</span></code> observations will be read
@@ -685,25 +694,41 @@ from the following interval.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – number of observations to read`.</p></li>
-<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – number of steps before the pointer. Defaults to 1.</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – number of observations to read.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><em>optional</em>) – number of steps before the pointer.
+Defaults to 1.</p></li>
 <li><p><strong>forward</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the offset pointer indicates the index of the
 first observation. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – _description_</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – _description_</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – cannot read from uninitialized (ignored) storage.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – shape of <code class="docutils literal notranslate"><span class="pre">offset</span></code> must match the shape of an observation.</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>observations at the specified indices.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
+<div class="tensorshape admonition">
+<p class="admonition-title">Shape</p>
+<p><code class="docutils literal notranslate"><span class="pre">offset</span></code>:</p>
+<p><span class="math notranslate nohighlight">\(S_0 \times \cdots\)</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
+<p><span class="math notranslate nohighlight">\(S_0 \times \cdots \times L\)</span></p>
+<dl class="simple">
+<dt>Where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(S_0, \ldots\)</span> are the dimensions of each observation, given
+by <a class="reference internal" href="#inferno.RecordTensor.shape" title="inferno.RecordTensor.shape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">shape</span></code></a>.</p></li>
+<li><p><span class="math notranslate nohighlight">\(L\)</span>, the number of observations, given by <code class="docutils literal notranslate"><span class="pre">length</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -765,55 +790,55 @@ to account for the record dimension. Negative values of <code class="docutils li
 <span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.functional.Interpolation.html#inferno.functional.Interpolation" title="inferno.functional.protocols.Interpolation"><span class="pre">Interpolation</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/core/infrastructure.html#RecordTensor.select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.RecordTensor.select" title="Permalink to this definition">#</a></dt>
 <dd><p>Selects previously observed elements of the record tensor by time.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is a scalar and is within tolerance of an integer index, then
-a slice will be returned without ever attempting interpolation.</p>
+a observation will be returned without ever attempting interpolation.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is a tensor, interpolation will be called regardless, and the time
 passed into the interpolation call will be set to either <code class="docutils literal notranslate"><span class="pre">0</span></code> or
 <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.dt</span></code>. Interpolation results are then overwritten with exact values
 before returning.</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is a tensor, then <code class="docutils literal notranslate"><span class="pre">tolerance</span></code> can also be a tensor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>time</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time or times for each element before present
-to select.</p></li>
-<li><p><strong>interp</strong> (<a class="reference internal" href="inferno.functional.Interpolation.html#inferno.functional.Interpolation" title="inferno.functional.Interpolation"><em>Interpolation</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – method to interpolate between
-discrete time steps, selects the nearest when <code class="docutils literal notranslate"><span class="pre">None</span></code>.
-Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
-<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – maximum difference in time from
-a discrete sample to consider a time co-occuring with the sample.
-Defaults to 1e-6.</p></li>
-<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – number of steps before the pointer to consider the
-zero point. Defaults to 1.</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – time at which to read each element from the
+underlying storage.</p></li>
+<li><p><strong>interp</strong> (<a class="reference internal" href="inferno.functional.Interpolation.html#inferno.functional.Interpolation" title="inferno.functional.Interpolation"><em>Interpolation</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – function to interpolate between
+neighboring observations, nearest when <code class="docutils literal notranslate"><span class="pre">None</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – maximum difference in time from a discrete
+sample to consider a time co-occuring with the sample. Defaults to 1e-6.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – number of steps before the pointer. Defaults to 1.</p></li>
 <li><p><strong>interp_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – dictionary of keyword
 arguments to pass to <code class="docutils literal notranslate"><span class="pre">interp</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>interpolated values selected at a prior times.</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – cannot select from uninitialized (ignored) storage.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – <code class="docutils literal notranslate"><span class="pre">time</span></code> must have the same number of dimensions as an
+    observation or that number plus one.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – all elements of <code class="docutils literal notranslate"><span class="pre">time</span></code> must be within the range of observation
+    times plus the tolerance.</p></li>
+</ul>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>interpolated values selected at a prior times.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
 <div class="tensorshape admonition">
 <p class="admonition-title">Shape</p>
 <p><code class="docutils literal notranslate"><span class="pre">time</span></code>:</p>
-<p><span class="math notranslate nohighlight">\(N_0 \times \cdots \times [D]\)</span></p>
+<p><span class="math notranslate nohighlight">\(S_0 \times \cdots \times [D]\)</span></p>
 <p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
-<p><span class="math notranslate nohighlight">\(N_0 \times \cdots \times [D]\)</span></p>
+<p><span class="math notranslate nohighlight">\(S_0 \times \cdots \times [D]\)</span></p>
 <dl class="simple">
 <dt>Where:</dt><dd><ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(N_0, \ldots\)</span> are the dimensions of the constrained tensor.</p></li>
-<li><p><span class="math notranslate nohighlight">\(D\)</span> is the number of times for each value to select.</p></li>
+<li><p><span class="math notranslate nohighlight">\(S_0, \ldots\)</span> are the dimensions of each observation, given
+by <a class="reference internal" href="#inferno.RecordTensor.shape" title="inferno.RecordTensor.shape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">shape</span></code></a>.</p></li>
+<li><p><span class="math notranslate nohighlight">\(D\)</span> are the number of distinct observations to select.</p></li>
 </ul>
 </dd>
 </dl>
-</div>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>Mimicing the behavior of <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.gather.html#torch.gather" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.gather()</span></code></a>, if <code class="docutils literal notranslate"><span class="pre">time</span></code> is out of the
-valid range, a <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a> will be thrown. To avoid this, clamp
-<code class="docutils literal notranslate"><span class="pre">time</span></code> like <code class="docutils literal notranslate"><span class="pre">time.clamp(0,</span> <span class="pre">recordtensor.duration)</span></code>.</p>
 </div>
 </dd></dl>
 
@@ -895,7 +920,7 @@ value <code class="docutils literal notranslate"><span class="pre">offset=0</spa
 <li><p><strong>obs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – observation to write at the specified offset.</p></li>
 <li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – number of steps before the pointer. Defaults to 0.</p></li>
 <li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the operation should be performed in-place
-with <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.no_grad()</span></code>. Defaults to False.</p></li>
+with <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.no_grad()</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -922,6 +947,69 @@ by <a class="reference internal" href="#inferno.RecordTensor.shape" title="infer
 <p>The <a class="reference external" href="https://pytorch.org/docs/master/tensor_attributes.html#torch.dtype" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> of <code class="docutils literal notranslate"><span class="pre">obs</span></code> is not changed, so when <code class="docutils literal notranslate"><span class="pre">inplace</span></code>
 is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, this may cause the data type of the stored tensor to
 change.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.RecordTensor.writerange">
+<span class="sig-name descname"><span class="pre">writerange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/core/infrastructure.html#RecordTensor.writerange"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.RecordTensor.writerange" title="Permalink to this definition">#</a></dt>
+<dd><p>Writes multiple sequential observations.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">forward</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, then <code class="docutils literal notranslate"><span class="pre">length</span></code> observations will be written
+to the following interval.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">pointer</span> <span class="o">-</span> <span class="n">offset</span> <span class="o">-</span> <span class="n">length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pointer</span> <span class="o">-</span> <span class="n">offset</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>When <code class="docutils literal notranslate"><span class="pre">forward</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, then <code class="docutils literal notranslate"><span class="pre">length</span></code> observations will be written
+to the following interval.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">pointer</span> <span class="o">-</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pointer</span> <span class="o">-</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – observation to write at the specified offsets.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><em>optional</em>) – number of steps before the pointer.
+Defaults to 0.</p></li>
+<li><p><strong>forward</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the offset pointer indicates the index of the
+first observation. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the operation should be performed in-place
+with <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.no_grad()</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – cannot write to uninitialized (ignored) storage.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – written observations need to have a shape compatible with
+    storage.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – cannot write more observations to storage than storage records.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – shape of <code class="docutils literal notranslate"><span class="pre">offset</span></code> must match the shape of an observation.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The <a class="reference external" href="https://pytorch.org/docs/master/tensor_attributes.html#torch.dtype" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> of <code class="docutils literal notranslate"><span class="pre">obs</span></code> is not changed, <code class="docutils literal notranslate"><span class="pre">offset</span></code> is not
+a tensor, and <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, this may cause the data type
+of the stored tensor to change. When <code class="docutils literal notranslate"><span class="pre">offset</span></code> is a tensor, a
+<a class="reference external" href="https://pytorch.org/docs/master/generated/torch.scatter.html#torch.scatter" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">scatter()</span></code></a> operation is performed so the data type will first
+be converted tot hat of the underlying storage.</p>
+</div>
+<div class="tensorshape admonition">
+<p class="admonition-title">Shape</p>
+<p><code class="docutils literal notranslate"><span class="pre">obs</span></code>:</p>
+<p><span class="math notranslate nohighlight">\(S_0 \times \cdots \times L\)</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">offset</span></code>:</p>
+<p><span class="math notranslate nohighlight">\(S_0 \times \cdots\)</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
+<p><span class="math notranslate nohighlight">\(S_0 \times \cdots \times L\)</span></p>
+<dl class="simple">
+<dt>Where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(S_0, \ldots\)</span> are the dimensions of each observation, given
+by <a class="reference internal" href="#inferno.RecordTensor.shape" title="inferno.RecordTensor.shape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">shape</span></code></a>.</p></li>
+<li><p><span class="math notranslate nohighlight">\(L\)</span>, the number of observations.</p></li>
+</ul>
+</dd>
+</dl>
 </div>
 </dd></dl>
 
@@ -1012,6 +1100,7 @@ change.</p>
 <li><a class="reference internal" href="#inferno.RecordTensor.shape"><code class="docutils literal notranslate"><span class="pre">RecordTensor.shape</span></code></a></li>
 <li><a class="reference internal" href="#inferno.RecordTensor.value"><code class="docutils literal notranslate"><span class="pre">RecordTensor.value</span></code></a></li>
 <li><a class="reference internal" href="#inferno.RecordTensor.write"><code class="docutils literal notranslate"><span class="pre">RecordTensor.write()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.RecordTensor.writerange"><code class="docutils literal notranslate"><span class="pre">RecordTensor.writerange()</span></code></a></li>
 </ul>
 </li>
 </ul>
