@@ -1,0 +1,8 @@
+﻿RecordTensor
+============
+
+.. currentmodule:: inferno
+
+.. autoclass:: RecordTensor
+    :members:
+    :show-inheritance:

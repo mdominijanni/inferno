@@ -11,6 +11,8 @@
     :toctree: generated
 
     Module
+    ShapedTensor
+    RecordTensor
     DimensionalModule
     RecordModule
     Hook

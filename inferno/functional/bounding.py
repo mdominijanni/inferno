@@ -1,4 +1,4 @@
-from ..core import zeros
+from ..core.tensor import zeros
 import torch
 
 

@@ -219,12 +219,12 @@
           <h1>Source code for inferno.core.infrastructure</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">from</span> <span class="nn">.tensor</span> <span class="kn">import</span> <span class="n">empty</span><span class="p">,</span> <span class="n">full</span><span class="p">,</span> <span class="n">zeros</span>
-<span class="kn">from</span> <span class="nn">..interpolation</span> <span class="kn">import</span> <span class="n">Interpolation</span><span class="p">,</span> <span class="n">nearest</span>
+<span class="kn">from</span> <span class="nn">..functional</span> <span class="kn">import</span> <span class="n">Interpolation</span><span class="p">,</span> <span class="n">Extrapolation</span><span class="p">,</span> <span class="n">interp_nearest</span><span class="p">,</span> <span class="n">extrap_nearest</span>
 <span class="kn">from</span> <span class="nn">.._internal</span> <span class="kn">import</span> <span class="n">argtest</span><span class="p">,</span> <span class="n">rsetattr</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span><span class="p">,</span> <span class="n">OrderedDict</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span><span class="p">,</span> <span class="n">singledispatchmethod</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">starmap</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -1034,7 +1034,7 @@
             <span class="nb">delattr</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_constraints&quot;</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">ShapedTensor</span><span class="p">:</span>
+<div class="viewcode-block" id="ShapedTensor"><a class="viewcode-back" href="../../../reference/generated/inferno.ShapedTensor.html#inferno.ShapedTensor">[docs]</a><span class="k">class</span> <span class="nc">ShapedTensor</span><span class="p">:</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Tensor attribute with constrained shape.</span>
 
 <span class="sd">    Some states for ``value`` are ignored for convenience. If it is ``None``,</span>
@@ -1126,7 +1126,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__attributes</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
 
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ShapedTensor.create"><a class="viewcode-back" href="../../../reference/generated/inferno.ShapedTensor.html#inferno.ShapedTensor.create">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">owner</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span>
@@ -1176,7 +1176,7 @@
             <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">,</span>
             <span class="n">live</span><span class="o">=</span><span class="n">live</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="nb">setattr</span><span class="p">(</span><span class="n">constrained</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">constrained</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">constrained</span><span class="p">)</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">constrained</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">constrained</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">constrained</span><span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__make_compatible</span><span class="p">(</span>
@@ -1213,7 +1213,7 @@
             <span class="n">tensor</span><span class="p">,</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">UninitializedBuffer</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">UninitializedParameter</span>
         <span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="ow">or</span> <span class="n">tensor</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ShapedTensor.resize"><a class="viewcode-back" href="../../../reference/generated/inferno.ShapedTensor.html#inferno.ShapedTensor.resize">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">resize</span><span class="p">(</span>
         <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">,</span>
         <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1284,7 +1284,7 @@
             <span class="n">value</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
             <span class="k">return</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">data</span>
+            <span class="k">return</span> <span class="n">data</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">__constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
@@ -1467,7 +1467,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_constraint_dimensionality</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__strict</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">compatible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="ShapedTensor.compatible"><a class="viewcode-back" href="../../../reference/generated/inferno.ShapedTensor.html#inferno.ShapedTensor.compatible">[docs]</a>    <span class="k">def</span> <span class="nf">compatible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Checks if a tensor is compatible.</span>
 
 <span class="sd">        Args:</span>
@@ -1476,9 +1476,9 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if the given tensor is dimensionally compatible.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">_constraints_compatible</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__strict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_constraints_compatible</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__strict</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">reconstrain</span><span class="p">(</span>
+<div class="viewcode-block" id="ShapedTensor.reconstrain"><a class="viewcode-back" href="../../../reference/generated/inferno.ShapedTensor.html#inferno.ShapedTensor.reconstrain">[docs]</a>    <span class="k">def</span> <span class="nf">reconstrain</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Add, edit, or remove a constraint.</span>
@@ -1580,11 +1580,15 @@
                 <span class="p">)</span>
 
         <span class="c1"># return altered value</span>
-        <span class="k">return</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">data</span></div></div>
 
 
 <span class="k">def</span> <span class="nf">_unwind_ptr</span><span class="p">(</span><span class="n">pointer</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">pointer</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">offset</span><span class="p">))</span> <span class="o">%</span> <span class="n">size</span>
+
+
+<span class="k">def</span> <span class="nf">_unwind_tensor_ptr</span><span class="p">(</span><span class="n">pointer</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">pointer</span> <span class="o">-</span> <span class="n">offset</span><span class="o">.</span><span class="n">long</span><span class="p">())</span> <span class="o">%</span> <span class="n">size</span>
 
 
 <span class="k">def</span> <span class="nf">_recordtensor_finalization</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ReferenceType</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1599,8 +1603,14 @@
             <span class="nb">delattr</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_pointer&quot;</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">RecordTensor</span><span class="p">(</span><span class="n">ShapedTensor</span><span class="p">):</span>
+<div class="viewcode-block" id="RecordTensor"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor">[docs]</a><span class="k">class</span> <span class="nc">RecordTensor</span><span class="p">(</span><span class="n">ShapedTensor</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Tensor attribute with recorded history.</span>
+
+<span class="sd">    Read Operations: :py:meth:`peek`, :py:meth:`pop`, :py:meth:`read`,</span>
+<span class="sd">    :py:meth:`readrange`, :py:meth:`select`</span>
+
+<span class="sd">    Write Operations: :py:meth:`push`, :py:meth:`write`, :py:meth:`writerange`,</span>
+<span class="sd">    :py:meth:`insert`</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        owner (Module): module to which this attribute will belong.</span>
@@ -1709,7 +1719,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__attributes</span><span class="o">.</span><span class="n">pointer</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="RecordTensor.create"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.create">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">owner</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span>
@@ -1730,11 +1740,11 @@
 
 <span class="sd">        .. code-block:: python</span>
 
-<span class="sd">            module.attr = RecordTensor(module, attr, dt, duration, value)</span>
+<span class="sd">            module.name = RecordTensor(owner, name, step_time, duration, value)</span>
 
 <span class="sd">        .. code-block:: python</span>
 
-<span class="sd">            RecordTensor.create(module, attr, dt, duration, value)</span>
+<span class="sd">            RecordTensor.create(module, attr, step_time, duration, value)</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            owner (Module): module to which this attribute will belong.</span>
@@ -1769,7 +1779,7 @@
             <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">,</span>
             <span class="n">live</span><span class="o">=</span><span class="n">live</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="nb">setattr</span><span class="p">(</span><span class="n">constrained</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">constrained</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">constrained</span><span class="p">)</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">constrained</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">constrained</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">constrained</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">__constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
@@ -1811,10 +1821,12 @@
 
     <span class="nd">@__pointer</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">__pointer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Module internal pointer setter.&quot;&quot;&quot;</span>
         <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__owner</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="si">}</span><span class="s2">_pointer&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">__recordsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Module internal record size getter.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constraints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -1848,25 +1860,26 @@
         <span class="p">}</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of time between stored values in history.</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of time between recorded observations.</span>
 
 <span class="sd">        In the same units as :py:attr:`self.duration`.</span>
+
+<span class="sd">        If the step time is changed such that the record size needs to change, a</span>
+<span class="sd">        :py:meth:`reconstrain` operation will be performed automatically, preserving</span>
+<span class="sd">        the newest entires. Stored values may no longer be logically valid, but will</span>
+<span class="sd">        still be accessible.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (torch.Tensor | float): new time step length.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: length of the time step.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            If a :py:meth:`reconstrain` operation needs to be performed, all values are</span>
-<span class="sd">            filled in-place with zeros.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dt</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># validate argument</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
@@ -1879,28 +1892,29 @@
         <span class="c1"># reconstrain if required</span>
         <span class="k">if</span> <span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                 <span class="n">_</span> <span class="o">=</span> <span class="n">ShapedTensor</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of time over which prior values are stored.</span>
 
 <span class="sd">        In the same units as :py:attr:`self.dt`.</span>
 
-<span class="sd">        The given ``property``, if a :py:class:`~torch.Tensor`, must have zero dimensions</span>
-<span class="sd">        (i.e. it must be a scalar). :py:attr:`self.duration` is automatically converted</span>
-<span class="sd">        to the same data type and device.</span>
+<span class="sd">        If the step time is changed such that the record size needs to change, a</span>
+<span class="sd">        :py:meth:`reconstrain` operation will be performed automatically, preserving</span>
+<span class="sd">        the newest entires.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor | float): new length of the history to store.</span>
+<span class="sd">            value (float): new length of the record.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: length of the record.</span>
+<span class="sd">            float: length of the record as the length of time.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            If a :py:meth:`reconstrain` operation needs to be performed, newest entries</span>
-<span class="sd">            will be preserved.</span>
+<span class="sd">            If ``duration`` is not evenly divided by :py:attr:`dt`, then the number</span>
+<span class="sd">            of observations stored will be rounded up. This property will always return</span>
+<span class="sd">            the duration set although the range of accessible values may be larger.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span>
 
@@ -1918,20 +1932,54 @@
         <span class="c1"># reconstrain if required</span>
         <span class="k">if</span> <span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                 <span class="n">_</span> <span class="o">=</span> <span class="n">ShapedTensor</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">recordsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of stored time slices for each record tensor.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of observations stored.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            N = \left\lceil \frac{T}{\Delta t} \right\rceil + 1</span>
+
+<span class="sd">        For :py:attr:`duration` :math:`T` and :py:attr:`dt` :math:`\Delta t`.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            int: length of the record as the number of stored time slices.</span>
+<span class="sd">            int: length of the record as the number of observations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of the observations.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int, ...] | None: shape of the observations, ``None`` when storage</span>
+<span class="sd">            is uninitialized (ignored).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># strongly reference data</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pointer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Current index of the pointer.</span>
+
+<span class="sd">        The location of the pointer indicates the location of the next observation</span>
+<span class="sd">        which will be overwritten.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: current index of the pointer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">latest</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Most recent time slice of the stored tensor.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Most recent stored observation.</span>
 
 <span class="sd">        When used as a getter, this is an alias for :py:meth:`peek`.</span>
 
@@ -1942,10 +1990,10 @@
 <span class="sd">        to ``1``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): values to insert.</span>
+<span class="sd">            value (torch.Tensor): observation to push.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor | None: value of the last written time slice.</span>
+<span class="sd">            torch.Tensor | None: value of the most recently recorded observation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
 
@@ -1959,7 +2007,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Value of the constrained tensor.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Record storage tensor.</span>
 
 <span class="sd">        When created as a :py:class:`~torch.nn.Parameter`, assignment to ``None`` is</span>
 <span class="sd">        prevented. If the current ``value`` is a :py:class:`~torch.nn.Parameter` but</span>
@@ -1970,11 +2018,33 @@
 <span class="sd">        ``self.deinitialize(use_uninitialized=False)``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (value: torch.Tensor | nn.Parameter | None): value to which the</span>
-<span class="sd">                constrained attribute will be set.</span>
-
+<span class="sd">            value (value: torch.Tensor | nn.Parameter | None): value to set the storage</span>
+<span class="sd">                tensor to.</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor | nn.Parameter | None: constrained attribute.</span>
+<span class="sd">            torch.Tensor | nn.Parameter | None: storage tensor.</span>
+
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
+
+<span class="sd">            ``value``, ``return``:</span>
+
+<span class="sd">            :math:`S_0 \times \cdots \times N`</span>
+
+<span class="sd">            Where:</span>
+<span class="sd">                * :math:`S_0, \ldots` are the dimensions of each observation, given</span>
+<span class="sd">                  by :py:attr:`shape`.</span>
+<span class="sd">                * :math:`N` is the number of observations the storage can hold,</span>
+<span class="sd">                  equal to :py:attr:`recordsz`.</span>
+
+<span class="sd">        Caution:</span>
+<span class="sd">            This should be used for setting properties of the underlying storage</span>
+<span class="sd">            (device, data type, etc.) and for advanced initialization/deinitialization.</span>
+<span class="sd">            General read/write access should generally be performed through the provided</span>
+<span class="sd">            if possible.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            If after assigning the new value, :py:attr:`ignored` is ``True``, the</span>
+<span class="sd">            pointer will be moved to ``0``, otherwise it will not be changed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ShapedTensor</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
@@ -1990,17 +2060,14 @@
     <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">deinitialize</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">align</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Aligns the tensor so the pointer points at a specified value.</span>
-
-<span class="sd">        The slice specified by the pointer is the oldest recorded value, i.e.</span>
-<span class="sd">        the next slice to overwrite.</span>
+<div class="viewcode-block" id="RecordTensor.align"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.align">[docs]</a>    <span class="k">def</span> <span class="nf">align</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Aligns the storage such that the oldest observation is at a specified index.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            index (int, optional): index to align to. Defaults to 0.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            RuntimeError: cannot align an uninitialized (ignored) value.</span>
+<span class="sd">            RuntimeError: cannot align when storage is uninitialized (ignored).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># check for a valid index</span>
         <span class="n">index</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">,</span> <span class="s2">&quot;recordsz&quot;</span><span class="p">)</span>
@@ -2013,41 +2080,44 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">index</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span> <span class="o">=</span> <span class="n">index</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot align uninitialized value&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot align uninitialized value&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fill</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets the tensor so it is filled with a value and aligned to zero.</span>
+<div class="viewcode-block" id="RecordTensor.reset"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fill</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Fills the storage with a given value and aligns it to zero.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            fill (Any | None, optional): value with which to fill the tensor, or if</span>
-<span class="sd">                no fill should be applied if ``None``. Defaults to 0.</span>
+<span class="sd">            fill (Any | None, optional): value with which to fill the storage, or if</span>
+<span class="sd">                ``None`` no fill will be applied. Defaults to 0.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># strongly reference data</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span>
 
-        <span class="c1"># fill in-place is a value is given and tensor is initialized</span>
         <span class="k">if</span> <span class="n">fill</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="c1"># perform fill if not ignored</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
                     <span class="n">data</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="n">fill</span><span class="p">)</span>
 
-        <span class="c1"># reset pointer to start</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c1"># reset pointer to start</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RecordTensor.initialize"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fill</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Initializes storage tensor.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Initializes the storage tensor.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            shape (tuple[int, ...]): shape, excluding the record dimension, of the</span>
-<span class="sd">                underlying tensor.</span>
-<span class="sd">            device (torch.device | None, optional): overrides device on which to place</span>
-<span class="sd">                the tensor when not ``None``. Defaults to ``None``.</span>
+<span class="sd">                storage tensor.</span>
+<span class="sd">            device (torch.device | None, optional): overrides the device on which to</span>
+<span class="sd">                place the tensor when not ``None``. Defaults to ``None``.</span>
 <span class="sd">            dtype (torch.dtype | None, optional): overrides data tyoe of the tensor</span>
 <span class="sd">                when not ``None``. Defaults to ``None``.</span>
 <span class="sd">            fill (Any, optional): value with which to fill the tensor. Defaults to 0.</span>
@@ -2082,19 +2152,22 @@
 
         <span class="c1"># set pointer to zero and return created or materialized attribute</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span></div>
 
-    <span class="k">def</span> <span class="nf">deinitialize</span><span class="p">(</span>
+<div class="viewcode-block" id="RecordTensor.deinitialize"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.deinitialize">[docs]</a>    <span class="k">def</span> <span class="nf">deinitialize</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">use_uninitialized</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deinitializes storage tensor.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deinitializes the storage tensor.</span>
 
-<span class="sd">        This either assigns an empty tensor with shape ``[0]`` as the value or one</span>
-<span class="sd">        of :py:class:`~torch.nn.UninitializedBuffer` or</span>
+<span class="sd">        This either assigns an empty tensor with shape ``[0]`` as the value or either</span>
+<span class="sd">        :py:class:`~torch.nn.UninitializedBuffer` or</span>
 <span class="sd">        :py:class:`~torch.nn.UninitializedParameter`. The device, data type, and</span>
-<span class="sd">        gradient requirement will be preserved. If the storage tensor is ``None``, the</span>
-<span class="sd">        defaults of those properties will be used.</span>
+<span class="sd">        gradient requirement will be preserved.</span>
+
+<span class="sd">        If the storage tensor is already not initialized, it will still be reassigned.</span>
+<span class="sd">        If it is ``None``, the defaults of will be used and it will be reassigned either</span>
+<span class="sd">        with ``UninitializedBuffer()`` or ``torch.empty(0)``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            use_uninitialized (bool, optional): if an uninitalized buffer or</span>
@@ -2134,158 +2207,680 @@
 
         <span class="c1"># set pointer to zero and return created tensor or parameter</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span></div>
 
-    <span class="k">def</span> <span class="nf">incr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="RecordTensor.incr"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.incr">[docs]</a>    <span class="k">def</span> <span class="nf">incr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Moves the pointer forward.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            pos (int, optional): number of steps by which to move the pointer</span>
 <span class="sd">                forward. Defaults to 1.</span>
 
+<span class="sd">        Returns:</span>
+<span class="sd">            int: new location of the pointer.</span>
+
 <span class="sd">        Raises:</span>
-<span class="sd">            RuntimeError: cannot modify the point when the value is uninitialized (ignored).</span>
+<span class="sd">            RuntimeError: cannot modify the pointer when the storage is</span>
+<span class="sd">                uninitialized (ignored).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot modify pointer when value is uninitialized&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot modify pointer when storage is uninitialized&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="o">-</span><span class="n">pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">decr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span></div>
+
+<div class="viewcode-block" id="RecordTensor.decr"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.decr">[docs]</a>    <span class="k">def</span> <span class="nf">decr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Moves the pointer backward.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            pos (int, optional): number of steps by which to move the pointer</span>
 <span class="sd">                backward. Defaults to 1.</span>
 
+<span class="sd">        Returns:</span>
+<span class="sd">            int: new location of the pointer.</span>
+
 <span class="sd">        Raises:</span>
-<span class="sd">            RuntimeError: cannot modify the point when the value is uninitialized (ignored).</span>
+<span class="sd">            RuntimeError: cannot modify the pointer when the storage is</span>
+<span class="sd">                uninitialized (ignored).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot modify pointer when value is uninitialized&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot modify pointer when storage is uninitialized&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves the time slice last written.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span></div>
+
+<div class="viewcode-block" id="RecordTensor.peek"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.peek">[docs]</a>    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves the most recently pushed observation.</span>
 
 <span class="sd">        If the state is uninitialized, then ``None`` will be returned. Otherwise this</span>
 <span class="sd">        is an alias for ``self.read(offset=1)``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor | None: value of the last written time slice.</span>
+<span class="sd">            torch.Tensor | None: most recently pushed observation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Writes a time slice to the current location and advances the pointer.</span>
+<div class="viewcode-block" id="RecordTensor.pop"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.pop">[docs]</a>    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves the most recently pushed observation and decrements the pointer.</span>
 
-<span class="sd">        This is an alias for the following code.</span>
-
-<span class="sd">        .. code-block:: python</span>
-
-<span class="sd">            self.write(value, offset=0)</span>
-<span class="sd">            self.incr(pos=1)</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): values to insert.</span>
-<span class="sd">            inplace (bool, optional): if the operation should be performed in-place,</span>
-<span class="sd">                with :py:func:`torch.no_grad`. Defaults to False.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">incr</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Retrieves the time slice last written and decrements the pointer.</span>
-
-<span class="sd">        If the state is uninitialized, then ``None`` will be returned.</span>
+<span class="sd">        If the state is uninitialized, then ``None`` will be returned and the pointer</span>
+<span class="sd">        will be unaltered.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor | None: value of the last written time slice.</span>
+<span class="sd">            torch.Tensor | None: most recently pushed observation.</span>
+
+<span class="sd">        Important:</span>
+<span class="sd">            Unlike a pop-operation on most data structures, this does not affect the</span>
+<span class="sd">            underlying storage. It only moves the pointer back so the next</span>
+<span class="sd">            :py:meth:`push` will overwrite that value.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">decr</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reads the value of the tensor at an index relative to the pointer.</span>
+<div class="viewcode-block" id="RecordTensor.push"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.push">[docs]</a>    <span class="k">def</span> <span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Records an observation to the current location and advances the pointer.</span>
 
-<span class="sd">        The pointer specifies the next index to overwrite, and the offset specifies</span>
-<span class="sd">        the number of steps before the next index to read from. Therefore with an</span>
-<span class="sd">        offset of 1, it will read the most recently pushed slice.</span>
+<span class="sd">        This is an alias for the following code.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            self.write(value, offset=0, inplace=inplace)</span>
+<span class="sd">            self.incr(pos=1)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obs (torch.Tensor): observation to write.</span>
+<span class="sd">            inplace (bool, optional): if the operation should be performed in-place</span>
+<span class="sd">                with :py:func:`torch.no_grad`. Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">incr</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RecordTensor.read"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reads the observation at an index relative to the pointer.</span>
+
+<span class="sd">        The pointer specifies the next observation to overwrite, and the offset</span>
+<span class="sd">        specifies the number of observations back from which to read. The default</span>
+<span class="sd">        value ``offset=1`` will return the most recently pushed observation.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            offset (int, optional): number of steps before the pointer. Defaults to 1.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            RuntimeError: cannot read from an uninitialized (ignored) value.</span>
+<span class="sd">            RuntimeError: cannot read from uninitialized (ignored) storage.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: time slice of the underlying tensor.</span>
+<span class="sd">            torch.Tensor: observation at the specified index.</span>
+
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
+
+<span class="sd">            ``return``:</span>
+
+<span class="sd">            :math:`S_0 \times \cdots`</span>
+
+<span class="sd">            Where:</span>
+<span class="sd">                * :math:`S_0, \ldots` are the dimensions of each observation, given</span>
+<span class="sd">                  by :py:attr:`shape`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># strongly reference data</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span>
+        <span class="c1"># strongly reference data and get from internal properties</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">ptr</span><span class="p">,</span> <span class="n">recordsz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span>
 
         <span class="c1"># cannot read uninitialized value</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot read from uninitialized value&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot read from uninitialized storage&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)]</span></div>
 
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<div class="viewcode-block" id="RecordTensor.write"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Writes a value to the tensor at an index relative to the pointer.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Writes an observation at an index relative to the pointer.</span>
+
+<span class="sd">        The pointer specifies the next observation to overwrite, and the offset</span>
+<span class="sd">        specifies the number of observations back from which to write. The default</span>
+<span class="sd">        value ``offset=0`` overwrite the oldest observation.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): values to insert at the specified offset.</span>
+<span class="sd">            obs (torch.Tensor): observation to write at the specified offset.</span>
 <span class="sd">            offset (int, optional): number of steps before the pointer. Defaults to 0.</span>
-<span class="sd">            inplace (bool, optional): if the operation should be performed in-place,</span>
+<span class="sd">            inplace (bool, optional): if the operation should be performed in-place</span>
 <span class="sd">                with :py:func:`torch.no_grad`. Defaults to False.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            RuntimeError: cannot write to an uninitialized (ignored) value.</span>
-<span class="sd">            ValueError: shape of the values must match the shape of the time slice.</span>
+<span class="sd">            RuntimeError: cannot write to uninitialized (ignored) storage.</span>
+<span class="sd">            ValueError: shape of ``value`` must match the shape of an observation.</span>
+
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
+
+<span class="sd">            ``obs``:</span>
+
+<span class="sd">            :math:`S_0 \times \cdots`</span>
+
+<span class="sd">            Where:</span>
+<span class="sd">                * :math:`S_0, \ldots` are the dimensions of each observation, given</span>
+<span class="sd">                  by :py:attr:`shape`.</span>
+
+<span class="sd">        Important:</span>
+<span class="sd">            The :py:class:`~torch.dtype` of ``obs`` is not changed, so when ``inplace``</span>
+<span class="sd">            is set to ``False``, this may cause the data type of the stored tensor to</span>
+<span class="sd">            change.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># strongly reference data and get record size</span>
-        <span class="n">data</span><span class="p">,</span> <span class="n">recordsz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span>
+        <span class="c1"># strongly reference data and get from internal properties</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">ptr</span><span class="p">,</span> <span class="n">recordsz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span>
 
         <span class="c1"># cannot write to uninitialized value</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot write to uninitialized value&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot write to uninitialized storage&quot;</span><span class="p">)</span>
 
-        <span class="c1"># shape must be the same as a slice</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="o">*</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span> <span class="o">!=</span> <span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],):</span>
+        <span class="c1"># shape must be the same as a observation</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="o">*</span><span class="n">obs</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span> <span class="o">!=</span> <span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;shape of &#39;value&#39; </span><span class="si">{</span><span class="p">(</span><span class="o">*</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span><span class="si">}</span><span class="s2"> must have the shape &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;shape of &#39;obs&#39; </span><span class="si">{</span><span class="p">(</span><span class="o">*</span><span class="n">obs</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span><span class="si">}</span><span class="s2"> must have the shape &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],)</span><span class="si">}</span><span class="s2">, like a time slice of the stored value&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># in-place overwrite</span>
         <span class="k">elif</span> <span class="n">inplace</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-                <span class="n">index</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
-                <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">obs</span>
 
         <span class="c1"># splice in</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">index</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="p">)],</span> <span class="n">value</span><span class="p">,</span> <span class="n">data</span><span class="p">[:,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]),</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="p">(</span>
+                    <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="p">)],</span>
+                    <span class="n">obs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)],</span>
+                <span class="p">),</span>
+                <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RecordTensor.readrange"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.readrange">[docs]</a>    <span class="k">def</span> <span class="nf">readrange</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">forward</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reads multiple sequential observations.</span>
+
+<span class="sd">        When ``forward`` is ``False``, then ``length`` observations will be read</span>
+<span class="sd">        from the following interval.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            [pointer - offset - length - 1, pointer - offset]</span>
+
+<span class="sd">        When ``forward`` is ``True``, then ``length`` observations will be read</span>
+<span class="sd">        from the following interval.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            [pointer - offset, pointer - offset + length - 1]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            length (int): number of observations to read`.</span>
+<span class="sd">            offset (int, optional): number of steps before the pointer. Defaults to 1.</span>
+<span class="sd">            forward (bool, optional): if the offset pointer indicates the index of the</span>
+<span class="sd">                first observation. Defaults to ``False``.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: _description_</span>
+<span class="sd">            ValueError: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># strongly reference data and get from internal properties</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">ptr</span><span class="p">,</span> <span class="n">recordsz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span>
+
+        <span class="c1"># cannot read from uninitialized value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot read from an uninitialized value&quot;</span><span class="p">)</span>
+
+        <span class="c1"># shift offset if using noninitial offset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">forward</span><span class="p">:</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="p">(</span><span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># scalar offset</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span> <span class="o">-</span> <span class="n">length</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="n">end</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="kc">None</span><span class="p">)],</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">)]),</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+
+        <span class="c1"># shape must be the same as a slice</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="o">*</span><span class="n">offset</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span> <span class="o">!=</span> <span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;shape of &#39;offset&#39; </span><span class="si">{</span><span class="p">(</span><span class="o">*</span><span class="n">offset</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span><span class="si">}</span><span class="s2"> must have the shape &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],)</span><span class="si">}</span><span class="s2">, like a time slice of the stored value&quot;</span>
             <span class="p">)</span>
 
-    <span class="nd">@singledispatchmethod</span>
-    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span>
+        <span class="c1"># tensor offset</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span>
+                <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">_unwind_tensor_ptr</span><span class="p">(</span>
+                    <span class="n">ptr</span><span class="p">,</span>
+                    <span class="n">offset</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">offset</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+                    <span class="n">recordsz</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">writerange</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">forward</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># strongly reference data and get record size and pointer</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">,</span> <span class="n">ptr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span>
+
+        <span class="c1"># shift offset if using noninitial offset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">forward</span><span class="p">:</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># cannot write to uninitialized value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot write to an uninitialized value&quot;</span><span class="p">)</span>
+
+        <span class="c1"># test shape of value</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;&#39;value&#39; must have the same number of dimensions as the underlying&quot;</span>
+                <span class="s2">&quot;data and must have the same shape in all but the final dimension,&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;shapes are </span><span class="si">{</span><span class="p">(</span><span class="o">*</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span><span class="si">}</span><span class="s2"> respectively&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># cannot write beyond the data shape</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;size of the final dimension of &#39;value&#39; (</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">) cannot &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;exceed the length of the record (</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># scalar offset</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">ptr</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># in-place</span>
+            <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                    <span class="n">indices</span> <span class="o">=</span> <span class="n">_unwind_tensor_ptr</span><span class="p">(</span>
+                        <span class="n">ptr</span><span class="p">,</span>
+                        <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+                            <span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">offset</span><span class="o">.</span><span class="n">device</span>
+                        <span class="p">),</span>
+                        <span class="n">recordsz</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+            <span class="c1"># noncontiguous range</span>
+            <span class="k">elif</span> <span class="n">ptr</span> <span class="o">+</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="n">recordsz</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">value</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">recordsz</span> <span class="o">-</span> <span class="n">ptr</span><span class="p">)],</span>
+                        <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">length</span> <span class="o">-</span> <span class="p">(</span><span class="n">recordsz</span> <span class="o">-</span> <span class="n">ptr</span><span class="p">),</span> <span class="n">ptr</span><span class="p">)],</span>
+                        <span class="n">value</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">recordsz</span> <span class="o">-</span> <span class="n">ptr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)],</span>
+                    <span class="p">),</span>
+                    <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="c1"># contiguous range</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ptr</span><span class="p">)],</span>
+                        <span class="n">value</span><span class="p">,</span>
+                        <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">ptr</span> <span class="o">+</span> <span class="n">length</span><span class="p">,</span> <span class="kc">None</span><span class="p">)],</span>
+                    <span class="p">),</span>
+                    <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="c1"># shape must be the same as a slice</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="o">*</span><span class="n">offset</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span> <span class="o">!=</span> <span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;shape of &#39;offset&#39; </span><span class="si">{</span><span class="p">(</span><span class="o">*</span><span class="n">offset</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span><span class="si">}</span><span class="s2"> must have the shape &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],)</span><span class="si">}</span><span class="s2">, like a time slice of the stored value&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># tensor offset</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">_unwind_tensor_ptr</span><span class="p">(</span>
+                <span class="n">ptr</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">offset</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+                <span class="n">recordsz</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># write to storage</span>
+            <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">scatter_</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+<div class="viewcode-block" id="RecordTensor.insert"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">time</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">extrap</span><span class="p">:</span> <span class="n">Extrapolation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">extrap_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Inserts new elements into the record tensor by time.</span>
+
+<span class="sd">        If ``time`` is a scalar and is within tolerance of an integer index, then</span>
+<span class="sd">        the slice will be inserted (with a scalar time, multiple inserts are not</span>
+<span class="sd">        supported).</span>
+
+<span class="sd">        If ``time`` is a tensor, interpolation will be called regardless, and the time</span>
+<span class="sd">        passed into the extrapolation call will be set to either ``0`` or</span>
+<span class="sd">        :py:attr:`self.dt`. Extrapolation results are then overwritten with exact values</span>
+<span class="sd">        before returning.</span>
+
+<span class="sd">        The :py:class:`~torch.dtype` of elements inserted into the underlying tensor</span>
+<span class="sd">        will be cast back to the type of that tensor after extrapolation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): _description_</span>
+<span class="sd">            time (torch.Tensor | float): _description_</span>
+<span class="sd">            extrap (Extrapolation | None, optional): _description_. Defaults to None.</span>
+<span class="sd">            tolerance (float, optional): _description_. Defaults to 1e-6.</span>
+<span class="sd">            offset (int, optional): _description_. Defaults to 0.</span>
+<span class="sd">            inplace (bool, optional): _description_. Defaults to False.</span>
+<span class="sd">            extrap_kwargs (dict[str, Any] | None, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
+
+<span class="sd">            ``value``, ``time``:</span>
+
+<span class="sd">            :math:`N_0 \times \cdots \times [D]`</span>
+
+<span class="sd">            Where:</span>
+<span class="sd">                * :math:`N_0, \ldots` are the dimensions of the underlying tensor,</span>
+<span class="sd">                  excluding the record dimension.</span>
+<span class="sd">                * :math:`D` is the number of times for each value to select.</span>
+
+<span class="sd">        Warning:</span>
+<span class="sd">            If there are multiple values/indices for each element being inserted (i.e.</span>
+<span class="sd">            :math:`D &gt; 1`), if the indices are not unique, then the one of the values</span>
+<span class="sd">            will be non-deterministically chosen and the gradient will be propagated</span>
+<span class="sd">            incorrectly. Each ``time`` will correspond to two indices. If multiple</span>
+<span class="sd">            values for each observation are to be inserted at once, there must be no</span>
+<span class="sd">            overlap in the resultant indices. Use of :py:meth:`writerange` is suggested</span>
+<span class="sd">            as an alternative.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__insert_tensor</span><span class="p">(</span>
+                <span class="n">value</span><span class="p">,</span>
+                <span class="n">time</span><span class="p">,</span>
+                <span class="n">extrap</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+                <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">,</span>
+                <span class="n">extrap_kwargs</span><span class="o">=</span><span class="n">extrap_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__insert_scalar</span><span class="p">(</span>
+                <span class="n">value</span><span class="p">,</span>
+                <span class="n">time</span><span class="p">,</span>
+                <span class="n">extrap</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+                <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">,</span>
+                <span class="n">extrap_kwargs</span><span class="o">=</span><span class="n">extrap_kwargs</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__insert_tensor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">time</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">extrap</span><span class="p">:</span> <span class="n">Extrapolation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">extrap_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># use nearest extrapolation by default</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">extrap</span><span class="p">:</span>
+            <span class="n">extrap</span> <span class="o">=</span> <span class="n">extrap_nearest</span>
+
+        <span class="c1"># strongly reference data and get record size and step time</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dt</span>
+
+        <span class="c1"># cannot insert into uninitialized value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot insert into uninitialized value&quot;</span><span class="p">)</span>
+
+        <span class="c1"># apply offset to the pointer</span>
+        <span class="n">ptr</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
+
+        <span class="c1"># conditionally unsqueeze value</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;value&#39; has an incompatible number of dimensions (</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">), &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;it must have either </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># conditionally unsqueeze time</span>
+        <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">time</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;time&#39; has an incompatible number of dimensions (</span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">), &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;it must have either </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># check that value and time are compatible</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;&#39;value&#39; and &#39;time&#39; must be of the same shape, or only differ by a &quot;</span>
+                <span class="s2">&quot;final singleton dimension&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># check that times are in range</span>
+        <span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">amin</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">amax</span><span class="p">()</span>
+        <span class="k">if</span> <span class="o">-</span><span class="n">tolerance</span> <span class="o">&lt;=</span> <span class="n">tmin</span> <span class="ow">or</span> <span class="n">tmax</span> <span class="o">&lt;=</span> <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">recordsz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;all elements of &#39;time&#39; (min=</span><span class="si">{</span><span class="n">tmin</span><span class="si">}</span><span class="s2">, max=</span><span class="si">{</span><span class="n">tmax</span><span class="si">}</span><span class="s2">) must be within &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; the valid range of observations including tolerance, the interval &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="o">-</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">recordsz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">tolerance</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># compute continuous offsets</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">time</span> <span class="o">/</span> <span class="n">dt</span>
+        <span class="n">rounded</span> <span class="o">=</span> <span class="n">offset</span><span class="o">.</span><span class="n">round</span><span class="p">()</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dt</span> <span class="o">*</span> <span class="n">rounded</span> <span class="o">-</span> <span class="n">time</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">rounded</span><span class="p">,</span> <span class="n">offset</span>
+        <span class="p">)</span>
+
+        <span class="c1"># access data by index and extrapolate</span>
+        <span class="n">prev_idx</span> <span class="o">=</span> <span class="n">_unwind_tensor_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="o">.</span><span class="n">ceil</span><span class="p">(),</span> <span class="n">recordsz</span><span class="p">)</span>
+        <span class="n">next_idx</span> <span class="o">=</span> <span class="n">_unwind_tensor_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="o">.</span><span class="n">floor</span><span class="p">(),</span> <span class="n">recordsz</span><span class="p">)</span>
+
+        <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor_split</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">prev_idx</span><span class="p">,</span> <span class="n">next_idx</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+            <span class="p">(</span><span class="n">offset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],),</span>
+        <span class="p">)</span>
+
+        <span class="n">prev_exdata</span><span class="p">,</span> <span class="n">next_exdata</span> <span class="o">=</span> <span class="n">extrap</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">offset</span> <span class="o">%</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">prev_data</span><span class="p">,</span>
+            <span class="n">next_data</span><span class="p">,</span>
+            <span class="n">dt</span><span class="p">,</span>
+            <span class="o">**</span><span class="p">({</span><span class="n">extrap_kwargs</span> <span class="k">if</span> <span class="n">extrap_kwargs</span> <span class="k">else</span> <span class="p">{}}),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># bypass extrapolation for exact indices</span>
+        <span class="n">bypass</span> <span class="o">=</span> <span class="n">prev_idx</span> <span class="o">==</span> <span class="n">next_idx</span>
+        <span class="n">prev_exdata</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bypass</span><span class="p">,</span> <span class="n">prev_data</span><span class="p">,</span> <span class="n">prev_exdata</span><span class="p">)</span>
+        <span class="n">next_exdata</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bypass</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">next_exdata</span><span class="p">)</span>
+
+        <span class="c1"># write to storage</span>
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">scatter_</span><span class="p">(</span>
+                    <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">prev_idx</span><span class="p">,</span> <span class="n">next_idx</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">prev_exdata</span><span class="p">,</span> <span class="n">next_exdata</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span>
+                <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">prev_idx</span><span class="p">,</span> <span class="n">next_idx</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">prev_exdata</span><span class="p">,</span> <span class="n">next_exdata</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__insert_scalar</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">extrap</span><span class="p">:</span> <span class="n">Extrapolation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">extrap_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># use nearest extrapolation by default</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">extrap</span><span class="p">:</span>
+            <span class="n">extrap</span> <span class="o">=</span> <span class="n">extrap_nearest</span>
+
+        <span class="c1"># strongly reference data and get record size and step time</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dt</span>
+
+        <span class="c1"># cannot insert into uninitialized value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot insert into uninitialized value&quot;</span><span class="p">)</span>
+
+        <span class="c1"># apply offset to the pointer</span>
+        <span class="n">ptr</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
+
+        <span class="c1"># conditionally unsqueeze value</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;when specified with </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> dimensions, &#39;value&#39; must have a &quot;</span>
+                    <span class="s2">&quot;final dimension of size 1&quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;value&#39; has an incompatible number of dimensions (</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">), &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;it must have either </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># cast time and check for a valid range</span>
+        <span class="n">disptime</span><span class="p">,</span> <span class="n">time</span> <span class="o">=</span> <span class="n">time</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+        <span class="k">if</span> <span class="o">-</span><span class="n">tolerance</span> <span class="o">&lt;=</span> <span class="n">time</span> <span class="o">&lt;=</span> <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">recordsz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;time&#39; (</span><span class="si">{</span><span class="n">disptime</span><span class="si">}</span><span class="s2">) must be within the valid range of observations &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;including tolerance, the interval [</span><span class="si">{</span><span class="o">-</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">recordsz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">tolerance</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># compute continuous offset</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">time</span> <span class="o">/</span> <span class="n">dt</span>
+
+        <span class="c1"># index is within tolerance of an observation</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dt</span> <span class="o">*</span> <span class="nb">round</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span> <span class="o">-</span> <span class="n">time</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="c1"># index of the observation to replace</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">offset</span><span class="p">),</span> <span class="n">recordsz</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                    <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="p">)],</span>
+                        <span class="n">value</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                        <span class="n">data</span><span class="p">[:,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)],</span>
+                    <span class="p">),</span>
+                    <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="c1"># extrapolate to neighboring observations</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># indices of the nearest observations</span>
+            <span class="n">prev_idx</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
+            <span class="n">next_idx</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
+
+            <span class="c1"># extrapolates data to write</span>
+            <span class="n">prev_exdata</span><span class="p">,</span> <span class="n">next_exdata</span> <span class="o">=</span> <span class="n">extrap</span><span class="p">(</span>
+                <span class="n">value</span><span class="p">,</span>
+                <span class="n">full</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">offset</span> <span class="o">%</span> <span class="mi">1</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)),</span>
+                <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">prev_idx</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">next_idx</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">dt</span><span class="p">,</span>
+                <span class="o">**</span><span class="p">({</span><span class="n">extrap_kwargs</span> <span class="k">if</span> <span class="n">extrap_kwargs</span> <span class="k">else</span> <span class="p">{}}),</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                    <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">prev_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_exdata</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">next_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">next_exdata</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># previous sample is at the final tensor index</span>
+            <span class="k">elif</span> <span class="n">prev_idx</span> <span class="o">&gt;</span> <span class="n">next_idx</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">next_exdata</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                        <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">next_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">prev_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span>
+                        <span class="n">prev_exdata</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                    <span class="p">),</span>
+                    <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="c1"># previous sample is not at the final tensor index</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">prev_idx</span><span class="p">)],</span>
+                        <span class="n">prev_exdata</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                        <span class="n">next_exdata</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                        <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">next_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)],</span>
+                    <span class="p">),</span>
+                    <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+
+<div class="viewcode-block" id="RecordTensor.select"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.select">[docs]</a>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">time</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">interp</span><span class="p">:</span> <span class="n">Interpolation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
         <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">interp_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -2307,9 +2902,9 @@
 <span class="sd">            interp (Interpolation | None, optional): method to interpolate between</span>
 <span class="sd">                discrete time steps, selects the nearest when ``None``.</span>
 <span class="sd">                Defaults to ``None``.</span>
-<span class="sd">            tolerance (float | torch.Tensor, optional): maximum difference in time from</span>
+<span class="sd">            tolerance (float, optional): maximum difference in time from</span>
 <span class="sd">                a discrete sample to consider a time co-occuring with the sample.</span>
-<span class="sd">                Defaults to 1e-7.</span>
+<span class="sd">                Defaults to 1e-6.</span>
 <span class="sd">            offset (int, optional): number of steps before the pointer to consider the</span>
 <span class="sd">                zero point. Defaults to 1.</span>
 <span class="sd">            interp_kwargs (dict[str, Any] | None, optional): dictionary of keyword</span>
@@ -2338,33 +2933,47 @@
 <span class="sd">            valid range, a :py:class:`ValueError` will be thrown. To avoid this, clamp</span>
 <span class="sd">            ``time`` like ``time.clamp(0, recordtensor.duration)``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__select_tensor</span><span class="p">(</span>
+                <span class="n">time</span><span class="p">,</span>
+                <span class="n">interp</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+                <span class="n">interp_kwargs</span><span class="o">=</span><span class="n">interp_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__select_scalar</span><span class="p">(</span>
+                <span class="n">time</span><span class="p">,</span>
+                <span class="n">interp</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+                <span class="n">interp_kwargs</span><span class="o">=</span><span class="n">interp_kwargs</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
-    <span class="nd">@select</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">__select_tensor</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">time</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">interp</span><span class="p">:</span> <span class="n">Interpolation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
         <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">interp_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="c1"># use nearest interpolation by default</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">interp</span><span class="p">:</span>
-            <span class="n">interp</span> <span class="o">=</span> <span class="n">nearest</span>
+            <span class="n">interp</span> <span class="o">=</span> <span class="n">interp_nearest</span>
 
         <span class="c1"># strongly reference data and get record size and step time</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dt</span>
 
+        <span class="c1"># cannot select from uninitialized value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot select from uninitialized value&quot;</span><span class="p">)</span>
+
         <span class="c1"># apply offset to the pointer</span>
         <span class="n">ptr</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
 
-        <span class="c1"># cast time indices and check for a valid range</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">time</span><span class="o">.</span><span class="n">is_floating_point</span><span class="p">():</span>
-            <span class="n">time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">get_default_dtype</span><span class="p">())</span>
-
+        <span class="c1"># check that times are in range</span>
         <span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">amin</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">amax</span><span class="p">()</span>
         <span class="k">if</span> <span class="o">-</span><span class="n">tolerance</span> <span class="o">&lt;=</span> <span class="n">tmin</span> <span class="ow">or</span> <span class="n">tmax</span> <span class="o">&lt;=</span> <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">recordsz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">tolerance</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -2385,22 +2994,26 @@
                 <span class="sa">f</span><span class="s2">&quot;it must have either </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
             <span class="p">)</span>
 
-        <span class="c1"># compute continuous indices</span>
-        <span class="n">index</span> <span class="o">=</span> <span class="n">time</span> <span class="o">/</span> <span class="n">dt</span>
-        <span class="n">rounded</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">round</span><span class="p">()</span>
-        <span class="n">index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dt</span> <span class="o">*</span> <span class="n">rounded</span> <span class="o">-</span> <span class="n">time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">rounded</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+        <span class="c1"># compute continuous offsets</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">time</span> <span class="o">/</span> <span class="n">dt</span>
+        <span class="n">rounded</span> <span class="o">=</span> <span class="n">offset</span><span class="o">.</span><span class="n">round</span><span class="p">()</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dt</span> <span class="o">*</span> <span class="n">rounded</span> <span class="o">-</span> <span class="n">time</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">rounded</span><span class="p">,</span> <span class="n">offset</span>
+        <span class="p">)</span>
 
         <span class="c1"># access data by index and interpolate</span>
-        <span class="n">prev_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">ptr</span> <span class="o">-</span> <span class="n">index</span><span class="o">.</span><span class="n">ceil</span><span class="p">()</span><span class="o">.</span><span class="n">long</span><span class="p">())</span> <span class="o">%</span> <span class="n">recordsz</span>
-        <span class="n">prev_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">prev_idx</span><span class="p">)</span>
+        <span class="n">prev_idx</span> <span class="o">=</span> <span class="n">_unwind_tensor_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="o">.</span><span class="n">ceil</span><span class="p">(),</span> <span class="n">recordsz</span><span class="p">)</span>
+        <span class="n">next_idx</span> <span class="o">=</span> <span class="n">_unwind_tensor_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="o">.</span><span class="n">floor</span><span class="p">(),</span> <span class="n">recordsz</span><span class="p">)</span>
 
-        <span class="n">next_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">ptr</span> <span class="o">-</span> <span class="n">index</span><span class="o">.</span><span class="n">floor</span><span class="p">()</span><span class="o">.</span><span class="n">long</span><span class="p">())</span> <span class="o">%</span> <span class="n">recordsz</span>
-        <span class="n">next_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">next_idx</span><span class="p">)</span>
+        <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor_split</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">prev_idx</span><span class="p">,</span> <span class="n">next_idx</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+            <span class="p">(</span><span class="n">offset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],),</span>
+        <span class="p">)</span>
 
         <span class="n">res</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span>
             <span class="n">prev_data</span><span class="p">,</span>
             <span class="n">next_data</span><span class="p">,</span>
-            <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">index</span> <span class="o">%</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">offset</span> <span class="o">%</span> <span class="mi">1</span><span class="p">),</span>
             <span class="n">dt</span><span class="p">,</span>
             <span class="o">**</span><span class="p">(</span><span class="n">interp_kwargs</span> <span class="k">if</span> <span class="n">interp_kwargs</span> <span class="k">else</span> <span class="p">{}),</span>
         <span class="p">)</span>
@@ -2411,27 +3024,30 @@
         <span class="c1"># conditionally squeeze and return</span>
         <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">squeeze</span> <span class="k">else</span> <span class="n">res</span>
 
-    <span class="nd">@select</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">__select_scalar</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">interp</span><span class="p">:</span> <span class="n">Interpolation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
         <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">interp_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="c1"># use nearest interpolation by default</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">interp</span><span class="p">:</span>
-            <span class="n">interp</span> <span class="o">=</span> <span class="n">nearest</span>
+            <span class="n">interp</span> <span class="o">=</span> <span class="n">interp_nearest</span>
 
         <span class="c1"># strongly reference data and get record size and step time</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recordsz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dt</span>
 
+        <span class="c1"># cannot select from uninitialized value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;cannot select from uninitialized value&quot;</span><span class="p">)</span>
+
         <span class="c1"># apply offset to the pointer</span>
         <span class="n">ptr</span> <span class="o">=</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pointer</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)</span>
 
-        <span class="c1"># cast time indices and check for a valid range</span>
+        <span class="c1"># cast time and check for a valid range</span>
         <span class="n">disptime</span><span class="p">,</span> <span class="n">time</span> <span class="o">=</span> <span class="n">time</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
         <span class="k">if</span> <span class="o">-</span><span class="n">tolerance</span> <span class="o">&lt;=</span> <span class="n">time</span> <span class="o">&lt;=</span> <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">recordsz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">tolerance</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -2440,24 +3056,24 @@
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">recordsz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">tolerance</span><span class="si">}</span><span class="s2">]&quot;</span>
             <span class="p">)</span>
 
-        <span class="c1"># compute continuous index</span>
-        <span class="n">index</span> <span class="o">=</span> <span class="n">time</span> <span class="o">/</span> <span class="n">dt</span>
+        <span class="c1"># compute continuous offset</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">time</span> <span class="o">/</span> <span class="n">dt</span>
 
         <span class="c1"># index is within tolerance of an observation</span>
-        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dt</span> <span class="o">*</span> <span class="nb">round</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">-</span> <span class="n">time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dt</span> <span class="o">*</span> <span class="nb">round</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span> <span class="o">-</span> <span class="n">time</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">offset</span><span class="p">),</span> <span class="n">recordsz</span><span class="p">)]</span>
 
         <span class="c1"># interpolate between observation</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">interp</span><span class="p">(</span>
-                <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)],</span>
-                <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)],</span>
-                <span class="n">full</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">index</span> <span class="o">%</span> <span class="mi">1</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)],</span>
+                <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_unwind_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">recordsz</span><span class="p">)],</span>
+                <span class="n">full</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">offset</span> <span class="o">%</span> <span class="mi">1</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)),</span>
                 <span class="n">dt</span><span class="p">,</span>
                 <span class="o">**</span><span class="p">(</span><span class="n">interp_kwargs</span> <span class="k">if</span> <span class="n">interp_kwargs</span> <span class="k">else</span> <span class="p">{}),</span>
             <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">reconstrain</span><span class="p">(</span>
+<div class="viewcode-block" id="RecordTensor.reconstrain"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.reconstrain">[docs]</a>    <span class="k">def</span> <span class="nf">reconstrain</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Add, edit, or remove a constraint.</span>
@@ -2477,7 +3093,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">align</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">ShapedTensor</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span> <span class="o">-</span> <span class="p">(</span><span class="n">dim</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">),</span> <span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ShapedTensor</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span> <span class="o">-</span> <span class="p">(</span><span class="n">dim</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">),</span> <span class="n">size</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="RecordModule"><a class="viewcode-back" href="../../../reference/generated/inferno.RecordModule.html#inferno.RecordModule">[docs]</a><span class="k">class</span> <span class="nc">RecordModule</span><span class="p">(</span><span class="n">DimensionalModule</span><span class="p">):</span>
@@ -2734,7 +3350,7 @@
         <span class="n">time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">interp</span><span class="p">:</span> <span class="n">Interpolation</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
         <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Selects elements of a constrained attribute based on prior time.</span>
@@ -2752,9 +3368,9 @@
 <span class="sd">            name (str): name of the attribute from which to select.</span>
 <span class="sd">            time (float | torch.Tensor): time(s) before present to select from.</span>
 <span class="sd">            interp (Interpolation): method to interpolate between discrete time steps.</span>
-<span class="sd">            tolerance (float | torch.Tensor, optional): maximum difference in time from</span>
+<span class="sd">            tolerance (float, optional): maximum difference in time from</span>
 <span class="sd">                a discrete sample to consider a time co-occuring with the sample.</span>
-<span class="sd">                Defaults to 1e-7.</span>
+<span class="sd">                Defaults to 1e-6.</span>
 <span class="sd">            offset (int, optional): window index offset as number of steps prior to the</span>
 <span class="sd">                location of the next time slice to overwrite. Defaults to 1.</span>
 
@@ -2814,7 +3430,7 @@
             <span class="n">index</span> <span class="o">=</span> <span class="n">time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
             <span class="n">rindex</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">round</span><span class="p">()</span>
             <span class="n">index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="n">rindex</span> <span class="o">-</span> <span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">rindex</span><span class="p">,</span> <span class="n">index</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="n">rindex</span> <span class="o">-</span> <span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">rindex</span><span class="p">,</span> <span class="n">index</span>
             <span class="p">)</span>
 
             <span class="c1"># access data by index and interpolate</span>
@@ -2846,7 +3462,7 @@
             <span class="c1"># compute continuous index</span>
             <span class="n">index</span> <span class="o">=</span> <span class="n">time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
             <span class="n">rindex</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="n">rindex</span> <span class="o">-</span> <span class="n">time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="n">rindex</span> <span class="o">-</span> <span class="n">time</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
                 <span class="n">index</span> <span class="o">=</span> <span class="n">rindex</span>
 
             <span class="c1"># integer index (no interpolation)</span>

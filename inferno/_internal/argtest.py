@@ -788,7 +788,7 @@ def index(
     length_name: str | None = None,
     prefix: str | None = None,
 ) -> int:
-    r"""_summary_
+    r"""Checks that an index is in range for a given length sequence.
 
     Args:
         name (str): display name of the variable tested.

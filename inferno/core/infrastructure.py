@@ -1368,6 +1368,10 @@ def _unwind_ptr(pointer: int, offset: int | float, size: int) -> int:
     return (pointer - int(offset)) % size
 
 
+def _unwind_tensor_ptr(pointer: int, offset: torch.Tensor, size: int) -> torch.Tensor:
+    return (pointer - offset.long()) % size
+
+
 def _recordtensor_finalization(owner: weakref.ReferenceType, name: str) -> None:
     r"""Finalizer function for RecordTensor."""
     owner = owner()
@@ -1382,6 +1386,12 @@ def _recordtensor_finalization(owner: weakref.ReferenceType, name: str) -> None:
 
 class RecordTensor(ShapedTensor):
     r"""Tensor attribute with recorded history.
+
+    Read Operations: :py:meth:`peek`, :py:meth:`pop`, :py:meth:`read`,
+    :py:meth:`readrange`, :py:meth:`select`
+
+    Write Operations: :py:meth:`push`, :py:meth:`write`, :py:meth:`writerange`,
+    :py:meth:`insert`
 
     Args:
         owner (Module): module to which this attribute will belong.
@@ -1511,11 +1521,11 @@ class RecordTensor(ShapedTensor):
 
         .. code-block:: python
 
-            module.attr = RecordTensor(module, attr, dt, duration, value)
+            module.name = RecordTensor(owner, name, step_time, duration, value)
 
         .. code-block:: python
 
-            RecordTensor.create(module, attr, dt, duration, value)
+            RecordTensor.create(module, attr, step_time, duration, value)
 
         Args:
             owner (Module): module to which this attribute will belong.
@@ -1592,10 +1602,12 @@ class RecordTensor(ShapedTensor):
 
     @__pointer.setter
     def __pointer(self, value: int) -> None:
+        r"""Module internal pointer setter."""
         setattr(self.__owner(), f"_{self.__name}_pointer", int(value))
 
     @property
     def __recordsz(self) -> int:
+        r"""Module internal record size getter."""
         return self.__constraints.get(-1)
 
     @property
@@ -1629,25 +1641,26 @@ class RecordTensor(ShapedTensor):
         }
 
     @property
-    def dt(self) -> torch.Tensor:
-        r"""Length of time between stored values in history.
+    def dt(self) -> float:
+        r"""Length of time between recorded observations.
 
         In the same units as :py:attr:`self.duration`.
+
+        If the step time is changed such that the record size needs to change, a
+        :py:meth:`reconstrain` operation will be performed automatically, preserving
+        the newest entires. Stored values may no longer be logically valid, but will
+        still be accessible.
 
         Args:
             value (torch.Tensor | float): new time step length.
 
         Returns:
             torch.Tensor: length of the time step.
-
-        Note:
-            If a :py:meth:`reconstrain` operation needs to be performed, all values are
-            filled in-place with zeros.
         """
         return self.__dt
 
     @dt.setter
-    def dt(self, value: torch.Tensor | float) -> None:
+    def dt(self, value: float) -> None:
         # validate argument
         value = argtest.gt("dt", value, 0, float)
 
@@ -1660,28 +1673,29 @@ class RecordTensor(ShapedTensor):
         # reconstrain if required
         if size != self.__recordsz:
             with torch.no_grad():
+                self.align(0)
                 _ = ShapedTensor.reconstrain(self, -1, size)
-                self.reset(0)
 
     @property
-    def duration(self) -> torch.Tensor:
+    def duration(self) -> float:
         r"""Length of time over which prior values are stored.
 
         In the same units as :py:attr:`self.dt`.
 
-        The given ``property``, if a :py:class:`~torch.Tensor`, must have zero dimensions
-        (i.e. it must be a scalar). :py:attr:`self.duration` is automatically converted
-        to the same data type and device.
+        If the step time is changed such that the record size needs to change, a
+        :py:meth:`reconstrain` operation will be performed automatically, preserving
+        the newest entires.
 
         Args:
-            value (torch.Tensor | float): new length of the history to store.
+            value (float): new length of the record.
 
         Returns:
-            torch.Tensor: length of the record.
+            float: length of the record as the length of time.
 
         Note:
-            If a :py:meth:`reconstrain` operation needs to be performed, newest entries
-            will be preserved.
+            If ``duration`` is not evenly divided by :py:attr:`dt`, then the number
+            of observations stored will be rounded up. This property will always return
+            the duration set although the range of accessible values may be larger.
         """
         return self.__duration
 
@@ -1699,20 +1713,54 @@ class RecordTensor(ShapedTensor):
         # reconstrain if required
         if size != self.__recordsz:
             with torch.no_grad():
+                self.align(0)
                 _ = ShapedTensor.reconstrain(self, -1, size)
 
     @property
     def recordsz(self) -> int:
-        r"""Number of stored time slices for each record tensor.
+        r"""Number of observations stored.
+
+        .. math::
+            N = \left\lceil \frac{T}{\Delta t} \right\rceil + 1
+
+        For :py:attr:`duration` :math:`T` and :py:attr:`dt` :math:`\Delta t`.
 
         Returns:
-            int: length of the record as the number of stored time slices.
+            int: length of the record as the number of observations.
         """
         return self.__recordsz
 
     @property
+    def shape(self) -> tuple[int, ...] | None:
+        r"""Shape of the observations.
+
+        Returns:
+            tuple[int, ...] | None: shape of the observations, ``None`` when storage
+            is uninitialized (ignored).
+        """
+        # strongly reference data
+        data = self.__data
+
+        if self._ignore(data):
+            return None
+        else:
+            return (*data.shape[:-1],)
+
+    @property
+    def pointer(self) -> int:
+        r"""Current index of the pointer.
+
+        The location of the pointer indicates the location of the next observation
+        which will be overwritten.
+
+        Returns:
+            int: current index of the pointer.
+        """
+        return self.__pointer
+
+    @property
     def latest(self) -> torch.Tensor | None:
-        r"""Most recent time slice of the stored tensor.
+        r"""Most recent stored observation.
 
         When used as a getter, this is an alias for :py:meth:`peek`.
 
@@ -1723,10 +1771,10 @@ class RecordTensor(ShapedTensor):
         to ``1``.
 
         Args:
-            value (torch.Tensor): values to insert.
+            value (torch.Tensor): observation to push.
 
         Returns:
-            torch.Tensor | None: value of the last written time slice.
+            torch.Tensor | None: value of the most recently recorded observation.
         """
         return self.peek()
 
@@ -1740,7 +1788,7 @@ class RecordTensor(ShapedTensor):
 
     @property
     def value(self) -> torch.Tensor | nn.Parameter | None:
-        r"""Value of the constrained tensor.
+        r"""Record storage tensor.
 
         When created as a :py:class:`~torch.nn.Parameter`, assignment to ``None`` is
         prevented. If the current ``value`` is a :py:class:`~torch.nn.Parameter` but
@@ -1751,11 +1799,33 @@ class RecordTensor(ShapedTensor):
         ``self.deinitialize(use_uninitialized=False)``.
 
         Args:
-            value (value: torch.Tensor | nn.Parameter | None): value to which the
-                constrained attribute will be set.
-
+            value (value: torch.Tensor | nn.Parameter | None): value to set the storage
+                tensor to.
         Returns:
-            torch.Tensor | nn.Parameter | None: constrained attribute.
+            torch.Tensor | nn.Parameter | None: storage tensor.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``value``, ``return``:
+
+            :math:`S_0 \times \cdots \times N`
+
+            Where:
+                * :math:`S_0, \ldots` are the dimensions of each observation, given
+                  by :py:attr:`shape`.
+                * :math:`N` is the number of observations the storage can hold,
+                  equal to :py:attr:`recordsz`.
+
+        Caution:
+            This should be used for setting properties of the underlying storage
+            (device, data type, etc.) and for advanced initialization/deinitialization.
+            General read/write access should generally be performed through the provided
+            if possible.
+
+        Note:
+            If after assigning the new value, :py:attr:`ignored` is ``True``, the
+            pointer will be moved to ``0``, otherwise it will not be changed.
         """
         return ShapedTensor.value.fget(self)
 
@@ -1772,16 +1842,13 @@ class RecordTensor(ShapedTensor):
         self.deinitialize(False)
 
     def align(self, index: int = 0) -> None:
-        r"""Aligns the tensor so the pointer points at a specified value.
-
-        The slice specified by the pointer is the oldest recorded value, i.e.
-        the next slice to overwrite.
+        r"""Aligns the storage such that the oldest observation is at a specified index.
 
         Args:
             index (int, optional): index to align to. Defaults to 0.
 
         Raises:
-            RuntimeError: cannot align an uninitialized (ignored) value.
+            RuntimeError: cannot align when storage is uninitialized (ignored).
         """
         # check for a valid index
         index = argtest.index("index", index, self.__recordsz, "recordsz")
@@ -1794,26 +1861,29 @@ class RecordTensor(ShapedTensor):
             self.__data = data.roll(index - self.__pointer, -1)
             self.__pointer = index
         else:
-            raise RuntimeError("cannot align uninitialized value")
+            raise RuntimeError("cannot align uninitialized storage")
 
     def reset(self, fill: Any | None = 0) -> None:
-        r"""Resets the tensor so it is filled with a value and aligned to zero.
+        r"""Fills the storage with a given value and aligns it to zero.
 
         Args:
-            fill (Any | None, optional): value with which to fill the tensor, or if
-                no fill should be applied if ``None``. Defaults to 0.
+            fill (Any | None, optional): value with which to fill the storage, or if
+                ``None`` no fill will be applied. Defaults to 0.
         """
         # strongly reference data
         data = self.__data
 
-        # fill in-place is a value is given and tensor is initialized
         if fill is not None:
-            with torch.no_grad():
-                if not self._ignore(data):
+            # perform fill if not ignored
+            if not self._ignore(data):
+                with torch.no_grad():
                     data.fill_(fill)
 
-        # reset pointer to start
-        self.__pointer = 0
+            # reset pointer to start
+            self.__pointer = 0
+
+        else:
+            self.align(0)
 
     def initialize(
         self,
@@ -1822,13 +1892,13 @@ class RecordTensor(ShapedTensor):
         dtype: torch.dtype | None = None,
         fill: Any = 0,
     ) -> torch.Tensor | nn.Parameter:
-        r"""Initializes storage tensor.
+        r"""Initializes the storage tensor.
 
         Args:
             shape (tuple[int, ...]): shape, excluding the record dimension, of the
-                underlying tensor.
-            device (torch.device | None, optional): overrides device on which to place
-                the tensor when not ``None``. Defaults to ``None``.
+                storage tensor.
+            device (torch.device | None, optional): overrides the device on which to
+                place the tensor when not ``None``. Defaults to ``None``.
             dtype (torch.dtype | None, optional): overrides data tyoe of the tensor
                 when not ``None``. Defaults to ``None``.
             fill (Any, optional): value with which to fill the tensor. Defaults to 0.
@@ -1869,13 +1939,16 @@ class RecordTensor(ShapedTensor):
         self,
         use_uninitialized: bool = False,
     ) -> torch.Tensor | nn.Parameter:
-        r"""Deinitializes storage tensor.
+        r"""Deinitializes the storage tensor.
 
-        This either assigns an empty tensor with shape ``[0]`` as the value or one
-        of :py:class:`~torch.nn.UninitializedBuffer` or
+        This either assigns an empty tensor with shape ``[0]`` as the value or either
+        :py:class:`~torch.nn.UninitializedBuffer` or
         :py:class:`~torch.nn.UninitializedParameter`. The device, data type, and
-        gradient requirement will be preserved. If the storage tensor is ``None``, the
-        defaults of those properties will be used.
+        gradient requirement will be preserved.
+
+        If the storage tensor is already not initialized, it will still be reassigned.
+        If it is ``None``, the defaults of will be used and it will be reassigned either
+        with ``UninitializedBuffer()`` or ``torch.empty(0)``.
 
         Args:
             use_uninitialized (bool, optional): if an uninitalized buffer or
@@ -1917,20 +1990,26 @@ class RecordTensor(ShapedTensor):
         self.__pointer = 0
         return self.__data
 
-    def incr(self, pos: int = 1) -> None:
+    def incr(self, pos: int = 1) -> int:
         r"""Moves the pointer forward.
 
         Args:
             pos (int, optional): number of steps by which to move the pointer
                 forward. Defaults to 1.
 
+        Returns:
+            int: new location of the pointer.
+
         Raises:
-            RuntimeError: cannot modify the point when the value is uninitialized (ignored).
+            RuntimeError: cannot modify the pointer when the storage is
+                uninitialized (ignored).
         """
         if self._ignore(self.__data):
-            raise RuntimeError("cannot modify pointer when value is uninitialized")
+            raise RuntimeError("cannot modify pointer when storage is uninitialized")
         else:
             self.__pointer = _unwind_ptr(self.__pointer, -pos, self.__recordsz)
+
+        return self.__pointer
 
     def decr(self, pos: int = 1) -> None:
         r"""Moves the pointer backward.
@@ -1939,53 +2018,47 @@ class RecordTensor(ShapedTensor):
             pos (int, optional): number of steps by which to move the pointer
                 backward. Defaults to 1.
 
+        Returns:
+            int: new location of the pointer.
+
         Raises:
-            RuntimeError: cannot modify the point when the value is uninitialized (ignored).
+            RuntimeError: cannot modify the pointer when the storage is
+                uninitialized (ignored).
         """
         if self._ignore(self.__data):
-            raise RuntimeError("cannot modify pointer when value is uninitialized")
+            raise RuntimeError("cannot modify pointer when storage is uninitialized")
         else:
             self.__pointer = _unwind_ptr(self.__pointer, pos, self.__recordsz)
 
+        return self.__pointer
+
     def peek(self) -> torch.Tensor | None:
-        r"""Retrieves the time slice last written.
+        r"""Retrieves the most recently pushed observation.
 
         If the state is uninitialized, then ``None`` will be returned. Otherwise this
         is an alias for ``self.read(offset=1)``.
 
         Returns:
-            torch.Tensor | None: value of the last written time slice.
+            torch.Tensor | None: most recently pushed observation.
         """
         if self._ignore(self.__data):
             return None
         else:
             return self.read(1)
 
-    def push(self, value: torch.Tensor, inplace: bool = False) -> None:
-        r"""Writes a time slice to the current location and advances the pointer.
-
-        This is an alias for the following code.
-
-        .. code-block:: python
-
-            self.write(value, offset=0)
-            self.incr(pos=1)
-
-        Args:
-            value (torch.Tensor): values to insert.
-            inplace (bool, optional): if the operation should be performed in-place,
-                with :py:func:`torch.no_grad`. Defaults to False.
-        """
-        self.write(value, offset=0, inplace=inplace)
-        self.incr(1)
-
     def pop(self) -> torch.Tensor | None:
-        r"""Retrieves the time slice last written and decrements the pointer.
+        r"""Retrieves the most recently pushed observation and decrements the pointer.
 
-        If the state is uninitialized, then ``None`` will be returned.
+        If the state is uninitialized, then ``None`` will be returned and the pointer
+        will be unaltered.
 
         Returns:
-            torch.Tensor | None: value of the last written time slice.
+            torch.Tensor | None: most recently pushed observation.
+
+        Important:
+            Unlike a pop-operation on most data structures, this does not affect the
+            underlying storage. It only moves the pointer back so the next
+            :py:meth:`push` will overwrite that value.
         """
         if self._ignore(self.__data):
             return None
@@ -1993,78 +2066,120 @@ class RecordTensor(ShapedTensor):
             self.decr(1)
             return self.read(0)
 
-    def read(self, offset: int = 1) -> torch.Tensor:
-        r"""Reads the value of the tensor at an index relative to the pointer.
+    def push(self, obs: torch.Tensor, inplace: bool = False) -> None:
+        r"""Records an observation to the current location and advances the pointer.
 
-        The pointer specifies the next index to overwrite, and the offset specifies
-        the number of steps before the next index to read from. Therefore with an
-        offset of 1, it will read the most recently pushed slice.
+        This is an alias for the following code.
+
+        .. code-block:: python
+
+            self.write(value, offset=0, inplace=inplace)
+            self.incr(pos=1)
+
+        Args:
+            obs (torch.Tensor): observation to write.
+            inplace (bool, optional): if the operation should be performed in-place
+                with :py:func:`torch.no_grad`. Defaults to ``False``.
+        """
+        self.write(obs, offset=0, inplace=inplace)
+        self.incr(1)
+
+    def read(self, offset: int = 1) -> torch.Tensor:
+        r"""Reads the observation at an index relative to the pointer.
+
+        The pointer specifies the next observation to overwrite, and the offset
+        specifies the number of observations back from which to read. The default
+        value ``offset=1`` will return the most recently pushed observation.
 
         Args:
             offset (int, optional): number of steps before the pointer. Defaults to 1.
 
         Raises:
-            RuntimeError: cannot read from an uninitialized (ignored) value.
+            RuntimeError: cannot read from uninitialized (ignored) storage.
 
         Returns:
-            torch.Tensor: time slice of the underlying tensor.
+            torch.Tensor: observation at the specified index.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``return``:
+
+            :math:`S_0 \times \cdots`
+
+            Where:
+                * :math:`S_0, \ldots` are the dimensions of each observation, given
+                  by :py:attr:`shape`.
         """
-        # strongly reference data
-        data = self.__data
+        # strongly reference data and get from internal properties
+        data, ptr, recordsz = self.__data, self.__pointer, self.__recordsz
 
-        # cannot read uninitialized value
+        # cannot read from uninitialized storage
         if self._ignore(data):
-            raise RuntimeError("cannot read from uninitialized value")
+            raise RuntimeError("cannot read from uninitialized storage")
         else:
-            return data[..., _unwind_ptr(self.__pointer, offset, self.__recordsz)]
+            return data[..., _unwind_ptr(ptr, offset, recordsz)]
 
-    def write(
-        self, value: torch.Tensor, offset: int = 0, inplace: bool = False
-    ) -> None:
-        r"""Writes a value to the tensor at an index relative to the pointer.
+    def write(self, obs: torch.Tensor, offset: int = 0, inplace: bool = False) -> None:
+        r"""Writes an observation at an index relative to the pointer.
+
+        The pointer specifies the next observation to overwrite, and the offset
+        specifies the number of observations back from which to write. The default
+        value ``offset=0`` overwrite the oldest observation.
 
         Args:
-            value (torch.Tensor): values to insert at the specified offset.
+            obs (torch.Tensor): observation to write at the specified offset.
             offset (int, optional): number of steps before the pointer. Defaults to 0.
-            inplace (bool, optional): if the operation should be performed in-place,
-                with :py:func:`torch.no_grad`. Defaults to False.
+            inplace (bool, optional): if the operation should be performed in-place
+                with :py:func:`torch.no_grad`. Defaults to ``False``.
 
         Raises:
-            RuntimeError: cannot write to an uninitialized (ignored) value.
-            ValueError: shape of the values must match the shape of the time slice.
+            RuntimeError: cannot write to uninitialized (ignored) storage.
+            ValueError: shape of ``value`` must match the shape of an observation.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``obs``:
+
+            :math:`S_0 \times \cdots`
+
+            Where:
+                * :math:`S_0, \ldots` are the dimensions of each observation, given
+                  by :py:attr:`shape`.
 
         Important:
-            The :py:class:`~torch.dtype` of ``value`` is not changed, so when ``inplace``
+            The :py:class:`~torch.dtype` of ``obs`` is not changed, so when ``inplace``
             is set to ``False``, this may cause the data type of the stored tensor to
             change.
         """
-        # strongly reference data and get record size
-        data, recordsz = self.__data, self.__recordsz
+        # strongly reference data and get from internal properties
+        data, ptr, recordsz = self.__data, self.__pointer, self.__recordsz
 
-        # cannot write to uninitialized value
+        # cannot write to uninitialized storage
         if self._ignore(data):
-            raise RuntimeError("cannot write to uninitialized value")
+            raise RuntimeError("cannot write to uninitialized storage")
 
-        # shape must be the same as a slice
-        elif (*value.shape,) != (*data.shape[:-1],):
+        # shape must be the same as a observation
+        elif (*obs.shape,) != (*data.shape[:-1],):
             raise ValueError(
-                f"shape of 'value' {(*value.shape,)} must have the shape "
-                f"{(*data.shape[:-1],)}, like a time slice of the stored value"
+                f"shape of 'obs' {(*obs.shape,)} must have the shape "
+                f"{(*data.shape[:-1],)}, like a stored observation"
             )
 
         # in-place overwrite
         elif inplace:
             with torch.no_grad():
-                index = _unwind_ptr(self.__pointer, offset, recordsz)
-                data[..., index] = value
+                index = _unwind_ptr(ptr, offset, recordsz)
+                data[..., index] = obs
 
         # splice in
         else:
-            index = _unwind_ptr(self.__pointer, offset, recordsz)
+            index = _unwind_ptr(ptr, offset, recordsz)
             self.__data = torch.cat(
                 (
                     data[..., slice(0, index)],
-                    value.unsqueeze(-1),
+                    obs.unsqueeze(-1),
                     data[..., slice(index + 1, None)],
                 ),
                 -1,
@@ -2076,122 +2191,240 @@ class RecordTensor(ShapedTensor):
         offset: int | torch.Tensor = 1,
         forward: bool = False,
     ) -> torch.Tensor:
-        # strongly reference data and get record size and pointer
-        data, recordsz, ptr = self.__data, self.__recordsz, self.__pointer
+        r"""Reads multiple sequential observations.
 
-        # cannot read from uninitialized value
-        if self._ignore(data):
-            raise RuntimeError("cannot read from an uninitialized value")
+        When ``forward`` is ``False``, then ``length`` observations will be read
+        from the following interval.
 
-        # shift offset if using noninitial offset
+        .. code-block:: python
+
+            [pointer - offset - length + 1, pointer - offset]
+
+        When ``forward`` is ``True``, then ``length`` observations will be read
+        from the following interval.
+
+        .. code-block:: python
+
+            [pointer - offset, pointer - offset + length - 1]
+
+        Args:
+            length (int): number of observations to read.
+            offset (int | torch.Tensor, optional): number of steps before the pointer.
+                Defaults to 1.
+            forward (bool, optional): if the offset pointer indicates the index of the
+                first observation. Defaults to ``False``.
+
+        Raises:
+            RuntimeError: cannot read from uninitialized (ignored) storage.
+            ValueError: shape of ``offset`` must match the shape of an observation.
+
+        Returns:
+            torch.Tensor: observations at the specified indices.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``offset``:
+
+            `:math:`S_0 \times \cdots`
+
+            ``return``:
+
+            `:math:`S_0 \times \cdots \times L`
+
+            Where:
+                * :math:`S_0, \ldots` are the dimensions of each observation, given
+                  by :py:attr:`shape`.
+                * :math:`L`, the number of observations, given by ``length``.
+        """
+        # strongly reference data and get from internal properties
+        data, ptr, recordsz = self.__data, self.__pointer, self.__recordsz
+
+        # shift offset backward if using noninitial offset
         if not forward:
             offset = offset + (length - 1)
+
+        # cannot read from uninitialized storage
+        if self._ignore(data):
+            raise RuntimeError("cannot read from uninitialized storage")
 
         # scalar offset
         elif not isinstance(offset, torch.Tensor):
             start = _unwind_ptr(ptr, offset, recordsz)
             end = _unwind_ptr(ptr, offset - length, recordsz)
-            if start > end:
-                return torch.cat(
-                    (data[..., slice(start, None)], data[..., slice(0, end)]), -1
-                )
-            else:
-                return data[..., slice(start, end)]
 
-        # shape must be the same as a slice
+            if start > end:
+                return torch.cat((data[..., start:], data[..., :end]), -1)
+            else:
+                return data[..., start:end]
+
+        # shape must be the same as an observation
         elif (*offset.shape,) != (*data.shape[:-1],):
             raise ValueError(
                 f"shape of 'offset' {(*offset.shape,)} must have the shape "
-                f"{(*data.shape[:-1],)}, like a time slice of the stored value"
+                f"{(*data.shape[:-1],)}, like a stored observation"
             )
 
         # tensor offset
         else:
-            indices = (
-                ptr
-                - offset.long().unsqueeze(-1)
-                + torch.arange(0, length, dtype=torch.int64, device=offset.device)
-            ) % recordsz
-            return torch.gather(data, -1, indices).squeeze(-1)
+            offset = offset.unsqueeze(-1) - torch.arange(
+                0, length, dtype=torch.int64, device=offset.device
+            )
+            return torch.gather(
+                data, -1, _unwind_tensor_ptr(ptr, offset, recordsz)
+            ).squeeze(-1)
 
     def writerange(
         self,
-        value: torch.Tensor,
+        obs: torch.Tensor,
         offset: int | torch.Tensor = 1,
         forward: bool = False,
         inplace: bool = False,
     ) -> None:
-        # strongly reference data and get record size and pointer
-        data, recordsz, ptr = self.__data, self.__recordsz, self.__pointer
+        r"""Writes multiple sequential observations.
 
-        # shift offset if using noninitial offset
+        When ``forward`` is ``False``, then ``length`` observations will be written
+        to the following interval.
+
+        .. code-block:: python
+
+            [pointer - offset - length + 1, pointer - offset]
+
+        When ``forward`` is ``True``, then ``length`` observations will be written
+        to the following interval.
+
+        .. code-block:: python
+
+            [pointer - offset, pointer - offset + length - 1]
+
+        Args:
+            obs (torch.Tensor): observation to write at the specified offsets.
+            offset (int | torch.Tensor, optional): number of steps before the pointer.
+                Defaults to 1.
+            forward (bool, optional): if the offset pointer indicates the index of the
+                first observation. Defaults to ``False``.
+            inplace (bool, optional): if the operation should be performed in-place
+                with :py:func:`torch.no_grad`. Defaults to False.
+
+        Raises:
+            RuntimeError: cannot write to uninitialized (ignored) storage.
+            ValueError: written observations need to have a shape compatible with
+                storage.
+            ValueError: cannot write more observations to storage than storage records.
+            ValueError: shape of ``offset`` must match the shape of an observation.
+
+        Important:
+            The :py:class:`~torch.dtype` of ``obs`` is not changed, ``offset`` is not
+            a tensor, and ``inplace`` is set to ``False``, this may cause the data type
+            of the stored tensor to change. When ``offset`` is a tensor, a
+            :py:func:`~torch.scatter` operation is performed so the data type will first
+            be converted tot hat of the underlying storage.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``obs``:
+
+            `:math:`S_0 \times \cdots \times L`
+
+            ``offset``:
+
+            `:math:`S_0 \times \cdots`
+
+            ``return``:
+
+            `:math:`S_0 \times \cdots \times L`
+
+            Where:
+                * :math:`S_0, \ldots` are the dimensions of each observation, given
+                  by :py:attr:`shape`.
+                * :math:`L`, the number of observations.
+        """
+        # strongly reference data and get from internal properties
+        data, ptr, recordsz = self.__data, self.__pointer, self.__recordsz
+
+        # shift offset backward if using noninitial offset
         if not forward:
-            offset = offset + (value.shape[-1] - 1)
+            offset = offset + (obs.shape[-1] - 1)
 
-        # cannot write to uninitialized value
+        # cannot write to uninitialized storage
         if self._ignore(data):
-            raise RuntimeError("cannot write to an uninitialized value")
+            raise RuntimeError("cannot write to an uninitialized storage")
 
-        # test shape of value
-        if value.shape[:-1] != data.shape[:-1]:
+        # observations should be shaped like storage at all but final
+        if obs.shape[:-1] != data.shape[:-1]:
             raise ValueError(
-                "'value' must have the same number of dimensions as the underlying"
-                "data and must have the same shape in all but the final dimension,"
-                f"shapes are {(*value.shape,)} and {(*data.shape,)} respectively"
+                f"'obs' has shape {(*obs.shape,)} but must have the same shape as "
+                f"the shape of storage {(*data.shape,)} at all but the final dimension"
             )
 
-        # cannot write beyond the data shape
-        if value.shape[-1] > data.shape[-1]:
+        # cannot write beyond storage
+        if obs.shape[-1] > data.shape[-1]:
             raise ValueError(
-                f"size of the final dimension of 'value' ({value.shape[-1]}) cannot "
-                f"exceed the length of the record ({data.shape[-1]})"
+                f"cannot write the {(*obs.shape[-1],)} observations from 'obs' when "
+                f"storage only holds {(*data.shape[-1],)} observations"
             )
 
         # scalar offset
         elif not isinstance(offset, torch.Tensor):
             ptr = _unwind_ptr(ptr, offset, recordsz)
-            length = value.shape[-1]
+            length = obs.shape[-1]
 
             # in-place
             if inplace:
                 with torch.no_grad():
-                    indices = (
-                        ptr
-                        + torch.arange(
-                            0, length, dtype=torch.int64, device=value.device
-                        )
-                    ) % recordsz
-                    data[indices] = value
+                    offset = -torch.arange(
+                        0, length, dtype=torch.int64, device=data.device
+                    )
+                    indices = _unwind_tensor_ptr(ptr, offset, recordsz)
+                    data[..., indices] = obs
 
             # noncontiguous range
             elif ptr + length > recordsz:
-                pass
+                self.__data = torch.cat(
+                    (
+                        obs[..., slice(recordsz - ptr, None)],
+                        data[..., slice(length - (recordsz - ptr), ptr)],
+                        obs[..., slice(None, recordsz - ptr)],
+                    ),
+                    -1,
+                )
 
             # contiguous range
             else:
                 self.__data = torch.cat(
                     (
                         data[..., slice(0, ptr)],
-                        value,
+                        obs,
                         data[..., slice(ptr + length, None)],
                     ),
                     -1,
                 )
 
-        # shape must be the same as a slice
+        # shape must be the same as an observation
         elif (*offset.shape,) != (*data.shape[:-1],):
             raise ValueError(
                 f"shape of 'offset' {(*offset.shape,)} must have the shape "
-                f"{(*data.shape[:-1],)}, like a time slice of the stored value"
+                f"{(*data.shape[:-1],)}, like a stored observation"
             )
 
         # tensor offset
         else:
-            pass
+            offset = offset.unsqueeze(-1) - torch.arange(
+                0, length, dtype=torch.int64, device=offset.device
+            )
+            indices = _unwind_tensor_ptr(ptr, offset, recordsz)
+
+            # write to storage
+            if inplace:
+                with torch.no_grad():
+                    data.scatter_(-1, indices, obs.unsqueeze(-1))
+            else:
+                self.__data = torch.scatter(data, -1, indices, obs.unsqueeze(-1))
 
     def insert(
         self,
-        value: torch.Tensor,
+        obs: torch.Tensor,
         time: torch.Tensor | float,
         extrap: Extrapolation | None = None,
         *,
@@ -2211,11 +2444,11 @@ class RecordTensor(ShapedTensor):
         :py:attr:`self.dt`. Extrapolation results are then overwritten with exact values
         before returning.
 
-        The :py:class:`~torch.dtype` of elements inserted into the underlying tensor
-        will be cast back to the type of that tensor after extrapolation.
+        The :py:class:`~torch.dtype` of elements inserted into the underlying storage
+        will be cast back to the data type of the storage after extrapolation.
 
         Args:
-            value (torch.Tensor): _description_
+            obs (torch.Tensor): _description_
             time (torch.Tensor | float): _description_
             extrap (Extrapolation | None, optional): _description_. Defaults to None.
             tolerance (float, optional): _description_. Defaults to 1e-6.
@@ -2226,24 +2459,28 @@ class RecordTensor(ShapedTensor):
         .. admonition:: Shape
             :class: tensorshape
 
-            ``value``, ``time``:
+            ``obs``, ``time``:
 
-            :math:`N_0 \times \cdots \times [D]`
+            :math:`S_0 \times \cdots`
 
             Where:
-                * :math:`N_0, \ldots` are the dimensions of the underlying tensor,
-                  excluding the record dimension.
-                * :math:`D` is the number of times for each value to select.
-
-        Warning:
-            If there are multiple values/indices for each element being inserted (i.e.
-            :math:`D > 1`), if the indices are not unique, then the one of the values
-            will be non-deterministically chosen and the gradient will be propagated
-            incorrectly. Each ``time`` will correspond to two indices. If multiple
-            values for each observation are to be inserted at once, there must be no
-            overlap in the resultant indices. Use of :py:meth:`writerange` is suggested
-            as an alternative.
+                * :math:`S_0, \ldots` are the dimensions of each observation, given
+                  by :py:attr:`shape`.
         """
+        # use nearest extrapolation by default
+        if not extrap:
+            extrap = extrap_nearest
+
+        # strongly reference data and get from internal properties
+        data, recordsz, dt = self.__data, self.__recordsz, self.__dt
+
+        # apply offset to the pointer
+        ptr = _unwind_ptr(self.__pointer, offset, recordsz)
+
+        # cannot insert into uninitialized storage
+        if self._ignore(data):
+            raise RuntimeError("cannot insert into uninitialized storage")
+
         if isinstance(time, torch.Tensor):
             self.__insert_tensor(
                 value,
@@ -2280,12 +2517,12 @@ class RecordTensor(ShapedTensor):
         if not extrap:
             extrap = extrap_nearest
 
-        # strongly reference data and get record size and step time
+        # strongly reference data and get from internal properties
         data, recordsz, dt = self.__data, self.__recordsz, self.__dt
 
-        # cannot insert into uninitialized value
+        # cannot insert into uninitialized storage
         if self._ignore(data):
-            raise RuntimeError("cannot insert into uninitialized value")
+            raise RuntimeError("cannot insert into uninitialized storage")
 
         # apply offset to the pointer
         ptr = _unwind_ptr(self.__pointer, offset, recordsz)
@@ -2332,8 +2569,8 @@ class RecordTensor(ShapedTensor):
         )
 
         # access data by index and extrapolate
-        prev_idx = (ptr - offset.ceil().long()) % recordsz
-        next_idx = (ptr - offset.floor().long()) % recordsz
+        prev_idx = _unwind_tensor_ptr(ptr, offset.ceil(), recordsz)
+        next_idx = _unwind_tensor_ptr(ptr, offset.floor(), recordsz)
 
         prev_data, next_data = torch.tensor_split(
             torch.gather(data, -1, torch.cat((prev_idx, next_idx), -1)),
@@ -2389,9 +2626,9 @@ class RecordTensor(ShapedTensor):
         # strongly reference data and get record size and step time
         data, recordsz, dt = self.__data, self.__recordsz, self.__dt
 
-        # cannot insert into uninitialized value
+        # cannot insert into uninitialized storage
         if self._ignore(data):
-            raise RuntimeError("cannot insert into uninitialized value")
+            raise RuntimeError("cannot insert into uninitialized storage")
 
         # apply offset to the pointer
         ptr = _unwind_ptr(self.__pointer, offset, recordsz)
@@ -2577,9 +2814,9 @@ class RecordTensor(ShapedTensor):
         # strongly reference data and get record size and step time
         data, recordsz, dt = self.__data, self.__recordsz, self.__dt
 
-        # cannot select from uninitialized value
+        # cannot select from uninitialized storage
         if self._ignore(data):
-            raise RuntimeError("cannot select from uninitialized value")
+            raise RuntimeError("cannot select from uninitialized storage")
 
         # apply offset to the pointer
         ptr = _unwind_ptr(self.__pointer, offset, recordsz)
@@ -2613,8 +2850,8 @@ class RecordTensor(ShapedTensor):
         )
 
         # access data by index and interpolate
-        prev_idx = (ptr - offset.ceil().long()) % recordsz
-        next_idx = (ptr - offset.floor().long()) % recordsz
+        prev_idx = _unwind_tensor_ptr(ptr, offset.ceil(), recordsz)
+        next_idx = _unwind_tensor_ptr(ptr, offset.floor(), recordsz)
 
         prev_data, next_data = torch.tensor_split(
             torch.gather(data, -1, torch.cat((prev_idx, next_idx), -1)),
@@ -2651,9 +2888,9 @@ class RecordTensor(ShapedTensor):
         # strongly reference data and get record size and step time
         data, recordsz, dt = self.__data, self.__recordsz, self.__dt
 
-        # cannot select from uninitialized value
+        # cannot select from uninitialized storage
         if self._ignore(data):
-            raise RuntimeError("cannot select from uninitialized value")
+            raise RuntimeError("cannot select from uninitialized storage")
 
         # apply offset to the pointer
         ptr = _unwind_ptr(self.__pointer, offset, recordsz)
