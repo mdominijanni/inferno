@@ -1313,5 +1313,435 @@ class TestRecordTensor:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
             rt.value = data.clone().detach()
-
         setattr(infmodule, rt.attributes.pointer, rt.recordsz - 1)
+
+        start = random.randint(3, 6)
+        end = start + random.randint(1, 5)
+
+        if forward:
+            res = rt.readrange(end - start, rt.pointer - start, True)
+        else:
+            res = rt.readrange(end - start, rt.pointer - end + 1, False)
+
+        assert torch.all(res == data[..., start:end])
+
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize(
+        "forward",
+        (True, False),
+        ids=("forward", "backward"),
+    )
+    def test_readrange_noncontiguous_int(self, infmodule, name, asparam, forward):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+        setattr(infmodule, rt.attributes.pointer, rt.recordsz - 1)
+
+        start = rt.recordsz - random.randint(3, 6)
+        end = random.randint(1, 5)
+
+        if forward:
+            res = rt.readrange(end + rt.pointer - (start) + 1, rt.pointer - start, True)
+        else:
+            res = rt.readrange(
+                end + rt.pointer - (start) + 1, rt.pointer - end + 1, False
+            )
+
+        assert torch.all(res == torch.cat((data[..., start:], data[..., :end]), -1))
+
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize(
+        "forward",
+        (True, False),
+        ids=("forward", "backward"),
+    )
+    def test_readrange_tensor(self, infmodule, name, asparam, forward):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        length = random.randint(3, 11)
+        offsets = torch.randint(0, rt.recordsz, shape)
+        ptr = random.randint(0, rt.recordsz - 1)
+
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        res = rt.readrange(length, offsets, forward)
+
+        offsets = offsets + (length - 1) * (not forward)
+        offsets = torch.stack([offsets - k for k in range(length)], -1)
+
+        assert torch.all(res == data.gather(-1, (ptr - offsets) % rt.recordsz))
+
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize(
+        "forward",
+        (True, False),
+        ids=("forward", "backward"),
+    )
+    @pytest.mark.parametrize(
+        "inplace",
+        (True, False),
+        ids=("inplace", "normal"),
+    )
+    @pytest.mark.parametrize(
+        "execnum",
+        range(10),
+    )
+    def test_writerange_int(self, infmodule, name, asparam, forward, inplace, execnum):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        length = random.randint(3, 11)
+        offset = random.randint(0, rt.recordsz - 1)
+        ptr = random.randint(0, rt.recordsz - 1)
+
+        writedata = torch.rand(*shape, length)
+
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        rt.writerange(writedata, offset, forward, inplace)
+        offsets = torch.full(shape, offset, dtype=torch.int64)
+        offsets = offsets + (length - 1) * (not forward)
+        offsets = torch.stack([offsets - k for k in range(length)], -1)
+
+        assert torch.all(
+            rt.value == data.scatter(-1, (ptr - offsets) % rt.recordsz, writedata)
+        )
+
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize(
+        "forward",
+        (True, False),
+        ids=("forward", "backward"),
+    )
+    @pytest.mark.parametrize(
+        "inplace",
+        (True, False),
+        ids=("inplace", "normal"),
+    )
+    def test_writerange_tensor(self, infmodule, name, asparam, forward, inplace):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        length = random.randint(3, 11)
+        offsets = torch.randint(0, rt.recordsz, shape)
+        ptr = random.randint(0, rt.recordsz - 1)
+
+        writedata = torch.rand(*shape, length)
+
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        rt.writerange(writedata, offsets, forward, inplace)
+
+        offsets = offsets + (length - 1) * (not forward)
+        offsets = torch.stack([offsets - k for k in range(length)], -1)
+
+        assert torch.all(
+            rt.value == data.scatter(-1, (ptr - offsets) % rt.recordsz, writedata)
+        )
+
+    @pytest.mark.parametrize(
+        "offset",
+        (1, 3, -2),
+        ids=("offset=1", "offset=3", "offset=-2"),
+    )
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize(
+        "nselects",
+        (1, 7),
+        ids=("nselects=1", "nselects=7"),
+    )
+    def test_select_tensor_interp_bypass(
+        self,
+        infmodule,
+        name,
+        offset,
+        asparam,
+        nselects,
+    ):
+        def bad_interp(prev_data, next_data, sample_at, step_time, **kwargs):
+            return torch.rand_like(prev_data)
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        ptr = random.randint(0, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        tolerance = 1e-4
+        indices = torch.randint(0, rt.recordsz, (*shape, nselects))
+        times = (indices * rt.dt) + (
+            (tolerance - 1e-6) * torch.randint(-1, 2, indices.shape)
+        )
+        res = rt.select(
+            times.squeeze(-1), bad_interp, tolerance=tolerance, offset=offset
+        )
+        cmp = data.gather(-1, (ptr - (indices + offset)) % rt.recordsz).squeeze(-1)
+        assert torch.all(res == cmp)
+
+    @pytest.mark.parametrize(
+        "offset",
+        (1, 3, -2),
+        ids=("offset=1", "offset=3", "offset=-2"),
+    )
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize(
+        "boundedupper",
+        (True, False),
+        ids=("boundedupper", "boundedlower"),
+    )
+    def test_select_float_interp_bypass(
+        self, infmodule, name, offset, asparam, boundedupper
+    ):
+        def bad_interp(prev_data, next_data, sample_at, step_time, **kwargs):
+            return torch.rand_like(prev_data)
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        ptr = random.randint(0, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        tolerance = 1e-4
+        index = random.randint(0, rt.recordsz - 1)
+        time = index * rt.dt + ((tolerance - 1e-6) * (-1 * (not boundedupper)))
+        indices = torch.full((*shape, 1), index)
+
+        res = rt.select(time, bad_interp, tolerance=tolerance, offset=offset)
+        cmp = data.gather(-1, (ptr - (indices + offset)) % rt.recordsz).squeeze(-1)
+        assert torch.all(res == cmp)
+
+    @pytest.mark.parametrize(
+        "offset",
+        (1, 3, -2),
+        ids=("offset=1", "offset=3", "offset=-2"),
+    )
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize(
+        "nselects",
+        (1, 7),
+        ids=("nselects=1", "nselects=7"),
+    )
+    def test_select_tensor_interpolated(
+        self,
+        infmodule,
+        name,
+        offset,
+        asparam,
+        nselects,
+    ):
+        def interp_linear(prev_data, next_data, sample_at, step_time, **kwargs):
+            return ((next_data - prev_data) / step_time) * sample_at
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        ptr = random.randint(0, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        indices = torch.randint(0, rt.recordsz - 1, (*shape, nselects)) + 0.5
+        times = indices * rt.dt
+
+        res = rt.select(times.squeeze(-1), interp_linear, tolerance=1e-4, offset=offset)
+        cmp = interp_linear(
+            data.gather(-1, (ptr - (indices.ceil().long() + offset)) % rt.recordsz),
+            data.gather(-1, (ptr - (indices.floor().long() + offset)) % rt.recordsz),
+            times % rt.dt,
+            rt.dt,
+        ).squeeze(-1)
+        assert torch.all((res - cmp).abs() < 1e-6)
+
+    @pytest.mark.parametrize(
+        "offset",
+        (1, 3, -2),
+        ids=("offset=1", "offset=3", "offset=-2"),
+    )
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    def test_select_float_interpolated(
+        self,
+        infmodule,
+        name,
+        offset,
+        asparam,
+    ):
+        def interp_linear(prev_data, next_data, sample_at, step_time, **kwargs):
+            return ((next_data - prev_data) / step_time) * sample_at
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        ptr = random.randint(0, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        index = random.randint(0, rt.recordsz - 2) + 0.5
+        time = index * rt.dt
+        indices = torch.full((*shape, 1), index)
+        times = indices * rt.dt
+
+        res = rt.select(time, interp_linear, tolerance=1e-4, offset=offset)
+        cmp = interp_linear(
+            data.gather(-1, (ptr - (indices.ceil().long() + offset)) % rt.recordsz),
+            data.gather(-1, (ptr - (indices.floor().long() + offset)) % rt.recordsz),
+            times % rt.dt,
+            rt.dt,
+        ).squeeze(-1)
+        assert torch.all((res - cmp).abs() < 1e-6)

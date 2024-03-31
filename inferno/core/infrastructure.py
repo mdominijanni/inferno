@@ -2362,6 +2362,7 @@ class RecordTensor(ShapedTensor):
         """
         # strongly reference data and get from internal properties
         data, ptr, recordsz = self.__data, self.__pointer, self.__recordsz
+        length = obs.shape[-1]
 
         # shift offset backward if using noninitial offset
         if not forward:
@@ -2388,7 +2389,6 @@ class RecordTensor(ShapedTensor):
         # scalar offset
         elif not isinstance(offset, torch.Tensor):
             ptr = _unwind_ptr(ptr, offset, recordsz)
-            length = obs.shape[-1]
 
             # in-place
             if inplace:
@@ -2438,9 +2438,9 @@ class RecordTensor(ShapedTensor):
             # write to storage
             if inplace:
                 with torch.no_grad():
-                    data.scatter_(-1, indices, obs.unsqueeze(-1))
+                    data.scatter_(-1, indices, obs)
             else:
-                self.__data = torch.scatter(data, -1, indices, obs.unsqueeze(-1))
+                self.__data = torch.scatter(data, -1, indices, obs)
 
     def select(
         self,
@@ -2526,7 +2526,7 @@ class RecordTensor(ShapedTensor):
 
             # check that times are in range
             tmin, tmax = time.amin(), time.amax()
-            if -tolerance <= tmin or tmax <= dt * (recordsz - 1) + tolerance:
+            if tmin < -tolerance or tmax > dt * (recordsz - 1) + tolerance:
                 raise ValueError(
                     f"all elements of 'time' (min={tmin}, max={tmax}) must be within "
                     f"the valid range of observations including tolerance, the "
@@ -2537,20 +2537,21 @@ class RecordTensor(ShapedTensor):
             shift = time / dt
             shiftr = shift.round()
             shift = torch.where(
-                torch.abs(dt * shiftr - time) <= tolerance, shiftr, offset
+                torch.abs(dt * shiftr - time) <= tolerance, shiftr, shift
             )
 
             # update offset with shift
             offset = offset + shift
 
             # indices of the nearest observations
+            prev_idx, next_idx = offset.ceil(), offset.floor()
             stacked_idx = _unwind_tensor_ptr(
-                ptr, torch.stack((offset.ceil(), offset.floor()), -1), recordsz
+                ptr, torch.cat((prev_idx, next_idx), -1), recordsz
             )
 
             # get stored observations at specified indices
             prev_data, next_data = torch.tensor_split(
-                torch.gather(data.unsqueeze(-1), -1, stacked_idx),
+                torch.gather(data, -1, stacked_idx),
                 (offset.shape[-1],),
                 -1,
             )
@@ -2565,7 +2566,7 @@ class RecordTensor(ShapedTensor):
             )
 
             # bypass interpolation for exact indices
-            res = torch.where(stacked_idx[0] == stacked_idx[1], prev_data, res)
+            res = torch.where(prev_idx == next_idx, prev_data, res)
 
             # conditionally squeeze and return
             return res.squeeze(-1) if squeeze else res
@@ -2574,7 +2575,7 @@ class RecordTensor(ShapedTensor):
         else:
             # cast time and check for a valid range
             disptime, time = time, float(time)
-            if -tolerance <= time <= dt * (recordsz - 1) + tolerance:
+            if time < -tolerance or time > dt * (recordsz - 1) + tolerance:
                 raise ValueError(
                     f"'time' ({disptime}) must be within the valid range of "
                     "observations, including tolerance, the interval "
@@ -2693,7 +2694,7 @@ class RecordTensor(ShapedTensor):
 
             # check that times are in range
             tmin, tmax = time.amin(), time.amax()
-            if -tolerance <= tmin or tmax <= dt * (recordsz - 1) + tolerance:
+            if tmin < -tolerance or tmax > dt * (recordsz - 1) + tolerance:
                 raise ValueError(
                     f"all elements of 'time' (min={tmin}, max={tmax}) must be within "
                     f"the valid range of observations including tolerance, the "
@@ -2704,7 +2705,7 @@ class RecordTensor(ShapedTensor):
             shift = time / dt
             shiftr = shift.round()
             shift = torch.where(
-                torch.abs(dt * shiftr - time) <= tolerance, shiftr, offset
+                torch.abs(dt * shiftr - time) <= tolerance, shiftr, shift
             )
 
             # update offset with shift
@@ -2717,7 +2718,7 @@ class RecordTensor(ShapedTensor):
 
             # get stored observations at specified indices
             prev_data, next_data = torch.tensor_split(
-                torch.gather(data.unsqueeze(-1), -1, stacked_idx), 2, -1
+                torch.gather(data, -1, stacked_idx), 2, -1
             )
 
             # extrapolate data to write
@@ -2756,7 +2757,7 @@ class RecordTensor(ShapedTensor):
         else:
             # cast time and check for a valid range
             disptime, time = time, float(time)
-            if -tolerance <= time <= dt * (recordsz - 1) + tolerance:
+            if time < -tolerance or time > dt * (recordsz - 1) + tolerance:
                 raise ValueError(
                     f"'time' ({disptime}) must be within the valid range of "
                     "observations, including tolerance, the interval "

@@ -1,7 +1,8 @@
 from __future__ import annotations
 from .. import IndependentTrainer
-from ... import Module, interpolation, scalar
+from ... import Module, scalar
 from ..._internal import argtest
+from ...functional import interp_expdecay
 from ...neural import Cell
 from ...observe import (
     StateMonitor,
@@ -84,7 +85,7 @@ class EligibilityTrace(FoldingReducer):
         sample_at: torch.Tensor,
         step_time: float | torch.Tensor,
     ) -> torch.Tensor:
-        return interpolation.expdecay(
+        return interp_expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )
 

@@ -1,6 +1,6 @@
 from ... import RecordModule
 from ..._internal import argtest
-from ...interpolation import Interpolation
+from ...functional import Interpolation
 from ...types import OneToOne
 import torch
 import torch.nn as nn

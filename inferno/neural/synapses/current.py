@@ -1,8 +1,8 @@
 from .mixins import SpikeCurrentMixin, SpikeDerivedCurrentMixin
 from .mixins import DelayedSpikeCurrentAccessorMixin
 from .. import Synapse, SynapseConstructor
-from ... import interpolation
 from ..._internal import argtest
+from ...functional import interp_nearest, interp_previous
 import torch
 from typing import Literal
 
@@ -59,9 +59,9 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
 
         match interp_mode.lower():
             case "nearest":
-                interp = interpolation.nearest
+                interp = interp_nearest
             case "previous":
-                interp = interpolation.previous
+                interp = interp_previous
             case _:
                 raise RuntimeError(
                     f"invalid interp_mode '{interp_mode}' received, must be one of "
@@ -237,9 +237,9 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
 
         match interp_mode.lower():
             case "nearest":
-                interp = interpolation.nearest
+                interp = interp_nearest
             case "previous":
-                interp = interpolation.previous
+                interp = interp_previous
             case _:
                 raise RuntimeError(
                     f"invalid interp_mode '{interp_mode}' received, must be one of "
