@@ -7,12 +7,12 @@ def voltage_thresholding_constant(
     inputs: torch.Tensor,
     refracs: torch.Tensor,
     dynamics: OneToOne[torch.Tensor],
+    voltages: torch.Tensor | None = None,
     *,
     step_time: float | torch.Tensor,
     reset_v: float | torch.Tensor,
     thresh_v: float | torch.Tensor,
     refrac_t: float | torch.Tensor,
-    voltages: torch.Tensor | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     r"""Manage refractory periods, spiking, and voltage based on voltage thresholding.
 
@@ -34,6 +34,9 @@ def voltage_thresholding_constant(
         dynamics (OneToOne[torch.Tensor]): function which given input currents in
             :math:`\text{nA}` returns the updated membrane voltages, :math:`V_m(t)`,
             in :math:`\text{mV}`.
+        voltages (torch.Tensor | None, optional): membrane voltages, V_m(t),
+            in :math:`\text{mV}`, to maintain while in refractory periods,
+            voltages not held if None. Defaults to None.
         step_time (float | torch.Tensor): length of a simulation time step,
             in :math:`\text{ms}`.
         reset_v (float | torch.Tensor): membrane voltage after an action potential
@@ -42,9 +45,6 @@ def voltage_thresholding_constant(
             are generated, \Theta(t), in :math:`\text{mV}`.
         refrac_t (float | torch.Tensor): length the absolute refractory period,
             in :math:`\text{ms}`.
-        voltages (torch.Tensor | None): membrane voltages, V_m(t),
-            in :math:`\text{mV}`, to maintain while in refractory periods,
-            voltages not held if None. Defaults to None.
 
     Returns:
         tuple[torch.Tensor, torch.Tensor, torch.Tensor]: tuple of output and
@@ -79,6 +79,7 @@ def voltage_thresholding_linear(
     inputs: torch.Tensor,
     refracs: torch.Tensor,
     dynamics: OneToOne[torch.Tensor],
+    voltages: torch.Tensor | None = None,
     *,
     step_time: float | torch.Tensor,
     rest_v: float | torch.Tensor,
@@ -86,7 +87,6 @@ def voltage_thresholding_linear(
     v_intercept: float | torch.Tensor,
     thresh_v: float | torch.Tensor,
     refrac_t: float | torch.Tensor,
-    voltages: torch.Tensor | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     r"""Manage refractory periods, spiking, and voltage based on voltage thresholding.
 
@@ -108,6 +108,9 @@ def voltage_thresholding_linear(
         dynamics (OneToOne[torch.Tensor]): function which given input currents in
             :math:`\text{nA}` returns the updated membrane voltages, :math:`V_m(t)`,
             in :math:`\text{mV}`.
+        voltages (torch.Tensor | None, optional): membrane voltages, V_m(t),
+            in :math:`\text{mV}`, to maintain while in refractory periods,
+            voltages not held if None. Defaults to None.
         step_time (float | torch.Tensor): length of a simulation time step,
             in :math:`\text{ms}`.
         rest_v (float | torch.Tensor): membrane potential difference at equilibrium,

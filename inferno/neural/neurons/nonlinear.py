@@ -1,13 +1,13 @@
-from .mixins import AdaptationMixin, VoltageMixin, SpikeRefractoryMixin
-from .. import Neuron
+from .mixins import AdaptiveCurrentMixin, VoltageMixin, SpikeRefractoryMixin
 from .. import functional as nf
+from ..base import InfernoNeuron
 from ..._internal import argtest
 from itertools import zip_longest
 import torch
 from typing import Callable
 
 
-class QIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
+class QIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
     r"""Simulation of quadratic integrate-and-fire (QIF) neuron dynamics.
 
     Implemented as an approximation using Euler's method.
@@ -64,7 +64,7 @@ class QIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         batch_size: int = 1,
     ):
         # call superclass constructor
-        Neuron.__init__(self, shape, batch_size)
+        InfernoNeuron.__init__(self, shape, batch_size)
 
         # dynamics attributes
         self.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -78,8 +78,8 @@ class QIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.resistance = argtest.neq("resistance", resistance, 0, float)
 
         # call mixin constructors
-        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v), False)
-        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), False)
+        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v))
+        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), "refrac_t")
 
     def _integrate_v(self, masked_inputs):
         r"""Internal, voltage integrated function as input for thresholding."""
@@ -132,11 +132,11 @@ class QIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
             inputs=inputs,
             refracs=self.refrac,
             dynamics=self._integrate_v,
+            voltages=(self.voltage if refrac_lock else None),
             step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=self.thresh_v,
             refrac_t=self.refrac_t,
-            voltages=(self.voltage if refrac_lock else None),
         )
 
         # update parameters
@@ -147,7 +147,9 @@ class QIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         return spikes
 
 
-class Izhikevich(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
+class Izhikevich(
+    AdaptiveCurrentMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNeuron
+):
     r"""Simulation of Izhikevich (adaptive quadratic) neuron dynamics.
 
     Implemented as an approximation using Euler's method.
@@ -232,7 +234,7 @@ class Izhikevich(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         ) = None,
     ):
         # call superclass constructor
-        Neuron.__init__(self, shape, batch_size)
+        InfernoNeuron.__init__(self, shape, batch_size)
 
         # process adapation attributes
         # tuple-wrap if singleton
@@ -287,12 +289,11 @@ class Izhikevich(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.resistance = argtest.neq("resistance", resistance, 0, float)
 
         # call mixin constructors
-        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v), False)
-        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), False)
-        AdaptationMixin.__init__(
+        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v))
+        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), "refrac_t")
+        AdaptiveCurrentMixin.__init__(
             self,
             torch.zeros(*self.shape, self.tc_adaptation.numel()),
-            False,
             batch_reduction,
         )
 
@@ -335,7 +336,7 @@ class Izhikevich(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
         if not keep_adaptations:
-            self.adaptation = torch.zeros_like(self.adaptation)
+            self.current_adaptation = torch.zeros_like(self.current_adaptation)
 
     def forward(
         self,
@@ -363,14 +364,14 @@ class Izhikevich(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         """
         # use voltage thresholding function
         spikes, voltages, refracs = nf.voltage_thresholding_constant(
-            inputs=nf.apply_adaptive_currents(inputs, self.adaptation),
+            inputs=nf.apply_adaptive_currents(inputs, self.current_adaptation),
             refracs=self.refrac,
             dynamics=self._integrate_v,
+            voltages=(self.voltage if refrac_lock else None),
             step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=self.thresh_v,
             refrac_t=self.refrac_t,
-            voltages=(self.voltage if refrac_lock else None),
         )
 
         # update parameters
@@ -381,7 +382,7 @@ class Izhikevich(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         if adapt or (adapt is None and self.training):
             # use adaptive thresholds update function
             adaptations = nf.adaptive_currents_linear(
-                adaptations=self.adaptation,
+                adaptations=self.current_adaptation,
                 voltages=voltages,
                 spikes=spikes,
                 step_time=self.step_time,
@@ -392,13 +393,13 @@ class Izhikevich(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
                 refracs=(self.refrac if refrac_lock else None),
             )
             # update parameter
-            self.adaptation = adaptations
+            self.current_adaptation = adaptations
 
         # return spiking output
         return spikes
 
 
-class EIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
+class EIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
     r"""Simulation of exponential integrate-and-fire (EIF) neuron dynamics.
 
     Implemented as an approximation using Euler's method.
@@ -456,7 +457,7 @@ class EIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         batch_size: int = 1,
     ):
         # call superclass constructor
-        Neuron.__init__(self, shape, batch_size)
+        InfernoNeuron.__init__(self, shape, batch_size)
 
         # dynamics attributes
         self.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -472,8 +473,8 @@ class EIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.resistance = argtest.neq("resistance", resistance, 0, float)
 
         # call mixin constructors
-        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v), False)
-        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), False)
+        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v))
+        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), "refrac_t")
 
     def _integrate_v(self, masked_inputs):
         r"""Internal, voltage integrated function as input for thresholding."""
@@ -526,11 +527,11 @@ class EIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
             inputs=inputs,
             refracs=self.refrac,
             dynamics=self._integrate_v,
+            voltages=(self.voltage if refrac_lock else None),
             step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=self.thresh_v,
             refrac_t=self.refrac_t,
-            voltages=(self.voltage if refrac_lock else None),
         )
 
         # update parameters
@@ -541,7 +542,7 @@ class EIF(VoltageMixin, SpikeRefractoryMixin, Neuron):
         return spikes
 
 
-class AdEx(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
+class AdEx(AdaptiveCurrentMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
     r"""Simulation of adaptive exponential integrate-and-fire (AdEx) neuron dynamics.
 
     Implemented as an approximation using Euler's method.
@@ -627,7 +628,7 @@ class AdEx(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         ) = None,
     ):
         # call superclass constructor
-        Neuron.__init__(self, shape, batch_size)
+        InfernoNeuron.__init__(self, shape, batch_size)
 
         # process adapation attributes
         # tuple-wrap if singleton
@@ -684,12 +685,11 @@ class AdEx(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.resistance = argtest.neq("resistance", resistance, 0, float)
 
         # call mixin constructors
-        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v), False)
-        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), False)
-        AdaptationMixin.__init__(
+        VoltageMixin.__init__(self, torch.full(self.batchedshape, self.rest_v))
+        SpikeRefractoryMixin.__init__(self, torch.zeros(self.batchedshape), "refrac_t")
+        AdaptiveCurrentMixin.__init__(
             self,
             torch.zeros(*self.shape, self.tc_adaptation.numel()),
-            False,
             batch_reduction,
         )
 
@@ -732,7 +732,7 @@ class AdEx(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
         if not keep_adaptations:
-            self.adaptation = torch.zeros_like(self.adaptation)
+            self.current_adaptation = torch.zeros_like(self.current_adaptation)
 
     def forward(
         self,
@@ -760,14 +760,14 @@ class AdEx(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         """
         # use voltage thresholding function
         spikes, voltages, refracs = nf.voltage_thresholding_constant(
-            inputs=nf.apply_adaptive_currents(inputs, self.adaptation),
+            inputs=nf.apply_adaptive_currents(inputs, self.current_adaptation),
             refracs=self.refrac,
             dynamics=self._integrate_v,
+            voltages=(self.voltage if refrac_lock else None),
             step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=self.thresh_v,
             refrac_t=self.refrac_t,
-            voltages=(self.voltage if refrac_lock else None),
         )
 
         # update parameters
@@ -778,7 +778,7 @@ class AdEx(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
         if adapt or (adapt is None and self.training):
             # use adaptive thresholds update function
             adaptations = nf.adaptive_currents_linear(
-                adaptations=self.adaptation,
+                adaptations=self.current_adaptation,
                 voltages=voltages,
                 spikes=spikes,
                 step_time=self.step_time,
@@ -789,7 +789,7 @@ class AdEx(AdaptationMixin, VoltageMixin, SpikeRefractoryMixin, Neuron):
                 refracs=(self.refrac if refrac_lock else None),
             )
             # update parameter
-            self.adaptation = adaptations
+            self.current_adaptation = adaptations
 
         # return spiking output
         return spikes

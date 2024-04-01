@@ -1,36 +1,58 @@
 from __future__ import annotations
-from .mixins import ShapeMixin
+from .mixins import BatchShapeMixin
 from .modeling import Updatable, Updater
-from .. import DimensionalModule, RecordModule, Module
+from .. import RecordModule, Module
 from abc import ABC, abstractmethod
 import math
 import torch
 from typing import Protocol
 
 
-class Neuron(ShapeMixin, DimensionalModule, ABC):
-    r"""Base class for representing a group of neurons with a common mode of dynamics.
+class Neuron(Module, ABC):
+    r"""Base class for representing a group of neurons with a common mode of dynamics."""
 
-    Args:
-        shape (tuple[int, ...] | int): shape of the group of neurons,
-            excluding the batch dim.
-        batch_size (int): initial batch size.
-    """
-
-    def __init__(
-        self,
-        shape: tuple[int, ...] | int,
-        batch_size: int,
-    ):
+    def __init__(self):
         # superclass constructors
-        DimensionalModule.__init__(self)
-        ShapeMixin.__init__(self, shape, batch_size)
+        Module.__init__(self)
 
     def extra_repr(self) -> str:
         r"""Returns extra information on this module."""
         return f"shape={self.shape}, batchsz={self.batchsz}, dt={self.dt}"
 
     @property
+    @abstractmethod
+    def shape(self) -> tuple[int, ...]:
+        r"""Shape of the group of neurons.
+
+        Returns:
+            tuple[int, ...]: shape of the group of neurons.
+
+        Raises:
+            NotImplementedError: ``shape`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(Neuron) must implement "
+            "the getter for property `shape`."
+        )
+
+    @property
+    @abstractmethod
+    def count(self) -> int:
+        r"""Number of neurons in the group.
+
+        Returns:
+            int: number of neurons in the group.
+
+        Raises:
+            NotImplementedError: ``count`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(Neuron) must implement "
+            "the getter for property 'count'"
+        )
+
+    @property
+    @abstractmethod
     def batchsz(self) -> int:
         r"""Batch size of the neuron group.
 
@@ -39,13 +61,38 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
 
         Returns:
             int: present batch size.
+
+        Raises:
+            NotImplementedError: ``batchsz`` must be implemented by the subclass.
         """
-        return ShapeMixin.batchsz.fget(self)
+        raise NotImplementedError(
+            f"{type(self).__name__}(Neuron) must implement "
+            "the getter for property 'batchsz'"
+        )
 
     @batchsz.setter
+    @abstractmethod
     def batchsz(self, value: int) -> None:
-        ShapeMixin.batchsz.fset(self, value)
-        self.clear()
+        raise NotImplementedError(
+            f"{type(self).__name__}(Neuron) must implement "
+            "the setter for property 'batchsz'"
+        )
+
+    @property
+    @abstractmethod
+    def batchedshape(self) -> tuple[int, ...]:
+        r"""Batch shape of the module
+
+        Returns:
+            tuple[int, ...]: shape of the group of neurons, including batch size.
+
+        Raises:
+            NotImplementedError: ``batchedshape`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(Neuron) must implement "
+            "the getter for property 'batchedshape'"
+        )
 
     @property
     @abstractmethod
@@ -63,7 +110,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
         """
         raise NotImplementedError(
             f"{type(self).__name__}(Neuron) must implement "
-            "the getter for property `dt`."
+            "the getter for property 'dt'"
         )
 
     @dt.setter
@@ -71,7 +118,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
     def dt(self, value: float):
         raise NotImplementedError(
             f"{type(self).__name__}(Neuron) must implement "
-            "the setter for property `dt`."
+            "the setter for property 'dt'"
         )
 
     @property
@@ -89,14 +136,15 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
         """
         raise NotImplementedError(
             f"{type(self).__name__}(Neuron) must implement "
-            "the getter for property `voltage`."
+            "the getter for property 'voltage'"
         )
 
     @voltage.setter
+    @abstractmethod
     def voltage(self, value: torch.Tensor):
         raise NotImplementedError(
             f"{type(self).__name__}(Neuron) must implement "
-            "the setter for property `voltage`."
+            "the setter for property 'voltage'"
         )
 
     @property
@@ -115,14 +163,15 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
         """
         raise NotImplementedError(
             f"{type(self).__name__}(Neuron) must implement "
-            "the getter for property `refrac`."
+            "the getter for property 'refrac'"
         )
 
     @refrac.setter
+    @abstractmethod
     def refrac(self, value: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError(
             f"{type(self).__name__}(Neuron) must implement "
-            "the setter for property `refrac`."
+            "the setter for property 'refrac'"
         )
 
     @property
@@ -139,7 +188,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
         """
         raise NotImplementedError(
             f"{type(self).__name__}(Neuron) must implement "
-            "the getter for property `spike`."
+            "the getter for property 'spike'"
         )
 
     @abstractmethod
@@ -150,7 +199,7 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             NotImplementedError: ``clear`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"{type(self).__name__}(Neuron) must implement the method `clear`."
+            f"{type(self).__name__}(Neuron) must implement the method 'clear'"
         )
 
     @abstractmethod
@@ -167,7 +216,160 @@ class Neuron(ShapeMixin, DimensionalModule, ABC):
             NotImplementedError: ``forward`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"{type(self).__name__}(Neuron) must implement the method `forward`."
+            f"{type(self).__name__}(Neuron) must implement the method 'forward'"
+        )
+
+
+class InfernoNeuron(BatchShapeMixin, Neuron):
+    r"""Base class for neurons included in the Inferno library.
+
+    Unlike :py:class:`Neuron` which only defines an interface, this uses
+    :py:class:`BatchShapeMixin` to work with the included mixins to automatically
+    reshape batch-size dependent buffers and parameters.
+
+    It also assumes :py:meth:`clear` will be implemented so it can be called without
+    arguments and will, by default, not reset state which should persist, such as
+    adaptations.
+    """
+
+    def __init__(self, shape: tuple[int, ...] | int, batch_size: int):
+        # superclass constructors
+        Module.__init__(self)
+
+        # call mixin constructors
+        BatchShapeMixin.__init__(self, shape, batch_size)
+
+    @property
+    def batchsz(self) -> int:
+        r"""Batch size of the module.
+
+        Args:
+            value (int): new batch size.
+
+        Returns:
+            int: present batch size.
+        """
+        return BatchShapeMixin.batchsz.fget(self)
+
+    @batchsz.setter
+    def batchsz(self, value: int) -> None:
+        BatchShapeMixin.batchsz.fset(self, value)
+        self.clear()
+
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
+
+        Args:
+            value (float): new simulation time step length.
+
+        Returns:
+            float: present simulation time step length.
+
+        Raises:
+            NotImplementedError: ``dt`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(InfernoNeuron) must implement "
+            "the getter for property 'dt'"
+        )
+
+    @dt.setter
+    def dt(self, value: float):
+        raise NotImplementedError(
+            f"{type(self).__name__}(InfernoNeuron) must implement "
+            "the setter for property 'dt'"
+        )
+
+    @property
+    def voltage(self) -> torch.Tensor:
+        r"""Membrane voltages in millivolts.
+
+        Args:
+            value (torch.Tensor): new membrane voltages.
+
+        Returns:
+            torch.Tensor: present membrane voltages.
+        Raises:
+            NotImplementedError: ``voltage`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(InfernoNeuron) must implement "
+            "the getter for property 'voltage'"
+        )
+
+    @voltage.setter
+    def voltage(self, value: torch.Tensor):
+        raise NotImplementedError(
+            f"{type(self).__name__}(InfernoNeuron) must implement "
+            "the setter for property 'voltage'"
+        )
+
+    @property
+    def refrac(self) -> torch.Tensor:
+        r"""Remaining refractory periods, in milliseconds.
+
+        Args:
+            value (torch.Tensor): new remaining refractory periods.
+
+        Returns:
+            torch.Tensor: present remaining refractory periods.
+
+        Raises:
+            NotImplementedError: ``refrac`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(InfernoNeuron) must implement "
+            "the getter for property 'refrac'"
+        )
+
+    @refrac.setter
+    def refrac(self, value: torch.Tensor) -> torch.Tensor:
+        raise NotImplementedError(
+            f"{type(self).__name__}(InfernoNeuron) must implement "
+            "the setter for property 'refrac'"
+        )
+
+    @property
+    def spike(self) -> torch.Tensor:
+        r"""Action potentials last generated.
+
+        Returns:
+            torch.Tensor: if the corresponding neuron generated an action potential
+                during the prior step.
+
+        Raises:
+            NotImplementedError: ``spike`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(InfernoNeuron) must implement "
+            "the getter for property 'spike'"
+        )
+
+    def clear(self, **kwargs):
+        r"""Resets neurons to their resting state.
+
+        Raises:
+            NotImplementedError: ``clear`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(InfernoNeuron) must implement the method 'clear'"
+        )
+
+    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
+        r"""Runs a simulation step of the neuronal dynamics.
+
+        Args:
+            inputs (torch.Tensor): input currents to the neurons.
+
+        Returns:
+            torch.Tensor: postsynaptic spikes from integration of inputs.
+
+        Raises:
+            NotImplementedError: ``forward`` must be implemented by the subclass.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(InfernoNeuron) must implement the method 'forward'"
         )
 
 
@@ -196,7 +398,7 @@ class SynapseConstructor(Protocol):
         ...
 
 
-class Synapse(ShapeMixin, RecordModule, ABC):
+class Synapse(BatchShapeMixin, RecordModule, ABC):
     r"""Base class for representing the input synapses for a connection.
 
     Args:
@@ -216,13 +418,11 @@ class Synapse(ShapeMixin, RecordModule, ABC):
     ):
         # superclass constructors
         RecordModule.__init__(self, step_time, delay)
-        ShapeMixin.__init__(self, shape, batch_size)
+        BatchShapeMixin.__init__(self, shape, batch_size)
 
     def extra_repr(self) -> str:
         r"""Returns extra information on this module."""
-        return (
-            f"shape={self.shape}, batchsz={self.batchsz}, dt={self.dt}, delay={self.delay}"
-        )
+        return f"shape={self.shape}, batchsz={self.batchsz}, dt={self.dt}, delay={self.delay}"
 
     @classmethod
     @abstractmethod

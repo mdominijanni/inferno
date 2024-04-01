@@ -1,29 +1,19 @@
-from ... import DimensionalModule, Module
+from ... import ShapedTensor
 from ..._internal import argtest
+from ..base import InfernoNeuron
 import torch
 import torch.nn as nn
 from typing import Callable
 
 
-class AdaptationMixin:
-    r"""Mixin for neurons with membrane adaptations.
+class AdaptiveThresholdMixin:
+    r"""Mixin for neurons with adaptative thresholds.
 
     Args:
-        data (torch.Tensor): initial membrane adaptations.
-        requires_grad (bool, optional): if the parameters created require gradients.
-            Defaults to False.
+        data (torch.Tensor): initial threshold adaptations.
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce adaptation updates over the batch dimension,
             :py:func:`torch.mean` when None. Defaults to None.
-
-    Caution:
-        This must be added to a class which inherits from
-        :py:class:`Module`, and the constructor for this
-        mixin must be called after the module constructor.
-
-    Note:
-        This registers a parameter ``adaptation_`` and sets an attribute
-        ``adapt_batchreduce``.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -35,41 +25,87 @@ class AdaptationMixin:
     def __init__(
         self,
         data: torch.Tensor,
-        requires_grad: bool = False,
         batch_reduction: (
-            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+            Callable[[torch.Tensor, int | tuple[int, ...]], torch.Tensor] | None
         ) = None,
     ):
-        _ = argtest.instance("self", self, Module)
-        self.register_parameter("adaptation_", nn.Parameter(data, requires_grad))
-
-        self.adapt_batchreduce = batch_reduction if batch_reduction else torch.mean
+        _ = argtest.instance("self", self, nn.Module)
+        self.register_buffer("threshold_adapation_", data)
+        self.__batchreduce = batch_reduction if batch_reduction else torch.mean
 
     @property
-    def adaptation(self) -> torch.Tensor:
-        r"""Membrane adaptations.
+    def threshold_adapation(self) -> torch.Tensor:
+        r"""Threshold adaptations.
 
         If the value the setter attempts to assign has the same shape but with an
         additonal leading dimension, it will assume that is an unreduced batch dimension
         and reduce it.
 
         Args:
-            value (torch.Tensor): new membrane adaptations.
+            value (torch.Tensor): new threshold adaptations.
 
         Returns:
-            torch.Tensor: present membrane adaptations.
+            torch.Tensor: present threshold adaptations.
         """
-        return self.adaptation_.data
+        return self.threshold_adapation_
 
-    @adaptation.setter
-    def adaptation(self, value: torch.Tensor):
-        if value.ndim == self.adaptation_.ndim + 1:
-            if value.shape[1:] == self.adaptation_.shape:
-                self.adaptation_.data = self.adapt_batchreduce(value, 0)
-            else:
-                self.adaptation_.data = value
+    @threshold_adapation.setter
+    def threshold_adapation(self, value: torch.Tensor):
+        if value.shape[1:] == self.threshold_adapation_.shape:
+            self.threshold_adapation_ = self.__batchreduce(value, 0)
         else:
-            self.adaptation_.data = value
+            self.threshold_adapation_ = value
+
+
+class AdaptiveCurrentMixin:
+    r"""Mixin for neurons with adaptative input currents.
+
+    Args:
+        data (torch.Tensor): initial input adaptations.
+        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+            function to reduce adaptation updates over the batch dimension,
+            :py:func:`torch.mean` when None. Defaults to None.
+
+    Note:
+        ``batch_reduction`` can be one of the functions in PyTorch including but not
+        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        A custom function with similar behavior can also be passed in. Like with the
+        included function, it should not keep the original dimensions by default.
+    """
+
+    def __init__(
+        self,
+        data: torch.Tensor,
+        batch_reduction: (
+            Callable[[torch.Tensor, int | tuple[int, ...]], torch.Tensor] | None
+        ) = None,
+    ):
+        _ = argtest.instance("self", self, nn.Module)
+        self.register_buffer("current_adaptation_", data)
+        self.__batchreduce = batch_reduction if batch_reduction else torch.mean
+
+    @property
+    def current_adaptation(self) -> torch.Tensor:
+        r"""Input current adaptations.
+
+        If the value the setter attempts to assign has the same shape but with an
+        additonal leading dimension, it will assume that is an unreduced batch dimension
+        and reduce it.
+
+        Args:
+            value (torch.Tensor): new threshold adaptations.
+
+        Returns:
+            torch.Tensor: present threshold adaptations.
+        """
+        return self.current_adaptation_
+
+    @current_adaptation.setter
+    def current_adaptation(self, value: torch.Tensor):
+        if value.shape[1:] == self.current_adaptation_.shape:
+            self.current_adaptation_ = self.__batchreduce(value, 0)
+        else:
+            self.current_adaptation_ = value
 
 
 class CurrentMixin:
@@ -77,22 +113,20 @@ class CurrentMixin:
 
     Args:
         data (torch.Tensor): initial currents, in :math:`\text{nA}`.
-        requires_grad (bool, optional): if the parameters created require gradients.
-            Defaults to False.
-
-    Caution:
-        This must be added to a class which inherits from
-        :py:class:`DimensionalModule`, and the constructor for this
-        mixin must be called after the module constructor.
-
-    Note:
-        This registers a parameter ``current_`` and sets it as constrained.
     """
 
-    def __init__(self, data: torch.Tensor, requires_grad: bool = False):
-        _ = argtest.instance("self", self, DimensionalModule)
-        self.register_parameter("current_", nn.Parameter(data, requires_grad))
-        self.register_constrained("current_")
+    def __init__(self, data: torch.Tensor):
+        _ = argtest.instance("self", self, InfernoNeuron)
+        ShapedTensor.create(
+            self,
+            "current_",
+            data,
+            persist_data=True,
+            persist_constraints=False,
+            strict=True,
+            live=False,
+        )
+        self.add_batched("current_")
 
     @property
     def current(self) -> torch.Tensor:
@@ -104,11 +138,11 @@ class CurrentMixin:
         Returns:
             torch.Tensor: present membrane currents.
         """
-        return self.current_.data
+        return self.current_.value
 
     @current.setter
     def current(self, value: torch.Tensor):
-        self.current_.data = value
+        self.current_.value = value
 
 
 class VoltageMixin:
@@ -116,22 +150,20 @@ class VoltageMixin:
 
     Args:
         data (torch.Tensor): initial membrane voltages, in :math:`\text{mV}`.
-        requires_grad (bool, optional): if the parameters created require gradients.
-            Defaults to False.
-
-    Caution:
-        This must be added to a class which inherits from
-        :py:class:`DimensionalModule`, and the constructor for this
-        mixin must be called after the module constructor.
-
-    Note:
-        This registers a parameter ``voltage_`` and sets it as constrained.
     """
 
-    def __init__(self, data: torch.Tensor, requires_grad: bool = False):
-        _ = argtest.instance("self", self, DimensionalModule)
-        self.register_parameter("voltage_", nn.Parameter(data, requires_grad))
-        self.register_constrained("voltage_")
+    def __init__(self, data: torch.Tensor):
+        _ = argtest.instance("self", self, InfernoNeuron)
+        ShapedTensor.create(
+            self,
+            "voltage_",
+            data,
+            persist_data=True,
+            persist_constraints=False,
+            strict=True,
+            live=False,
+        )
+        self.add_batched("voltage_")
 
     @property
     def voltage(self) -> torch.Tensor:
@@ -143,34 +175,32 @@ class VoltageMixin:
         Returns:
             torch.Tensor: present membrane voltages.
         """
-        return self.voltage_.data
+        return self.voltage_.value
 
     @voltage.setter
     def voltage(self, value: torch.Tensor):
-        self.voltage_.data = value
+        self.voltage_.value = value
 
 
 class RefractoryMixin:
     r"""Mixin for neurons with refractory periods.
 
     Args:
-        refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.
-        requires_grad (bool, optional): if the parameters created require gradients.
-            Defaults to False.
-
-    Caution:
-        This must be added to a class which inherits from
-        :py:class:`DimensionalModule`, and the constructor for this
-        mixin must be called after the module constructor.
-
-    Note:
-        This registers a parameter ``refrac_`` and sets it as constrained.
+        data (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.
     """
 
-    def __init__(self, refrac: torch.Tensor, requires_grad: bool = False):
-        _ = argtest.instance("self", self, DimensionalModule)
-        self.register_parameter("refrac_", nn.Parameter(refrac, requires_grad))
-        self.register_constrained("refrac_")
+    def __init__(self, data: torch.Tensor):
+        _ = argtest.instance("self", self, InfernoNeuron)
+        ShapedTensor.create(
+            self,
+            "refrac_",
+            data,
+            persist_data=True,
+            persist_constraints=False,
+            strict=True,
+            live=False,
+        )
+        self.add_batched("refrac_")
 
     @property
     def refrac(self) -> torch.Tensor:
@@ -182,11 +212,11 @@ class RefractoryMixin:
         Returns:
             torch.Tensor: present remaining refractory periods.
         """
-        return self.refrac_.data
+        return self.refrac_.value
 
     @refrac.setter
     def refrac(self, value: torch.Tensor) -> None:
-        self.refrac_.data = value
+        self.refrac_.value = value
 
 
 class SpikeRefractoryMixin(RefractoryMixin):
@@ -194,25 +224,13 @@ class SpikeRefractoryMixin(RefractoryMixin):
 
     Args:
         refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.
-        requires_grad (bool, optional): if the parameters created require gradients.
-            Defaults to False.
-
-    Caution:
-        This must be added to a class which inherits from
-        :py:class:`DimensionalModule`, and the constructor for this
-        mixin must be called after the module constructor.
-
-    Note:
-        This registers a parameter ``refrac_`` and sets it as constrained.
-
-    Important:
-        This must be added to a class which has an attribute named ``refrac_t``, which
-        represents the length of the absolute refractory period in :math:`\text{ms}`.
+        absrefrac (str): attribute contain the absolute refractory period,
+            in :math:`\text{ms}`.
     """
 
-    def __init__(self, refrac: torch.Tensor, requires_grad: bool = False):
-        _ = argtest.members("self", self, "refrac_t")
-        RefractoryMixin.__init__(self, refrac, requires_grad)
+    def __init__(self, refrac: torch.Tensor, absrefrac: str):
+        RefractoryMixin.__init__(self, refrac)
+        self.__absrefrac_attr = absrefrac
 
     @property
     def spike(self) -> torch.Tensor:
@@ -234,4 +252,4 @@ class SpikeRefractoryMixin(RefractoryMixin):
             torch.Tensor: if the corresponding neuron generated an action potential
                 during the prior step.
         """
-        return self.refrac == self.refrac_t
+        return self.refrac == getattr(self, self.__absrefrac_attr)
