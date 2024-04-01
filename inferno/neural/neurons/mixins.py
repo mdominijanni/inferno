@@ -224,7 +224,7 @@ class SpikeRefractoryMixin(RefractoryMixin):
 
     Args:
         refrac (torch.Tensor): initial refractory periods, in :math:`\text{ms}`.
-        absrefrac (str): attribute contain the absolute refractory period,
+        absrefrac (str): attribute containing the absolute refractory period,
             in :math:`\text{ms}`.
     """
 

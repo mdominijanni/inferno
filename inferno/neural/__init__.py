@@ -1,6 +1,8 @@
 from .base import (
     Neuron,
+    InfernoNeuron,
     Synapse,
+    InfernoSynapse,
     Connection,
     SynapseConstructor,
 )
@@ -45,7 +47,7 @@ from .encoders.special import (
 from .modeling import (
     Accumulator,
     Updater,
-    Updatable
+    Updatable,
 )
 
 from .network import (
@@ -62,7 +64,9 @@ from .hooks import (
 
 __all__ = [
     "Neuron",
+    "InfernoNeuron",
     "Synapse",
+    "InfernoSynapse",
     "Connection",
     "SynapseConstructor",
     "LIF",

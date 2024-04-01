@@ -103,6 +103,7 @@
     :toctree: generated
 
     InfernoNeuron
+    InfernoSynapse
 ```
 
 ## Internal Mixins
@@ -114,6 +115,7 @@
     mixins.BatchMixin
     mixins.ShapeMixin
     mixins.BatchShapeMixin
+    mixins.DelayedMixin
     neuron.mixins.AdaptiveCurrentMixin
     neuron.mixins.AdaptiveThresholdMixin
     neurons.mixins.CurrentMixin
@@ -125,7 +127,6 @@
     synapses.mixins.CurrentDerivedSpikeMixin
     synapses.mixins.SpikeDerivedCurrentMixin
     synapses.mixins.SpikeCurrentMixin
-    synapses.mixins.DelayedSpikeCurrentAccessorMixin
     connections.mixins.WeightMixin
     connections.mixins.WeightBiasMixin
     connections.mixins.WeightBiasDelayMixin

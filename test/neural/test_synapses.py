@@ -32,7 +32,7 @@ def validate_batchedshape(
 
 
 def validate_duration(synapse: Synapse, delay: float) -> None:
-    assert synapse.duration == delay
+    assert synapse.delay == delay
 
 
 class TestDeltaCurrent:

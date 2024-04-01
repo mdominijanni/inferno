@@ -33,6 +33,7 @@ class BatchMixin:
                     f"attribute '{a}' specifies a {type(getattr(self, a).__name__)}, not a ShapedTensor"
                 )
             else:
+                getattr(self, a).reconstrain(0, self.__batch_size)
                 self.__constrained.add(a)
 
     @property
@@ -120,30 +121,79 @@ class BatchShapeMixin(ShapeMixin, BatchMixin):
         return (self.batchsz,) + self.shape
 
 
-class RecordMixin:
-    """Mixin for modules with one or more records with shared step time and duration.
+class DelayedMixin:
+    """Mixin for modules with delay-record tensors with shared step time and duration.
+
+    Attributes which have are registered as constrained this way will have a constraint
+    on their final dimension equal to the computed record size.
 
     Args:
         step_time (float): length of time between stored values in the record.
-        duration (float): length of time over which prior values are stored.
-        *constrained (str): names of :py:class:`RecordTensor` attributes which are
-            batch-size constrained.
+        delay (float): length of time over which prior values are stored.
 
     Caution:
         :py:class:`RecordTensor` attributes must be added as attributes prior to
         initialization.
     """
 
-    def __init__(self, step_time: float, duration: float, *constrained: str):
-        # validate and set step time and duration
+    def __init__(self, step_time: float, delay: float):
         self.__step_time = argtest.gt("step_time", step_time, 0, float)
-        self.__duration = argtest.gte("duration", duration, 0, float)
+        self.__delay = argtest.gte("duration", delay, 0, float)
+        self.__constrained = set()
 
-        # validate and set constrained tensors
-        for attr in constrained:
-            if not isinstance(getattr(self, attr, None), RecordTensor):
-                raise RuntimeError(
-                    f"attribute name '{attr}' in 'constrained' is either not an "
-                    "attribute of self or is not a RecordTensor"
+    def add_delayed(self, *attr: str) -> None:
+        r"""Add delay-dependent attributes.
+
+        Each attribute must specify the name of a :py:class:`RecordTensor`.
+
+        Args:
+            *attr (str): names of the attribute to set as batched.
+        """
+        for a in attr:
+            if not hasattr(self, a):
+                raise RuntimeError(f"no attribute '{a}' exists")
+            elif not isinstance(getattr(self, a), RecordTensor):
+                raise TypeError(
+                    f"attribute '{a}' specifies a {type(getattr(self, a).__name__)}, not a RecordTensor"
                 )
-        self.__constrained = constrained
+            else:
+                getattr(self, a).dt = self.__step_time
+                getattr(self, a).delay = self.__delay
+                self.__constrained.add(a)
+
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
+
+        Args:
+            value (float): new simulation time step length.
+
+        Returns:
+            float: present simulation time step length.
+        """
+        return self.__step_time
+
+    @dt.setter
+    def dt(self, value: float):
+        value = argtest.gt("batchsz", value, 0, float)
+        if value != self.__step_time:
+            for cstr in self.__constrained:
+                getattr(self, cstr).dt = value
+            self.__step_time = value
+
+    @property
+    def delay(self) -> float:
+        r"""Maximum supported delay, in milliseconds.
+
+        Returns:
+            float: maximum supported delay.
+        """
+        return self.__delay
+
+    @delay.setter
+    def delay(self, value: float) -> None:
+        value = argtest.gte("delay", value, 0, float)
+        if value != self.__delay:
+            for cstr in self.__constrained:
+                getattr(self, cstr).duration = value
+            self.__delay = value

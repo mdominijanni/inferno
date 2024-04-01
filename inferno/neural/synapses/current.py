@@ -1,13 +1,12 @@
 from .mixins import SpikeCurrentMixin, SpikeDerivedCurrentMixin
-from .mixins import DelayedSpikeCurrentAccessorMixin
-from .. import Synapse, SynapseConstructor
+from ..base import InfernoSynapse, SynapseConstructor
 from ..._internal import argtest
 from ...functional import interp_nearest, interp_previous
 import torch
 from typing import Literal
 
 
-class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, Synapse):
+class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
     r"""Memoryless synapse which responds instantaneously to input.
 
     .. math::
@@ -51,10 +50,9 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
         batch_size: int = 1,
     ):
         # call superclass constructor
-        Synapse.__init__(self, shape, step_time, delay, batch_size)
+        InfernoSynapse.__init__(self, shape, step_time, delay, batch_size)
 
         # synapse attributes
-        self.step_time = Synapse.dt.fget(self)
         self.spike_q = argtest.neq("spike_q", spike_q, 0, float)
 
         match interp_mode.lower():
@@ -68,21 +66,18 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
                     "'nearest' or 'previous'."
                 )
 
-        # call mixin constructors
+        # call mixin constructor
         SpikeDerivedCurrentMixin.__init__(
             self,
-            torch.zeros(*self.batchedshape, self.recordsz, dtype=torch.bool),
-            False,
-        )
-        DelayedSpikeCurrentAccessorMixin.__init__(
-            self,
-            False,
-            True,
+            torch.zeros(*self.batchedshape, dtype=torch.bool),
+            "_to_current",
             current_interp=interp,
+            current_interp_kwargs={},
             spike_interp=interp,
+            spike_interp_kwargs={},
+            current_overbound=current_overbound,
+            spike_overbound=spike_overbound,
             tolerance=interp_tol,
-            current_overval=current_overbound,
-            spike_overval=spike_overbound,
         )
 
     @classmethod
@@ -132,28 +127,6 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
 
         return constructor
 
-    @property
-    def dt(self) -> float:
-        r"""Length of the simulation time step, in milliseconds.
-
-        For tensor-based calculations, the internal attribute ``step_time`` can
-        be used. The getter for ``dt`` will use the ``RecordModule`` value, the
-        setter will set to the ``RecordModule`` value then create the corresponding
-        tensor and assign that to ``step_time``.
-
-        Args:
-            value (float): new simulation time step length.
-
-        Returns:
-            float: present simulation time step length.
-        """
-        return Synapse.dt.fget(self)
-
-    @dt.setter
-    def dt(self, value: float):
-        Synapse.dt.fset(self, value)
-        self.clear()
-
     def _to_current(self, spikes: torch.Tensor) -> torch.Tensor:
         r"""Used internally, converts spikes to currents.
 
@@ -163,11 +136,11 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
         Returns:
             torch.Tensor: synaptic current at the time of the provided input spikes.
         """
-        return spikes * (self.spike_q / self.step_time)
+        return spikes * (self.spike_q / self.dt)
 
     def clear(self, **kwargs):
         r"""Resets synapses to their resting state."""
-        self.reset("spike_", False)
+        self.spike_.reset(False)
 
     def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Runs a simulation step of the synaptic dynamics.
@@ -185,7 +158,7 @@ class DeltaCurrent(DelayedSpikeCurrentAccessorMixin, SpikeDerivedCurrentMixin, S
         return self.current
 
 
-class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Synapse):
+class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
     r"""Memoryless synapse which responds instantaneously to input, with passthrough current.
 
     .. math::
@@ -229,10 +202,9 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
         batch_size: int = 1,
     ):
         # call superclass constructor
-        Synapse.__init__(self, shape, step_time, delay, batch_size)
+        InfernoSynapse.__init__(self, shape, step_time, delay, batch_size)
 
         # synapse attributes
-        self.step_time = Synapse.dt.fget(self)
         self.spike_q = argtest.neq("spike_q", spike_q, 0, float)
 
         match interp_mode.lower():
@@ -246,22 +218,18 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
                     "'nearest' or 'previous'."
                 )
 
-        # call mixin constructors
+        # call mixin constructor
         SpikeCurrentMixin.__init__(
             self,
-            torch.zeros(*self.batchedshape, self.recordsz),
-            torch.zeros(*self.batchedshape, self.recordsz, dtype=torch.bool),
-            False,
-        )
-        DelayedSpikeCurrentAccessorMixin.__init__(
-            self,
-            True,
-            True,
+            torch.zeros(*self.batchedshape),
+            torch.zeros(*self.batchedshape, dtype=torch.bool),
             current_interp=interp,
+            current_interp_kwargs={},
             spike_interp=interp,
+            spike_interp_kwargs={},
+            current_overbound=current_overbound,
+            spike_overbound=spike_overbound,
             tolerance=interp_tol,
-            current_overval=current_overbound,
-            spike_overval=spike_overbound,
         )
 
     @classmethod
@@ -311,32 +279,10 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
 
         return constructor
 
-    @property
-    def dt(self) -> float:
-        r"""Length of the simulation time step, in milliseconds.
-
-        For tensor-based calculations, the internal attribute ``step_time`` can
-        be used. The getter for ``dt`` will use the ``RecordModule`` value, the
-        setter will set to the ``RecordModule`` value then create the corresponding
-        tensor and assign that to ``step_time``.
-
-        Args:
-            value (float): new simulation time step length.
-
-        Returns:
-            float: present simulation time step length.
-        """
-        return Synapse.dt.fget(self)
-
-    @dt.setter
-    def dt(self, value: float):
-        Synapse.dt.fset(self, value)
-        self.clear()
-
     def clear(self, **kwargs):
         r"""Resets synapses to their resting state."""
-        self.reset("spike_", False)
-        self.reset("current_", 0.0)
+        self.spike_.reset(False)
+        self.current_.reset(0.0)
 
     def forward(self, *inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Runs a simulation step of the synaptic dynamics.
@@ -353,5 +299,5 @@ class DeltaPlusCurrent(DelayedSpikeCurrentAccessorMixin, SpikeCurrentMixin, Syna
             broadcastable with :py:attr:`current`.
         """
         self.spike = inputs[0].bool()
-        self.current = sum((inputs[0] * (self.spike_q / self.step_time), *inputs[1:]))
+        self.current = sum((inputs[0] * (self.spike_q / self.dt), *inputs[1:]))
         return self.current
