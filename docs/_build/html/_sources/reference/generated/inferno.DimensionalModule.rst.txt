@@ -1,8 +1,0 @@
-﻿DimensionalModule
-=================
-
-.. currentmodule:: inferno
-
-.. autoclass:: DimensionalModule
-    :members:
-    :show-inheritance:

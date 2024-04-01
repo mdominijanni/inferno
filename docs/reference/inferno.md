@@ -13,8 +13,6 @@
     Module
     ShapedTensor
     RecordTensor
-    DimensionalModule
-    RecordModule
     Hook
     ContextualHook
     StateHook

@@ -1,8 +1,0 @@
-﻿RecordModule
-============
-
-.. currentmodule:: inferno
-
-.. autoclass:: RecordModule
-    :members:
-    :show-inheritance:

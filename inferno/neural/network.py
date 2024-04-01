@@ -1,7 +1,6 @@
 from __future__ import annotations
 from . import Connection, Neuron, Synapse
 from .modeling import Updater
-from .hooks import Normalization, Clamping  # noqa:F401; ignore, used for docs
 from .. import Module
 from .._internal import Proxy, argtest, rgetitem
 from ..types import OneToOne

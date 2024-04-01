@@ -5,7 +5,6 @@ from ..neural import Cell
 from ..observe import Monitor, MonitorConstructor, MonitorPool
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
-import torch  # noqa:F401, for docstrings
 import torch.nn as nn
 from typing import Any
 import weakref
