@@ -80,11 +80,12 @@ class STDP(IndependentTrainer):
             :py:func:`torch.sum` when None. Defaults to None.
 
     Important:
-        When ``delayed`` is ``True``, the history for the required variables is stored
-        over the length of time the delay may be, and the selection is performed using
-        the learned delays. When ``delayed`` is ``False``, the last state is used even
-        if a change in delay occurs. This may be the desired behavior even if delays are
-        updated along with weights.
+        When ``delayed`` is ``True``, the history for the presynaptic activity (spike
+        traces and spike activity) is preserved in its un-delayed form and is then
+        accessed using the connection's :py:attr:`~inferno.neural.Connection.selector`.
+
+        When ``delayed`` is ``False``, only the most recent delay-adjusted presynaptic
+        activity is preserved.
 
     Important:
         It is expected for this to be called after every trainable batch. Variables
@@ -163,21 +164,31 @@ class STDP(IndependentTrainer):
         field_reduction = kwargs.get("field_reduction", self.fieldreduce)
 
         state.step_time = argtest.gt("step_time", step_time, 0, float)
-        state.register_buffer("lr_post", torch.tensor(float(lr_post)), persistent=False)
-        state.register_buffer("lr_pre", torch.tensor(float(lr_pre)), persistent=False)
+        state.lr_post = float(lr_post)
+        state.lr_pre = float(lr_pre)
         state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
         state.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
         state.delayed = bool(delayed)
-        state.register_buffer(
-            "tolerance",
-            torch.tensor(argtest.gte("interp_tolerance", interp_tolerance, 0, float)),
-            persistent=False,
-        )
-        state.trace = argtest.oneof(
+        state.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
+        state.tracemode = argtest.oneof(
             "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
         )
-        state.batchreduce = batch_reduction if (batch_reduction is not None) else torch.mean
-        state.fieldreduce = field_reduction if (field_reduction is not None) else torch.sum
+        match state.tracemode:
+            case "cumulative":
+                state.tracecls = CumulativeTraceReducer
+            case "nearest":
+                state.tracecls = NearestTraceReducer
+            case "_":
+                raise RuntimeError(
+                    f"an invalid trace mode of '{state.tracemode}' has been set, "
+                    "expected one of: 'cumulative', 'nearest'"
+                )
+        state.batchreduce = (
+            batch_reduction if (batch_reduction is not None) else torch.mean
+        )
+        state.fieldreduce = (
+            field_reduction if (field_reduction is not None) else torch.sum
+        )
 
         return state
 
@@ -226,17 +237,6 @@ class STDP(IndependentTrainer):
         delayed = state.delayed and cell.connection.delayedby is not None
 
         # common and derived arguments
-        match state.trace:
-            case "cumulative":
-                reducer_cls = CumulativeTraceReducer
-            case "nearest":
-                reducer_cls = NearestTraceReducer
-            case "_":
-                raise RuntimeError(
-                    f"an invalid trace mode of '{state.trace}' has been set, expected "
-                    "one of: 'cumulative', 'nearest'"
-                )
-
         monitor_kwargs = {
             "as_prehook": False,
             "train_update": True,
@@ -250,7 +250,7 @@ class STDP(IndependentTrainer):
             "trace_post",
             "neuron.spike",
             StateMonitor.partialconstructor(
-                reducer=reducer_cls(
+                reducer=state.tracecls(
                     state.step_time,
                     state.tc_post,
                     amplitude=1.0,
@@ -262,7 +262,7 @@ class STDP(IndependentTrainer):
             False,
             dt=state.step_time,
             tc=state.tc_post,
-            trace=state.trace,
+            trace=state.tracemode,
         )
 
         # postsynaptic spike monitor (triggers hebbian LTP)
@@ -286,7 +286,7 @@ class STDP(IndependentTrainer):
             "trace_pre",
             "synapse.spike" if delayed else "connection.synspike",
             StateMonitor.partialconstructor(
-                reducer=reducer_cls(
+                reducer=state.tracecls(
                     state.step_time,
                     state.tc_pre,
                     amplitude=1.0,
@@ -298,7 +298,7 @@ class STDP(IndependentTrainer):
             False,
             dt=state.step_time,
             tc=state.tc_pre,
-            trace=state.trace,
+            trace=state.tracemode,
             delayed=delayed,
         )
 
@@ -321,7 +321,7 @@ class STDP(IndependentTrainer):
             delayed=delayed,
         )
 
-        return self.unit(name)
+        return self.get_unit(name)
 
     def forward(self) -> None:
         """Processes update for given layers based on current monitor stored data."""
@@ -350,15 +350,15 @@ class STDP(IndependentTrainer):
             # partial updates
             dpost = (
                 state.batchreduce(state.fieldreduce(i_post * x_pre, -1), 0)
-                * state.lr_post.abs()
+                * abs(state.lr_post)
             )
             dpre = (
                 state.batchreduce(state.fieldreduce(i_pre * x_post, -1), 0)
-                * state.lr_pre.abs()
+                * abs(state.lr_pre)
             )
 
             # accumulate partials with mode condition
-            match (state.lr_post.item() >= 0, state.lr_pre.item() >= 0):
+            match (state.lr_post >= 0, state.lr_pre >= 0):
                 case (False, False):  # depressive
                     cell.updater.weight = (None, dpost + dpre)
                 case (False, True):  # anti-hebbian

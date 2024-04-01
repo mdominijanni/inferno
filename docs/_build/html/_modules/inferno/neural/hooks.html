@@ -227,7 +227,7 @@
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Normalizes attribute of registered module on call.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        module (nn.Module): module to which the hook should be registered.</span>
+<span class="sd">        module (torch.nn.Module): module to which the hook should be registered.</span>
 <span class="sd">        attr (str): fully-qualified string name of attribute to normalize.</span>
 <span class="sd">        order (int | float): order of :math:`p`-norm by which to normalize.</span>
 <span class="sd">        scale (float | complex): desired :math:`p`-norm of elements along</span>
@@ -285,7 +285,7 @@
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to be called on the registered module&#39;s call.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            module (nn.Module): registered module.</span>
+<span class="sd">            module (torch.nn.Module): registered module.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rsetattr</span><span class="p">(</span>
             <span class="n">module</span><span class="p">,</span>
@@ -304,7 +304,7 @@
     <span class="sd">&quot;&quot;&quot;Clamps attribute of registered module on call.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        module (nn.Module): module to which the hook should be registered.</span>
+<span class="sd">        module (torch.nn.Module): module to which the hook should be registered.</span>
 <span class="sd">        attr (str): fully-qualified string name of attribute to clamp.</span>
 <span class="sd">        min (int | float | None, optional): inclusive lower-bound of the clamped range.</span>
 <span class="sd">            Defaults to None.</span>
@@ -356,7 +356,7 @@
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to be called on the registered module&#39;s call.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            module (nn.Module): registered module.</span>
+<span class="sd">            module (torch.nn.Module): registered module.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rsetattr</span><span class="p">(</span>
             <span class="n">module</span><span class="p">,</span>

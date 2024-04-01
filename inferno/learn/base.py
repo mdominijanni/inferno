@@ -361,7 +361,7 @@ class IndependentTrainer(CellTrainer, ABC):
                 dict(self.monitor_pool_.named_monitors_of(name)),
             )
 
-    def unit(self, name: str) -> IndependentTrainer.Unit:
+    def get_unit(self, name: str) -> IndependentTrainer.Unit:
         r"""Gets a trainable unit.
 
         This can be used if a single trainer should handle training on different

@@ -249,8 +249,8 @@ class MSTDPET(IndependentTrainer):
         field_reduction = kwargs.get("field_reduction", self.fieldreduce)
 
         state.step_time = argtest.gt("step_time", step_time, 0, float)
-        state.register_buffer("lr_post", torch.tensor(float(lr_post)), persistent=False)
-        state.register_buffer("lr_pre", torch.tensor(float(lr_pre)), persistent=False)
+        state.lr_post = float(lr_post)
+        state.lr_post = float(lr_pre)
         state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
         state.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
         state.tc_eligibility = argtest.gt("tc_eligibility", tc_eligibility, 0, float)
