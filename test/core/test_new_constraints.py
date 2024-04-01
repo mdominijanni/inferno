@@ -1745,3 +1745,319 @@ class TestRecordTensor:
             rt.dt,
         ).squeeze(-1)
         assert torch.all((res - cmp).abs() < 1e-6)
+
+    @pytest.mark.parametrize(
+        "offset",
+        (1, 3, -2),
+        ids=("offset=1", "offset=3", "offset=-2"),
+    )
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize("inplace", (True, False), ids=("inplace", "normal"))
+    def test_insert_tensor_bypass_extrap(
+        self, infmodule, name, offset, asparam, inplace
+    ):
+        def bad_extrap(sample, sample_at, prev_data, next_data, step_time, **kwargs):
+            return (torch.rand_like(prev_data), torch.rand_like(next_data))
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        ptr = random.randint(0, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        tolerance = 1e-4
+        indices = torch.randint(0, rt.recordsz, shape)
+        times = (indices * rt.dt) + (
+            (tolerance - 1e-6) * torch.randint(-1, 2, indices.shape)
+        )
+        obs = torch.rand(shape)
+        rt.insert(
+            obs, times, bad_extrap, tolerance=tolerance, offset=offset, inplace=inplace
+        )
+        cmp = data.scatter(
+            -1,
+            ((ptr - (indices + offset)) % rt.recordsz).unsqueeze(-1),
+            obs.unsqueeze(-1),
+        )
+
+        assert torch.all(rt.value == cmp)
+
+    @pytest.mark.parametrize(
+        "offset",
+        (1, 3, -2),
+        ids=("offset=1", "offset=3", "offset=-2"),
+    )
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize("inplace", (True, False), ids=("inplace", "normal"))
+    @pytest.mark.parametrize(
+        "boundedupper",
+        (True, False),
+        ids=("boundedupper", "boundedlower"),
+    )
+    def test_insert_float_bypass_extrap(
+        self, infmodule, name, offset, asparam, inplace, boundedupper
+    ):
+        def bad_extrap(sample, sample_at, prev_data, next_data, step_time, **kwargs):
+            return (torch.rand_like(prev_data), torch.rand_like(next_data))
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        ptr = random.randint(0, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        tolerance = 1e-4
+        index = random.randint(0, rt.recordsz - 1)
+        time = index * rt.dt + ((tolerance - 1e-6) * (-1 * (not boundedupper)))
+        indices = torch.full(shape, index)
+
+        obs = torch.rand(shape)
+        rt.insert(
+            obs, time, bad_extrap, tolerance=tolerance, offset=offset, inplace=inplace
+        )
+        cmp = data.scatter(
+            -1,
+            ((ptr - (indices + offset)) % rt.recordsz).unsqueeze(-1),
+            obs.unsqueeze(-1),
+        )
+
+        assert torch.all(rt.value == cmp)
+
+    @pytest.mark.parametrize(
+        "offset",
+        (1, 3, -2),
+        ids=("offset=1", "offset=3", "offset=-2"),
+    )
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize("inplace", (True, False), ids=("inplace", "normal"))
+    def test_insert_tensor_extrapolated(
+        self, infmodule, name, offset, asparam, inplace
+    ):
+        def extrap_expdecay(
+            sample, sample_at, prev_data, next_data, step_time, tc, **kwargs
+        ):
+            return (
+                sample * torch.exp(sample_at / tc),
+                sample * torch.exp((sample_at - step_time) / tc),
+            )
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        ptr = random.randint(0, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        tolerance = 1e-4
+        indices = torch.randint(0, rt.recordsz - 1, shape) + 0.5
+        times = indices * rt.dt
+        obs = torch.rand(shape)
+
+        rt.insert(
+            obs,
+            times,
+            extrap_expdecay,
+            tolerance=tolerance,
+            offset=offset,
+            inplace=inplace,
+            extrap_kwargs={"tc": 20.0},
+        )
+        pred, postd = extrap_expdecay(
+            obs.unsqueeze(-1),
+            times.unsqueeze(-1) % rt.dt,
+            data.gather(
+                -1, (ptr - (indices.unsqueeze(-1).ceil().long() + offset)) % rt.recordsz
+            ),
+            data.gather(
+                -1,
+                (ptr - (indices.unsqueeze(-1).floor().long() + offset)) % rt.recordsz,
+            ),
+            rt.dt,
+            20.0,
+        )
+        cmp = data.scatter(
+            -1,
+            (ptr - (indices.unsqueeze(-1).ceil().long() + offset)) % rt.recordsz,
+            pred,
+        ).scatter(
+            -1,
+            (ptr - (indices.unsqueeze(-1).floor().long() + offset)) % rt.recordsz,
+            postd,
+        )
+        assert torch.all((rt.value - cmp).abs() < 1e-6)
+
+    @pytest.mark.parametrize(
+        "offset",
+        (1, 3, -2),
+        ids=("offset=1", "offset=3", "offset=-2"),
+    )
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    @pytest.mark.parametrize("inplace", (True, False), ids=("inplace", "normal"))
+    def test_insert_float_extrapolated(self, infmodule, name, offset, asparam, inplace):
+        def extrap_expdecay(
+            sample, sample_at, prev_data, next_data, step_time, tc, **kwargs
+        ):
+            return (
+                sample * torch.exp(sample_at / tc),
+                sample * torch.exp((sample_at - step_time) / tc),
+            )
+
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=2, maxdims=4)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        ptr = random.randint(0, rt.recordsz - 1)
+        setattr(infmodule, rt.attributes.pointer, ptr)
+
+        tolerance = 1e-4
+
+        index = random.randint(0, rt.recordsz - 2) + 0.5
+        time = index * rt.dt
+        indices = torch.full(shape, index)
+        times = indices * rt.dt
+
+        obs = torch.rand(shape)
+
+        rt.insert(
+            obs,
+            time,
+            extrap_expdecay,
+            tolerance=tolerance,
+            offset=offset,
+            inplace=inplace,
+            extrap_kwargs={"tc": 20.0},
+        )
+        pred, postd = extrap_expdecay(
+            obs.unsqueeze(-1),
+            times.unsqueeze(-1) % rt.dt,
+            data.gather(
+                -1, (ptr - (indices.unsqueeze(-1).ceil().long() + offset)) % rt.recordsz
+            ),
+            data.gather(
+                -1,
+                (ptr - (indices.unsqueeze(-1).floor().long() + offset)) % rt.recordsz,
+            ),
+            rt.dt,
+            20.0,
+        )
+        cmp = data.scatter(
+            -1,
+            (ptr - (indices.unsqueeze(-1).ceil().long() + offset)) % rt.recordsz,
+            pred,
+        ).scatter(
+            -1,
+            (ptr - (indices.unsqueeze(-1).floor().long() + offset)) % rt.recordsz,
+            postd,
+        )
+        assert torch.all((rt.value - cmp).abs() < 1e-6)
+
+    @pytest.mark.parametrize(
+        "asparam",
+        (True, False),
+        ids=("parameter", "buffer"),
+    )
+    def test_reconstrain(self, infmodule, name, asparam):
+        rt = RecordTensor(
+            infmodule,
+            name,
+            step_time=random.uniform(0.75, 1.25),
+            duration=random.uniform(16.25, 20.0),
+            value=None,
+            persist_data=True,
+            persist_constraints=True,
+            persist_temporal=True,
+        )
+        setattr(infmodule, name, rt)
+
+        shape = randshape(mindims=3, maxdims=5)
+        data = torch.rand(*shape, rt.recordsz)
+        if asparam:
+            rt.value = nn.Parameter(data.clone().detach(), True)
+        else:
+            rt.value = data.clone().detach()
+
+        rt.reconstrain(-1, shape[-1])
+        rt.reconstrain(0, shape[0])
+        assert rt.constraints[-1] == shape[-1]
+        assert rt.constraints[0] == shape[0]
+        assert getattr(infmodule, rt.attributes.constraints)[-1] == rt.recordsz
+        assert getattr(infmodule, rt.attributes.constraints)[-2] == shape[-1]
+        assert getattr(infmodule, rt.attributes.constraints)[0] == shape[0]

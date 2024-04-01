@@ -2708,12 +2708,17 @@ class RecordTensor(ShapedTensor):
                 torch.abs(dt * shiftr - time) <= tolerance, shiftr, shift
             )
 
+            # unsqueeze final dimension
+            obs = obs.unsqueeze(-1)
+            shift = shift.unsqueeze(-1)
+
             # update offset with shift
-            offset = offset + shift
+            offset = (offset + shift)
 
             # indices of the nearest observations
+            prev_idx, next_idx = offset.ceil(), offset.floor()
             stacked_idx = _unwind_tensor_ptr(
-                ptr, torch.stack((offset.ceil(), offset.floor()), -1), recordsz
+                ptr, torch.cat((prev_idx, next_idx), -1), recordsz
             )
 
             # get stored observations at specified indices
@@ -2728,13 +2733,13 @@ class RecordTensor(ShapedTensor):
                 prev_data,
                 next_data,
                 dt,
-                **({extrap_kwargs if extrap_kwargs else {}}),
+                **(extrap_kwargs if extrap_kwargs else {}),
             )
 
             # bypass extrapolation for exact indices
-            bypass = stacked_idx[0] == stacked_idx[1]
-            prev_exobs = torch.where(bypass, prev_data, prev_exobs)
-            next_exobs = torch.where(bypass, next_data, next_exobs)
+            bypass = prev_idx == next_idx
+            prev_exobs = torch.where(bypass, obs, prev_exobs)
+            next_exobs = torch.where(bypass, obs, next_exobs)
 
             # write to storage
             if inplace:
@@ -2787,7 +2792,7 @@ class RecordTensor(ShapedTensor):
                     data[..., prev_idx],
                     data[..., next_idx],
                     dt,
-                    **({extrap_kwargs if extrap_kwargs else {}}),
+                    **(extrap_kwargs if extrap_kwargs else {}),
                 )
 
                 # in-place write
