@@ -1,8 +1,0 @@
-﻿Interpolation
-=============
-
-.. currentmodule:: inferno.interpolation
-
-.. autoclass:: Interpolation
-    :members:
-    :show-inheritance:

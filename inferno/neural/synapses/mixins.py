@@ -110,6 +110,7 @@ class CurrentMixin:
             live=False,
         )
         self.add_delayed("current_")
+        self.add_batched("current_")
         self.__interp = interpolation
         self.__interp_kwargs = interp_kwargs
         self.__overbound = overbound if overbound is None else float(overbound)
@@ -205,6 +206,7 @@ class SpikeMixin:
             live=False,
         )
         self.add_delayed("spike_")
+        self.add_batched("spike_")
         self.__interp = interpolation
         self.__interp_kwargs = interp_kwargs
         self.__overbound = overbound if overbound is None else bool(overbound)

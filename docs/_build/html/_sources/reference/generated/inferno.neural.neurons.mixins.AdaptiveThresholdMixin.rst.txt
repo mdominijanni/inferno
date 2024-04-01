@@ -1,0 +1,8 @@
+﻿AdaptiveThresholdMixin
+======================
+
+.. currentmodule:: inferno.neural.neurons.mixins
+
+.. autoclass:: AdaptiveThresholdMixin
+    :members:
+    :show-inheritance:

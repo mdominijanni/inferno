@@ -264,7 +264,7 @@
 <td><p>Base class for representing a group of neurons with a common mode of dynamics.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.Synapse.html#inferno.neural.Synapse" title="inferno.neural.Synapse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Synapse</span></code></a></p></td>
-<td><p>Base class for representing the input synapses for a connection.</p></td>
+<td><p>Base class for representing a group of input synapses for a connection.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.Connection.html#inferno.neural.Connection" title="inferno.neural.Connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Connection</span></code></a></p></td>
 <td><p>Base class for representing a weighted connection between two groups of neurons.</p></td>
@@ -408,8 +408,27 @@
 </table>
 </div>
 </section>
-<section id="mixins">
-<h2>Mixins<a class="headerlink" href="#mixins" title="Permalink to this heading">#</a></h2>
+<section id="internal-components">
+<h2>Internal Components<a class="headerlink" href="#internal-components" title="Permalink to this heading">#</a></h2>
+<div class="table-wrapper autosummary longtable colwidths-given docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10.0%" />
+<col style="width: 90.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.InfernoNeuron.html#inferno.neural.InfernoNeuron" title="inferno.neural.InfernoNeuron"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InfernoNeuron</span></code></a></p></td>
+<td><p>Base class for neurons included in the Inferno library.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.InfernoSynapse.html#inferno.neural.InfernoSynapse" title="inferno.neural.InfernoSynapse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InfernoSynapse</span></code></a></p></td>
+<td><p>Base class for representing synapses included in the Inferno library.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="internal-mixins">
+<h2>Internal Mixins<a class="headerlink" href="#internal-mixins" title="Permalink to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -421,40 +440,46 @@
 <td><p>Mixin for modules with batch-size dependent parameters or buffers.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin" title="inferno.neural.mixins.ShapeMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mixins.ShapeMixin</span></code></a></p></td>
+<td><p>Mixin for modules with a concept of shape.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.mixins.BatchShapeMixin.html#inferno.neural.mixins.BatchShapeMixin" title="inferno.neural.mixins.BatchShapeMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mixins.BatchShapeMixin</span></code></a></p></td>
 <td><p>Mixin for modules with a concept of shape and with batch-size dependencies.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.AdaptationMixin.html#inferno.neural.neurons.mixins.AdaptationMixin" title="inferno.neural.neurons.mixins.AdaptationMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.AdaptationMixin</span></code></a></p></td>
-<td><p>Mixin for neurons with membrane adaptations.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.mixins.DelayedMixin.html#inferno.neural.mixins.DelayedMixin" title="inferno.neural.mixins.DelayedMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mixins.DelayedMixin</span></code></a></p></td>
+<td><p>Mixin for modules with delay-record tensors with shared step time and duration.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.CurrentMixin.html#inferno.neural.neurons.mixins.CurrentMixin" title="inferno.neural.neurons.mixins.CurrentMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.CurrentMixin</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.AdaptiveCurrentMixin.html#inferno.neural.neurons.mixins.AdaptiveCurrentMixin" title="inferno.neural.neurons.mixins.AdaptiveCurrentMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.AdaptiveCurrentMixin</span></code></a></p></td>
+<td><p>Mixin for neurons with adaptative input currents.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.AdaptiveThresholdMixin.html#inferno.neural.neurons.mixins.AdaptiveThresholdMixin" title="inferno.neural.neurons.mixins.AdaptiveThresholdMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.AdaptiveThresholdMixin</span></code></a></p></td>
+<td><p>Mixin for neurons with adaptative thresholds.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.CurrentMixin.html#inferno.neural.neurons.mixins.CurrentMixin" title="inferno.neural.neurons.mixins.CurrentMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.CurrentMixin</span></code></a></p></td>
 <td><p>Mixin for neurons with membrane currents.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.RefractoryMixin.html#inferno.neural.neurons.mixins.RefractoryMixin" title="inferno.neural.neurons.mixins.RefractoryMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.RefractoryMixin</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.RefractoryMixin.html#inferno.neural.neurons.mixins.RefractoryMixin" title="inferno.neural.neurons.mixins.RefractoryMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.RefractoryMixin</span></code></a></p></td>
 <td><p>Mixin for neurons with refractory periods.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.SpikeRefractoryMixin.html#inferno.neural.neurons.mixins.SpikeRefractoryMixin" title="inferno.neural.neurons.mixins.SpikeRefractoryMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.SpikeRefractoryMixin</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.SpikeRefractoryMixin.html#inferno.neural.neurons.mixins.SpikeRefractoryMixin" title="inferno.neural.neurons.mixins.SpikeRefractoryMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.SpikeRefractoryMixin</span></code></a></p></td>
 <td><p>Mixin for neurons with refractory periods with spikes based off of them.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.VoltageMixin.html#inferno.neural.neurons.mixins.VoltageMixin" title="inferno.neural.neurons.mixins.VoltageMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.VoltageMixin</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.neurons.mixins.VoltageMixin.html#inferno.neural.neurons.mixins.VoltageMixin" title="inferno.neural.neurons.mixins.VoltageMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neurons.mixins.VoltageMixin</span></code></a></p></td>
 <td><p>Mixin for neurons driven by membrane voltage.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.CurrentMixin.html#inferno.neural.synapses.mixins.CurrentMixin" title="inferno.neural.synapses.mixins.CurrentMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.CurrentMixin</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.CurrentMixin.html#inferno.neural.synapses.mixins.CurrentMixin" title="inferno.neural.synapses.mixins.CurrentMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.CurrentMixin</span></code></a></p></td>
 <td><p>Mixin for synapses with current primitive.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.SpikeMixin.html#inferno.neural.synapses.mixins.SpikeMixin" title="inferno.neural.synapses.mixins.SpikeMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.SpikeMixin</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.SpikeMixin.html#inferno.neural.synapses.mixins.SpikeMixin" title="inferno.neural.synapses.mixins.SpikeMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.SpikeMixin</span></code></a></p></td>
 <td><p>Mixin for synapses with spike primitive.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin.html#inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin" title="inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.CurrentDerivedSpikeMixin</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin.html#inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin" title="inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.CurrentDerivedSpikeMixin</span></code></a></p></td>
 <td><p>Mixin for synapses with current and spikes derived therefrom.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin.html#inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin" title="inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.SpikeDerivedCurrentMixin</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin.html#inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin" title="inferno.neural.synapses.mixins.SpikeDerivedCurrentMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.SpikeDerivedCurrentMixin</span></code></a></p></td>
 <td><p>Mixin for synapses with spikes and currents derived therefrom.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.SpikeCurrentMixin.html#inferno.neural.synapses.mixins.SpikeCurrentMixin" title="inferno.neural.synapses.mixins.SpikeCurrentMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.SpikeCurrentMixin</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.SpikeCurrentMixin.html#inferno.neural.synapses.mixins.SpikeCurrentMixin" title="inferno.neural.synapses.mixins.SpikeCurrentMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.SpikeCurrentMixin</span></code></a></p></td>
 <td><p>Mixin for synapses with primitive current and spikes.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin.html#inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin" title="inferno.neural.synapses.mixins.DelayedSpikeCurrentAccessorMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synapses.mixins.DelayedSpikeCurrentAccessorMixin</span></code></a></p></td>
-<td><p>Mixin for synapses with delayed current and spike selector methods.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.neural.connections.mixins.WeightMixin.html#inferno.neural.connections.mixins.WeightMixin" title="inferno.neural.connections.mixins.WeightMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connections.mixins.WeightMixin</span></code></a></p></td>
 <td><p>Mixin for connections with weights.</p></td>
@@ -551,7 +576,10 @@
 <li><a class="reference internal" href="#types">Types</a><ul class="simple">
 </ul>
 </li>
-<li><a class="reference internal" href="#mixins">Mixins</a><ul class="simple">
+<li><a class="reference internal" href="#internal-components">Internal Components</a><ul class="simple">
+</ul>
+</li>
+<li><a class="reference internal" href="#internal-mixins">Internal Mixins</a><ul class="simple">
 </ul>
 </li>
 </ul>

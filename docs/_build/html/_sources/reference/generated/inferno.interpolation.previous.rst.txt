@@ -1,6 +1,0 @@
-﻿previous
-========
-
-.. currentmodule:: inferno.interpolation
-
-.. autofunction:: previous

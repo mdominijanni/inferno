@@ -218,21 +218,21 @@
         <article role="main">
           <h1>Source code for inferno.observe.reducers.base</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">RecordModule</span><span class="p">,</span> <span class="n">interpolation</span><span class="p">,</span> <span class="n">empty</span>
-<span class="kn">from</span> <span class="nn">...types</span> <span class="kn">import</span> <span class="n">OneToOne</span>
+<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">Module</span><span class="p">,</span> <span class="n">RecordTensor</span>
+<span class="kn">from</span> <span class="nn">..._internal</span> <span class="kn">import</span> <span class="n">argtest</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 
 
-<div class="viewcode-block" id="Reducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer">[docs]</a><span class="k">class</span> <span class="nc">Reducer</span><span class="p">(</span><span class="n">RecordModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="Reducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.Reducer.html#inferno.observe.Reducer">[docs]</a><span class="k">class</span> <span class="nc">Reducer</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Abstract base class for the recording of inputs over time.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
-        <span class="n">RecordModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">peeked</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">latest</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return&#39;s the reducer&#39;s current state.</span>
 
 <span class="sd">        If :py:meth:`peek` has multiple options, this should be considered as the</span>
@@ -291,81 +291,37 @@
         <span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="FoldReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer">[docs]</a><span class="k">class</span> <span class="nc">FoldReducer</span><span class="p">(</span><span class="n">Reducer</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies a function between the most recent previously stored data and a new observation.</span>
+<div class="viewcode-block" id="RecordReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.RecordReducer.html#inferno.observe.RecordReducer">[docs]</a><span class="k">class</span> <span class="nc">RecordReducer</span><span class="p">(</span><span class="n">Reducer</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Abstract base class for the reducers utilizing multiple RecordTensors.&quot;&quot;&quot;</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        fold_fn (Callable[[tuple[torch.Tensor, ...], torch.Tensor | None], torch.Tensor]):</span>
-<span class="sd">            relation between the new input (left) and current state (right), returning the new state.</span>
-<span class="sd">        step_time (float): length of time between observations.</span>
-<span class="sd">        duration (float): length of time for which observations should be stored.</span>
-<span class="sd">        interp (interpolation.Interpolation, optional): interpolation function</span>
-<span class="sd">            to use when retrieving data between observations.</span>
-<span class="sd">            Defaults to :py:func:`interpolation.nearest`.</span>
-<span class="sd">        initializer (OneToOne[torch.Tensor] | None, optional): function to set the</span>
-<span class="sd">            initial state, zeroes when None. Defaults to None.</span>
-
-<span class="sd">    Important:</span>
-<span class="sd">        The tuple given to ``fold_fn`` is unpacked, but it does not need to accept any</span>
-<span class="sd">        number of values, just whatever the expected number of inputs is for the given situation.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        The left-hand argument of ``fold_fn`` (i.e. all but the final) is the new input,</span>
-<span class="sd">        and the right-hand argument is the current state. The right-hand argument will</span>
-<span class="sd">        be None when no observations have been recorded.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">fold_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="o">*</span><span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-        <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="o">*</span><span class="p">,</span>
-        <span class="n">interp</span><span class="p">:</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">Interpolation</span> <span class="o">=</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">nearest</span><span class="p">,</span>
-        <span class="n">initializer</span><span class="p">:</span> <span class="n">OneToOne</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
-        <span class="n">Reducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+        <span class="n">Reducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="c1"># set non-persistant functions</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fold_</span> <span class="o">=</span> <span class="n">fold_fn</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interpolate_</span> <span class="o">=</span> <span class="n">interp</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">initialize_</span> <span class="o">=</span> <span class="n">initializer</span> <span class="k">if</span> <span class="n">initializer</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># validate parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
-        <span class="c1"># register data buffer and helpers</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;_initial&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># collection of record names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__records</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+<div class="viewcode-block" id="RecordReducer.add_record"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.RecordReducer.html#inferno.observe.RecordReducer.add_record">[docs]</a>    <span class="k">def</span> <span class="nf">add_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add a record attribute</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new data storage tensor.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: data storage tensor.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            The shape must be equivalent to the original, this allows for calls to</span>
-<span class="sd">            be made to methods such as :py:meth:`~torch.Tensor.to`.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            The order of the data tensor is not equivalent to the historical order.</span>
-<span class="sd">            Use :py:meth:`dump` for this.</span>
+<span class="sd">            *attr (str): names of the attributes to set as records.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
-
-    <span class="nd">@data</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;shape of data cannot be changed, received value of shape &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, required value of &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no attribute &#39;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&#39; exists&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">),</span> <span class="n">RecordTensor</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;attribute &#39;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&#39; specifies a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span><span class="si">}</span><span class="s2">, not a RecordTensor&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__records</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -383,12 +339,15 @@
 <span class="sd">        Note:</span>
 <span class="sd">            In the same units as :py:attr:`self.duration`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">Reducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="n">Reducer</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="n">keepshape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__records</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rec</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -406,12 +365,76 @@
 <span class="sd">        Note:</span>
 <span class="sd">            In the same units as :py:attr:`self.dt`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">Reducer</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span>
 
     <span class="nd">@duration</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="n">Reducer</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="n">keepshape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__duration</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__records</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rec</span><span class="p">)</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="FoldReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer">[docs]</a><span class="k">class</span> <span class="nc">FoldReducer</span><span class="p">(</span><span class="n">RecordReducer</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Subclassable reducer performing a fold operation between previous state and an observation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        step_time (float): length of time between observations.</span>
+<span class="sd">        duration (float): length of time for which observations should be stored.</span>
+<span class="sd">        fill (Any, optional): value with which to fill the stored record on clearing and</span>
+<span class="sd">            initialization. Defaults to 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">fill</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="c1"># call superclass constructor</span>
+        <span class="n">RecordReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+
+        <span class="c1"># register data buffer and helpers</span>
+        <span class="n">RecordTensor</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="s2">&quot;data_&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">duration</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+            <span class="n">persist_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">persist_constraints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">persist_temporal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">live</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_record</span><span class="p">(</span><span class="s2">&quot;data_&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_extra</span><span class="p">(</span><span class="s2">&quot;_initial&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fill</span> <span class="o">=</span> <span class="n">fill</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+
+<span class="sd">        The shape must be equivalent to the original, this allows for calls to</span>
+<span class="sd">        be made to methods such as :py:meth:`~torch.Tensor.to`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new data storage tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: data storage tensor.</span>
+
+<span class="sd">        Important:</span>
+<span class="sd">            The order of the data tensor is not equivalent to the historical order.</span>
+<span class="sd">            Use :py:meth:`dump` for this.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="nd">@data</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;shape of data cannot be changed, received value of shape &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, required value of &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
 
 <div class="viewcode-block" id="FoldReducer.clear"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keepshape</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reinitializes the reducer&#39;s state.</span>
@@ -421,141 +444,12 @@
 <span class="sd">                preserved. Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">keepshape</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fill</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">deregister_constrained</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">register_constrained</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">deinitialize</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span> <span class="o">=</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="FoldReducer.view"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.view">[docs]</a>    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state at a given time.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            time (float | torch.Tensor): times, measured before present, at which</span>
-<span class="sd">                to select from.</span>
-<span class="sd">            tolerance (float, optional): maximum difference in time from a discrete</span>
-<span class="sd">                sample to consider it at the same time as that sample. Defaults to 1e-7.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor | None: temporally indexed and interpolated state.</span>
-
-<span class="sd">        .. admonition:: Shape</span>
-<span class="sd">            :class: tensorshape</span>
-
-<span class="sd">            ``time``:</span>
-
-<span class="sd">            :math:`N_0 \times \cdots \times [D]`</span>
-
-<span class="sd">            ``return``:</span>
-
-<span class="sd">            :math:`N_0 \times \cdots \times [D]`</span>
-
-<span class="sd">            Where:</span>
-<span class="sd">                * :math:`N_0, \ldots` are the dimensions of the reducer, including any underlying batch.</span>
-<span class="sd">                * :math:`D` is the number of times for each value to select.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            Before any samples have been added and before the data tensor has been</span>
-<span class="sd">            initialized, this will return None.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            The constraints on the shape of ``time`` are not enforced, and follows</span>
-<span class="sd">            the underlying logic of :py:func:`torch.gather`.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            This will fail if any values in ``time`` fall outside of the possible range.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolate_</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="FoldReducer.dump"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state over all observations.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor | None: state over all observations, if state exists.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            Before any samples have been added and before the data tensor has been</span>
-<span class="sd">            initialized, this will return None.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            Results are temporally ordered from most recent to oldest, along the</span>
-<span class="sd">            last dimension.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">aligned</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="n">latest_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="FoldReducer.peek"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.peek">[docs]</a>    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s current state.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor | None: current state, if state exists.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            Before any samples have been added and before the data tensor has been</span>
-<span class="sd">            initialized, this will return None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="FoldReducer.push"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.push">[docs]</a>    <span class="k">def</span> <span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Incorporates inputs into the reducer&#39;s state.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            inputs (torch.Tensor): new observation to incorporate into state.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="FoldReducer.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Initializes state and incorporates inputs into the reducer&#39;s state.</span>
-
-<span class="sd">        This performs any required initialization steps, maps the inputs,</span>
-<span class="sd">        and pushes the new data.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            *inputs (torch.Tensor): inputs to be mapped, then pushed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># non-initial</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fold_</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">)))</span>
-
-        <span class="c1"># initial</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold_</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">res</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span> <span class="o">=</span> <span class="kc">False</span></div></div>
-
-
-<div class="viewcode-block" id="FoldingReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldingReducer.html#inferno.observe.FoldingReducer">[docs]</a><span class="k">class</span> <span class="nc">FoldingReducer</span><span class="p">(</span><span class="n">FoldReducer</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Subclassable reducer performing a fold operation between previous state and an observation.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        step_time (float): length of time between observations.</span>
-<span class="sd">        duration (float): length of time for which observations should be stored.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="n">FoldReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">fold_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="p">,</span>
-            <span class="n">step_time</span><span class="o">=</span><span class="n">step_time</span><span class="p">,</span>
-            <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span>
-            <span class="n">interp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">,</span>
-            <span class="n">initializer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">,</span>
-        <span class="p">)</span>
-
-<div class="viewcode-block" id="FoldingReducer.fold"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldingReducer.html#inferno.observe.FoldingReducer.fold">[docs]</a>    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="FoldReducer.fold"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.fold">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculation of the next state given an observation and prior state.</span>
 
@@ -570,29 +464,11 @@
 <span class="sd">            torch.Tensor: state for the current time step.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;&#39;FoldingReducer.fold()&#39; is abstract, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;FoldReducer.fold()&#39; is abstract, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span>
             <span class="s2">&quot;must implement the &#39;fold&#39; method&quot;</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="FoldingReducer.initialize"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldingReducer.html#inferno.observe.FoldingReducer.initialize">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Initialization of state history before any observations are incorporated.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            inputs (torch.Tensor): empty tensor of state.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: abstract methods must be implemented by subclass.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: filled state tensor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;&#39;FoldingReducer.initialize()&#39; is abstract, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span>
-            <span class="s2">&quot;must implement the &#39;initialize&#39; method&quot;</span>
-        <span class="p">)</span></div>
-
-<div class="viewcode-block" id="FoldingReducer.interpolate"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldingReducer.html#inferno.observe.FoldingReducer.interpolate">[docs]</a>    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="FoldReducer.interpolate"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.interpolate">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prev_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -616,9 +492,110 @@
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;&#39;FoldingReducer.interpolate()&#39; is abstract, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;FoldReducer.interpolate()&#39; is abstract, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span>
             <span class="s2">&quot;must implement the &#39;interpolate&#39; method&quot;</span>
-        <span class="p">)</span></div></div>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="FoldReducer.view"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.view">[docs]</a>    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state at a given time.</span>
+
+<span class="sd">        Before any samples have been added and before the data tensor has been</span>
+<span class="sd">        initialized, this will return None. This will fail if any values in ``time``</span>
+<span class="sd">        fall outside of the possible range.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            time (float | torch.Tensor): times, measured before present, at which</span>
+<span class="sd">                to select from.</span>
+<span class="sd">            tolerance (float, optional): maximum difference in time from a discrete</span>
+<span class="sd">                sample to consider it at the same time as that sample. Defaults to 1e-7.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor | None: temporally indexed and interpolated state.</span>
+
+<span class="sd">        .. admonition:: Shape</span>
+<span class="sd">            :class: tensorshape</span>
+
+<span class="sd">            ``time``:</span>
+
+<span class="sd">            :math:`S_0 \times \cdots \times [D]`</span>
+
+<span class="sd">            ``return``:</span>
+
+<span class="sd">            :math:`S_0 \times \cdots \times [D]`</span>
+
+<span class="sd">            Where:</span>
+<span class="sd">                * :math:`S_0, \ldots` are the dimensions of each observation, given</span>
+<span class="sd">                  by :py:attr:`shape`.</span>
+<span class="sd">                * :math:`D` are the number of distinct observations to select.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FoldReducer.dump"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state over all observations.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor | None: state over all observations, if state exists.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Before any samples have been added and before the data tensor has been</span>
+<span class="sd">            initialized, this will return None.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Results are temporally ordered from most recent to oldest, along the</span>
+<span class="sd">            last dimension.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FoldReducer.peek"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.peek">[docs]</a>    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s current state.</span>
+
+<span class="sd">        Before any samples have been added and before the data tensor has been</span>
+<span class="sd">        initialized, this will return None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor | None: current state, if state exists.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FoldReducer.push"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.push">[docs]</a>    <span class="k">def</span> <span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Incorporates inputs into the reducer&#39;s state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (torch.Tensor): new observation to incorporate into state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FoldReducer.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Initializes state and incorporates inputs into the reducer&#39;s state.</span>
+
+<span class="sd">        This performs any required initialization steps, maps the inputs,</span>
+<span class="sd">        and pushes the new data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *inputs (torch.Tensor): inputs to be mapped, then pushed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># non-initial</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">peek</span><span class="p">()))</span>
+
+        <span class="c1"># initial</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">ignored</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__fill</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span> <span class="o">=</span> <span class="kc">False</span></div></div>
 </pre></div>
         </article>
       </div>

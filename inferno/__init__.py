@@ -1,6 +1,4 @@
 # non-core modules
-from . import bounding
-from . import interpolation
 from . import types
 
 # core module
@@ -40,9 +38,6 @@ from .core import (
 
 __all__ = [
     # submodules
-    "stats",
-    "bounding",
-    "interpolation",
     "types",
     # infrastructure
     "Module",

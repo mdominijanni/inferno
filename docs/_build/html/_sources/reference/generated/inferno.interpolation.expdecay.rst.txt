@@ -1,6 +1,0 @@
-﻿expdecay
-========
-
-.. currentmodule:: inferno.interpolation
-
-.. autofunction:: expdecay

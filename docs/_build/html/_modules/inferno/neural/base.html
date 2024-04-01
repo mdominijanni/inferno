@@ -218,38 +218,60 @@
         <article role="main">
           <h1>Source code for inferno.neural.base</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">ShapeMixin</span>
+<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">BatchShapeMixin</span><span class="p">,</span> <span class="n">DelayedMixin</span>
 <span class="kn">from</span> <span class="nn">.modeling</span> <span class="kn">import</span> <span class="n">Updatable</span><span class="p">,</span> <span class="n">Updater</span>
-<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">DimensionalModule</span><span class="p">,</span> <span class="n">RecordModule</span><span class="p">,</span> <span class="n">Module</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Module</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Protocol</span>
 
 
-<div class="viewcode-block" id="Neuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron">[docs]</a><span class="k">class</span> <span class="nc">Neuron</span><span class="p">(</span><span class="n">ShapeMixin</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing a group of neurons with a common mode of dynamics.</span>
+<div class="viewcode-block" id="Neuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron">[docs]</a><span class="k">class</span> <span class="nc">Neuron</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing a group of neurons with a common mode of dynamics.&quot;&quot;&quot;</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        shape (tuple[int, ...] | int): shape of the group of neurons,</span>
-<span class="sd">            excluding the batch dim.</span>
-<span class="sd">        batch_size (int): initial batch size.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># superclass constructors</span>
-        <span class="n">DimensionalModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">ShapeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Neuron.extra_repr"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.extra_repr">[docs]</a>    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns extra information on this module.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, batchsz=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="si">}</span><span class="s2">, dt=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
     <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shape of the group of neurons.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int, ...]: shape of the group of neurons.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``shape`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property `shape`.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of neurons in the group.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: number of neurons in the group.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``count`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property &#39;count&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the neuron group.</span>
 
@@ -258,13 +280,38 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: present batch size.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``batchsz`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ShapeMixin</span><span class="o">.</span><span class="n">batchsz</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property &#39;batchsz&#39;&quot;</span>
+        <span class="p">)</span>
 
     <span class="nd">@batchsz</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">ShapeMixin</span><span class="o">.</span><span class="n">batchsz</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
+            <span class="s2">&quot;the setter for property &#39;batchsz&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">batchedshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch shape of the module</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int, ...]: shape of the group of neurons, including batch size.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``batchedshape`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property &#39;batchedshape&#39;&quot;</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
@@ -282,7 +329,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
-            <span class="s2">&quot;the getter for property `dt`.&quot;</span>
+            <span class="s2">&quot;the getter for property &#39;dt&#39;&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
@@ -290,7 +337,7 @@
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
-            <span class="s2">&quot;the setter for property `dt`.&quot;</span>
+            <span class="s2">&quot;the setter for property &#39;dt&#39;&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -308,14 +355,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
-            <span class="s2">&quot;the getter for property `voltage`.&quot;</span>
+            <span class="s2">&quot;the getter for property &#39;voltage&#39;&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@voltage</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
-            <span class="s2">&quot;the setter for property `voltage`.&quot;</span>
+            <span class="s2">&quot;the setter for property &#39;voltage&#39;&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -334,14 +382,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
-            <span class="s2">&quot;the getter for property `refrac`.&quot;</span>
+            <span class="s2">&quot;the getter for property &#39;refrac&#39;&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@refrac</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">refrac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
-            <span class="s2">&quot;the setter for property `refrac`.&quot;</span>
+            <span class="s2">&quot;the setter for property &#39;refrac&#39;&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -358,7 +407,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement &quot;</span>
-            <span class="s2">&quot;the getter for property `spike`.&quot;</span>
+            <span class="s2">&quot;the getter for property &#39;spike&#39;&quot;</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="Neuron.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.clear">[docs]</a>    <span class="nd">@abstractmethod</span>
@@ -369,7 +418,7 @@
 <span class="sd">            NotImplementedError: ``clear`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement the method `clear`.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement the method &#39;clear&#39;&quot;</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Neuron.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.forward">[docs]</a>    <span class="nd">@abstractmethod</span>
@@ -386,7 +435,160 @@
 <span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement the method `forward`.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Neuron) must implement the method &#39;forward&#39;&quot;</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="InfernoNeuron"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.InfernoNeuron.html#inferno.neural.InfernoNeuron">[docs]</a><span class="k">class</span> <span class="nc">InfernoNeuron</span><span class="p">(</span><span class="n">BatchShapeMixin</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for neurons included in the Inferno library.</span>
+
+<span class="sd">    Unlike :py:class:`Neuron` which only defines an interface, this uses</span>
+<span class="sd">    :py:class:`BatchShapeMixin` to work with the included mixins to automatically</span>
+<span class="sd">    reshape batch-size dependent buffers and parameters.</span>
+
+<span class="sd">    It also assumes :py:meth:`clear` will be implemented so it can be called without</span>
+<span class="sd">    arguments and will, by default, not reset state which should persist, such as</span>
+<span class="sd">    adaptations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="c1"># superclass constructors</span>
+        <span class="n">Neuron</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># call mixin constructors</span>
+        <span class="n">BatchShapeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch size of the module.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (int): new batch size.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: present batch size.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">BatchShapeMixin</span><span class="o">.</span><span class="n">batchsz</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@batchsz</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">BatchShapeMixin</span><span class="o">.</span><span class="n">batchsz</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new simulation time step length.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: present simulation time step length.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``dt`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(InfernoNeuron) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property &#39;dt&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(InfernoNeuron) must implement &quot;</span>
+            <span class="s2">&quot;the setter for property &#39;dt&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Membrane voltages in millivolts.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new membrane voltages.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: present membrane voltages.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``voltage`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(InfernoNeuron) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property &#39;voltage&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@voltage</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(InfernoNeuron) must implement &quot;</span>
+            <span class="s2">&quot;the setter for property &#39;voltage&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">refrac</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remaining refractory periods, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new remaining refractory periods.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: present remaining refractory periods.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``refrac`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(InfernoNeuron) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property &#39;refrac&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@refrac</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">refrac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(InfernoNeuron) must implement &quot;</span>
+            <span class="s2">&quot;the setter for property &#39;refrac&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Action potentials last generated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: if the corresponding neuron generated an action potential</span>
+<span class="sd">                during the prior step.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``spike`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(InfernoNeuron) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property &#39;spike&#39;&quot;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="InfernoNeuron.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.InfernoNeuron.html#inferno.neural.InfernoNeuron.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets neurons to their resting state.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``clear`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(InfernoNeuron) must implement the method &#39;clear&#39;&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="InfernoNeuron.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.InfernoNeuron.html#inferno.neural.InfernoNeuron.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the neuronal dynamics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (torch.Tensor): input currents to the neurons.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: postsynaptic spikes from integration of inputs.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(InfernoNeuron) must implement the method &#39;forward&#39;&quot;</span>
         <span class="p">)</span></div></div>
 
 
@@ -415,33 +617,16 @@
         <span class="o">...</span></div>
 
 
-<div class="viewcode-block" id="Synapse"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse">[docs]</a><span class="k">class</span> <span class="nc">Synapse</span><span class="p">(</span><span class="n">ShapeMixin</span><span class="p">,</span> <span class="n">RecordModule</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing the input synapses for a connection.</span>
+<div class="viewcode-block" id="Synapse"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse">[docs]</a><span class="k">class</span> <span class="nc">Synapse</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing a group of input synapses for a connection.&quot;&quot;&quot;</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        shape (tuple[int, ...] | int): shape of the group of synapses,</span>
-<span class="sd">            excluding the batch dim.</span>
-<span class="sd">        step_time (float): length of a simulation time step, in :math:`ms`.</span>
-<span class="sd">        delay (float): maximum supported delay, in :math:`ms`.</span>
-<span class="sd">        batch_size (int): size of the batch dimension.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># superclass constructors</span>
-        <span class="n">RecordModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
-        <span class="n">ShapeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">Module</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Synapse.extra_repr"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.extra_repr">[docs]</a>    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns extra information on this module.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, batchsz=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="si">}</span><span class="s2">, dt=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2">, delay=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, batchsz=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="si">}</span><span class="s2">, dt=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="si">}</span><span class="s2">, delay=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 <div class="viewcode-block" id="Synapse.partialconstructor"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.partialconstructor">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="nd">@abstractmethod</span>
@@ -456,11 +641,11 @@
 <span class="sd">           SynapseConstructor: partial constructor for synapses of a given class.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
-            <span class="s2">&quot;the method `partialconstructor`.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span> <span class="s2">&quot;the method &#39;partialconstructor&#39;&quot;</span>
         <span class="p">)</span></div>
 
     <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
 
@@ -470,28 +655,36 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            float: present simulation time step length.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">RecordModule</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span> <span class="s2">&quot;the getter for property &#39;dt&#39;&quot;</span>
+        <span class="p">)</span>
 
     <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="n">RecordModule</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span> <span class="s2">&quot;the setter for property &#39;dt&#39;&quot;</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maximum supported delay, in milliseconds.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            float: maximum supported delay.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property &#39;delay&#39;&quot;</span>
+        <span class="p">)</span>
 
     <span class="nd">@delay</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">recordsz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="k">if</span> <span class="n">recordsz</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
+            <span class="s2">&quot;the setter for property &#39;delay&#39;&quot;</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
@@ -509,7 +702,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
-            <span class="s2">&quot;the getter for property `current`.&quot;</span>
+            <span class="s2">&quot;the getter for property &#39;current&#39;&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
@@ -517,7 +710,7 @@
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
-            <span class="s2">&quot;the setter for property `current`.&quot;</span>
+            <span class="s2">&quot;the setter for property &#39;current&#39;&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -536,7 +729,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
-            <span class="s2">&quot;the getter for property `spike`.&quot;</span>
+            <span class="s2">&quot;the getter for property &#39;spike&#39;&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@spike</span><span class="o">.</span><span class="n">setter</span>
@@ -544,7 +737,7 @@
     <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
-            <span class="s2">&quot;the setter for property `spike`.&quot;</span>
+            <span class="s2">&quot;the setter for property &#39;spike&#39;&quot;</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="Synapse.current_at"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.current_at">[docs]</a>    <span class="nd">@abstractmethod</span>
@@ -561,7 +754,7 @@
 <span class="sd">            NotImplementedError: ``current_at`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method `current_at`.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method &#39;current_at&#39;&quot;</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Synapse.spike_at"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.spike_at">[docs]</a>    <span class="nd">@abstractmethod</span>
@@ -578,7 +771,7 @@
 <span class="sd">            NotImplementedError: ``spike_at`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method `spike_at`.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method &#39;spike_at&#39;&quot;</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Synapse.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.clear">[docs]</a>    <span class="nd">@abstractmethod</span>
@@ -589,7 +782,7 @@
 <span class="sd">            NotImplementedError: ``clear`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method `clear`.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method &#39;clear&#39;&quot;</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Synapse.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.forward">[docs]</a>    <span class="nd">@abstractmethod</span>
@@ -606,7 +799,192 @@
 <span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method `forward`.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method &#39;forward&#39;&quot;</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="InfernoSynapse"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.InfernoSynapse.html#inferno.neural.InfernoSynapse">[docs]</a><span class="k">class</span> <span class="nc">InfernoSynapse</span><span class="p">(</span><span class="n">DelayedMixin</span><span class="p">,</span> <span class="n">BatchShapeMixin</span><span class="p">,</span> <span class="n">Synapse</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base class for representing synapses included in the Inferno library.</span>
+
+<span class="sd">    Unlike :py:class:`Neuron` which only defines an interface, this uses</span>
+<span class="sd">    :py:class:`BatchShapeMixin` and :py:class:`DelayedMixin` to work with the included</span>
+<span class="sd">    mixins to automatically reshape batch-size dependent buffers and parameters, and to</span>
+<span class="sd">    manage recorded history for delay-stored buffers and parameters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shape (tuple[int, ...] | int): shape of the group of synapses,</span>
+<span class="sd">            excluding the batch dim.</span>
+<span class="sd">        step_time (float): length of a simulation time step, in :math:`ms`.</span>
+<span class="sd">        delay (float): maximum supported delay, in :math:`ms`.</span>
+<span class="sd">        batch_size (int): size of the batch dimension.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># superclass constructors</span>
+        <span class="n">Synapse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># mixin constructors</span>
+        <span class="n">BatchShapeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">DelayedMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InfernoSynapse.partialconstructor"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.InfernoSynapse.html#inferno.neural.InfernoSynapse.partialconstructor">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">partialconstructor</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynapseConstructor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a function with a common signature for synapse construction.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``partialconstructor`` must be implemented</span>
+<span class="sd">                by the subclass.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           SynapseConstructor: partial constructor for synapses of a given class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span> <span class="s2">&quot;the method &#39;partialconstructor&#39;&quot;</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new simulation time step length.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: present simulation time step length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DelayedMixin</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">DelayedMixin</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maximum supported delay, in milliseconds.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: maximum supported delay.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DelayedMixin</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@delay</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">DelayedMixin</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents of the synapses at present, in nanoamperes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new synapse currents.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: present synaptic currents.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``current`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property &#39;current&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
+            <span class="s2">&quot;the setter for property &#39;current&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spike input to the synapses at present.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (torch.Tensor): new spike input.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: present spike input.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``spike`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
+            <span class="s2">&quot;the getter for property &#39;spike&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@spike</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement &quot;</span>
+            <span class="s2">&quot;the setter for property &#39;spike&#39;&quot;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="InfernoSynapse.current_at"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.InfernoSynapse.html#inferno.neural.InfernoSynapse.current_at">[docs]</a>    <span class="k">def</span> <span class="nf">current_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Currents, in nanoamperes, at times specified by delays, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            selector (torch.Tensor): delays for selection of currents.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: synaptic currents at the specified times.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``current_at`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method &#39;current_at&#39;&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="InfernoSynapse.spike_at"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.InfernoSynapse.html#inferno.neural.InfernoSynapse.spike_at">[docs]</a>    <span class="k">def</span> <span class="nf">spike_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spikes, as booleans, at times specified by delays, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            selector (torch.Tensor): delays for selection of spikes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: spike input at the given times.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``spike_at`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method &#39;spike_at&#39;&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="InfernoSynapse.clear"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.InfernoSynapse.html#inferno.neural.InfernoSynapse.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets synapses to their resting state.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``clear`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method &#39;clear&#39;&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="InfernoSynapse.forward"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.InfernoSynapse.html#inferno.neural.InfernoSynapse.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the synaptic dynamics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *inputs (torch.Tensor): tensors shaped like the synapse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: synaptic currents after integration of the inputs.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: ``forward`` must be implemented by the subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Synapse) must implement the method &#39;forward&#39;&quot;</span>
         <span class="p">)</span></div></div>
 
 

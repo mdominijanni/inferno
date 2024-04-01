@@ -33,8 +33,8 @@
     :nosignatures:
     :toctree: generated
 
+    RecordReducer
     FoldReducer
-    FoldingReducer
     PassthroughReducer
     EventReducer
     NearestTraceReducer

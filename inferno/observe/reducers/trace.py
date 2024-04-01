@@ -1,20 +1,20 @@
-from .base import FoldingReducer
+from .base import FoldReducer
 from ... import (
     exp,
-    interpolation,
     trace_nearest,
     trace_cumulative,
     trace_nearest_scaled,
     trace_cumulative_scaled,
 )
 from ..._internal import argtest
+from ...functional import interp_expdecay
 from ...types import OneToOne
 from functools import partial
 import math
 import torch
 
 
-class NearestTraceReducer(FoldingReducer):
+class NearestTraceReducer(FoldReducer):
     r"""Stores the trace over time, considering the latest match.
 
     .. math::
@@ -51,7 +51,7 @@ class NearestTraceReducer(FoldingReducer):
         duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
+        FoldReducer.__init__(self, step_time, duration, 0)
 
         # reducer attributes
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -72,11 +72,11 @@ class NearestTraceReducer(FoldingReducer):
         Returns:
             float: length of the simulation time step.
         """
-        return FoldingReducer.dt.fget(self)
+        return FoldReducer.dt.fget(self)
 
     @dt.setter
     def dt(self, value: float):
-        FoldingReducer.dt.fset(self, value)
+        FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
@@ -99,17 +99,6 @@ class NearestTraceReducer(FoldingReducer):
             tolerance=self.tolerance,
         )
 
-    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
-        r"""Setting of entire state history to zero.
-
-        Args:
-            inputs (torch.Tensor): empty tensor of state.
-
-        Returns:
-            torch.Tensor: filled state tensor.
-        """
-        return inputs.fill_(0)
-
     def interpolate(
         self,
         prev_data: torch.Tensor,
@@ -129,12 +118,12 @@ class NearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return interpolation.expdecay(
+        return interp_expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )
 
 
-class CumulativeTraceReducer(FoldingReducer):
+class CumulativeTraceReducer(FoldReducer):
     r"""Stores the trace over time, considering all prior matches.
 
     .. math::
@@ -167,7 +156,7 @@ class CumulativeTraceReducer(FoldingReducer):
         duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
+        FoldReducer.__init__(self, step_time, duration, 0)
 
         # reducer attributes
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -188,11 +177,11 @@ class CumulativeTraceReducer(FoldingReducer):
         Returns:
             float: length of the simulation time step.
         """
-        return FoldingReducer.dt.fget(self)
+        return FoldReducer.dt.fget(self)
 
     @dt.setter
     def dt(self, value: float):
-        FoldingReducer.dt.fset(self, value)
+        FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
@@ -215,17 +204,6 @@ class CumulativeTraceReducer(FoldingReducer):
             tolerance=self.tolerance,
         )
 
-    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
-        r"""Setting of entire state history to zero.
-
-        Args:
-            inputs (torch.Tensor): empty tensor of state.
-
-        Returns:
-            torch.Tensor: filled state tensor.
-        """
-        return inputs.fill_(0)
-
     def interpolate(
         self,
         prev_data: torch.Tensor,
@@ -245,12 +223,12 @@ class CumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return interpolation.expdecay(
+        return interp_expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )
 
 
-class ScaledNearestTraceReducer(FoldingReducer):
+class ScaledNearestTraceReducer(FoldReducer):
     r"""Stores the trace over time, scaled by the input, considering the latest match.
 
     .. math::
@@ -291,7 +269,7 @@ class ScaledNearestTraceReducer(FoldingReducer):
         duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
+        FoldReducer.__init__(self, step_time, duration, 0)
 
         # reducer attributes
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -310,11 +288,11 @@ class ScaledNearestTraceReducer(FoldingReducer):
         Returns:
             float: length of the simulation time step.
         """
-        return FoldingReducer.dt.fget(self)
+        return FoldReducer.dt.fget(self)
 
     @dt.setter
     def dt(self, value: float):
-        FoldingReducer.dt.fset(self, value)
+        FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
@@ -337,17 +315,6 @@ class ScaledNearestTraceReducer(FoldingReducer):
             matchfn=self.criterion,
         )
 
-    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
-        r"""Setting of entire state history to zero.
-
-        Args:
-            inputs (torch.Tensor): empty tensor of state.
-
-        Returns:
-            torch.Tensor: filled state tensor.
-        """
-        return inputs.fill_(0)
-
     def interpolate(
         self,
         prev_data: torch.Tensor,
@@ -367,12 +334,12 @@ class ScaledNearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return interpolation.expdecay(
+        return interp_expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )
 
 
-class ScaledCumulativeTraceReducer(FoldingReducer):
+class ScaledCumulativeTraceReducer(FoldReducer):
     r"""Stores the trace over time, scaled by the input, considering all prior matches.
 
     .. math::
@@ -409,7 +376,7 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
+        FoldReducer.__init__(self, step_time, duration, 0)
 
         # register state
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -428,11 +395,11 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         Returns:
             float: length of the simulation time step.
         """
-        return FoldingReducer.dt.fget(self)
+        return FoldReducer.dt.fget(self)
 
     @dt.setter
     def dt(self, value: float):
-        FoldingReducer.dt.fset(self, value)
+        FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
@@ -455,17 +422,6 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
             matchfn=self.criterion,
         )
 
-    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
-        r"""Setting of entire state history to zero.
-
-        Args:
-            inputs (torch.Tensor): empty tensor of state.
-
-        Returns:
-            torch.Tensor: filled state tensor.
-        """
-        return inputs.fill_(0)
-
     def interpolate(
         self,
         prev_data: torch.Tensor,
@@ -485,12 +441,12 @@ class ScaledCumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return interpolation.expdecay(
+        return interp_expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )
 
 
-class ConditionalNearestTraceReducer(FoldingReducer):
+class ConditionalNearestTraceReducer(FoldReducer):
     r"""Stores the trace of over time, scaled by the input, considering the latest condition.
 
     .. math::
@@ -529,7 +485,7 @@ class ConditionalNearestTraceReducer(FoldingReducer):
         duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
+        FoldReducer.__init__(self, step_time, duration, 0)
 
         # reducer attributes
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -547,11 +503,11 @@ class ConditionalNearestTraceReducer(FoldingReducer):
         Returns:
             float: length of the simulation time step.
         """
-        return FoldingReducer.dt.fget(self)
+        return FoldReducer.dt.fget(self)
 
     @dt.setter
     def dt(self, value: float):
-        FoldingReducer.dt.fset(self, value)
+        FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
     def fold(
@@ -577,17 +533,6 @@ class ConditionalNearestTraceReducer(FoldingReducer):
             matchfn=partial(lambda o, c: c, c=cond),
         )
 
-    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
-        r"""Setting of entire state history to zero.
-
-        Args:
-            inputs (torch.Tensor): empty tensor of state.
-
-        Returns:
-            torch.Tensor: filled state tensor.
-        """
-        return inputs.fill_(0)
-
     def interpolate(
         self,
         prev_data: torch.Tensor,
@@ -607,12 +552,12 @@ class ConditionalNearestTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return interpolation.expdecay(
+        return interp_expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )
 
 
-class ConditionalCumulativeTraceReducer(FoldingReducer):
+class ConditionalCumulativeTraceReducer(FoldReducer):
     r"""Stores the trace over time, scaled by the input, considering all prior conditions.
 
     .. math::
@@ -647,7 +592,7 @@ class ConditionalCumulativeTraceReducer(FoldingReducer):
         duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
+        FoldReducer.__init__(self, step_time, duration, 0)
 
         # register state
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -665,11 +610,11 @@ class ConditionalCumulativeTraceReducer(FoldingReducer):
         Returns:
             float: length of the simulation time step.
         """
-        return FoldingReducer.dt.fget(self)
+        return FoldReducer.dt.fget(self)
 
     @dt.setter
     def dt(self, value: float):
-        FoldingReducer.dt.fset(self, value)
+        FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
     def fold(
@@ -695,17 +640,6 @@ class ConditionalCumulativeTraceReducer(FoldingReducer):
             matchfn=partial(lambda o, c: c, c=cond),
         )
 
-    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
-        r"""Setting of entire state history to zero.
-
-        Args:
-            inputs (torch.Tensor): empty tensor of state.
-
-        Returns:
-            torch.Tensor: filled state tensor.
-        """
-        return inputs.fill_(0)
-
     def interpolate(
         self,
         prev_data: torch.Tensor,
@@ -725,6 +659,6 @@ class ConditionalCumulativeTraceReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return interpolation.expdecay(
+        return interp_expdecay(
             prev_data, next_data, sample_at, step_time, self.time_constant
         )

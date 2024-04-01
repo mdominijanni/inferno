@@ -1,6 +1,0 @@
-﻿multiplicative
-==============
-
-.. currentmodule:: inferno.bounding
-
-.. autofunction:: multiplicative

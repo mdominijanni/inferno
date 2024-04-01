@@ -218,15 +218,14 @@
         <article role="main">
           <h1>Source code for inferno.neural.synapses.current</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">SpikeCurrentMixin</span><span class="p">,</span> <span class="n">SpikeDerivedCurrentMixin</span>
-<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">DelayedSpikeCurrentAccessorMixin</span>
-<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Synapse</span><span class="p">,</span> <span class="n">SynapseConstructor</span>
-<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">interpolation</span>
+<span class="kn">from</span> <span class="nn">..base</span> <span class="kn">import</span> <span class="n">InfernoSynapse</span><span class="p">,</span> <span class="n">SynapseConstructor</span>
 <span class="kn">from</span> <span class="nn">..._internal</span> <span class="kn">import</span> <span class="n">argtest</span>
+<span class="kn">from</span> <span class="nn">...functional</span> <span class="kn">import</span> <span class="n">interp_nearest</span><span class="p">,</span> <span class="n">interp_previous</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
 
 
-<div class="viewcode-block" id="DeltaCurrent"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DeltaCurrent.html#inferno.neural.DeltaCurrent">[docs]</a><span class="k">class</span> <span class="nc">DeltaCurrent</span><span class="p">(</span><span class="n">DelayedSpikeCurrentAccessorMixin</span><span class="p">,</span> <span class="n">SpikeDerivedCurrentMixin</span><span class="p">,</span> <span class="n">Synapse</span><span class="p">):</span>
+<div class="viewcode-block" id="DeltaCurrent"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DeltaCurrent.html#inferno.neural.DeltaCurrent">[docs]</a><span class="k">class</span> <span class="nc">DeltaCurrent</span><span class="p">(</span><span class="n">SpikeDerivedCurrentMixin</span><span class="p">,</span> <span class="n">InfernoSynapse</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Memoryless synapse which responds instantaneously to input.</span>
 
 <span class="sd">    .. math::</span>
@@ -270,38 +269,34 @@
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
-        <span class="n">Synapse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">InfernoSynapse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
 
         <span class="c1"># synapse attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">Synapse</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">spike_q</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;spike_q&quot;</span><span class="p">,</span> <span class="n">spike_q</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
         <span class="k">match</span> <span class="n">interp_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
             <span class="k">case</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
-                <span class="n">interp</span> <span class="o">=</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">nearest</span>
+                <span class="n">interp</span> <span class="o">=</span> <span class="n">interp_nearest</span>
             <span class="k">case</span> <span class="s2">&quot;previous&quot;</span><span class="p">:</span>
-                <span class="n">interp</span> <span class="o">=</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">previous</span>
+                <span class="n">interp</span> <span class="o">=</span> <span class="n">interp_previous</span>
             <span class="k">case</span> <span class="k">_</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;invalid interp_mode &#39;</span><span class="si">{</span><span class="n">interp_mode</span><span class="si">}</span><span class="s2">&#39; received, must be one of &quot;</span>
                     <span class="s2">&quot;&#39;nearest&#39; or &#39;previous&#39;.&quot;</span>
                 <span class="p">)</span>
 
-        <span class="c1"># call mixin constructors</span>
+        <span class="c1"># call mixin constructor</span>
         <span class="n">SpikeDerivedCurrentMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span>
-            <span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">DelayedSpikeCurrentAccessorMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="kc">False</span><span class="p">,</span>
-            <span class="kc">True</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span>
+            <span class="s2">&quot;_to_current&quot;</span><span class="p">,</span>
             <span class="n">current_interp</span><span class="o">=</span><span class="n">interp</span><span class="p">,</span>
+            <span class="n">current_interp_kwargs</span><span class="o">=</span><span class="p">{},</span>
             <span class="n">spike_interp</span><span class="o">=</span><span class="n">interp</span><span class="p">,</span>
+            <span class="n">spike_interp_kwargs</span><span class="o">=</span><span class="p">{},</span>
+            <span class="n">current_overbound</span><span class="o">=</span><span class="n">current_overbound</span><span class="p">,</span>
+            <span class="n">spike_overbound</span><span class="o">=</span><span class="n">spike_overbound</span><span class="p">,</span>
             <span class="n">tolerance</span><span class="o">=</span><span class="n">interp_tol</span><span class="p">,</span>
-            <span class="n">current_overval</span><span class="o">=</span><span class="n">current_overbound</span><span class="p">,</span>
-            <span class="n">spike_overval</span><span class="o">=</span><span class="n">spike_overbound</span><span class="p">,</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="DeltaCurrent.partialconstructor"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DeltaCurrent.html#inferno.neural.DeltaCurrent.partialconstructor">[docs]</a>    <span class="nd">@classmethod</span>
@@ -351,28 +346,6 @@
 
         <span class="k">return</span> <span class="n">constructor</span></div>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
-
-<span class="sd">        For tensor-based calculations, the internal attribute ``step_time`` can</span>
-<span class="sd">        be used. The getter for ``dt`` will use the ``RecordModule`` value, the</span>
-<span class="sd">        setter will set to the ``RecordModule`` value then create the corresponding</span>
-<span class="sd">        tensor and assign that to ``step_time``.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (float): new simulation time step length.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            float: present simulation time step length.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">Synapse</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-
-    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="n">Synapse</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-
     <span class="k">def</span> <span class="nf">_to_current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Used internally, converts spikes to currents.</span>
 
@@ -382,11 +355,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: synaptic current at the time of the provided input spikes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">spikes</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spike_q</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">spikes</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spike_q</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DeltaCurrent.clear"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DeltaCurrent.html#inferno.neural.DeltaCurrent.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets synapses to their resting state.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="s2">&quot;spike_&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spike_</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DeltaCurrent.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DeltaCurrent.html#inferno.neural.DeltaCurrent.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the synaptic dynamics.</span>
@@ -404,7 +377,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current</span></div></div>
 
 
-<div class="viewcode-block" id="DeltaPlusCurrent"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DeltaPlusCurrent.html#inferno.neural.DeltaPlusCurrent">[docs]</a><span class="k">class</span> <span class="nc">DeltaPlusCurrent</span><span class="p">(</span><span class="n">DelayedSpikeCurrentAccessorMixin</span><span class="p">,</span> <span class="n">SpikeCurrentMixin</span><span class="p">,</span> <span class="n">Synapse</span><span class="p">):</span>
+<div class="viewcode-block" id="DeltaPlusCurrent"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DeltaPlusCurrent.html#inferno.neural.DeltaPlusCurrent">[docs]</a><span class="k">class</span> <span class="nc">DeltaPlusCurrent</span><span class="p">(</span><span class="n">SpikeCurrentMixin</span><span class="p">,</span> <span class="n">InfernoSynapse</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Memoryless synapse which responds instantaneously to input, with passthrough current.</span>
 
 <span class="sd">    .. math::</span>
@@ -448,39 +421,34 @@
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
-        <span class="n">Synapse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">InfernoSynapse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
 
         <span class="c1"># synapse attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">Synapse</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">spike_q</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;spike_q&quot;</span><span class="p">,</span> <span class="n">spike_q</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
         <span class="k">match</span> <span class="n">interp_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
             <span class="k">case</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
-                <span class="n">interp</span> <span class="o">=</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">nearest</span>
+                <span class="n">interp</span> <span class="o">=</span> <span class="n">interp_nearest</span>
             <span class="k">case</span> <span class="s2">&quot;previous&quot;</span><span class="p">:</span>
-                <span class="n">interp</span> <span class="o">=</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">previous</span>
+                <span class="n">interp</span> <span class="o">=</span> <span class="n">interp_previous</span>
             <span class="k">case</span> <span class="k">_</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;invalid interp_mode &#39;</span><span class="si">{</span><span class="n">interp_mode</span><span class="si">}</span><span class="s2">&#39; received, must be one of &quot;</span>
                     <span class="s2">&quot;&#39;nearest&#39; or &#39;previous&#39;.&quot;</span>
                 <span class="p">)</span>
 
-        <span class="c1"># call mixin constructors</span>
+        <span class="c1"># call mixin constructor</span>
         <span class="n">SpikeCurrentMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">),</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordsz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span>
-            <span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">DelayedSpikeCurrentAccessorMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="kc">True</span><span class="p">,</span>
-            <span class="kc">True</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batchedshape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span>
             <span class="n">current_interp</span><span class="o">=</span><span class="n">interp</span><span class="p">,</span>
+            <span class="n">current_interp_kwargs</span><span class="o">=</span><span class="p">{},</span>
             <span class="n">spike_interp</span><span class="o">=</span><span class="n">interp</span><span class="p">,</span>
+            <span class="n">spike_interp_kwargs</span><span class="o">=</span><span class="p">{},</span>
+            <span class="n">current_overbound</span><span class="o">=</span><span class="n">current_overbound</span><span class="p">,</span>
+            <span class="n">spike_overbound</span><span class="o">=</span><span class="n">spike_overbound</span><span class="p">,</span>
             <span class="n">tolerance</span><span class="o">=</span><span class="n">interp_tol</span><span class="p">,</span>
-            <span class="n">current_overval</span><span class="o">=</span><span class="n">current_overbound</span><span class="p">,</span>
-            <span class="n">spike_overval</span><span class="o">=</span><span class="n">spike_overbound</span><span class="p">,</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="DeltaPlusCurrent.partialconstructor"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DeltaPlusCurrent.html#inferno.neural.DeltaPlusCurrent.partialconstructor">[docs]</a>    <span class="nd">@classmethod</span>
@@ -530,32 +498,10 @@
 
         <span class="k">return</span> <span class="n">constructor</span></div>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
-
-<span class="sd">        For tensor-based calculations, the internal attribute ``step_time`` can</span>
-<span class="sd">        be used. The getter for ``dt`` will use the ``RecordModule`` value, the</span>
-<span class="sd">        setter will set to the ``RecordModule`` value then create the corresponding</span>
-<span class="sd">        tensor and assign that to ``step_time``.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            value (float): new simulation time step length.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            float: present simulation time step length.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">Synapse</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-
-    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="n">Synapse</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-
 <div class="viewcode-block" id="DeltaPlusCurrent.clear"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DeltaPlusCurrent.html#inferno.neural.DeltaPlusCurrent.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Resets synapses to their resting state.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="s2">&quot;spike_&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="s2">&quot;current_&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spike_</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DeltaPlusCurrent.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.DeltaPlusCurrent.html#inferno.neural.DeltaPlusCurrent.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs a simulation step of the synaptic dynamics.</span>
@@ -572,7 +518,7 @@
 <span class="sd">            broadcastable with :py:attr:`current`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">spike</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spike_q</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_time</span><span class="p">),</span> <span class="o">*</span><span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spike_q</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">),</span> <span class="o">*</span><span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current</span></div></div>
 </pre></div>
         </article>

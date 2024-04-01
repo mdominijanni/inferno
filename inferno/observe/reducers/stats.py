@@ -1,10 +1,11 @@
-from .base import FoldingReducer
-from ... import exponential_smoothing, interpolation
+from .base import FoldReducer
+from ... import exponential_smoothing
 from ..._internal import argtest
+from ...functional import interp_linear
 import torch
 
 
-class EMAReducer(FoldingReducer):
+class EMAReducer(FoldReducer):
     r"""Stores the exponential moving average.
 
     .. math::
@@ -22,8 +23,8 @@ class EMAReducer(FoldingReducer):
     For some time constant :math:`\tau`.
 
     Args:
-        alpha (float): exponential smoothing factor, :math:`\alpha`.
         step_time (float): length of time between observations, :math:`\Delta t`.
+        alpha (float): exponential smoothing factor, :math:`\alpha`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
 
@@ -34,13 +35,12 @@ class EMAReducer(FoldingReducer):
 
     def __init__(
         self,
-        alpha: float,
         step_time: float,
-        *,
+        alpha: float,
         duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
+        FoldReducer.__init__(self, step_time, duration, 0)
 
         # set state
         self.alpha = argtest.minmax_incl("alpha", alpha, 0, 1, float)
@@ -57,17 +57,6 @@ class EMAReducer(FoldingReducer):
             torch.Tensor: state for the current time step.
         """
         return exponential_smoothing(obs, state, alpha=self.alpha)
-
-    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
-        r"""Setting of entire state history to zero.
-
-        Args:
-            inputs (torch.Tensor): empty tensor of state.
-
-        Returns:
-            torch.Tensor: filled state tensor.
-        """
-        return inputs.fill_(0)
 
     def interpolate(
         self,
@@ -88,4 +77,4 @@ class EMAReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return interpolation.linear(prev_data, next_data, sample_at, step_time)
+        return interp_linear(prev_data, next_data, sample_at, step_time)

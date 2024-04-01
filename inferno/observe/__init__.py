@@ -1,7 +1,7 @@
 from .reducers.base import (
     Reducer,
+    RecordReducer,
     FoldReducer,
-    FoldingReducer,
 )
 
 from .reducers.general import (
@@ -34,13 +34,13 @@ from .monitors import (
 
 from .pooling import (
     Observable,
-    MonitorPool
+    MonitorPool,
 )
 
 __all__ = [
     "Reducer",
+    "RecordReducer",
     "FoldReducer",
-    "FoldingReducer",
     "NearestTraceReducer",
     "CumulativeTraceReducer",
     "ScaledNearestTraceReducer",

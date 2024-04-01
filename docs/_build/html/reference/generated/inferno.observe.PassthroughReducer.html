@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="EventReducer" href="inferno.observe.EventReducer.html" /><link rel="prev" title="FoldingReducer" href="inferno.observe.FoldingReducer.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="EventReducer" href="inferno.observe.EventReducer.html" /><link rel="prev" title="FoldReducer" href="inferno.observe.FoldReducer.html" />
 
     <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>PassthroughReducer - Inferno</title>
@@ -223,7 +223,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.observe.PassthroughReducer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PassthroughReducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/observe/reducers/general.html#PassthroughReducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.PassthroughReducer" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="inferno.observe.FoldingReducer.html#inferno.observe.FoldingReducer" title="inferno.observe.reducers.base.FoldingReducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoldingReducer</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="inferno.observe.FoldReducer.html#inferno.observe.FoldReducer" title="inferno.observe.reducers.base.FoldReducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoldReducer</span></code></a></p>
 <p>Directly stores prior observations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -248,23 +248,6 @@ None if no prior observations.</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>state for the current time step.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.observe.PassthroughReducer.initialize">
-<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/reducers/general.html#PassthroughReducer.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.PassthroughReducer.initialize" title="Permalink to this definition">#</a></dt>
-<dd><p>Setting of entire state history to zero.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>inputs</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – empty tensor of state.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>filled state tensor.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
@@ -313,14 +296,14 @@ subsequent observations.</p></li>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.observe.FoldingReducer.html">
+          <a class="prev-page" href="inferno.observe.FoldReducer.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">FoldingReducer</div>
+                <div class="title">FoldReducer</div>
                 
               </div>
             </a>
@@ -357,7 +340,6 @@ subsequent observations.</p></li>
 <li><a class="reference internal" href="#">PassthroughReducer</a><ul>
 <li><a class="reference internal" href="#inferno.observe.PassthroughReducer"><code class="docutils literal notranslate"><span class="pre">PassthroughReducer</span></code></a><ul>
 <li><a class="reference internal" href="#inferno.observe.PassthroughReducer.fold"><code class="docutils literal notranslate"><span class="pre">PassthroughReducer.fold()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.observe.PassthroughReducer.initialize"><code class="docutils literal notranslate"><span class="pre">PassthroughReducer.initialize()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.PassthroughReducer.interpolate"><code class="docutils literal notranslate"><span class="pre">PassthroughReducer.interpolate()</span></code></a></li>
 </ul>
 </li>

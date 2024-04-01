@@ -631,6 +631,11 @@ underlying storage. It only moves the pointer back so the next
 <span class="bp">self</span><span class="o">.</span><span class="n">incr</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>If the storage is uninitialized, then it will be made automatically. The
+data type and gradient requirement will be preserved, but the storage
+will be put on the same device as <code class="docutils literal notranslate"><span class="pre">obs</span></code>. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, the
+data type may be promoted to that of <code class="docutils literal notranslate"><span class="pre">obs</span></code> by PyTorch. Storage will be
+zero-filled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

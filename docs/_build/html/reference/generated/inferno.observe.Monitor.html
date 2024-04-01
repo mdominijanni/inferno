@@ -270,6 +270,22 @@ can be passed with <code class="docutils literal notranslate"><span class="pre">
 <dd><p>Returns the reducer’s state over all observations.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="inferno.observe.Monitor.latest">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">latest</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.observe.Monitor.latest" title="Permalink to this definition">#</a></dt>
+<dd><p>Return’s the reducer’s current state.</p>
+<p>If <a class="reference internal" href="#inferno.observe.Monitor.peek" title="inferno.observe.Monitor.peek"><code class="xref py py-meth docutils literal notranslate"><span class="pre">peek()</span></code></a> has multiple options, this should be considered as the
+default. Unless overridden, <a class="reference internal" href="#inferno.observe.Monitor.peek" title="inferno.observe.Monitor.peek"><code class="xref py py-meth docutils literal notranslate"><span class="pre">peek()</span></code></a> is called without arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>reducer’s current state.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.observe.Monitor.partialconstructor">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partialconstructor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="inferno.observe.MonitorConstructor.html#inferno.observe.MonitorConstructor" title="inferno.observe.monitors.MonitorConstructor"><span class="pre">MonitorConstructor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/monitors.html#Monitor.partialconstructor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.Monitor.partialconstructor" title="Permalink to this definition">#</a></dt>
@@ -292,22 +308,6 @@ can be passed with <code class="docutils literal notranslate"><span class="pre">
 <dt class="sig sig-object py" id="inferno.observe.Monitor.peek">
 <span class="sig-name descname"><span class="pre">peek</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/monitors.html#Monitor.peek"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.Monitor.peek" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the reducer’s current state.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="inferno.observe.Monitor.peeked">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">peeked</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.observe.Monitor.peeked" title="Permalink to this definition">#</a></dt>
-<dd><p>Return’s the reducer’s current state.</p>
-<p>If <a class="reference internal" href="#inferno.observe.Monitor.peek" title="inferno.observe.Monitor.peek"><code class="xref py py-meth docutils literal notranslate"><span class="pre">peek()</span></code></a> has multiple options, this should be considered as the
-default. Unless overridden, <a class="reference internal" href="#inferno.observe.Monitor.peek" title="inferno.observe.Monitor.peek"><code class="xref py py-meth docutils literal notranslate"><span class="pre">peek()</span></code></a> is called without arguments.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>reducer’s current state.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -409,9 +409,9 @@ registered if None. Defaults to None.</p>
 <li><a class="reference internal" href="#inferno.observe.Monitor"><code class="docutils literal notranslate"><span class="pre">Monitor</span></code></a><ul>
 <li><a class="reference internal" href="#inferno.observe.Monitor.clear"><code class="docutils literal notranslate"><span class="pre">Monitor.clear()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Monitor.dump"><code class="docutils literal notranslate"><span class="pre">Monitor.dump()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.observe.Monitor.latest"><code class="docutils literal notranslate"><span class="pre">Monitor.latest</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Monitor.partialconstructor"><code class="docutils literal notranslate"><span class="pre">Monitor.partialconstructor()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Monitor.peek"><code class="docutils literal notranslate"><span class="pre">Monitor.peek()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.observe.Monitor.peeked"><code class="docutils literal notranslate"><span class="pre">Monitor.peeked</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Monitor.reducer"><code class="docutils literal notranslate"><span class="pre">Monitor.reducer</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Monitor.register"><code class="docutils literal notranslate"><span class="pre">Monitor.register()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Monitor.view"><code class="docutils literal notranslate"><span class="pre">Monitor.view()</span></code></a></li>

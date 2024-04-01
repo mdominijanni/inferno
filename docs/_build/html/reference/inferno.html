@@ -353,83 +353,6 @@
 </table>
 </div>
 </section>
-<section id="interpolation">
-<h2>Interpolation<a class="headerlink" href="#interpolation" title="Permalink to this heading">#</a></h2>
-<div class="table-wrapper autosummary longtable colwidths-given docutils container">
-<table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10.0%" />
-<col style="width: 90.0%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interpolation.Interpolation.html#inferno.interpolation.Interpolation" title="inferno.interpolation.Interpolation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.Interpolation</span></code></a></p></td>
-<td><p>Callable used to interpolate in time between two tensors.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interpolation.previous.html#inferno.interpolation.previous" title="inferno.interpolation.previous"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.previous</span></code></a></p></td>
-<td><p>Interpolates by selecting the previous state.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interpolation.nearest.html#inferno.interpolation.nearest" title="inferno.interpolation.nearest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.nearest</span></code></a></p></td>
-<td><p>Interpolates by selecting the nearest state.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interpolation.linear.html#inferno.interpolation.linear" title="inferno.interpolation.linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.linear</span></code></a></p></td>
-<td><p>Interpolates between previous and next states linearlly.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.interpolation.expdecay.html#inferno.interpolation.expdecay" title="inferno.interpolation.expdecay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.expdecay</span></code></a></p></td>
-<td><p>Interpolates by exponentially decaying value from previous state.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.interpolation.expratedecay.html#inferno.interpolation.expratedecay" title="inferno.interpolation.expratedecay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolation.expratedecay</span></code></a></p></td>
-<td><p>Interpolates by exponentially decaying value from previous state.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="parameter-bounding">
-<h2>Parameter Bounding<a class="headerlink" href="#parameter-bounding" title="Permalink to this heading">#</a></h2>
-<div class="table-wrapper autosummary longtable colwidths-given docutils container">
-<table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10.0%" />
-<col style="width: 90.0%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.bounding.FullBounding.html#inferno.bounding.FullBounding" title="inferno.bounding.FullBounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.FullBounding</span></code></a></p></td>
-<td><p>Callable used to apply bounding to the lower and upper limit of a parameter.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.bounding.HalfBounding.html#inferno.bounding.HalfBounding" title="inferno.bounding.HalfBounding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.HalfBounding</span></code></a></p></td>
-<td><p>Callable used to apply bounding to the lower or upper limit of a parameter.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.bounding.power.html#inferno.bounding.power" title="inferno.bounding.power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.power</span></code></a></p></td>
-<td><p>Computes the scaled update of power parameter dependence.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.bounding.upper_power.html#inferno.bounding.upper_power" title="inferno.bounding.upper_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.upper_power</span></code></a></p></td>
-<td><p>Computes the scaled update of upper-bound power parameter dependence.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.bounding.lower_power.html#inferno.bounding.lower_power" title="inferno.bounding.lower_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.lower_power</span></code></a></p></td>
-<td><p>Computes the scaled update of lower-bound power parameter dependence.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.bounding.multiplicative.html#inferno.bounding.multiplicative" title="inferno.bounding.multiplicative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.multiplicative</span></code></a></p></td>
-<td><p>Computes the scaled update of multiplicative parameter dependence.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.bounding.upper_multiplicative.html#inferno.bounding.upper_multiplicative" title="inferno.bounding.upper_multiplicative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.upper_multiplicative</span></code></a></p></td>
-<td><p>Computes the scaled update of upper-bound multiplicative parameter dependence.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.bounding.lower_multiplicative.html#inferno.bounding.lower_multiplicative" title="inferno.bounding.lower_multiplicative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.lower_multiplicative</span></code></a></p></td>
-<td><p>Computes the scaled update of lower-bound multiplicative parameter dependence.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.bounding.sharp.html#inferno.bounding.sharp" title="inferno.bounding.sharp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.sharp</span></code></a></p></td>
-<td><p>Computes the scaled update of sharp parameter dependence.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/inferno.bounding.upper_sharp.html#inferno.bounding.upper_sharp" title="inferno.bounding.upper_sharp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.upper_sharp</span></code></a></p></td>
-<td><p>Computes the scaled update of upper-bound sharp parameter dependence.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/inferno.bounding.lower_sharp.html#inferno.bounding.lower_sharp" title="inferno.bounding.lower_sharp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding.lower_sharp</span></code></a></p></td>
-<td><p>Computes the scaled update of lower-bound sharp parameter dependence.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
 <section id="types">
 <h2>Types<a class="headerlink" href="#types" title="Permalink to this heading">#</a></h2>
 <div class="table-wrapper autosummary longtable colwidths-given docutils container">
@@ -535,12 +458,6 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#spike-trace">Spike Trace</a><ul class="simple">
-</ul>
-</li>
-<li><a class="reference internal" href="#interpolation">Interpolation</a><ul class="simple">
-</ul>
-</li>
-<li><a class="reference internal" href="#parameter-bounding">Parameter Bounding</a><ul class="simple">
 </ul>
 </li>
 <li><a class="reference internal" href="#types">Types</a><ul class="simple">

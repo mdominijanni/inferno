@@ -222,28 +222,24 @@
 <h1>SpikeMixin<a class="headerlink" href="#spikemixin" title="Permalink to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.neural.synapses.mixins.SpikeMixin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SpikeMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spikes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">requires_grad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/synapses/mixins.html#SpikeMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.synapses.mixins.SpikeMixin" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SpikeMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spikes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.functional.Interpolation.html#inferno.functional.Interpolation" title="inferno.functional.protocols.Interpolation"><span class="pre">Interpolation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overbound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/synapses/mixins.html#SpikeMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.synapses.mixins.SpikeMixin" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Mixin for synapses with spike primitive.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>spikes</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – initial input spikes.</p></li>
-<li><p><strong>requires_grad</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – if the parameters created require gradients.
-Defaults to False.</p></li>
+<li><p><strong>interpolation</strong> (<a class="reference internal" href="inferno.functional.Interpolation.html#inferno.functional.Interpolation" title="inferno.functional.Interpolation"><em>Interpolation</em></a>) – interpolation function used when selecting
+prior spikes.</p></li>
+<li><p><strong>interp_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – keyword arguments passed into the interpolation
+function.</p></li>
+<li><p><strong>overbound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><em>None</em>) – value to replace spikes out of bounds, uses values at
+observation limits if None.</p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – maximum difference in time from an observation
+to treat as co-occurring, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p></li>
 </ul>
 </dd>
 </dl>
-<div class="admonition caution">
-<p class="admonition-title">Caution</p>
-<p>This must be added to a class which inherits from
-<code class="xref py py-class docutils literal notranslate"><span class="pre">RecordModule</span></code>, and the constructor for this
-mixin must be called after the module constructor.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This registers a parameter <code class="docutils literal notranslate"><span class="pre">spike_</span></code> and sets it as constrained.</p>
-</div>
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.synapses.mixins.SpikeMixin.spike">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spike</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.neural.synapses.mixins.SpikeMixin.spike" title="Permalink to this definition">#</a></dt>
@@ -259,6 +255,39 @@ mixin must be called after the module constructor.</p>
 <dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.synapses.mixins.SpikeMixin.spike_at">
+<span class="sig-name descname"><span class="pre">spike_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/synapses/mixins.html#SpikeMixin.spike_at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.synapses.mixins.SpikeMixin.spike_at" title="Permalink to this definition">#</a></dt>
+<dd><p>Retrieves previous spike inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>selector</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – time before present for which spike inputs
+should be retrieved, in <span class="math notranslate nohighlight">\(\text{ms}\)</span>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>selected spike inputs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
+</dd>
+</dl>
+<div class="tensorshape admonition">
+<p class="admonition-title">Shape</p>
+<p><code class="docutils literal notranslate"><span class="pre">selector</span></code>:</p>
+<p><span class="math notranslate nohighlight">\(B \times N_0 \times \cdots \times [D]\)</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">return</span></code>:</p>
+<p><span class="math notranslate nohighlight">\(B \times N_0 \times \cdots \times [D]\)</span></p>
+<dl class="simple">
+<dt>Where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(B\)</span> is the batch size.</p></li>
+<li><p><span class="math notranslate nohighlight">\(N_0 \times \cdots\)</span> is the shape of the synapse.</p></li>
+<li><p><span class="math notranslate nohighlight">\(D\)</span> is the number of selectors per synapse.</p></li>
+</ul>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -323,6 +352,7 @@ mixin must be called after the module constructor.</p>
 <li><a class="reference internal" href="#">SpikeMixin</a><ul>
 <li><a class="reference internal" href="#inferno.neural.synapses.mixins.SpikeMixin"><code class="docutils literal notranslate"><span class="pre">SpikeMixin</span></code></a><ul>
 <li><a class="reference internal" href="#inferno.neural.synapses.mixins.SpikeMixin.spike"><code class="docutils literal notranslate"><span class="pre">SpikeMixin.spike</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.synapses.mixins.SpikeMixin.spike_at"><code class="docutils literal notranslate"><span class="pre">SpikeMixin.spike_at()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -341,5 +371,7 @@ mixin must be called after the module constructor.</p>
     <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>

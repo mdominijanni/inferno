@@ -1,6 +1,0 @@
-﻿lower\_multiplicative
-=====================
-
-.. currentmodule:: inferno.bounding
-
-.. autofunction:: lower_multiplicative

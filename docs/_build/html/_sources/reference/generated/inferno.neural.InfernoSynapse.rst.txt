@@ -1,0 +1,8 @@
+﻿InfernoSynapse
+==============
+
+.. currentmodule:: inferno.neural
+
+.. autoclass:: InfernoSynapse
+    :members:
+    :show-inheritance:

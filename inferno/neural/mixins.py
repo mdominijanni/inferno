@@ -23,7 +23,7 @@ class BatchMixin:
         Each attribute must specify the name of a :py:class:`ShapedTensor`.
 
         Args:
-            *attr (str): names of the attribute to set as batched.
+            *attr (str): names of the attributes to set as batched.
         """
         for a in attr:
             if not hasattr(self, a):
@@ -147,7 +147,7 @@ class DelayedMixin:
         Each attribute must specify the name of a :py:class:`RecordTensor`.
 
         Args:
-            *attr (str): names of the attribute to set as batched.
+            *attr (str): names of the attributes to set as batched.
         """
         for a in attr:
             if not hasattr(self, a):
@@ -175,7 +175,7 @@ class DelayedMixin:
 
     @dt.setter
     def dt(self, value: float):
-        value = argtest.gt("batchsz", value, 0, float)
+        value = argtest.gt("dt", value, 0, float)
         if value != self.__step_time:
             for cstr in self.__constrained:
                 getattr(self, cstr).dt = value

@@ -116,8 +116,8 @@
     mixins.ShapeMixin
     mixins.BatchShapeMixin
     mixins.DelayedMixin
-    neuron.mixins.AdaptiveCurrentMixin
-    neuron.mixins.AdaptiveThresholdMixin
+    neurons.mixins.AdaptiveCurrentMixin
+    neurons.mixins.AdaptiveThresholdMixin
     neurons.mixins.CurrentMixin
     neurons.mixins.RefractoryMixin
     neurons.mixins.SpikeRefractoryMixin

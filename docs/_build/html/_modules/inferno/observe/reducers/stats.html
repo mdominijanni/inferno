@@ -217,13 +217,14 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.observe.reducers.stats</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">FoldingReducer</span>
-<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">exponential_smoothing</span><span class="p">,</span> <span class="n">interpolation</span>
+<span></span><span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">FoldReducer</span>
+<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">exponential_smoothing</span>
 <span class="kn">from</span> <span class="nn">..._internal</span> <span class="kn">import</span> <span class="n">argtest</span>
+<span class="kn">from</span> <span class="nn">...functional</span> <span class="kn">import</span> <span class="n">interp_linear</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
-<div class="viewcode-block" id="EMAReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.EMAReducer.html#inferno.observe.EMAReducer">[docs]</a><span class="k">class</span> <span class="nc">EMAReducer</span><span class="p">(</span><span class="n">FoldingReducer</span><span class="p">):</span>
+<div class="viewcode-block" id="EMAReducer"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.EMAReducer.html#inferno.observe.EMAReducer">[docs]</a><span class="k">class</span> <span class="nc">EMAReducer</span><span class="p">(</span><span class="n">FoldReducer</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stores the exponential moving average.</span>
 
 <span class="sd">    .. math::</span>
@@ -241,8 +242,8 @@
 <span class="sd">    For some time constant :math:`\tau`.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        alpha (float): exponential smoothing factor, :math:`\alpha`.</span>
 <span class="sd">        step_time (float): length of time between observations, :math:`\Delta t`.</span>
+<span class="sd">        alpha (float): exponential smoothing factor, :math:`\alpha`.</span>
 <span class="sd">        duration (float, optional): length of time over which results should be</span>
 <span class="sd">            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.</span>
 
@@ -253,13 +254,12 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="o">*</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
-        <span class="n">FoldingReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+        <span class="n">FoldReducer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># set state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">minmax_incl</span><span class="p">(</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
@@ -276,17 +276,6 @@
 <span class="sd">            torch.Tensor: state for the current time step.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">exponential_smoothing</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="EMAReducer.initialize"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.EMAReducer.html#inferno.observe.EMAReducer.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Setting of entire state history to zero.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            inputs (torch.Tensor): empty tensor of state.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: filled state tensor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="EMAReducer.interpolate"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.EMAReducer.html#inferno.observe.EMAReducer.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -307,7 +296,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">interpolation</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">interp_linear</span><span class="p">(</span><span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">)</span></div></div>
 </pre></div>
         </article>
       </div>

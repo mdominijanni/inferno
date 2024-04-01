@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="ShapeMixin" href="inferno.neural.mixins.ShapeMixin.html" /><link rel="prev" title="SynapseConstructor" href="inferno.neural.SynapseConstructor.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="ShapeMixin" href="inferno.neural.mixins.ShapeMixin.html" /><link rel="prev" title="InfernoSynapse" href="inferno.neural.InfernoSynapse.html" />
 
     <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
         <title>BatchMixin - Inferno</title>
@@ -225,22 +225,25 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BatchMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/neural/mixins.html#BatchMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.mixins.BatchMixin" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Mixin for modules with batch-size dependent parameters or buffers.</p>
+<p>Attributes which have are registered as constrained this way will have a constraint
+on their 0th dimension equal to the batch size placed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – initial batch size.</p>
 </dd>
 </dl>
-<div class="admonition caution">
-<p class="admonition-title">Caution</p>
-<p>This must be added to a class which inherits from
-<code class="xref py py-class docutils literal notranslate"><span class="pre">DimensionalModule</span></code>, and the constructor for this
-mixin must be called after the module constructor.</p>
-</div>
-<div class="admonition caution">
-<p class="admonition-title">Caution</p>
-<p>Module which inherit from this mixin cannot be constrained on <code class="docutils literal notranslate"><span class="pre">dim=0</span></code>.
-Do not manually change this constraint, it is managed through <a class="reference internal" href="#inferno.neural.mixins.BatchMixin.batchsz" title="inferno.neural.mixins.BatchMixin.batchsz"><code class="xref py py-attr docutils literal notranslate"><span class="pre">batchsz</span></code></a>.</p>
-</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.neural.mixins.BatchMixin.add_batched">
+<span class="sig-name descname"><span class="pre">add_batched</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/neural/mixins.html#BatchMixin.add_batched"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.neural.mixins.BatchMixin.add_batched" title="Permalink to this definition">#</a></dt>
+<dd><p>Add batch-dependent attributes.</p>
+<p>Each attribute must specify the name of a <code class="xref py py-class docutils literal notranslate"><span class="pre">ShapedTensor</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*attr</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – names of the attributes to set as batched.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="inferno.neural.mixins.BatchMixin.batchsz">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batchsz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#inferno.neural.mixins.BatchMixin.batchsz" title="Permalink to this definition">#</a></dt>
@@ -276,14 +279,14 @@ Do not manually change this constraint, it is managed through <a class="referenc
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="inferno.neural.SynapseConstructor.html">
+          <a class="prev-page" href="inferno.neural.InfernoSynapse.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">SynapseConstructor</div>
+                <div class="title">InfernoSynapse</div>
                 
               </div>
             </a>
@@ -319,6 +322,7 @@ Do not manually change this constraint, it is managed through <a class="referenc
             <ul>
 <li><a class="reference internal" href="#">BatchMixin</a><ul>
 <li><a class="reference internal" href="#inferno.neural.mixins.BatchMixin"><code class="docutils literal notranslate"><span class="pre">BatchMixin</span></code></a><ul>
+<li><a class="reference internal" href="#inferno.neural.mixins.BatchMixin.add_batched"><code class="docutils literal notranslate"><span class="pre">BatchMixin.add_batched()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.mixins.BatchMixin.batchsz"><code class="docutils literal notranslate"><span class="pre">BatchMixin.batchsz</span></code></a></li>
 </ul>
 </li>

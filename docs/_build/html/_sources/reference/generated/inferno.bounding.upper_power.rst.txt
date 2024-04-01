@@ -1,6 +1,0 @@
-﻿upper\_power
-============
-
-.. currentmodule:: inferno.bounding
-
-.. autofunction:: upper_power

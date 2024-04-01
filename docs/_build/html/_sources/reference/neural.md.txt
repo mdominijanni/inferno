@@ -96,7 +96,17 @@
     SynapseConstructor
 ```
 
-## Mixins
+## Internal Components
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    InfernoNeuron
+    InfernoSynapse
+```
+
+## Internal Mixins
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -104,7 +114,10 @@
 
     mixins.BatchMixin
     mixins.ShapeMixin
-    neurons.mixins.AdaptationMixin
+    mixins.BatchShapeMixin
+    mixins.DelayedMixin
+    neurons.mixins.AdaptiveCurrentMixin
+    neurons.mixins.AdaptiveThresholdMixin
     neurons.mixins.CurrentMixin
     neurons.mixins.RefractoryMixin
     neurons.mixins.SpikeRefractoryMixin
@@ -114,7 +127,6 @@
     synapses.mixins.CurrentDerivedSpikeMixin
     synapses.mixins.SpikeDerivedCurrentMixin
     synapses.mixins.SpikeCurrentMixin
-    synapses.mixins.DelayedSpikeCurrentAccessorMixin
     connections.mixins.WeightMixin
     connections.mixins.WeightBiasMixin
     connections.mixins.WeightBiasDelayMixin

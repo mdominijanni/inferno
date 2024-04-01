@@ -217,7 +217,7 @@
         </div>
         <article role="main">
           <h1>Source code for inferno.neural.mixins</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">DimensionalModule</span>
+<span></span><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">ShapedTensor</span><span class="p">,</span> <span class="n">RecordTensor</span>
 <span class="kn">from</span> <span class="nn">.._internal</span> <span class="kn">import</span> <span class="n">argtest</span>
 <span class="kn">import</span> <span class="nn">math</span>
 
@@ -225,35 +225,35 @@
 <div class="viewcode-block" id="BatchMixin"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.mixins.BatchMixin.html#inferno.neural.mixins.BatchMixin">[docs]</a><span class="k">class</span> <span class="nc">BatchMixin</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Mixin for modules with batch-size dependent parameters or buffers.</span>
 
+<span class="sd">    Attributes which have are registered as constrained this way will have a constraint</span>
+<span class="sd">    on their 0th dimension equal to the batch size placed.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        batch_size (int): initial batch size.</span>
-
-<span class="sd">    Caution:</span>
-<span class="sd">        This must be added to a class which inherits from</span>
-<span class="sd">        :py:class:`DimensionalModule`, and the constructor for this</span>
-<span class="sd">        mixin must be called after the module constructor.</span>
-
-<span class="sd">    Caution:</span>
-<span class="sd">        Module which inherit from this mixin cannot be constrained on ``dim=0``.</span>
-<span class="sd">        Do not manually change this constraint, it is managed through :py:attr:`batchsz`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="p">):</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">DimensionalModule</span><span class="p">)</span>
-        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;batch_size&quot;</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__batch_size</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;batch_size&quot;</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__constrained</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
-        <span class="c1"># check that a conflicting constraint doesn&#39;t exist</span>
-        <span class="k">if</span> <span class="mi">0</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> `self` already contains&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;constraint size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> at dim=</span><span class="si">{</span><span class="mi">0</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
+<div class="viewcode-block" id="BatchMixin.add_batched"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.mixins.BatchMixin.html#inferno.neural.mixins.BatchMixin.add_batched">[docs]</a>    <span class="k">def</span> <span class="nf">add_batched</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Add batch-dependent attributes.</span>
 
-        <span class="c1"># register new constraint</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+<span class="sd">        Each attribute must specify the name of a :py:class:`ShapedTensor`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *attr (str): names of the attributes to set as batched.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no attribute &#39;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&#39; exists&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">),</span> <span class="n">ShapedTensor</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;attribute &#39;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&#39; specifies a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span><span class="si">}</span><span class="s2">, not a ShapedTensor&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__batch_size</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__constrained</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -265,40 +265,32 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            int: present batch size.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__batch_size</span>
 
     <span class="nd">@batchsz</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">batchsz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;batchsz&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__batch_size</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">cstr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constrained</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cstr</span><span class="p">)</span><span class="o">.</span><span class="n">reconstrain</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__batch_size</span> <span class="o">=</span> <span class="n">value</span></div>
 
 
 <div class="viewcode-block" id="ShapeMixin"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin">[docs]</a><span class="k">class</span> <span class="nc">ShapeMixin</span><span class="p">(</span><span class="n">BatchMixin</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Mixin for modules with a concept of shape and with batch-size dependencies.</span>
+    <span class="sd">&quot;&quot;&quot;Mixin for modules with a concept of shape.</span>
+
+<span class="sd">    This mixin does not provide options for altering shape, only storing the given</span>
+<span class="sd">    shape and offering related properties.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group being represented,</span>
 <span class="sd">            excluding batch size.</span>
-<span class="sd">        batch_size (int): initial batch size.</span>
-
-<span class="sd">    Caution:</span>
-<span class="sd">        This must be added to a class which inherits from</span>
-<span class="sd">        :py:class:`DimensionalModule`, and the constructor for this</span>
-<span class="sd">        mixin must be called after the module constructor.</span>
-
-<span class="sd">    Caution:</span>
-<span class="sd">        Module which inherit from this mixin cannot be constrained on ``dim=0``.</span>
-<span class="sd">        Do not manually change this constraint, it is managed through :py:attr:`batchsz`.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        This sets an attribute ``__shape`` which is managed internally.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="c1"># call superclass constructor</span>
-        <span class="n">BatchMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
-
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="c1"># validate and set shape</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">),)</span>
@@ -315,15 +307,6 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__shape</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">batchedshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch shape of the module</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            tuple[int, ...]: Shape of the module, including the batch dimension.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__shape</span>
-
-    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Number of elements in the module, excluding replication along the batch dim.</span>
 
@@ -331,6 +314,108 @@
 <span class="sd">            int: number of elements in the module.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__shape</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BatchShapeMixin"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.mixins.BatchShapeMixin.html#inferno.neural.mixins.BatchShapeMixin">[docs]</a><span class="k">class</span> <span class="nc">BatchShapeMixin</span><span class="p">(</span><span class="n">ShapeMixin</span><span class="p">,</span> <span class="n">BatchMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mixin for modules with a concept of shape and with batch-size dependencies.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shape (tuple[int, ...] | int): shape of the group being represented,</span>
+<span class="sd">            excluding batch size.</span>
+<span class="sd">        batch_size (int): initial batch size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="c1"># call superclass constructors</span>
+        <span class="n">ShapeMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+        <span class="n">BatchMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">batchedshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Batch shape of the module</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[int, ...]: Shape of the module, including the batch dimension.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchsz</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span></div>
+
+
+<div class="viewcode-block" id="DelayedMixin"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.mixins.DelayedMixin.html#inferno.neural.mixins.DelayedMixin">[docs]</a><span class="k">class</span> <span class="nc">DelayedMixin</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Mixin for modules with delay-record tensors with shared step time and duration.</span>
+
+<span class="sd">    Attributes which have are registered as constrained this way will have a constraint</span>
+<span class="sd">    on their final dimension equal to the computed record size.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        step_time (float): length of time between stored values in the record.</span>
+<span class="sd">        delay (float): length of time over which prior values are stored.</span>
+
+<span class="sd">    Caution:</span>
+<span class="sd">        :py:class:`RecordTensor` attributes must be added as attributes prior to</span>
+<span class="sd">        initialization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__delay</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__constrained</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DelayedMixin.add_delayed"><a class="viewcode-back" href="../../../reference/generated/inferno.neural.mixins.DelayedMixin.html#inferno.neural.mixins.DelayedMixin.add_delayed">[docs]</a>    <span class="k">def</span> <span class="nf">add_delayed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Add delay-dependent attributes.</span>
+
+<span class="sd">        Each attribute must specify the name of a :py:class:`RecordTensor`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *attr (str): names of the attributes to set as batched.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no attribute &#39;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&#39; exists&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">),</span> <span class="n">RecordTensor</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;attribute &#39;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&#39; specifies a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span><span class="si">}</span><span class="s2">, not a RecordTensor&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__delay</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__constrained</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Length of the simulation time step, in milliseconds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): new simulation time step length.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: present simulation time step length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span>
+
+    <span class="nd">@dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">cstr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constrained</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cstr</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__step_time</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Maximum supported delay, in milliseconds.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: maximum supported delay.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__delay</span>
+
+    <span class="nd">@delay</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;delay&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__delay</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">cstr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__constrained</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cstr</span><span class="p">)</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__delay</span> <span class="o">=</span> <span class="n">value</span></div>
 </pre></div>
         </article>
       </div>

@@ -1,0 +1,8 @@
+﻿RecordReducer
+=============
+
+.. currentmodule:: inferno.observe
+
+.. autoclass:: RecordReducer
+    :members:
+    :show-inheritance:

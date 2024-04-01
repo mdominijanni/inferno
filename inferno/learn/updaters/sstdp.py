@@ -9,7 +9,7 @@ from ...observe import (
     MultiStateMonitor,
     CumulativeTraceReducer,
     PassthroughReducer,
-    FoldingReducer,
+    FoldReducer,
 )
 from functools import partial
 import torch
@@ -17,7 +17,7 @@ from typing import Any, Callable
 import weakref
 
 
-class EligibilityTrace(FoldingReducer):
+class EligibilityTrace(FoldReducer):
     r"""Simple eligibility trace reducer.
 
     .. math::
@@ -44,7 +44,7 @@ class EligibilityTrace(FoldingReducer):
         duration: float,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
+        FoldReducer.__init__(self, step_time, duration)
 
         # register hyperparameters
         self.register_buffer(
@@ -60,11 +60,11 @@ class EligibilityTrace(FoldingReducer):
 
     @property
     def dt(self) -> float:
-        return FoldingReducer.dt.fget(self)
+        return FoldReducer.dt.fget(self)
 
     @dt.setter
     def dt(self, value: float):
-        FoldingReducer.dt.fset(self, value)
+        FoldReducer.dt.fset(self, value)
         self.decay = scalar(torch.exp(-self.dt / self.time_constant), self.decay)
 
     def fold(

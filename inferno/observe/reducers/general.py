@@ -1,11 +1,11 @@
 from __future__ import annotations
-from .base import FoldingReducer
-from ... import interpolation
+from .base import FoldReducer
+from ...functional import interp_previous
 from ...types import OneToOne
 import torch
 
 
-class EventReducer(FoldingReducer):
+class EventReducer(FoldReducer):
     r"""Stores the length of time since an element of the input matched a criterion.
 
     Args:
@@ -27,7 +27,7 @@ class EventReducer(FoldingReducer):
         duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
+        FoldReducer.__init__(self, step_time, duration, float("inf"))
 
         # set non-persistent function
         self.criterion = criterion
@@ -47,17 +47,6 @@ class EventReducer(FoldingReducer):
             return torch.where(self.criterion(obs), 0, float("inf"))
         else:
             return torch.where(self.criterion(obs), 0, state + self.dt)
-
-    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
-        r"""Setting of entire state history to infinity.
-
-        Args:
-            inputs (torch.Tensor): empty tensor of state.
-
-        Returns:
-            torch.Tensor: filled state tensor.
-        """
-        return inputs.fill_(float("inf"))
 
     def interpolate(
         self,
@@ -81,7 +70,7 @@ class EventReducer(FoldingReducer):
         return prev_data + sample_at
 
 
-class PassthroughReducer(FoldingReducer):
+class PassthroughReducer(FoldReducer):
     r"""Directly stores prior observations.
 
     Args:
@@ -89,13 +78,14 @@ class PassthroughReducer(FoldingReducer):
         duration (float, optional): length of time over which results should be
             stored, in the same units as ``step_time``. Defaults to 0.0.
     """
+
     def __init__(
         self,
         step_time: float,
         duration: float = 0.0,
     ):
         # call superclass constructor
-        FoldingReducer.__init__(self, step_time, duration)
+        FoldReducer.__init__(self, step_time, duration, 0)
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of passthrough.
@@ -109,17 +99,6 @@ class PassthroughReducer(FoldingReducer):
             torch.Tensor: state for the current time step.
         """
         return obs
-
-    def initialize(self, inputs: torch.Tensor) -> torch.Tensor:
-        r"""Setting of entire state history to zero.
-
-        Args:
-            inputs (torch.Tensor): empty tensor of state.
-
-        Returns:
-            torch.Tensor: filled state tensor.
-        """
-        return inputs.fill_(0)
 
     def interpolate(
         self,
@@ -140,4 +119,4 @@ class PassthroughReducer(FoldingReducer):
         Returns:
             torch.Tensor: interpolated data at sample time.
         """
-        return interpolation.previous(prev_data, next_data, sample_at, step_time)
+        return interp_previous(prev_data, next_data, sample_at, step_time)

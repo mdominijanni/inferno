@@ -1,6 +1,0 @@
-﻿power
-=====
-
-.. currentmodule:: inferno.bounding
-
-.. autofunction:: power

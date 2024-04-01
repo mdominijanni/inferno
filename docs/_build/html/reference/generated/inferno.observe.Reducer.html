@@ -222,8 +222,8 @@
 <h1>Reducer<a class="headerlink" href="#reducer" title="Permalink to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="inferno.observe.Reducer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Reducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#Reducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.Reducer" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="inferno.RecordModule.html#inferno.RecordModule" title="inferno.core.infrastructure.RecordModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordModule</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Reducer</span></span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#Reducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.Reducer" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="inferno.Module.html#inferno.Module" title="inferno.core.infrastructure.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
 <p>Abstract base class for the recording of inputs over time.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="inferno.observe.Reducer.clear">
@@ -243,15 +243,9 @@
 <dd><p>Initializes state and incorporates inputs into the reducer’s state.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.observe.Reducer.peek">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">peek</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#Reducer.peek"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.Reducer.peek" title="Permalink to this definition">#</a></dt>
-<dd><p>Returns the reducer’s current state.</p>
-</dd></dl>
-
 <dl class="py property">
-<dt class="sig sig-object py" id="inferno.observe.Reducer.peeked">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">peeked</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.observe.Reducer.peeked" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.observe.Reducer.latest">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">latest</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#inferno.observe.Reducer.latest" title="Permalink to this definition">#</a></dt>
 <dd><p>Return’s the reducer’s current state.</p>
 <p>If <a class="reference internal" href="#inferno.observe.Reducer.peek" title="inferno.observe.Reducer.peek"><code class="xref py py-meth docutils literal notranslate"><span class="pre">peek()</span></code></a> has multiple options, this should be considered as the
 default. Unless overridden, <a class="reference internal" href="#inferno.observe.Reducer.peek" title="inferno.observe.Reducer.peek"><code class="xref py py-meth docutils literal notranslate"><span class="pre">peek()</span></code></a> is called without arguments.</p>
@@ -263,6 +257,12 @@ default. Unless overridden, <a class="reference internal" href="#inferno.observe
 <dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))">torch.Tensor</a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.observe.Reducer.peek">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">peek</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/inferno/observe/reducers/base.html#Reducer.peek"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.observe.Reducer.peek" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the reducer’s current state.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -341,8 +341,8 @@ default. Unless overridden, <a class="reference internal" href="#inferno.observe
 <li><a class="reference internal" href="#inferno.observe.Reducer.clear"><code class="docutils literal notranslate"><span class="pre">Reducer.clear()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Reducer.dump"><code class="docutils literal notranslate"><span class="pre">Reducer.dump()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Reducer.forward"><code class="docutils literal notranslate"><span class="pre">Reducer.forward()</span></code></a></li>
+<li><a class="reference internal" href="#inferno.observe.Reducer.latest"><code class="docutils literal notranslate"><span class="pre">Reducer.latest</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Reducer.peek"><code class="docutils literal notranslate"><span class="pre">Reducer.peek()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.observe.Reducer.peeked"><code class="docutils literal notranslate"><span class="pre">Reducer.peeked</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Reducer.push"><code class="docutils literal notranslate"><span class="pre">Reducer.push()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.observe.Reducer.view"><code class="docutils literal notranslate"><span class="pre">Reducer.view()</span></code></a></li>
 </ul>

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from .. import Module
 from .._internal import argtest
-from ..bounding import HalfBounding, FullBounding
+from ..functional import HalfBounding, FullBounding
 from abc import ABC, abstractmethod
 from functools import cache, partial
 import torch

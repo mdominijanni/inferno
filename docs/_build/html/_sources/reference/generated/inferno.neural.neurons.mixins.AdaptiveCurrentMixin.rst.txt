@@ -1,0 +1,8 @@
+﻿AdaptiveCurrentMixin
+====================
+
+.. currentmodule:: inferno.neural.neurons.mixins
+
+.. autoclass:: AdaptiveCurrentMixin
+    :members:
+    :show-inheritance:

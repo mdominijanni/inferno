@@ -1,8 +1,0 @@
-﻿AdaptationMixin
-===============
-
-.. currentmodule:: inferno.neural.neurons.mixins
-
-.. autoclass:: AdaptationMixin
-    :members:
-    :show-inheritance:

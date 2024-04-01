@@ -63,39 +63,6 @@
     trace_cumulative_scaled
 ```
 
-## Interpolation
-```{eval-rst}
-.. autosummary::
-    :nosignatures:
-    :toctree: generated
-
-    interpolation.Interpolation
-    interpolation.previous
-    interpolation.nearest
-    interpolation.linear
-    interpolation.expdecay
-    interpolation.expratedecay
-```
-
-## Parameter Bounding
-```{eval-rst}
-.. autosummary::
-    :nosignatures:
-    :toctree: generated
-
-    bounding.FullBounding
-    bounding.HalfBounding
-    bounding.power
-    bounding.upper_power
-    bounding.lower_power
-    bounding.multiplicative
-    bounding.upper_multiplicative
-    bounding.lower_multiplicative
-    bounding.sharp
-    bounding.upper_sharp
-    bounding.lower_sharp
-```
-
 ## Types
 ```{eval-rst}
 .. autosummary::

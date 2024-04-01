@@ -1,6 +1,0 @@
-﻿sharp
-=====
-
-.. currentmodule:: inferno.bounding
-
-.. autofunction:: sharp

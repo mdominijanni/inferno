@@ -1,6 +1,0 @@
-﻿upper\_sharp
-============
-
-.. currentmodule:: inferno.bounding
-
-.. autofunction:: upper_sharp
