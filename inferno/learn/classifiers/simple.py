@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class MaxRateClassifier(Module):
+class TopRateClassifier(Module):
     r"""Classifies spikes by maximum per-class rates.
 
     The classifier uses an internal parameter :py:attr:`rates` for other

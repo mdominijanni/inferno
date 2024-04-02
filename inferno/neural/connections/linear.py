@@ -546,7 +546,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
             ``data``:
 
-            :math:`B \times N`
+            :math:`B \times N \times [1]`
 
             ``return``:
 
@@ -556,7 +556,10 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
                 * :math:`B` is the batch size.
                 * :math:`N` is the number of elements across output dimensions.
         """
-        return ein.rearrange(data, "b n -> b n 1")
+        if data.ndim == 3:
+            return data
+        else:
+            return ein.rearrange(data, "b n -> b n 1")
 
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection output for pre-post learning methods.

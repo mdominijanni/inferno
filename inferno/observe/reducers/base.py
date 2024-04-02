@@ -315,7 +315,7 @@ class FoldReducer(RecordReducer, ABC):
 
         """
         if not self._initial:
-            self.data_.select(time, self.interpolate, tolerance)
+            return self.data_.select(time, self.interpolate, tolerance=tolerance)
 
     def dump(self, **kwargs) -> torch.Tensor | None:
         r"""Returns the reducer's state over all observations.

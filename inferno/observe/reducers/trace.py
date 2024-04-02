@@ -119,7 +119,7 @@ class NearestTraceReducer(FoldReducer):
             torch.Tensor: interpolated data at sample time.
         """
         return interp_expdecay(
-            prev_data, next_data, sample_at, step_time, self.time_constant
+            prev_data, next_data, sample_at, step_time, time_constant=self.time_constant
         )
 
 
@@ -224,7 +224,7 @@ class CumulativeTraceReducer(FoldReducer):
             torch.Tensor: interpolated data at sample time.
         """
         return interp_expdecay(
-            prev_data, next_data, sample_at, step_time, self.time_constant
+            prev_data, next_data, sample_at, step_time, time_constant=self.time_constant
         )
 
 
@@ -335,7 +335,7 @@ class ScaledNearestTraceReducer(FoldReducer):
             torch.Tensor: interpolated data at sample time.
         """
         return interp_expdecay(
-            prev_data, next_data, sample_at, step_time, self.time_constant
+            prev_data, next_data, sample_at, step_time, time_constant=self.time_constant
         )
 
 
@@ -442,7 +442,7 @@ class ScaledCumulativeTraceReducer(FoldReducer):
             torch.Tensor: interpolated data at sample time.
         """
         return interp_expdecay(
-            prev_data, next_data, sample_at, step_time, self.time_constant
+            prev_data, next_data, sample_at, step_time, time_constant=self.time_constant
         )
 
 
@@ -553,7 +553,7 @@ class ConditionalNearestTraceReducer(FoldReducer):
             torch.Tensor: interpolated data at sample time.
         """
         return interp_expdecay(
-            prev_data, next_data, sample_at, step_time, self.time_constant
+            prev_data, next_data, sample_at, step_time, time_constant=self.time_constant
         )
 
 
@@ -660,5 +660,5 @@ class ConditionalCumulativeTraceReducer(FoldReducer):
             torch.Tensor: interpolated data at sample time.
         """
         return interp_expdecay(
-            prev_data, next_data, sample_at, step_time, self.time_constant
+            prev_data, next_data, sample_at, step_time, time_constant=self.time_constant
         )

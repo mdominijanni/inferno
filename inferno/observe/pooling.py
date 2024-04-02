@@ -224,7 +224,7 @@ class MonitorPool(Module):
         """
         return (
             (obs, {mname: mon for mname, mon in self.monitors_[oname].items()})
-            for oname, obs in self.observed_
+            for oname, obs in self.observed_.items()
             if oname in self.monitors_
         )
 

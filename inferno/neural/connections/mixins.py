@@ -25,19 +25,19 @@ class WeightMixin:
         self.register_parameter("weight_", nn.Parameter(weight, requires_grad))
 
     @property
-    def weight(self) -> torch.Tensor:
+    def weight(self) -> nn.Parameter:
         r"""Learnable connection weights.
 
         Args:
-            value (torch.Tensor): new weights.
+            value (torch.Tensor | nn.Parameter): new weights.
 
         Returns:
             torch.Tensor: present weights.
         """
-        return self.weight_.data
+        return self.weight_
 
     @weight.setter
-    def weight(self, value: torch.Tensor):
+    def weight(self, value: torch.Tensor | nn.Parameter) -> None:
         self.weight_.data = value
 
 
@@ -71,21 +71,21 @@ class WeightBiasMixin(WeightMixin):
             self.register_parameter("bias_", nn.Parameter(bias, requires_grad))
 
     @property
-    def bias(self) -> torch.Tensor | None:
+    def bias(self) -> nn.Parameter | None:
         r"""Learnable connection biases.
 
         Args:
-            value (torch.Tensor): new biases.
+            value (torch.Tensor | nn.Parameter): new biases.
 
         Returns:
-            torch.Tensor | None: present biases, if any.
+            nn.Parameter | None: present biases, if any.
 
         """
         if hasattr(self, "bias_"):
-            return self.bias_.data
+            return self.bias_
 
     @bias.setter
-    def bias(self, value: torch.Tensor):
+    def bias(self, value: torch.Tensor | nn.Parameter) -> None:
         if hasattr(self, "bias_"):
             self.bias_.data = value
 
@@ -122,19 +122,19 @@ class WeightBiasDelayMixin(WeightBiasMixin):
             self.register_parameter("delay_", nn.Parameter(delay, requires_grad))
 
     @property
-    def delay(self) -> torch.Tensor | None:
+    def delay(self) -> nn.Parameter | None:
         r"""Learnable connection delays.
 
         Args:
-            value (torch.Tensor): new delays.
+            value (torch.Tensor | nn.Parameter): new delays.
 
         Returns:
-            torch.Tensor | None: present delays, if any.
+            nn.Parameter | None: present delays, if any.
         """
         if hasattr(self, "delay_"):
-            return self.delay_.data
+            return self.delay_
 
     @delay.setter
-    def delay(self, value: torch.Tensor):
+    def delay(self, value: torch.Tensor | nn.Parameter) -> None:
         if hasattr(self, "delay_"):
             self.delay_.data = value

@@ -12,7 +12,7 @@ from .updaters.sstdp import (
 )
 
 from .classifiers.simple import (
-    MaxRateClassifier,
+    TopRateClassifier,
 )
 
 __all__ = [
@@ -21,5 +21,5 @@ __all__ = [
     "STDP",
     "MSTDP",
     "MSTDPET",
-    "MaxRateClassifier",
+    "TopRateClassifier",
 ]

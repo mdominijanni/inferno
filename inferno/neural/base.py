@@ -5,6 +5,7 @@ from .. import Module
 from abc import ABC, abstractmethod
 import math
 import torch
+import torch.nn as nn
 from typing import Protocol
 
 
@@ -927,14 +928,14 @@ class Connection(Updatable, Module, ABC):
 
     @property
     @abstractmethod
-    def weight(self) -> torch.Tensor:
+    def weight(self) -> nn.Parameter:
         r"""Learnable connection weights.
 
         Args:
-            value (torch.Tensor): new weights.
+            value (torch.Tensor | nn.Parameter): new weights.
 
         Returns:
-            torch.Tensor: present weights.
+            nn.Parameter: present weights.
 
         Raises:
             NotImplementedError: ``weight`` must be implemented by the subclass.
@@ -946,7 +947,7 @@ class Connection(Updatable, Module, ABC):
 
     @weight.setter
     @abstractmethod
-    def weight(self, value: torch.Tensor):
+    def weight(self, value: torch.Tensor | nn.Parameter):
         raise NotImplementedError(
             f"{type(self).__name__}(Connection) must implement "
             "the setter for property `weight`."
@@ -954,14 +955,14 @@ class Connection(Updatable, Module, ABC):
 
     @property
     @abstractmethod
-    def bias(self) -> torch.Tensor | None:
+    def bias(self) -> nn.Parameter | None:
         r"""Learnable connection biases.
 
         Args:
-            value (torch.Tensor): new biases.
+            value (torch.Tensor | nn.Parameter): new biases.
 
         Returns:
-            torch.Tensor | None: present biases, if any.
+            nn.Parameter | None: present biases, if any.
 
         Raises:
             NotImplementedError: ``bias`` must be implemented by the subclass.
@@ -973,7 +974,7 @@ class Connection(Updatable, Module, ABC):
 
     @bias.setter
     @abstractmethod
-    def bias(self, value: torch.Tensor):
+    def bias(self, value: torch.Tensor | nn.Parameter):
         raise NotImplementedError(
             f"{type(self).__name__}(Connection) must implement "
             "the setter for property `bias`."
@@ -981,14 +982,14 @@ class Connection(Updatable, Module, ABC):
 
     @property
     @abstractmethod
-    def delay(self) -> torch.Tensor | None:
+    def delay(self) -> nn.Parameter | None:
         r"""Learnable delays of the connection.
 
         Args:
-            value (torch.Tensor): new delays.
+            value (torch.Tensor | nn.Parameter): new delays.
 
         Returns:
-            torch.Tensor | None: current delays, if the connection has any.
+            nn.Parameter | None: current delays, if the connection has any.
 
         Raises:
             NotImplementedError: ``delay`` must be implemented by the subclass.
@@ -1000,7 +1001,7 @@ class Connection(Updatable, Module, ABC):
 
     @delay.setter
     @abstractmethod
-    def delay(self, value: torch.Tensor):
+    def delay(self, value: torch.Tensor | nn.Parameter):
         raise NotImplementedError(
             f"{type(self).__name__}(Connection) must implement "
             "the setter for property `delay`."
