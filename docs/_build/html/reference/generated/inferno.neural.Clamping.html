@@ -228,7 +228,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>module</strong> (<a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.nn.Module</em></a>) – module to which the hook should be registered.</p></li>
+<li><p><strong>module</strong> (<em>nn.Module</em>) – module to which the hook should be registered.</p></li>
 <li><p><strong>attr</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – fully-qualified string name of attribute to clamp.</p></li>
 <li><p><strong>min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – inclusive lower-bound of the clamped range.
 Defaults to None.</p></li>
@@ -253,7 +253,7 @@ occurs, only applies when <code class="docutils literal notranslate"><span class
 <dd><p>Function to be called on the registered module’s call.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>module</strong> (<a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.nn.Module</em></a>) – registered module.</p>
+<dd class="field-odd"><p><strong>module</strong> (<em>nn.Module</em>) – registered module.</p>
 </dd>
 </dl>
 </dd></dl>

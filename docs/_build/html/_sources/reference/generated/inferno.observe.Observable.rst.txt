@@ -1,0 +1,8 @@
+﻿Observable
+==========
+
+.. currentmodule:: inferno.observe
+
+.. autoclass:: Observable
+    :members:
+    :show-inheritance:

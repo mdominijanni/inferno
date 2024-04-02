@@ -316,11 +316,11 @@ when None. Defaults to None.</p></li>
 </dl>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>When <code class="docutils literal notranslate"><span class="pre">delayed</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the history for the required variables is stored
-over the length of time the delay may be, and the selection is performed using
-the learned delays. When <code class="docutils literal notranslate"><span class="pre">delayed</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, the last state is used even
-if a change in delay occurs. This may be the desired behavior even if delays are
-updated along with weights.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">delayed</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the history for the presynaptic activity (spike
+traces and spike activity) is preserved in its un-delayed form and is then
+accessed using the connection’s <a class="reference internal" href="inferno.neural.Connection.html#inferno.neural.Connection.selector" title="inferno.neural.Connection.selector"><code class="xref py py-attr docutils literal notranslate"><span class="pre">selector</span></code></a>.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">delayed</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, only the most recent delay-adjusted presynaptic
+activity is preserved.</p>
 </div>
 <div class="admonition important">
 <p class="admonition-title">Important</p>

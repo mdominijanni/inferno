@@ -1,0 +1,8 @@
+﻿MonitorPool
+===========
+
+.. currentmodule:: inferno.observe
+
+.. autoclass:: MonitorPool
+    :members:
+    :show-inheritance:

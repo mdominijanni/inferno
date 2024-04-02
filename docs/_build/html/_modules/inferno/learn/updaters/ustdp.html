@@ -299,11 +299,12 @@
 <span class="sd">            :py:func:`torch.sum` when None. Defaults to None.</span>
 
 <span class="sd">    Important:</span>
-<span class="sd">        When ``delayed`` is ``True``, the history for the required variables is stored</span>
-<span class="sd">        over the length of time the delay may be, and the selection is performed using</span>
-<span class="sd">        the learned delays. When ``delayed`` is ``False``, the last state is used even</span>
-<span class="sd">        if a change in delay occurs. This may be the desired behavior even if delays are</span>
-<span class="sd">        updated along with weights.</span>
+<span class="sd">        When ``delayed`` is ``True``, the history for the presynaptic activity (spike</span>
+<span class="sd">        traces and spike activity) is preserved in its un-delayed form and is then</span>
+<span class="sd">        accessed using the connection&#39;s :py:attr:`~inferno.neural.Connection.selector`.</span>
+
+<span class="sd">        When ``delayed`` is ``False``, only the most recent delay-adjusted presynaptic</span>
+<span class="sd">        activity is preserved.</span>
 
 <span class="sd">    Important:</span>
 <span class="sd">        It is expected for this to be called after every trainable batch. Variables</span>
@@ -383,20 +384,30 @@
 
         <span class="n">state</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="n">state</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_post</span><span class="p">)</span>
-        <span class="n">state</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_pre</span><span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_pre</span><span class="p">)</span>
         <span class="n">state</span><span class="o">.</span><span class="n">tc_post</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_post&quot;</span><span class="p">,</span> <span class="n">tc_post</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="n">state</span><span class="o">.</span><span class="n">tc_pre</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_pre&quot;</span><span class="p">,</span> <span class="n">tc_pre</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="n">state</span><span class="o">.</span><span class="n">delayed</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">delayed</span><span class="p">)</span>
-        <span class="n">state</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;tolerance&quot;</span><span class="p">,</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;interp_tolerance&quot;</span><span class="p">,</span> <span class="n">interp_tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span>
-            <span class="n">persistent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">state</span><span class="o">.</span><span class="n">trace</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">oneof</span><span class="p">(</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;interp_tolerance&quot;</span><span class="p">,</span> <span class="n">interp_tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">tracemode</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">oneof</span><span class="p">(</span>
             <span class="s2">&quot;trace_mode&quot;</span><span class="p">,</span> <span class="n">trace_mode</span><span class="p">,</span> <span class="s2">&quot;cumulative&quot;</span><span class="p">,</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
         <span class="p">)</span>
-        <span class="n">state</span><span class="o">.</span><span class="n">batchreduce</span> <span class="o">=</span> <span class="n">batch_reduction</span> <span class="k">if</span> <span class="p">(</span><span class="n">batch_reduction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span>
-        <span class="n">state</span><span class="o">.</span><span class="n">fieldreduce</span> <span class="o">=</span> <span class="n">field_reduction</span> <span class="k">if</span> <span class="p">(</span><span class="n">field_reduction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span>
+        <span class="k">match</span> <span class="n">state</span><span class="o">.</span><span class="n">tracemode</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s2">&quot;cumulative&quot;</span><span class="p">:</span>
+                <span class="n">state</span><span class="o">.</span><span class="n">tracecls</span> <span class="o">=</span> <span class="n">CumulativeTraceReducer</span>
+            <span class="k">case</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
+                <span class="n">state</span><span class="o">.</span><span class="n">tracecls</span> <span class="o">=</span> <span class="n">NearestTraceReducer</span>
+            <span class="k">case</span> <span class="s2">&quot;</span><span class="k">_</span><span class="s2">&quot;:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;an invalid trace mode of &#39;</span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">tracemode</span><span class="si">}</span><span class="s2">&#39; has been set, &quot;</span>
+                    <span class="s2">&quot;expected one of: &#39;cumulative&#39;, &#39;nearest&#39;&quot;</span>
+                <span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">batchreduce</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">batch_reduction</span> <span class="k">if</span> <span class="p">(</span><span class="n">batch_reduction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span>
+        <span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">fieldreduce</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">field_reduction</span> <span class="k">if</span> <span class="p">(</span><span class="n">field_reduction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">state</span>
 
@@ -445,17 +456,6 @@
         <span class="n">delayed</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">delayed</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
         <span class="c1"># common and derived arguments</span>
-        <span class="k">match</span> <span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
-            <span class="k">case</span> <span class="s2">&quot;cumulative&quot;</span><span class="p">:</span>
-                <span class="n">reducer_cls</span> <span class="o">=</span> <span class="n">CumulativeTraceReducer</span>
-            <span class="k">case</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
-                <span class="n">reducer_cls</span> <span class="o">=</span> <span class="n">NearestTraceReducer</span>
-            <span class="k">case</span> <span class="s2">&quot;</span><span class="k">_</span><span class="s2">&quot;:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;an invalid trace mode of &#39;</span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="si">}</span><span class="s2">&#39; has been set, expected &quot;</span>
-                    <span class="s2">&quot;one of: &#39;cumulative&#39;, &#39;nearest&#39;&quot;</span>
-                <span class="p">)</span>
-
         <span class="n">monitor_kwargs</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;as_prehook&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s2">&quot;train_update&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
@@ -469,7 +469,7 @@
             <span class="s2">&quot;trace_post&quot;</span><span class="p">,</span>
             <span class="s2">&quot;neuron.spike&quot;</span><span class="p">,</span>
             <span class="n">StateMonitor</span><span class="o">.</span><span class="n">partialconstructor</span><span class="p">(</span>
-                <span class="n">reducer</span><span class="o">=</span><span class="n">reducer_cls</span><span class="p">(</span>
+                <span class="n">reducer</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">tracecls</span><span class="p">(</span>
                     <span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
                     <span class="n">state</span><span class="o">.</span><span class="n">tc_post</span><span class="p">,</span>
                     <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -481,7 +481,7 @@
             <span class="kc">False</span><span class="p">,</span>
             <span class="n">dt</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
             <span class="n">tc</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">tc_post</span><span class="p">,</span>
-            <span class="n">trace</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="p">,</span>
+            <span class="n">trace</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">tracemode</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># postsynaptic spike monitor (triggers hebbian LTP)</span>
@@ -505,7 +505,7 @@
             <span class="s2">&quot;trace_pre&quot;</span><span class="p">,</span>
             <span class="s2">&quot;synapse.spike&quot;</span> <span class="k">if</span> <span class="n">delayed</span> <span class="k">else</span> <span class="s2">&quot;connection.synspike&quot;</span><span class="p">,</span>
             <span class="n">StateMonitor</span><span class="o">.</span><span class="n">partialconstructor</span><span class="p">(</span>
-                <span class="n">reducer</span><span class="o">=</span><span class="n">reducer_cls</span><span class="p">(</span>
+                <span class="n">reducer</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">tracecls</span><span class="p">(</span>
                     <span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
                     <span class="n">state</span><span class="o">.</span><span class="n">tc_pre</span><span class="p">,</span>
                     <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -517,7 +517,7 @@
             <span class="kc">False</span><span class="p">,</span>
             <span class="n">dt</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
             <span class="n">tc</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">tc_pre</span><span class="p">,</span>
-            <span class="n">trace</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">trace</span><span class="p">,</span>
+            <span class="n">trace</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">tracemode</span><span class="p">,</span>
             <span class="n">delayed</span><span class="o">=</span><span class="n">delayed</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -540,7 +540,7 @@
             <span class="n">delayed</span><span class="o">=</span><span class="n">delayed</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_unit</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="STDP.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Processes update for given layers based on current monitor stored data.&quot;&quot;&quot;</span>
@@ -569,15 +569,15 @@
             <span class="c1"># partial updates</span>
             <span class="n">dpost</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">state</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">fieldreduce</span><span class="p">(</span><span class="n">i_post</span> <span class="o">*</span> <span class="n">x_pre</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">lr_post</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+                <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_post</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">dpre</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">state</span><span class="o">.</span><span class="n">batchreduce</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">fieldreduce</span><span class="p">(</span><span class="n">i_pre</span> <span class="o">*</span> <span class="n">x_post</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+                <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span><span class="p">)</span>
             <span class="p">)</span>
 
             <span class="c1"># accumulate partials with mode condition</span>
-            <span class="k">match</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_post</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">match</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
                 <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>  <span class="c1"># depressive</span>
                     <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">dpost</span> <span class="o">+</span> <span class="n">dpre</span><span class="p">)</span>
                 <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>  <span class="c1"># anti-hebbian</span>

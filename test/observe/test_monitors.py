@@ -7,7 +7,7 @@ import weakref
 from inferno import Module
 from inferno.observe import (
     Monitor,
-    Reducer,
+    RecordReducer,
     InputMonitor,
     OutputMonitor,
     StateMonitor,
@@ -15,10 +15,10 @@ from inferno.observe import (
 )
 
 
-class MockReducer(Reducer):
+class MockReducer(RecordReducer):
 
     def __init__(self):
-        Reducer.__init__(self, 1.0, 0.0)
+        RecordReducer.__init__(self, 1.0, 0.0)
         self.latest_inputs = None
 
     def clear(self, **kwargs) -> None:
@@ -71,7 +71,7 @@ class TestMonitor:
 
         def __init__(
             self,
-            reducer: Reducer,
+            reducer: RecordReducer,
             module: Module | None = None,
         ):
             Monitor.__init__(

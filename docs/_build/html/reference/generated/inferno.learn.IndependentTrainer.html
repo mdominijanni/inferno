@@ -285,32 +285,8 @@ via <code class="xref py py-meth docutils literal notranslate"><span class="pre"
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.IndependentTrainer.register_cell">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">register_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#inferno.learn.IndependentTrainer.Unit" title="inferno.learn.base.IndependentTrainer.Unit"><span class="pre">Unit</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#IndependentTrainer.register_cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.IndependentTrainer.register_cell" title="Permalink to this definition">#</a></dt>
-<dd><p>Adds a cell with any required state.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the cell to add.</p></li>
-<li><p><strong>cell</strong> (<a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.Cell"><em>Cell</em></a>) – cell to add.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>specified cell, auxiliary state, and monitors,
-as returned by <a class="reference internal" href="#inferno.learn.IndependentTrainer.unit" title="inferno.learn.IndependentTrainer.unit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">unit()</span></code></a>.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#inferno.learn.IndependentTrainer.Unit" title="inferno.learn.IndependentTrainer.Unit">IndependentTrainer.Unit</a></p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">register_cell</span></code> must be implemented by the subclass.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="inferno.learn.IndependentTrainer.unit">
-<span class="sig-name descname"><span class="pre">unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#inferno.learn.IndependentTrainer.Unit" title="inferno.learn.base.IndependentTrainer.Unit"><span class="pre">Unit</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#IndependentTrainer.unit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.IndependentTrainer.unit" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="inferno.learn.IndependentTrainer.get_unit">
+<span class="sig-name descname"><span class="pre">get_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#inferno.learn.IndependentTrainer.Unit" title="inferno.learn.base.IndependentTrainer.Unit"><span class="pre">Unit</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#IndependentTrainer.get_unit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.IndependentTrainer.get_unit" title="Permalink to this definition">#</a></dt>
 <dd><p>Gets a trainable unit.</p>
 <p>This can be used if a single trainer should handle training on different
 devices. The returned module dictionary can then be altered in-place with
@@ -328,6 +304,30 @@ monitors and auxiliary states, but not to any cells.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#inferno.learn.IndependentTrainer.Unit" title="inferno.learn.IndependentTrainer.Unit">IndependentTrainer.Unit</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="inferno.learn.IndependentTrainer.register_cell">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">register_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.network.Cell"><span class="pre">Cell</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#inferno.learn.IndependentTrainer.Unit" title="inferno.learn.base.IndependentTrainer.Unit"><span class="pre">Unit</span></a></span></span><a class="reference internal" href="../../_modules/inferno/learn/base.html#IndependentTrainer.register_cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#inferno.learn.IndependentTrainer.register_cell" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds a cell with any required state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the cell to add.</p></li>
+<li><p><strong>cell</strong> (<a class="reference internal" href="inferno.neural.Cell.html#inferno.neural.Cell" title="inferno.neural.Cell"><em>Cell</em></a>) – cell to add.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>specified cell, auxiliary state, and monitors,
+as returned by <code class="xref py py-meth docutils literal notranslate"><span class="pre">unit()</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#inferno.learn.IndependentTrainer.Unit" title="inferno.learn.IndependentTrainer.Unit">IndependentTrainer.Unit</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><strong>NotImplementedError</strong></a> – <code class="docutils literal notranslate"><span class="pre">register_cell</span></code> must be implemented by the subclass.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -399,8 +399,8 @@ monitors and auxiliary states, but not to any cells.</p>
 <li><a class="reference internal" href="#inferno.learn.IndependentTrainer.Unit.monitors"><code class="docutils literal notranslate"><span class="pre">IndependentTrainer.Unit.monitors</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#inferno.learn.IndependentTrainer.get_unit"><code class="docutils literal notranslate"><span class="pre">IndependentTrainer.get_unit()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.learn.IndependentTrainer.register_cell"><code class="docutils literal notranslate"><span class="pre">IndependentTrainer.register_cell()</span></code></a></li>
-<li><a class="reference internal" href="#inferno.learn.IndependentTrainer.unit"><code class="docutils literal notranslate"><span class="pre">IndependentTrainer.unit()</span></code></a></li>
 </ul>
 </li>
 </ul>

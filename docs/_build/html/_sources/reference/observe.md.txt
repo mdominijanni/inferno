@@ -13,6 +13,8 @@
     Monitor
     MonitorConstructor
     Reducer
+    Observable
+    MonitorPool
 ```
 
 ## Monitors

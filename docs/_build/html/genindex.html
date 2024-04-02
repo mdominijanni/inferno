@@ -256,10 +256,16 @@
         </ul></li>
         <li><a href="reference/generated/inferno.neural.mixins.DelayedMixin.html#inferno.neural.mixins.DelayedMixin.add_delayed">add_delayed() (DelayedMixin method)</a>
 </li>
+        <li><a href="reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.add_monitor">add_monitor() (CellTrainer method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool.add_monitor">(MonitorPool method)</a>
+</li>
+          <li><a href="reference/generated/inferno.observe.Observable.html#inferno.observe.Observable.add_monitor">(Observable method)</a>
+</li>
+        </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.add_monitor">add_monitor() (CellTrainer method)</a>
-</li>
         <li><a href="reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.add_neuron">add_neuron() (Biclique method)</a>
 
         <ul>
@@ -268,6 +274,8 @@
           <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.add_neuron">(Serial method)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool.add_observed">add_observed() (MonitorPool method)</a>
+</li>
         <li><a href="reference/generated/inferno.observe.RecordReducer.html#inferno.observe.RecordReducer.add_record">add_record() (RecordReducer method)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.AdEx.html#inferno.neural.AdEx">AdEx (class in inferno.neural)</a>
@@ -419,8 +427,6 @@
 </li>
           <li><a href="reference/generated/inferno.observe.Monitor.html#inferno.observe.Monitor.clear">(Monitor method)</a>
 </li>
-          <li><a href="reference/generated/inferno.learn.MSTDPET.html#inferno.learn.MSTDPET.clear">(MSTDPET method)</a>
-</li>
           <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.clear">(Neuron method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.QIF.html#inferno.neural.QIF.clear">(QIF method)</a>
@@ -545,7 +551,11 @@
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.del_monitor">del_monitor() (CellTrainer method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool.del_monitor">(MonitorPool method)</a>
 </li>
+        </ul></li>
         <li><a href="reference/generated/inferno.neural.Biclique.html#inferno.neural.Biclique.del_neuron">del_neuron() (Biclique method)</a>
 
         <ul>
@@ -554,6 +564,8 @@
           <li><a href="reference/generated/inferno.neural.Serial.html#inferno.neural.Serial.del_neuron">(Serial method)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool.del_observed">del_observed() (MonitorPool method)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.delay">delay (Connection property)</a>
 
         <ul>
@@ -578,10 +590,10 @@
 </li>
         <li><a href="reference/generated/inferno.Hook.html#inferno.Hook.deregister">deregister() (Hook method)</a>
 </li>
-        <li><a href="reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor">DifferenceMonitor (class in inferno.observe)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.observe.DifferenceMonitor.html#inferno.observe.DifferenceMonitor">DifferenceMonitor (class in inferno.observe)</a>
+</li>
         <li><a href="reference/generated/inferno.ShapedTensor.html#inferno.ShapedTensor.dimensionality">dimensionality (ShapedTensor property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.AdEx.html#inferno.neural.AdEx.dt">dt (AdEx property)</a>
@@ -832,13 +844,21 @@
 </li>
         <li><a href="reference/generated/inferno.Module.html#inferno.Module.get_extra">get_extra() (Module method)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.Module.html#inferno.Module.get_extra_state">get_extra_state() (Module method)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.get_monitor">get_monitor() (CellTrainer method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool.get_monitor">(MonitorPool method)</a>
 </li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.get_neuron">get_neuron() (Layer method)</a>
+</li>
+        <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool.get_observed">get_observed() (MonitorPool method)</a>
+</li>
+        <li><a href="reference/generated/inferno.learn.IndependentTrainer.html#inferno.learn.IndependentTrainer.get_unit">get_unit() (IndependentTrainer method)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.GLIF1.html#inferno.neural.GLIF1">GLIF1 (class in inferno.neural)</a>
 </li>
@@ -1052,7 +1072,11 @@
         <li><a href="reference/generated/inferno.ShapedTensor.html#inferno.ShapedTensor.live">live (ShapedTensor property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Cell.html#inferno.neural.Cell.local_remap">local_remap() (Cell method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.observe.Observable.html#inferno.observe.Observable.local_remap">(Observable method)</a>
 </li>
+        </ul></li>
         <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.logcdf">logcdf() (LogNormal class method)</a>
 
         <ul>
@@ -1122,10 +1146,16 @@
 </li>
         <li><a href="reference/generated/inferno.observe.MonitorConstructor.html#inferno.observe.MonitorConstructor">MonitorConstructor (class in inferno.observe)</a>
 </li>
+        <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool">MonitorPool (class in inferno.observe)</a>
+</li>
         <li><a href="reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.monitors">monitors (CellTrainer property)</a>
 
         <ul>
           <li><a href="reference/generated/inferno.learn.IndependentTrainer.html#inferno.learn.IndependentTrainer.Unit.monitors">(IndependentTrainer.Unit attribute)</a>
+</li>
+          <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool.monitors">(MonitorPool property)</a>
+</li>
+          <li><a href="reference/generated/inferno.observe.Observable.html#inferno.observe.Observable.monitors">(Observable property)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.learn.MSTDPET.html#inferno.learn.MSTDPET">MSTDPET (class in inferno.learn)</a>
@@ -1149,19 +1179,27 @@
         <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.named_connections">named_connections (Layer property)</a>
 </li>
         <li><a href="reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.named_monitors">named_monitors (CellTrainer property)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool.named_monitors">(MonitorPool property)</a>
 </li>
+        </ul></li>
         <li><a href="reference/generated/inferno.learn.CellTrainer.html#inferno.learn.CellTrainer.named_monitors_of">named_monitors_of() (CellTrainer method)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool.named_monitors_of">(MonitorPool method)</a>
 </li>
+        </ul></li>
         <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.named_neurons">named_neurons (Layer property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer.named_synapses">named_synapses (Layer property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.names">names (Updater property)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.nclass">nclass (MaxRateClassifier property)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.nclass">nclass (MaxRateClassifier property)</a>
+</li>
         <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.ndim">ndim (MaxRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer">NearestTraceReducer (class in inferno.observe)</a>
@@ -1190,6 +1228,8 @@
   <h2>O</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.observe.Observable.html#inferno.observe.Observable">Observable (class in inferno.observe)</a>
+</li>
         <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.occurances">occurances (MaxRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.ones.html#inferno.ones">ones() (in module inferno)</a>
@@ -1202,10 +1242,10 @@
 </li>
         <li><a href="reference/generated/inferno.types.OneToOneMethod.html#inferno.types.OneToOneMethod">OneToOneMethod (class in inferno.types)</a>
 </li>
-        <li><a href="reference/generated/inferno.observe.OutputMonitor.html#inferno.observe.OutputMonitor">OutputMonitor (class in inferno.observe)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.observe.OutputMonitor.html#inferno.observe.OutputMonitor">OutputMonitor (class in inferno.observe)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.Connection.html#inferno.neural.Connection.outshape">outshape (Connection property)</a>
 
         <ul>
@@ -1280,11 +1320,13 @@
 </li>
         <li><a href="reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.pointer">pointer (RecordTensor property)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.stats.Poisson.html#inferno.stats.Poisson">Poisson (class in inferno.stats)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.PoissonIntervalEncoder.html#inferno.neural.PoissonIntervalEncoder">PoissonIntervalEncoder (class in inferno.neural)</a>
+</li>
+        <li><a href="reference/generated/inferno.observe.MonitorPool.html#inferno.observe.MonitorPool.pool">pool (MonitorPool property)</a>
 </li>
         <li><a href="reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.pop">pop() (RecordTensor method)</a>
 </li>
@@ -1355,6 +1397,8 @@
         <li><a href="reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.read">read() (RecordTensor method)</a>
 </li>
         <li><a href="reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.readrange">readrange() (RecordTensor method)</a>
+</li>
+        <li><a href="reference/generated/inferno.observe.Observable.html#inferno.observe.Observable.realign_attribute">realign_attribute() (Observable method)</a>
 </li>
         <li><a href="reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.reconstrain">reconstrain() (RecordTensor method)</a>
 
@@ -1569,8 +1613,6 @@
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.uniform.html#inferno.uniform">uniform() (in module inferno)</a>
-</li>
-        <li><a href="reference/generated/inferno.learn.IndependentTrainer.html#inferno.learn.IndependentTrainer.unit">unit() (IndependentTrainer method)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.Updatable.html#inferno.neural.Updatable">Updatable (class in inferno.neural)</a>
 </li>
