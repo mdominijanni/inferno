@@ -90,9 +90,10 @@ class TestLinearDense:
         self.load_synapse(conn, p=0.3)
         conn.synapse.spike_.align(0)
         inputs = conn.synapse.spike_.value.clone().detach()
-
         for k in range(1, delay):
             outputs = conn(torch.zeros(batchsz, *inshape))
+            print(conn.synspike == inputs[..., 1])
+            assert False
             assert aaeq(
                 outputs,
                 torch.matmul(

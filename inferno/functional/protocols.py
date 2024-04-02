@@ -78,7 +78,7 @@ class Interpolation(Protocol):
         prev_data: torch.Tensor,
         next_data: torch.Tensor,
         sample_at: torch.Tensor,
-        step_data: float,
+        step_time: float,
         **kwargs,
     ) -> torch.Tensor:
         r"""Callback protocol function."""
