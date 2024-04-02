@@ -765,7 +765,7 @@
 
 <span class="sd">            ``data``:</span>
 
-<span class="sd">            :math:`B \times N`</span>
+<span class="sd">            :math:`B \times N \times [1]`</span>
 
 <span class="sd">            ``return``:</span>
 
@@ -775,7 +775,10 @@
 <span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">                * :math:`N` is the number of elements across output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b n -&gt; b n 1&quot;</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ein</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;b n -&gt; b n 1&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LinearDirect.postsyn_receptive"><a class="viewcode-back" href="../../../../reference/generated/inferno.neural.LinearDirect.html#inferno.neural.LinearDirect.postsyn_receptive">[docs]</a>    <span class="k">def</span> <span class="nf">postsyn_receptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reshapes data like connection output for pre-post learning methods.</span>

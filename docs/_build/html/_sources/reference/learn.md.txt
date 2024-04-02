@@ -30,5 +30,5 @@
     :nosignatures:
     :toctree: generated
 
-    MaxRateClassifier
+    TopRateClassifier
 ```
