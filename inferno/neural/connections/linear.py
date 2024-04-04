@@ -151,10 +151,9 @@ class LinearDense(WeightBiasDelayMixin, Connection):
         .. admonition:: Shape
             :class: tensorshape
 
-            :math:`B \times M \times N`
+            :math:`1 \times M \times N`
 
             Where:
-                * :math:`B` is the batch size.
                 * :math:`M` is the number of elements across input dimensions.
                 * :math:`N` is the number of elements across output dimensions.
         """
@@ -465,10 +464,9 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
         .. admonition:: Shape
             :class: tensorshape
 
-            :math:`B \times N`
+            :math:`1 \times N \times 1`
 
             Where:
-                * :math:`B` is the batch size.
                 * :math:`N` is the number of elements across input/output dimensions.
         """
         if self.delayedby is not None:
@@ -776,7 +774,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
     @delay.setter
     def delay(self, value: torch.Tensor):
-        WeightBiasDelayMixin.weight.fset(self, value * self.mask)
+        WeightBiasDelayMixin.delay.fset(self, value * self.mask)
 
     @property
     def inshape(self) -> tuple[int, ...]:
@@ -952,7 +950,6 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
             Where:
                 * :math:`B` is the batch size.
                 * :math:`N_0, \ldots` are the unbatched input/output dimensions.
-                * :math:`N_0, \ldots` are the unbatched output dimensions.
 
         Note:
             ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
