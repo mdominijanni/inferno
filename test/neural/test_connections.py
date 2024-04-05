@@ -53,7 +53,8 @@ class TestLinearDense:
     def load_synapse(conn: LinearDense, p=0.1) -> None:
         conn.synapse.spike_.value = torch.rand(conn.synapse.spike_.value.shape) < p
 
-    def test_forward_undelayed(self):
+    @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
+    def test_forward_undelayed(self, biased):
         inshape = randshape(1, 3, 2, 5)
         outshape = randshape(1, 3, 2, 5)
         batchsz = random.randint(1, 9)
@@ -62,21 +63,28 @@ class TestLinearDense:
             outshape,
             1.0,
             batchsz,
+            bias=biased,
             weight_init=(lambda x: torch.rand_like(x)),
         )
 
         inputs = torch.rand(batchsz, *inshape)
         outputs = conn(inputs)
 
-        assert tuple(outputs.shape) == (batchsz, *outshape)
-        assert aaeq(
-            outputs,
-            torch.matmul(inputs.view(batchsz, -1), conn.weight.t()).view(
+        if biased:
+            res = (
+                torch.matmul(inputs.view(batchsz, -1), conn.weight.t())
+                + conn.bias.view(1, -1)
+            ).view(batchsz, *outshape)
+        else:
+            res = torch.matmul(inputs.view(batchsz, -1), conn.weight.t()).view(
                 batchsz, *outshape
-            ),
-        )
+            )
 
-    def test_forward_delayed(self):
+        assert tuple(outputs.shape) == (batchsz, *outshape)
+        assert aaeq(outputs, res)
+
+    @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
+    def test_forward_delayed(self, biased):
         inshape = randshape(1, 3, 2, 5)
         outshape = randshape(1, 3, 2, 5)
         batchsz = random.randint(1, 9)
@@ -86,6 +94,7 @@ class TestLinearDense:
             outshape,
             1.0,
             batchsz,
+            bias=biased,
             delay=float(delay),
             weight_init=(lambda x: torch.rand_like(x)),
             delay_init=(lambda x, d=delay: torch.ones_like(x) * d),
@@ -94,14 +103,23 @@ class TestLinearDense:
         self.load_synapse(conn, p=0.3)
         conn.synapse.spike_.align(0)
         inputs = conn.synapse.spike_.value.clone().detach()
+
         for k in range(1, delay + 1):
             outputs = conn(torch.zeros(batchsz, *inshape))
-            assert aaeq(
-                outputs,
-                torch.matmul(
+
+            if biased:
+                res = (
+                    torch.matmul(
+                        inputs[..., k].view(batchsz, -1).float(), conn.weight.t()
+                    )
+                    + conn.bias.view(1, -1)
+                ).view(batchsz, *outshape)
+            else:
+                res = torch.matmul(
                     inputs[..., k].view(batchsz, -1).float(), conn.weight.t()
-                ).view(batchsz, *outshape),
-            )
+                ).view(batchsz, *outshape)
+
+            assert aaeq(outputs, res)
 
     def test_like_input(self):
         inshape = randshape(1, 3, 2, 5)
@@ -212,26 +230,33 @@ class TestLinearDirect:
     def load_synapse(conn: LinearDirect, p=0.1) -> None:
         conn.synapse.spike_.value = torch.rand(conn.synapse.spike_.value.shape) < p
 
-    def test_forward_undelayed(self):
+    @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
+    def test_forward_undelayed(self, biased):
         shape = randshape(1, 3, 2, 5)
         batchsz = random.randint(1, 9)
         conn = self.makeconn(
             shape,
             1.0,
             batchsz,
+            bias=biased,
             weight_init=(lambda x: torch.rand_like(x)),
         )
 
         inputs = torch.rand(batchsz, *shape)
         outputs = conn(inputs)
 
-        assert tuple(outputs.shape) == (batchsz, *shape)
-        assert aaeq(
-            outputs,
-            (inputs.view(batchsz, -1) * conn.weight).view(batchsz, *shape),
-        )
+        if biased:
+            res = (inputs.view(batchsz, -1) * conn.weight + conn.bias.view(1, -1)).view(
+                batchsz, *shape
+            )
+        else:
+            res = (inputs.view(batchsz, -1) * conn.weight).view(batchsz, *shape)
 
-    def test_forward_delayed(self):
+        assert tuple(outputs.shape) == (batchsz, *shape)
+        assert aaeq(outputs, res)
+
+    @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
+    def test_forward_delayed(self, biased):
         shape = randshape(1, 3, 2, 5)
         batchsz = random.randint(1, 9)
         delay = 4
@@ -239,6 +264,7 @@ class TestLinearDirect:
             shape,
             1.0,
             batchsz,
+            bias=biased,
             delay=float(delay),
             weight_init=(lambda x: torch.rand_like(x)),
             delay_init=(lambda x, d=delay: torch.ones_like(x) * d),
@@ -247,14 +273,21 @@ class TestLinearDirect:
         self.load_synapse(conn, p=0.3)
         conn.synapse.spike_.align(0)
         inputs = conn.synapse.spike_.value.clone().detach()
+
         for k in range(1, delay + 1):
             outputs = conn(torch.zeros(batchsz, *shape))
-            assert aaeq(
-                outputs,
-                (inputs[..., k].view(batchsz, -1).float() * conn.weight).view(
+
+            if biased:
+                res = (
+                    inputs[..., k].view(batchsz, -1).float() * conn.weight
+                    + conn.bias.view(1, -1)
+                ).view(batchsz, *shape)
+            else:
+                res = (inputs[..., k].view(batchsz, -1).float() * conn.weight).view(
                     batchsz, *shape
-                ),
-            )
+                )
+
+            assert aaeq(outputs, res)
 
     def test_like_input(self):
         shape = randshape(1, 3, 2, 5)
@@ -359,39 +392,55 @@ class TestLinearLateral:
     def mask(shape) -> torch.Tensor:
         return 1 - torch.eye(math.prod(shape))
 
-    def test_forward_undelayed(self):
+    @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
+    def test_forward_undelayed(self, biased):
         shape = randshape(1, 3, 2, 5)
         batchsz = random.randint(1, 9)
         conn = self.makeconn(
             shape,
             1.0,
             batchsz,
+            bias=biased,
             weight_init=(lambda x: torch.rand_like(x)),
         )
 
         inputs = torch.rand(batchsz, *shape)
         outputs = conn(inputs)
 
-        assert tuple(outputs.shape) == (batchsz, *shape)
-        assert aaeq(
-            outputs,
-            (inputs.view(batchsz, -1) * conn.weight).view(batchsz, *shape),
-        )
-        assert aaeq(
-            outputs,
-            torch.matmul(
+        if biased:
+            res = (
+                torch.matmul(inputs.view(batchsz, -1), conn.weight.t())
+                + conn.bias.view(1, -1)
+            ).view(batchsz, *shape)
+            maskres = (
+                torch.matmul(
+                    inputs.view(batchsz, -1), (conn.weight * self.mask(shape)).t()
+                )
+                + conn.bias.view(1, -1)
+            ).view(batchsz, *shape)
+        else:
+            res = torch.matmul(inputs.view(batchsz, -1), conn.weight.t()).view(
+                batchsz, *shape
+            )
+            maskres = torch.matmul(
                 inputs.view(batchsz, -1), (conn.weight * self.mask(shape)).t()
-            ).view(batchsz, *shape),
-        )
+            ).view(batchsz, *shape)
 
-    def test_forward_delayed(self):
+        assert tuple(outputs.shape) == (batchsz, *shape)
+        assert aaeq(outputs, res)
+        assert aaeq(outputs, maskres)
+
+    @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
+    def test_forward_delayed(self, biased):
         shape = randshape(1, 3, 2, 5)
         batchsz = random.randint(1, 9)
+        shape, batchsz = (2, 2), 1
         delay = 4
         conn = self.makeconn(
             shape,
             1.0,
             batchsz,
+            bias=biased,
             delay=float(delay),
             weight_init=(lambda x: torch.rand_like(x)),
             delay_init=(lambda x, d=delay: torch.ones_like(x) * d),
@@ -400,16 +449,32 @@ class TestLinearLateral:
         self.load_synapse(conn, p=0.3)
         conn.synapse.spike_.align(0)
         inputs = conn.synapse.spike_.value.clone().detach()
+
         for k in range(1, delay + 1):
             outputs = conn(torch.zeros(batchsz, *shape))
-            assert aaeq(
-                outputs,
-                torch.sum(
-                    inputs[..., k]
-                    .view(batchsz, -1, 1)
-                    .expand(-1, -1, math.prod(shape))
-                    .float()
-                    * (conn.weight * self.mask(shape)).t(),
-                    -1,
-                ).view(batchsz, *shape),
-            )
+
+            if biased:
+                res = (
+                    torch.matmul(
+                        inputs[..., k].view(batchsz, -1).float(), conn.weight.t()
+                    )
+                    + conn.bias.view(1, -1)
+                ).view(batchsz, *shape)
+                maskres = (
+                    torch.matmul(
+                        inputs[..., k].view(batchsz, -1).float(),
+                        (conn.weight * self.mask(shape)).t(),
+                    )
+                    + conn.bias.view(1, -1)
+                ).view(batchsz, *shape)
+            else:
+                res = torch.matmul(
+                    inputs[..., k].view(batchsz, -1).float(), conn.weight.t()
+                ).view(batchsz, *shape)
+                maskres = torch.matmul(
+                    inputs[..., k].view(batchsz, -1).float(),
+                    (conn.weight * self.mask(shape)).t(),
+                ).view(batchsz, *shape)
+
+            assert aaeq(outputs, res)
+            assert aaeq(outputs, maskres)

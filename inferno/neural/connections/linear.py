@@ -326,7 +326,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
             res = self.syncurrent  # B I O
 
             if self.biased:
-                res = torch.sum(res * self.weight.t() + self.bias, dim=1)
+                res = torch.sum(res * self.weight.t(), dim=1) + self.bias
             else:
                 res = torch.sum(res * self.weight.t(), dim=1)
 
@@ -770,7 +770,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
         Note:
             Setter masks delays before assignment.
         """
-        WeightBiasDelayMixin.delay.fget(self)
+        return WeightBiasDelayMixin.delay.fget(self)
 
     @delay.setter
     def delay(self, value: torch.Tensor):
