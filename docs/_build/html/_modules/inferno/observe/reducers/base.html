@@ -482,7 +482,7 @@
 <span class="sd">            prev_data (torch.Tensor): most recent observation prior to sample time.</span>
 <span class="sd">            next_data (torch.Tensor): most recent observation subsequent to sample time.</span>
 <span class="sd">            sample_at (torch.Tensor): relative time at which to sample data.</span>
-<span class="sd">            step_data (float | torch.Tensor): length of time between the prior and</span>
+<span class="sd">            step_time (float | torch.Tensor): length of time between the prior and</span>
 <span class="sd">                subsequent observations.</span>
 
 <span class="sd">        Raises:</span>
@@ -534,7 +534,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FoldReducer.dump"><a class="viewcode-back" href="../../../../reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the reducer&#39;s state over all observations.</span>

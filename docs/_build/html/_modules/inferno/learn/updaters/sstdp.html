@@ -307,19 +307,20 @@
 <span class="sd">            z_\text{pre}(t + \Delta t) &amp;= z_\text{pre}(t) \exp\left(-\frac{\Delta t}{\tau_z}\right)</span>
 <span class="sd">            + \frac{x_\text{post}(t)}{\tau_z}\left[t = t_\text{pre}^f\right] \\</span>
 <span class="sd">            x_\text{pre}(t) &amp;= x_\text{pre}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{pre}}\right)</span>
-<span class="sd">            + \eta_\text{pre}\left[t = t_\text{pre}^f\right] \\</span>
+<span class="sd">            + \eta_\text{post}\left[t = t_\text{pre}^f\right] \\</span>
 <span class="sd">            x_\text{post}(t) &amp;= x_\text{post}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{post}}\right)</span>
-<span class="sd">            + \eta_\text{post}\left[t = t_\text{post}^f\right]</span>
+<span class="sd">            + \eta_\text{pre}\left[t = t_\text{post}^f\right]</span>
 <span class="sd">        \end{align*}</span>
 
 <span class="sd">    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent</span>
 <span class="sd">    spike from neuron :math:`n`, respectively.</span>
 
 <span class="sd">    The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`</span>
-<span class="sd">    controls which terms are potentiative and which terms are depressive. The terms</span>
-<span class="sd">    (when expanded) can be scaled for weight dependence on updating. :math:`r` is a</span>
-<span class="sd">    reinforcement term given on each update. Note that this implementation splits the</span>
-<span class="sd">    eligibility trace into two terms, so weight dependence can scale the magnitude of each.</span>
+<span class="sd">    controls which terms are potentiative and depressive updates (these are applied to</span>
+<span class="sd">    the opposite trace). The terms (when expanded) can be scaled for weight dependence</span>
+<span class="sd">    on updating. :math:`r` is a reinforcement term given on each update. Note that</span>
+<span class="sd">    this implementation splits the eligibility trace into two terms, so weight</span>
+<span class="sd">    dependence can scale the magnitude of each.</span>
 
 <span class="sd">    +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+</span>
 <span class="sd">    | Mode              | :math:`\text{sgn}(\eta_\text{post})` | :math:`\text{sgn}(\eta_\text{pre})` | LTP Term(s)                               | LTD Term(s)                               |</span>
@@ -438,13 +439,17 @@
 
         <span class="n">state</span><span class="o">.</span><span class="n">step_time</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;step_time&quot;</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="n">state</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_post</span><span class="p">)</span>
-        <span class="n">state</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_pre</span><span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lr_pre</span><span class="p">)</span>
         <span class="n">state</span><span class="o">.</span><span class="n">tc_post</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_post&quot;</span><span class="p">,</span> <span class="n">tc_post</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="n">state</span><span class="o">.</span><span class="n">tc_pre</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_pre&quot;</span><span class="p">,</span> <span class="n">tc_pre</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="n">state</span><span class="o">.</span><span class="n">tc_eligibility</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;tc_eligibility&quot;</span><span class="p">,</span> <span class="n">tc_eligibility</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="n">state</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gte</span><span class="p">(</span><span class="s2">&quot;interp_tolerance&quot;</span><span class="p">,</span> <span class="n">interp_tolerance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-        <span class="n">state</span><span class="o">.</span><span class="n">batchreduce</span> <span class="o">=</span> <span class="n">batch_reduction</span> <span class="k">if</span> <span class="n">batch_reduction</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span>
-        <span class="n">state</span><span class="o">.</span><span class="n">fieldreduce</span> <span class="o">=</span> <span class="n">field_reduction</span> <span class="k">if</span> <span class="n">field_reduction</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">batchreduce</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">batch_reduction</span> <span class="k">if</span> <span class="p">(</span><span class="n">batch_reduction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span>
+        <span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">fieldreduce</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">field_reduction</span> <span class="k">if</span> <span class="p">(</span><span class="n">field_reduction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">state</span>
 
@@ -503,7 +508,7 @@
                 <span class="n">reducer</span><span class="o">=</span><span class="n">CumulativeTraceReducer</span><span class="p">(</span>
                     <span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
                     <span class="n">state</span><span class="o">.</span><span class="n">tc_post</span><span class="p">,</span>
-                    <span class="n">amplitude</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span><span class="p">,</span>
+                    <span class="n">amplitude</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span><span class="p">),</span>
                     <span class="n">target</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">duration</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                 <span class="p">),</span>
@@ -537,7 +542,7 @@
                 <span class="n">reducer</span><span class="o">=</span><span class="n">CumulativeTraceReducer</span><span class="p">(</span>
                     <span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
                     <span class="n">state</span><span class="o">.</span><span class="n">tc_pre</span><span class="p">,</span>
-                    <span class="n">amplitude</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span><span class="p">,</span>
+                    <span class="n">amplitude</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span><span class="p">),</span>
                     <span class="n">target</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">duration</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                 <span class="p">),</span>
@@ -608,7 +613,7 @@
             <span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">name</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_unit</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="MSTDPET.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MSTDPET.html#inferno.learn.MSTDPET.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Processes update for given layers based on current monitor stored data.</span>
@@ -622,8 +627,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            reward (float | torch.Tensor): reward for the trained batch.</span>
 <span class="sd">            scale (float, optional): scaling factor used for the updates, this value</span>
-<span class="sd">                is expected to be nonnegative, and its absolute value will be used.</span>
-<span class="sd">                Defaults to 1.0.</span>
+<span class="sd">                is expected to be nonnegative, and its absolute value will be used,</span>
+<span class="sd">                :math:`\gamma`. Defaults to 1.0.</span>
 
 <span class="sd">        .. admonition:: Shape</span>
 <span class="sd">            :class: tensorshape</span>

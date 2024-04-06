@@ -286,9 +286,9 @@ class Updater(Module):
             (type(self),),
             {
                 p: property(
-                    partial(self._get_, attr=p),
-                    partial(self._set_, attr=p),
-                    partial(self._del_, attr=p),
+                    partial(self._getacc_, attr=p),
+                    partial(self._setacc_, attr=p),
+                    partial(self._delacc_, attr=p),
                 )
                 for p in params
             },
@@ -310,7 +310,7 @@ class Updater(Module):
                 acc.reduction = reduction
 
     @staticmethod
-    def _get_(self: Updater, attr: str) -> Accumulator:
+    def _getacc_(self: Updater, attr: str) -> Accumulator:
         r"""Gets the accumulator for a given attribute.
 
         Args:
@@ -323,7 +323,7 @@ class Updater(Module):
         return self.updates_[attr]
 
     @staticmethod
-    def _set_(
+    def _setacc_(
         self: Updater,
         value: tuple[torch.Tensor | None, torch.Tensor | None] | torch.Tensor | None,
         attr: str,
@@ -361,7 +361,7 @@ class Updater(Module):
             self.updates_[attr].pos, self.updates_[attr].neg = value
 
     @staticmethod
-    def _del_(self: Updater, attr: str) -> None:
+    def _delacc_(self: Updater, attr: str) -> None:
         r"""Clears the accumulator state for a given attribute.
 
         As a property, this is equivalent to using ``del`` on the

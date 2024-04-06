@@ -288,7 +288,7 @@
 </li>
         <li><a href="reference/generated/inferno.neural.functional.apply_adaptive_thresholds.html#inferno.neural.functional.apply_adaptive_thresholds">apply_adaptive_thresholds() (in module inferno.neural.functional)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.assignments">assignments (MaxRateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.assignments">assignments (TopRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.astensors.html#inferno.astensors">astensors() (in module inferno)</a>
 </li>
@@ -492,6 +492,8 @@
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.current">(Synapse property)</a>
 </li>
         </ul></li>
+        <li><a href="reference/generated/inferno.neural.DeltaPlusCurrent.html#inferno.neural.DeltaPlusCurrent.current_">current_ (DeltaPlusCurrent attribute)</a>
+</li>
         <li><a href="reference/generated/inferno.neural.neurons.mixins.AdaptiveCurrentMixin.html#inferno.neural.neurons.mixins.AdaptiveCurrentMixin.current_adaptation">current_adaptation (AdaptiveCurrentMixin property)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.synapses.mixins.CurrentMixin.html#inferno.neural.synapses.mixins.CurrentMixin.current_at">current_at() (CurrentMixin method)</a>
@@ -791,8 +793,6 @@
 </li>
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.forward">(LinearLateral method)</a>
 </li>
-          <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.forward">(MaxRateClassifier method)</a>
-</li>
           <li><a href="reference/generated/inferno.learn.MSTDPET.html#inferno.learn.MSTDPET.forward">(MSTDPET method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.forward">(Neuron method)</a>
@@ -810,6 +810,8 @@
           <li><a href="reference/generated/inferno.learn.STDP.html#inferno.learn.STDP.forward">(STDP method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Synapse.html#inferno.neural.Synapse.forward">(Synapse method)</a>
+</li>
+          <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.forward">(TopRateClassifier method)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.Updater.html#inferno.neural.Updater.forward">(Updater method)</a>
 </li>
@@ -906,7 +908,7 @@
 </li>
         <li><a href="reference/generated/inferno.learn.IndependentTrainer.html#inferno.learn.IndependentTrainer.Unit">IndependentTrainer.Unit (class in inferno.learn)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.infer">infer() (MaxRateClassifier method)</a>
+        <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.infer">infer() (TopRateClassifier method)</a>
 </li>
         <li>
     inferno.functional
@@ -1027,7 +1029,7 @@
         </ul></li>
         <li><a href="reference/generated/inferno.neural.Layer.html#inferno.neural.Layer">Layer (class in inferno.neural)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.learn">learn() (MaxRateClassifier method)</a>
+        <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.learn">learn() (TopRateClassifier method)</a>
 </li>
         <li><a href="reference/generated/inferno.neural.LIF.html#inferno.neural.LIF">LIF (class in inferno.neural)</a>
 </li>
@@ -1110,8 +1112,6 @@
         <li><a href="reference/generated/inferno.types.ManyToOne.html#inferno.types.ManyToOne">ManyToOne (class in inferno.types)</a>
 </li>
         <li><a href="reference/generated/inferno.types.ManyToOneMethod.html#inferno.types.ManyToOneMethod">ManyToOneMethod (class in inferno.types)</a>
-</li>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier">MaxRateClassifier (class in inferno.learn)</a>
 </li>
         <li><a href="reference/generated/inferno.stats.LogNormal.html#inferno.stats.LogNormal.mean">mean() (LogNormal class method)</a>
 
@@ -1198,9 +1198,9 @@
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.nclass">nclass (MaxRateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.nclass">nclass (TopRateClassifier property)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.ndim">ndim (MaxRateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.ndim">ndim (TopRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.observe.NearestTraceReducer.html#inferno.observe.NearestTraceReducer">NearestTraceReducer (class in inferno.observe)</a>
 </li>
@@ -1230,7 +1230,7 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.observe.Observable.html#inferno.observe.Observable">Observable (class in inferno.observe)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.occurances">occurances (MaxRateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.occurances">occurances (TopRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.ones.html#inferno.ones">ones() (in module inferno)</a>
 </li>
@@ -1362,9 +1362,9 @@
           <li><a href="reference/generated/inferno.neural.LinearLateral.html#inferno.neural.LinearLateral.presyn_receptive">(LinearLateral method)</a>
 </li>
         </ul></li>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.proportional">proportional (MaxRateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.proportional">proportional (TopRateClassifier property)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.proportions">proportions (MaxRateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.proportions">proportions (TopRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.observe.FoldReducer.html#inferno.observe.FoldReducer.push">push() (FoldReducer method)</a>
 
@@ -1392,7 +1392,7 @@
   <h2>R</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.rates">rates (MaxRateClassifier property)</a>
+        <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.rates">rates (TopRateClassifier property)</a>
 </li>
         <li><a href="reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.read">read() (RecordTensor method)</a>
 </li>
@@ -1502,14 +1502,14 @@
 </li>
         <li><a href="reference/generated/inferno.Module.html#inferno.Module.set_extra_state">set_extra_state() (Module method)</a>
 </li>
-        <li><a href="reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.shape">shape (MaxRateClassifier property)</a>
+        <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.shape">shape (Neuron property)</a>
 
         <ul>
-          <li><a href="reference/generated/inferno.neural.Neuron.html#inferno.neural.Neuron.shape">(Neuron property)</a>
-</li>
           <li><a href="reference/generated/inferno.RecordTensor.html#inferno.RecordTensor.shape">(RecordTensor property)</a>
 </li>
           <li><a href="reference/generated/inferno.neural.mixins.ShapeMixin.html#inferno.neural.mixins.ShapeMixin.shape">(ShapeMixin property)</a>
+</li>
+          <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.shape">(TopRateClassifier property)</a>
 </li>
         </ul></li>
         <li><a href="reference/generated/inferno.ShapedTensor.html#inferno.ShapedTensor">ShapedTensor (class in inferno)</a>
@@ -1534,6 +1534,12 @@
         </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/generated/inferno.neural.DeltaCurrent.html#inferno.neural.DeltaCurrent.spike_">spike_ (DeltaCurrent attribute)</a>
+
+        <ul>
+          <li><a href="reference/generated/inferno.neural.DeltaPlusCurrent.html#inferno.neural.DeltaPlusCurrent.spike_">(DeltaPlusCurrent attribute)</a>
+</li>
+        </ul></li>
         <li><a href="reference/generated/inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin.html#inferno.neural.synapses.mixins.CurrentDerivedSpikeMixin.spike_at">spike_at() (CurrentDerivedSpikeMixin method)</a>
 
         <ul>
@@ -1589,6 +1595,8 @@
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/generated/inferno.neural.neurons.mixins.AdaptiveThresholdMixin.html#inferno.neural.neurons.mixins.AdaptiveThresholdMixin.threshold_adapation">threshold_adapation (AdaptiveThresholdMixin property)</a>
+</li>
+        <li><a href="reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier">TopRateClassifier (class in inferno.learn)</a>
 </li>
         <li><a href="reference/generated/inferno.trace_cumulative.html#inferno.trace_cumulative">trace_cumulative() (in module inferno)</a>
 </li>

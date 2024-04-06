@@ -338,7 +338,7 @@
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interp_expdecay</span><span class="p">(</span>
-            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
+            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
         <span class="p">)</span></div></div>
 
 
@@ -443,7 +443,7 @@
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interp_expdecay</span><span class="p">(</span>
-            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
+            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
         <span class="p">)</span></div></div>
 
 
@@ -493,7 +493,7 @@
         <span class="c1"># reducer attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
 
@@ -554,7 +554,7 @@
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interp_expdecay</span><span class="p">(</span>
-            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
+            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
         <span class="p">)</span></div></div>
 
 
@@ -600,7 +600,7 @@
         <span class="c1"># register state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
 
@@ -661,7 +661,7 @@
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interp_expdecay</span><span class="p">(</span>
-            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
+            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
         <span class="p">)</span></div></div>
 
 
@@ -709,7 +709,7 @@
         <span class="c1"># reducer attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
 
     <span class="nd">@property</span>
@@ -772,7 +772,7 @@
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interp_expdecay</span><span class="p">(</span>
-            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
+            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
         <span class="p">)</span></div></div>
 
 
@@ -816,7 +816,7 @@
         <span class="c1"># register state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="s2">&quot;time_constant&quot;</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">argtest</span><span class="o">.</span><span class="n">neq</span><span class="p">(</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
 
     <span class="nd">@property</span>
@@ -879,7 +879,7 @@
 <span class="sd">            torch.Tensor: interpolated data at sample time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interp_expdecay</span><span class="p">(</span>
-            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
+            <span class="n">prev_data</span><span class="p">,</span> <span class="n">next_data</span><span class="p">,</span> <span class="n">sample_at</span><span class="p">,</span> <span class="n">step_time</span><span class="p">,</span> <span class="n">time_constant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span>
         <span class="p">)</span></div></div>
 </pre></div>
         </article>

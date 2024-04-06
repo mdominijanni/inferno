@@ -227,12 +227,24 @@
 <p>Memoryless synapse which responds instantaneously to input, with passthrough current.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[I(t) =
+\[\begin{split}I(t) =
 \begin{cases}
-    Q / \Delta t + I_x &amp; \text{presynaptic spike}
+    Q / \Delta t + I_x &amp; \text{presynaptic spike} \\
     I_x &amp; \text{otherwise}
-\end{cases}\]</div>
+\end{cases}\end{split}\]</div>
 </div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="inferno.neural.DeltaPlusCurrent.spike_">
+<span class="sig-name descname"><span class="pre">spike_</span></span><a class="headerlink" href="#inferno.neural.DeltaPlusCurrent.spike_" title="Permalink to this definition">#</a></dt>
+<dd><p><a class="reference internal" href="inferno.RecordTensor.html#inferno.RecordTensor" title="inferno.RecordTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordTensor</span></code></a> interface for spikes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="inferno.neural.DeltaPlusCurrent.current_">
+<span class="sig-name descname"><span class="pre">current_</span></span><a class="headerlink" href="#inferno.neural.DeltaPlusCurrent.current_" title="Permalink to this definition">#</a></dt>
+<dd><p><a class="reference internal" href="inferno.RecordTensor.html#inferno.RecordTensor" title="inferno.RecordTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordTensor</span></code></a> interface for currents.</p>
+</dd></dl>
+
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -375,6 +387,8 @@ bounds, uses values at observation limits if None. Defaults to False.</p></li>
             <ul>
 <li><a class="reference internal" href="#">DeltaPlusCurrent</a><ul>
 <li><a class="reference internal" href="#inferno.neural.DeltaPlusCurrent"><code class="docutils literal notranslate"><span class="pre">DeltaPlusCurrent</span></code></a><ul>
+<li><a class="reference internal" href="#inferno.neural.DeltaPlusCurrent.spike_"><code class="docutils literal notranslate"><span class="pre">DeltaPlusCurrent.spike_</span></code></a></li>
+<li><a class="reference internal" href="#inferno.neural.DeltaPlusCurrent.current_"><code class="docutils literal notranslate"><span class="pre">DeltaPlusCurrent.current_</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.DeltaPlusCurrent.clear"><code class="docutils literal notranslate"><span class="pre">DeltaPlusCurrent.clear()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.DeltaPlusCurrent.forward"><code class="docutils literal notranslate"><span class="pre">DeltaPlusCurrent.forward()</span></code></a></li>
 <li><a class="reference internal" href="#inferno.neural.DeltaPlusCurrent.partialconstructor"><code class="docutils literal notranslate"><span class="pre">DeltaPlusCurrent.partialconstructor()</span></code></a></li>

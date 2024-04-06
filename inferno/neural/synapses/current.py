@@ -12,9 +12,12 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
     .. math::
         I(t) =
         \begin{cases}
-            Q / \Delta t & \text{presynaptic spike}
+            Q / \Delta t & \text{presynaptic spike} \\
             0 & \text{otherwise}
         \end{cases}
+
+    Attributes:
+        spike_: :py:class:`~inferno.RecordTensor` interface for spikes.
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of synapses being simulated.
@@ -164,9 +167,13 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
     .. math::
         I(t) =
         \begin{cases}
-            Q / \Delta t + I_x & \text{presynaptic spike}
+            Q / \Delta t + I_x & \text{presynaptic spike} \\
             I_x & \text{otherwise}
         \end{cases}
+
+    Attributes:
+        spike_: :py:class:`~inferno.RecordTensor` interface for spikes.
+        current_: :py:class:`~inferno.RecordTensor` interface for currents.
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of synapses being simulated.

@@ -443,7 +443,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="p">{</span><span class="n">mname</span><span class="p">:</span> <span class="n">mon</span> <span class="k">for</span> <span class="n">mname</span><span class="p">,</span> <span class="n">mon</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span><span class="p">[</span><span class="n">oname</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
-            <span class="k">for</span> <span class="n">oname</span><span class="p">,</span> <span class="n">obs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_</span>
+            <span class="k">for</span> <span class="n">oname</span><span class="p">,</span> <span class="n">obs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">oname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitors_</span>
         <span class="p">)</span>
 

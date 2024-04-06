@@ -10,6 +10,7 @@ from ...observe import (
     ConditionalCumulativeTraceReducer,
     PassthroughReducer,
 )
+from itertools import repeat
 import torch
 from typing import Any, Callable
 import weakref
@@ -32,7 +33,6 @@ class EligibilityTraceReducer(ConditionalCumulativeTraceReducer):
         *,
         obs_reshape: weakref.WeakMethod,
         cond_reshape: weakref.WeakMethod,
-        field_reduce: weakref.ReferenceType,
         duration: float = 0.0,
     ):
         # call superclass constructor
@@ -48,7 +48,6 @@ class EligibilityTraceReducer(ConditionalCumulativeTraceReducer):
         # add reshape and reduce references
         self.obs_reshape = obs_reshape
         self.cond_reshape = cond_reshape
-        self.field_reduce = field_reduce
 
     def fold(
         self, obs: torch.Tensor, cond: torch.Tensor, state: torch.Tensor | None
@@ -64,10 +63,8 @@ class EligibilityTraceReducer(ConditionalCumulativeTraceReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return self.field_reduce()(
-            ConditionalCumulativeTraceReducer.fold(
-                self, self.obs_reshape()(obs), self.cond_reshape()(cond), state
-            )
+        return ConditionalCumulativeTraceReducer.fold(
+            self, self.obs_reshape()(obs), self.cond_reshape()(cond), state
         )
 
 
@@ -88,19 +85,20 @@ class MSTDPET(IndependentTrainer):
             z_\text{pre}(t + \Delta t) &= z_\text{pre}(t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
             + \frac{x_\text{post}(t)}{\tau_z}\left[t = t_\text{pre}^f\right] \\
             x_\text{pre}(t) &= x_\text{pre}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{pre}}\right)
-            + \eta_\text{pre}\left[t = t_\text{pre}^f\right] \\
+            + \eta_\text{post}\left[t = t_\text{pre}^f\right] \\
             x_\text{post}(t) &= x_\text{post}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{post}}\right)
-            + \eta_\text{post}\left[t = t_\text{post}^f\right]
+            + \eta_\text{pre}\left[t = t_\text{post}^f\right]
         \end{align*}
 
     Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent
     spike from neuron :math:`n`, respectively.
 
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
-    controls which terms are potentiative and which terms are depressive. The terms
-    (when expanded) can be scaled for weight dependence on updating. :math:`r` is a
-    reinforcement term given on each update. Note that this implementation splits the
-    eligibility trace into two terms, so weight dependence can scale the magnitude of each.
+    controls which terms are potentiative and depressive updates (these are applied to
+    the opposite trace). The terms (when expanded) can be scaled for weight dependence
+    on updating. :math:`r` is a reinforcement term given on each update. Note that
+    this implementation splits the eligibility trace into two terms, so weight
+    dependence can scale the magnitude of each.
 
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
     | Mode              | :math:`\text{sgn}(\eta_\text{post})` | :math:`\text{sgn}(\eta_\text{pre})` | LTP Term(s)                               | LTD Term(s)                               |
@@ -219,13 +217,17 @@ class MSTDPET(IndependentTrainer):
 
         state.step_time = argtest.gt("step_time", step_time, 0, float)
         state.lr_post = float(lr_post)
-        state.lr_post = float(lr_pre)
+        state.lr_pre = float(lr_pre)
         state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
         state.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
         state.tc_eligibility = argtest.gt("tc_eligibility", tc_eligibility, 0, float)
         state.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
-        state.batchreduce = batch_reduction if batch_reduction else torch.mean
-        state.fieldreduce = field_reduction if field_reduction else torch.sum
+        state.batchreduce = (
+            batch_reduction if (batch_reduction is not None) else torch.sum
+        )
+        state.fieldreduce = (
+            field_reduction if (field_reduction is not None) else torch.sum
+        )
 
         return state
 
@@ -284,7 +286,7 @@ class MSTDPET(IndependentTrainer):
                 reducer=CumulativeTraceReducer(
                     state.step_time,
                     state.tc_post,
-                    amplitude=state.lr_pre,
+                    amplitude=abs(state.lr_pre),
                     target=True,
                     duration=0.0,
                 ),
@@ -318,7 +320,7 @@ class MSTDPET(IndependentTrainer):
                 reducer=CumulativeTraceReducer(
                     state.step_time,
                     state.tc_pre,
-                    amplitude=state.lr_pre,
+                    amplitude=abs(state.lr_post),
                     target=True,
                     duration=0.0,
                 ),
@@ -356,7 +358,6 @@ class MSTDPET(IndependentTrainer):
                     scale=(1 / state.tc_eligibility),
                     obs_reshape=weakref.WeakMethod(cell.connection.presyn_receptive),
                     cond_reshape=weakref.WeakMethod(cell.connection.postsyn_receptive),
-                    field_reduce=weakref.ref(state.fieldreduce),
                     duration=0.0,
                 ),
                 subattrs=("trace_pre.latest", "spike_post.latest"),
@@ -379,7 +380,6 @@ class MSTDPET(IndependentTrainer):
                     scale=(1 / state.tc_eligibility),
                     obs_reshape=weakref.WeakMethod(cell.connection.postsyn_receptive),
                     cond_reshape=weakref.WeakMethod(cell.connection.presyn_receptive),
-                    field_reduce=weakref.ref(state.fieldreduce),
                     duration=0.0,
                 ),
                 subattrs=("trace_post.latest", "spike_pre.latest"),
@@ -389,7 +389,7 @@ class MSTDPET(IndependentTrainer):
             True,
         )
 
-        return name
+        return self.get_unit(name)
 
     def forward(self, reward: float | torch.Tensor, scale: float = 1.0) -> None:
         r"""Processes update for given layers based on current monitor stored data.
@@ -403,8 +403,8 @@ class MSTDPET(IndependentTrainer):
         Args:
             reward (float | torch.Tensor): reward for the trained batch.
             scale (float, optional): scaling factor used for the updates, this value
-                is expected to be nonnegative, and its absolute value will be used.
-                Defaults to 1.0.
+                is expected to be nonnegative, and its absolute value will be used,
+                :math:`\gamma`. Defaults to 1.0.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -424,19 +424,21 @@ class MSTDPET(IndependentTrainer):
                 continue
 
             # eligibility traces (shaped like batched weights)
-            z_post = monitors["elig_post"].peek()
-            z_pre = monitors["elig_pre"].peek()
+            z_post = state.fieldreduce(monitors["elig_post"].peek(), -1)
+            z_pre = state.fieldreduce(monitors["elig_pre"].peek(), -1)
 
             # process update
             if isinstance(reward, torch.Tensor):
                 # reward subterms
-                reward_abs = reward.abs()
+                scaledreward = (
+                    (reward * scale).abs().view(-1, *repeat(1, z_post.ndim - 1))
+                )
                 reward_pos = torch.argwhere(reward >= 0).view(-1)
                 reward_neg = torch.argwhere(reward < 0).view(-1)
 
                 # partial updates
-                dpost = z_post * (reward_abs * abs(scale))
-                dpre = z_pre * (reward_abs * abs(scale))
+                dpost = z_post * scaledreward
+                dpre = z_pre * scaledreward
 
                 dpost_reg, dpost_inv = dpost[reward_pos], dpost[reward_neg]
                 dpre_reg, dpre_inv = dpre[reward_pos], dpre[reward_neg]
@@ -444,17 +446,17 @@ class MSTDPET(IndependentTrainer):
                 # join partials
                 match (state.lr_post >= 0, state.lr_pre >= 0):
                     case (False, False):  # depressive
-                        dpos = torch.cat(dpost_inv, dpre_inv, 0)
-                        dneg = torch.cat(dpost_reg, dpre_reg, 0)
+                        dpos = torch.cat((dpost_inv, dpre_inv), 0)
+                        dneg = torch.cat((dpost_reg, dpre_reg), 0)
                     case (False, True):  # anti-hebbian
-                        dpos = torch.cat(dpost_inv, dpre_reg, 0)
-                        dneg = torch.cat(dpost_reg, dpre_inv, 0)
+                        dpos = torch.cat((dpost_inv, dpre_reg), 0)
+                        dneg = torch.cat((dpost_reg, dpre_inv), 0)
                     case (True, False):  # hebbian
-                        dpos = torch.cat(dpost_reg, dpre_inv, 0)
-                        dneg = torch.cat(dpost_inv, dpre_reg, 0)
+                        dpos = torch.cat((dpost_reg, dpre_inv), 0)
+                        dneg = torch.cat((dpost_inv, dpre_reg), 0)
                     case (True, True):  # potentiative
-                        dpos = torch.cat(dpost_reg, dpre_reg, 0)
-                        dneg = torch.cat(dpost_inv, dpre_inv, 0)
+                        dpos = torch.cat((dpost_reg, dpre_reg), 0)
+                        dneg = torch.cat((dpost_inv, dpre_inv), 0)
 
                 # apply update
                 cell.updater.weight = (

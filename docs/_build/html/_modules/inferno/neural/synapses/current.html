@@ -231,9 +231,12 @@
 <span class="sd">    .. math::</span>
 <span class="sd">        I(t) =</span>
 <span class="sd">        \begin{cases}</span>
-<span class="sd">            Q / \Delta t &amp; \text{presynaptic spike}</span>
+<span class="sd">            Q / \Delta t &amp; \text{presynaptic spike} \\</span>
 <span class="sd">            0 &amp; \text{otherwise}</span>
 <span class="sd">        \end{cases}</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        spike_: :py:class:`~inferno.RecordTensor` interface for spikes.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of synapses being simulated.</span>
@@ -383,9 +386,13 @@
 <span class="sd">    .. math::</span>
 <span class="sd">        I(t) =</span>
 <span class="sd">        \begin{cases}</span>
-<span class="sd">            Q / \Delta t + I_x &amp; \text{presynaptic spike}</span>
+<span class="sd">            Q / \Delta t + I_x &amp; \text{presynaptic spike} \\</span>
 <span class="sd">            I_x &amp; \text{otherwise}</span>
 <span class="sd">        \end{cases}</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        spike_: :py:class:`~inferno.RecordTensor` interface for spikes.</span>
+<span class="sd">        current_: :py:class:`~inferno.RecordTensor` interface for currents.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        shape (tuple[int, ...] | int): shape of the group of synapses being simulated.</span>

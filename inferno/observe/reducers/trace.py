@@ -274,7 +274,7 @@ class ScaledNearestTraceReducer(FoldReducer):
         # reducer attributes
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
+        self.amplitude = float(amplitude)
         self.scale = scale
         self.criterion = criterion
 
@@ -381,7 +381,7 @@ class ScaledCumulativeTraceReducer(FoldReducer):
         # register state
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
+        self.amplitude = float(amplitude)
         self.scale = scale
         self.criterion = criterion
 
@@ -490,7 +490,7 @@ class ConditionalNearestTraceReducer(FoldReducer):
         # reducer attributes
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
+        self.amplitude = float(amplitude)
         self.scale = scale
 
     @property
@@ -597,7 +597,7 @@ class ConditionalCumulativeTraceReducer(FoldReducer):
         # register state
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
         self.decay = math.exp(-self.dt / self.time_constant)
-        self.amplitude = argtest.neq("amplitude", amplitude, 0, None)
+        self.amplitude = float(amplitude)
         self.scale = scale
 
     @property

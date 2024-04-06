@@ -263,7 +263,7 @@ class FoldReducer(RecordReducer, ABC):
             prev_data (torch.Tensor): most recent observation prior to sample time.
             next_data (torch.Tensor): most recent observation subsequent to sample time.
             sample_at (torch.Tensor): relative time at which to sample data.
-            step_data (float | torch.Tensor): length of time between the prior and
+            step_time (float | torch.Tensor): length of time between the prior and
                 subsequent observations.
 
         Raises:

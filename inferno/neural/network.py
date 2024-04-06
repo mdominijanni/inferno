@@ -422,7 +422,7 @@ class Layer(Module, ABC):
                 else:
                     return f"neurons_.{neuron}{'.' if attr else ''}{attr}"
             case "cell":
-                if not rgetitem(self._cells, (connection, neuron), None):
+                if not rgetitem(self.cells_, (connection, neuron), None):
                     raise AttributeError(
                         f"cell 'connection', 'neuron' ('{connection}', '{neuron}') is not valid"
                     )

@@ -224,6 +224,7 @@
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Protocol</span>
 
 
@@ -1146,14 +1147,14 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable connection weights.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new weights.</span>
+<span class="sd">            value (torch.Tensor | nn.Parameter): new weights.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: present weights.</span>
+<span class="sd">            nn.Parameter: present weights.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``weight`` must be implemented by the subclass.</span>
@@ -1165,7 +1166,7 @@
 
     <span class="nd">@weight</span><span class="o">.</span><span class="n">setter</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Connection) must implement &quot;</span>
             <span class="s2">&quot;the setter for property `weight`.&quot;</span>
@@ -1173,14 +1174,14 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable connection biases.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new biases.</span>
+<span class="sd">            value (torch.Tensor | nn.Parameter): new biases.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor | None: present biases, if any.</span>
+<span class="sd">            nn.Parameter | None: present biases, if any.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``bias`` must be implemented by the subclass.</span>
@@ -1192,7 +1193,7 @@
 
     <span class="nd">@bias</span><span class="o">.</span><span class="n">setter</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Connection) must implement &quot;</span>
             <span class="s2">&quot;the setter for property `bias`.&quot;</span>
@@ -1200,14 +1201,14 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Learnable delays of the connection.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            value (torch.Tensor): new delays.</span>
+<span class="sd">            value (torch.Tensor | nn.Parameter): new delays.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor | None: current delays, if the connection has any.</span>
+<span class="sd">            nn.Parameter | None: current delays, if the connection has any.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: ``delay`` must be implemented by the subclass.</span>
@@ -1219,7 +1220,7 @@
 
     <span class="nd">@delay</span><span class="o">.</span><span class="n">setter</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(Connection) must implement &quot;</span>
             <span class="s2">&quot;the setter for property `delay`.&quot;</span>

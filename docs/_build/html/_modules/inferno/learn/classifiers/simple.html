@@ -225,7 +225,7 @@
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 
 
-<div class="viewcode-block" id="MaxRateClassifier"><a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier">[docs]</a><span class="k">class</span> <span class="nc">MaxRateClassifier</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="TopRateClassifier"><a class="viewcode-back" href="../../../../reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier">[docs]</a><span class="k">class</span> <span class="nc">TopRateClassifier</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Classifies spikes by maximum per-class rates.</span>
 
 <span class="sd">    The classifier uses an internal parameter :py:attr:`rates` for other</span>
@@ -430,7 +430,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assignments</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MaxRateClassifier.infer"><a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span>
+<div class="viewcode-block" id="TopRateClassifier.infer"><a class="viewcode-back" href="../../../../reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">logits</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
@@ -489,7 +489,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">ylogits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="MaxRateClassifier.learn"><a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.learn">[docs]</a>    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span>
+<div class="viewcode-block" id="TopRateClassifier.learn"><a class="viewcode-back" href="../../../../reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.learn">[docs]</a>    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -533,7 +533,7 @@
         <span class="c1"># update rates, other properties update automatically</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">*</span> <span class="n">clscounts</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">+</span> <span class="n">rates</span></div>
 
-<div class="viewcode-block" id="MaxRateClassifier.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.learn.MaxRateClassifier.html#inferno.learn.MaxRateClassifier.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="TopRateClassifier.forward"><a class="viewcode-back" href="../../../../reference/generated/inferno.learn.TopRateClassifier.html#inferno.learn.TopRateClassifier.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">spikes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
