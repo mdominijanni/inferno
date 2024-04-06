@@ -370,10 +370,9 @@
 <span class="sd">        .. admonition:: Shape</span>
 <span class="sd">            :class: tensorshape</span>
 
-<span class="sd">            :math:`B \times M \times N`</span>
+<span class="sd">            :math:`1 \times M \times N`</span>
 
 <span class="sd">            Where:</span>
-<span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">                * :math:`M` is the number of elements across input dimensions.</span>
 <span class="sd">                * :math:`N` is the number of elements across output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -546,7 +545,7 @@
             <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">syncurrent</span>  <span class="c1"># B I O</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">biased</span><span class="p">:</span>
-                <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">res</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">t</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">res</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">t</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">res</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">t</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
@@ -684,10 +683,9 @@
 <span class="sd">        .. admonition:: Shape</span>
 <span class="sd">            :class: tensorshape</span>
 
-<span class="sd">            :math:`B \times N`</span>
+<span class="sd">            :math:`1 \times N \times 1`</span>
 
 <span class="sd">            Where:</span>
-<span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">                * :math:`N` is the number of elements across input/output dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayedby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -991,11 +989,11 @@
 <span class="sd">        Note:</span>
 <span class="sd">            Setter masks delays before assignment.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">WeightBiasDelayMixin</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">WeightBiasDelayMixin</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="nd">@delay</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="n">WeightBiasDelayMixin</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+        <span class="n">WeightBiasDelayMixin</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">inshape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
@@ -1171,7 +1169,6 @@
 <span class="sd">            Where:</span>
 <span class="sd">                * :math:`B` is the batch size.</span>
 <span class="sd">                * :math:`N_0, \ldots` are the unbatched input/output dimensions.</span>
-<span class="sd">                * :math:`N_0, \ldots` are the unbatched output dimensions.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to</span>

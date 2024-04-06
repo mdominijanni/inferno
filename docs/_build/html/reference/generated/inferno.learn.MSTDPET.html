@@ -240,18 +240,19 @@
     z_\text{pre}(t + \Delta t) &amp;= z_\text{pre}(t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
     + \frac{x_\text{post}(t)}{\tau_z}\left[t = t_\text{pre}^f\right] \\
     x_\text{pre}(t) &amp;= x_\text{pre}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{pre}}\right)
-    + \eta_\text{pre}\left[t = t_\text{pre}^f\right] \\
+    + \eta_\text{post}\left[t = t_\text{pre}^f\right] \\
     x_\text{post}(t) &amp;= x_\text{post}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{post}}\right)
-    + \eta_\text{post}\left[t = t_\text{post}^f\right]
+    + \eta_\text{pre}\left[t = t_\text{post}^f\right]
 \end{align*}\end{split}\]</div>
 </div>
 <p>Times <span class="math notranslate nohighlight">\(t\)</span> and <span class="math notranslate nohighlight">\(t_n^f\)</span> are the current time and the time of the most recent
 spike from neuron <span class="math notranslate nohighlight">\(n\)</span>, respectively.</p>
 <p>The signs of the learning rates <span class="math notranslate nohighlight">\(\eta_\text{post}\)</span> and <span class="math notranslate nohighlight">\(\eta_\text{pre}\)</span>
-controls which terms are potentiative and which terms are depressive. The terms
-(when expanded) can be scaled for weight dependence on updating. <span class="math notranslate nohighlight">\(r\)</span> is a
-reinforcement term given on each update. Note that this implementation splits the
-eligibility trace into two terms, so weight dependence can scale the magnitude of each.</p>
+controls which terms are potentiative and depressive updates (these are applied to
+the opposite trace). The terms (when expanded) can be scaled for weight dependence
+on updating. <span class="math notranslate nohighlight">\(r\)</span> is a reinforcement term given on each update. Note that
+this implementation splits the eligibility trace into two terms, so weight
+dependence can scale the magnitude of each.</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -358,8 +359,8 @@ potentiative or depressive for the purposes of weight dependence.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>reward</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – reward for the trained batch.</p></li>
 <li><p><strong>scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – scaling factor used for the updates, this value
-is expected to be nonnegative, and its absolute value will be used.
-Defaults to 1.0.</p></li>
+is expected to be nonnegative, and its absolute value will be used,
+<span class="math notranslate nohighlight">\(\gamma\)</span>. Defaults to 1.0.</p></li>
 </ul>
 </dd>
 </dl>
