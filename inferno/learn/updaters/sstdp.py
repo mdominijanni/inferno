@@ -219,13 +219,17 @@ class MSTDPET(IndependentTrainer):
 
         state.step_time = argtest.gt("step_time", step_time, 0, float)
         state.lr_post = float(lr_post)
-        state.lr_post = float(lr_pre)
+        state.lr_pre = float(lr_pre)
         state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
         state.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
         state.tc_eligibility = argtest.gt("tc_eligibility", tc_eligibility, 0, float)
         state.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
-        state.batchreduce = batch_reduction if batch_reduction else torch.mean
-        state.fieldreduce = field_reduction if field_reduction else torch.sum
+        state.batchreduce = (
+            batch_reduction if (batch_reduction is not None) else torch.sum
+        )
+        state.fieldreduce = (
+            field_reduction if (field_reduction is not None) else torch.sum
+        )
 
         return state
 
@@ -389,7 +393,7 @@ class MSTDPET(IndependentTrainer):
             True,
         )
 
-        return name
+        return self.get_unit(name)
 
     def forward(self, reward: float | torch.Tensor, scale: float = 1.0) -> None:
         r"""Processes update for given layers based on current monitor stored data.
@@ -403,8 +407,8 @@ class MSTDPET(IndependentTrainer):
         Args:
             reward (float | torch.Tensor): reward for the trained batch.
             scale (float, optional): scaling factor used for the updates, this value
-                is expected to be nonnegative, and its absolute value will be used.
-                Defaults to 1.0.
+                is expected to be nonnegative, and its absolute value will be used,
+                :math:`\gamma`. Defaults to 1.0.
 
         .. admonition:: Shape
             :class: tensorshape
