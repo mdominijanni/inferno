@@ -31,6 +31,7 @@ dependencies:
   - black
   - flake8
   - pytest
+  - pytest-cov
   # sphinx
   - sphinx
   - antlr4-python3-runtime
