@@ -1,5 +1,7 @@
 # API Reference
 
+The quick brown fox tries to figure out GitHub actions.
+
 ```{toctree}
 :hidden:
 
