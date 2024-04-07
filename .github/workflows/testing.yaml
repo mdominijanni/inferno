@@ -2,7 +2,7 @@ name: Inferno Testing
 
 on:
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
