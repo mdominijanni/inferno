@@ -35,6 +35,10 @@ jobs:
         conda list
         conda list --name infernotest
 
+    - name: Activate conda environment
+      run: |
+        conda activate infernotest
+
     - name: Run tests with pytest
       run: |
         pytest -s ./test
