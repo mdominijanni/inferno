@@ -1,6 +1,0 @@
-﻿interp\_next
-============
-
-.. currentmodule:: inferno.functional
-
-.. autofunction:: interp_next

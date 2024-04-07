@@ -1,8 +1,0 @@
-﻿Module
-======
-
-.. currentmodule:: inferno
-
-.. autoclass:: Module
-    :members:
-    :show-inheritance:

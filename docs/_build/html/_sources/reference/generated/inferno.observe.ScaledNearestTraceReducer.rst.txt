@@ -1,8 +1,0 @@
-﻿ScaledNearestTraceReducer
-=========================
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: ScaledNearestTraceReducer
-    :members:
-    :show-inheritance:

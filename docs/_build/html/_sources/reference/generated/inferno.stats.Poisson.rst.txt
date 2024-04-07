@@ -1,8 +1,0 @@
-﻿Poisson
-=======
-
-.. currentmodule:: inferno.stats
-
-.. autoclass:: Poisson
-    :members:
-    :show-inheritance:

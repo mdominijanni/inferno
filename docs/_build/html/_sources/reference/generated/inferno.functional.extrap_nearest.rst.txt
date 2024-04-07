@@ -1,6 +1,0 @@
-﻿extrap\_nearest
-===============
-
-.. currentmodule:: inferno.functional
-
-.. autofunction:: extrap_nearest

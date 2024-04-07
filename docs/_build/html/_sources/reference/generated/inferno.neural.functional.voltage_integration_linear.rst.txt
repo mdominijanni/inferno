@@ -1,6 +1,0 @@
-﻿voltage\_integration\_linear
-============================
-
-.. currentmodule:: inferno.neural.functional
-
-.. autofunction:: voltage_integration_linear

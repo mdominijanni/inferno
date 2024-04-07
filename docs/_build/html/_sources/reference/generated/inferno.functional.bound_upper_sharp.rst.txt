@@ -1,6 +1,0 @@
-﻿bound\_upper\_sharp
-===================
-
-.. currentmodule:: inferno.functional
-
-.. autofunction:: bound_upper_sharp

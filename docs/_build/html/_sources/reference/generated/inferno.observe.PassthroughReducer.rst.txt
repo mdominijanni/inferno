@@ -1,8 +1,0 @@
-﻿PassthroughReducer
-==================
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: PassthroughReducer
-    :members:
-    :show-inheritance:

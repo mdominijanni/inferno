@@ -1,6 +1,0 @@
-﻿sqrt
-====
-
-.. currentmodule:: inferno
-
-.. autofunction:: sqrt

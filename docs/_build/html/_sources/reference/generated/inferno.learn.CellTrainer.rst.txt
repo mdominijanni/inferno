@@ -1,8 +1,0 @@
-﻿CellTrainer
-===========
-
-.. currentmodule:: inferno.learn
-
-.. autoclass:: CellTrainer
-    :members:
-    :show-inheritance:

@@ -1,8 +1,0 @@
-﻿AdEx
-====
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: AdEx
-    :members:
-    :show-inheritance:

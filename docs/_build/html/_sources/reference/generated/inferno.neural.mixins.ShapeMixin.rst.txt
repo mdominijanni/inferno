@@ -1,8 +1,0 @@
-﻿ShapeMixin
-==========
-
-.. currentmodule:: inferno.neural.mixins
-
-.. autoclass:: ShapeMixin
-    :members:
-    :show-inheritance:

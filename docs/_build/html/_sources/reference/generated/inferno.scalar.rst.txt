@@ -1,6 +1,0 @@
-﻿scalar
-======
-
-.. currentmodule:: inferno
-
-.. autofunction:: scalar

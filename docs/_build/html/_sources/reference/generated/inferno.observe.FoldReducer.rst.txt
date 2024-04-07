@@ -1,8 +1,0 @@
-﻿FoldReducer
-===========
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: FoldReducer
-    :members:
-    :show-inheritance:

@@ -1,8 +1,0 @@
-﻿Neuron
-======
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: Neuron
-    :members:
-    :show-inheritance:

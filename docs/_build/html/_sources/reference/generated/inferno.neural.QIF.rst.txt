@@ -1,8 +1,0 @@
-﻿QIF
-===
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: QIF
-    :members:
-    :show-inheritance:

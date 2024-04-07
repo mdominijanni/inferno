@@ -1,6 +1,0 @@
-﻿ones
-====
-
-.. currentmodule:: inferno
-
-.. autofunction:: ones

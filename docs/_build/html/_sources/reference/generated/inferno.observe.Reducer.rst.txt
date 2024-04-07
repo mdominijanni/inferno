@@ -1,8 +1,0 @@
-﻿Reducer
-=======
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: Reducer
-    :members:
-    :show-inheritance:

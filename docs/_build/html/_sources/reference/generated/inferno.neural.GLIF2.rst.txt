@@ -1,8 +1,0 @@
-﻿GLIF2
-=====
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: GLIF2
-    :members:
-    :show-inheritance:

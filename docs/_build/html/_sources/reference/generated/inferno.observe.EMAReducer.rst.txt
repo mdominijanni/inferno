@@ -1,8 +1,0 @@
-﻿EMAReducer
-==========
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: EMAReducer
-    :members:
-    :show-inheritance:

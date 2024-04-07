@@ -1,8 +1,0 @@
-﻿StateHook
-=========
-
-.. currentmodule:: inferno
-
-.. autoclass:: StateHook
-    :members:
-    :show-inheritance:

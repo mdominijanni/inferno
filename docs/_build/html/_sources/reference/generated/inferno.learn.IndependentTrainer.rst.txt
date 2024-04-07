@@ -1,8 +1,0 @@
-﻿IndependentTrainer
-==================
-
-.. currentmodule:: inferno.learn
-
-.. autoclass:: IndependentTrainer
-    :members:
-    :show-inheritance:

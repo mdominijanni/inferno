@@ -1,8 +1,0 @@
-﻿FullBounding
-============
-
-.. currentmodule:: inferno.functional
-
-.. autoclass:: FullBounding
-    :members:
-    :show-inheritance:

@@ -1,8 +1,0 @@
-﻿MSTDPET
-=======
-
-.. currentmodule:: inferno.learn
-
-.. autoclass:: MSTDPET
-    :members:
-    :show-inheritance:

@@ -1,6 +1,0 @@
-﻿apply\_adaptive\_thresholds
-===========================
-
-.. currentmodule:: inferno.neural.functional
-
-.. autofunction:: apply_adaptive_thresholds

@@ -1,8 +1,0 @@
-﻿LinearLateral
-=============
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: LinearLateral
-    :members:
-    :show-inheritance:
