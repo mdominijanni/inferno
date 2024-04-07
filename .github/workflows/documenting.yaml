@@ -1,4 +1,4 @@
-name: Inferno Testing
+name: Inferno Build Docs
 
 on:
   push:
@@ -7,12 +7,12 @@ on:
     branches: [ "main", "dev" ]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  test:
+  doc-deploy:
 
-    runs-on: ubuntu-latest
+    runs-on: macos-14
 
     steps:
     - uses: actions/checkout@v4
@@ -20,11 +20,11 @@ jobs:
     - name: Configure miniconda
       uses: conda-incubator/setup-miniconda@v3
       with:
-        environment-file: envs/testenv-ubuntucpu.yaml
+        environment-file: envs/devenv.yaml
         python-version: 3.11
         auto-update-conda: true
         auto-activate-base: false
-        activate-environment: infernotest
+        activate-environment: infernodev
 
     - name: Conda environment info
       shell: bash -el {0}
@@ -32,7 +32,8 @@ jobs:
         conda info
         conda list
 
-    - name: Run tests with pytest
+    - name: Build sphinx documentation
+      working-directory: "docs/"
       shell: bash -el {0}
       run: |
-        pytest -s ./test
+        python makedoc.py
