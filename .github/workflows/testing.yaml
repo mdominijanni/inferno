@@ -10,24 +10,26 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v5
+
+    - name: Configure miniconda
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        python-version: "3.11"
-    - name: Add conda to system path
+        auto-update-conda: true
+
+    - name: Create conda environment from config
       run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-    - name: Install dependencies
+        conda env create -f envs/testenv-ubuntu.yaml
+
+    - name: Activate conda testing environment
       run: |
-        conda env update --file envs/devenv.yaml --name base
-        conda env install pytorch::cpuonly --name base
-    - name: Test with pytest
+        conda activate infernotest
+
+    - name: Run tests with pytest
       run: |
         pytest -s ./test
