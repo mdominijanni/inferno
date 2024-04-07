@@ -1,4 +1,4 @@
-name: infernodev
+name: infernodoc
 channels:
   - pytorch
   - plotly
@@ -20,13 +20,6 @@ dependencies:
   # plotting
   - matplotlib
   - seaborn
-  - plotly
-  # ui
-  - tqdm
-  - streamlit
-  # mlops
-  - tensorboard
-  - wandb
   # devtools
   - black
   - flake8
@@ -44,10 +37,5 @@ dependencies:
   - furo
   - pydata-sphinx-theme
   - sphinx-book-theme
-  # jupyter and spyder
-  - ipykernel
-  - ipympl
-  - ipywidgets
-  - spyder-kernels
   # other
   - tomli-w
