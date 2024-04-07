@@ -229,6 +229,7 @@
     <span class="n">ConditionalCumulativeTraceReducer</span><span class="p">,</span>
     <span class="n">PassthroughReducer</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">repeat</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">import</span> <span class="nn">weakref</span>
@@ -251,7 +252,6 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">obs_reshape</span><span class="p">:</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakMethod</span><span class="p">,</span>
         <span class="n">cond_reshape</span><span class="p">:</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakMethod</span><span class="p">,</span>
-        <span class="n">field_reduce</span><span class="p">:</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ReferenceType</span><span class="p">,</span>
         <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># call superclass constructor</span>
@@ -267,7 +267,6 @@
         <span class="c1"># add reshape and reduce references</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obs_reshape</span> <span class="o">=</span> <span class="n">obs_reshape</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cond_reshape</span> <span class="o">=</span> <span class="n">cond_reshape</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">field_reduce</span> <span class="o">=</span> <span class="n">field_reduce</span>
 
     <span class="k">def</span> <span class="nf">fold</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">cond</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span>
@@ -283,10 +282,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: state for the current time step.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_reduce</span><span class="p">()(</span>
-            <span class="n">ConditionalCumulativeTraceReducer</span><span class="o">.</span><span class="n">fold</span><span class="p">(</span>
-                <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_reshape</span><span class="p">()(</span><span class="n">obs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">cond_reshape</span><span class="p">()(</span><span class="n">cond</span><span class="p">),</span> <span class="n">state</span>
-            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ConditionalCumulativeTraceReducer</span><span class="o">.</span><span class="n">fold</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_reshape</span><span class="p">()(</span><span class="n">obs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">cond_reshape</span><span class="p">()(</span><span class="n">cond</span><span class="p">),</span> <span class="n">state</span>
         <span class="p">)</span>
 
 
@@ -542,7 +539,7 @@
                 <span class="n">reducer</span><span class="o">=</span><span class="n">CumulativeTraceReducer</span><span class="p">(</span>
                     <span class="n">state</span><span class="o">.</span><span class="n">step_time</span><span class="p">,</span>
                     <span class="n">state</span><span class="o">.</span><span class="n">tc_pre</span><span class="p">,</span>
-                    <span class="n">amplitude</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span><span class="p">),</span>
+                    <span class="n">amplitude</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_post</span><span class="p">),</span>
                     <span class="n">target</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">duration</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                 <span class="p">),</span>
@@ -580,7 +577,6 @@
                     <span class="n">scale</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">state</span><span class="o">.</span><span class="n">tc_eligibility</span><span class="p">),</span>
                     <span class="n">obs_reshape</span><span class="o">=</span><span class="n">weakref</span><span class="o">.</span><span class="n">WeakMethod</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">),</span>
                     <span class="n">cond_reshape</span><span class="o">=</span><span class="n">weakref</span><span class="o">.</span><span class="n">WeakMethod</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">),</span>
-                    <span class="n">field_reduce</span><span class="o">=</span><span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">fieldreduce</span><span class="p">),</span>
                     <span class="n">duration</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                 <span class="p">),</span>
                 <span class="n">subattrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;trace_pre.latest&quot;</span><span class="p">,</span> <span class="s2">&quot;spike_post.latest&quot;</span><span class="p">),</span>
@@ -603,7 +599,6 @@
                     <span class="n">scale</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">state</span><span class="o">.</span><span class="n">tc_eligibility</span><span class="p">),</span>
                     <span class="n">obs_reshape</span><span class="o">=</span><span class="n">weakref</span><span class="o">.</span><span class="n">WeakMethod</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">postsyn_receptive</span><span class="p">),</span>
                     <span class="n">cond_reshape</span><span class="o">=</span><span class="n">weakref</span><span class="o">.</span><span class="n">WeakMethod</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">presyn_receptive</span><span class="p">),</span>
-                    <span class="n">field_reduce</span><span class="o">=</span><span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">fieldreduce</span><span class="p">),</span>
                     <span class="n">duration</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                 <span class="p">),</span>
                 <span class="n">subattrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;trace_post.latest&quot;</span><span class="p">,</span> <span class="s2">&quot;spike_pre.latest&quot;</span><span class="p">),</span>
@@ -648,19 +643,21 @@
                 <span class="k">continue</span>
 
             <span class="c1"># eligibility traces (shaped like batched weights)</span>
-            <span class="n">z_post</span> <span class="o">=</span> <span class="n">monitors</span><span class="p">[</span><span class="s2">&quot;elig_post&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
-            <span class="n">z_pre</span> <span class="o">=</span> <span class="n">monitors</span><span class="p">[</span><span class="s2">&quot;elig_pre&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
+            <span class="n">z_post</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">fieldreduce</span><span class="p">(</span><span class="n">monitors</span><span class="p">[</span><span class="s2">&quot;elig_post&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">peek</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">z_pre</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">fieldreduce</span><span class="p">(</span><span class="n">monitors</span><span class="p">[</span><span class="s2">&quot;elig_pre&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">peek</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
             <span class="c1"># process update</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reward</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
                 <span class="c1"># reward subterms</span>
-                <span class="n">reward_abs</span> <span class="o">=</span> <span class="n">reward</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+                <span class="n">scaledreward</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="n">reward</span> <span class="o">*</span> <span class="n">scale</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">z_post</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="p">)</span>
                 <span class="n">reward_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">reward</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">reward_neg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">reward</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
                 <span class="c1"># partial updates</span>
-                <span class="n">dpost</span> <span class="o">=</span> <span class="n">z_post</span> <span class="o">*</span> <span class="p">(</span><span class="n">reward_abs</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
-                <span class="n">dpre</span> <span class="o">=</span> <span class="n">z_pre</span> <span class="o">*</span> <span class="p">(</span><span class="n">reward_abs</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
+                <span class="n">dpost</span> <span class="o">=</span> <span class="n">z_post</span> <span class="o">*</span> <span class="n">scaledreward</span>
+                <span class="n">dpre</span> <span class="o">=</span> <span class="n">z_pre</span> <span class="o">*</span> <span class="n">scaledreward</span>
 
                 <span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpost_inv</span> <span class="o">=</span> <span class="n">dpost</span><span class="p">[</span><span class="n">reward_pos</span><span class="p">],</span> <span class="n">dpost</span><span class="p">[</span><span class="n">reward_neg</span><span class="p">]</span>
                 <span class="n">dpre_reg</span><span class="p">,</span> <span class="n">dpre_inv</span> <span class="o">=</span> <span class="n">dpre</span><span class="p">[</span><span class="n">reward_pos</span><span class="p">],</span> <span class="n">dpre</span><span class="p">[</span><span class="n">reward_neg</span><span class="p">]</span>
@@ -668,17 +665,17 @@
                 <span class="c1"># join partials</span>
                 <span class="k">match</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lr_post</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">lr_pre</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
                     <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>  <span class="c1"># depressive</span>
-                        <span class="n">dpos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dpost_inv</span><span class="p">,</span> <span class="n">dpre_inv</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-                        <span class="n">dneg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpre_reg</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                        <span class="n">dpos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">dpost_inv</span><span class="p">,</span> <span class="n">dpre_inv</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+                        <span class="n">dneg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpre_reg</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
                     <span class="k">case</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>  <span class="c1"># anti-hebbian</span>
-                        <span class="n">dpos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dpost_inv</span><span class="p">,</span> <span class="n">dpre_reg</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-                        <span class="n">dneg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpre_inv</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                        <span class="n">dpos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">dpost_inv</span><span class="p">,</span> <span class="n">dpre_reg</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+                        <span class="n">dneg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpre_inv</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
                     <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>  <span class="c1"># hebbian</span>
-                        <span class="n">dpos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpre_inv</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-                        <span class="n">dneg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dpost_inv</span><span class="p">,</span> <span class="n">dpre_reg</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                        <span class="n">dpos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpre_inv</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+                        <span class="n">dneg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">dpost_inv</span><span class="p">,</span> <span class="n">dpre_reg</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
                     <span class="k">case</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>  <span class="c1"># potentiative</span>
-                        <span class="n">dpos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpre_reg</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-                        <span class="n">dneg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dpost_inv</span><span class="p">,</span> <span class="n">dpre_inv</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                        <span class="n">dpos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">dpost_reg</span><span class="p">,</span> <span class="n">dpre_reg</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+                        <span class="n">dneg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">dpost_inv</span><span class="p">,</span> <span class="n">dpre_inv</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
 
                 <span class="c1"># apply update</span>
                 <span class="n">cell</span><span class="o">.</span><span class="n">updater</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span>

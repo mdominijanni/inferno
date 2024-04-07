@@ -20,11 +20,11 @@ jobs:
     - name: Configure miniconda
       uses: conda-incubator/setup-miniconda@v3
       with:
-        environment-file: envs/devenv.yaml
+        environment-file: envs/docsenv-macos.yaml
         python-version: 3.11
-        auto-update-conda: true
+        auto-update-conda: false
         auto-activate-base: false
-        activate-environment: infernodev
+        activate-environment: infernodocs
 
     - name: Conda environment info
       shell: bash -el {0}

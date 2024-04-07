@@ -1,8 +1,6 @@
 name: Inferno Testing
 
 on:
-  push:
-    branches: [ "dev" ]
   pull_request:
     branches: [ "main", "dev" ]
 
