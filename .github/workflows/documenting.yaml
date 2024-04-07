@@ -39,5 +39,5 @@ jobs:
         projectName: inferno
         directory: docs/_build/html/
         gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-        branch: dev
+        branch: ${{ github.base_ref }}
         wranglerVersion: '3'
