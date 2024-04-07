@@ -26,19 +26,13 @@ jobs:
         auto-activate-base: false
         activate-environment: infernotest
 
-    - name: Conda info
+    - name: Conda environment info
+      shell: bash -l {0}
       run: |
-        which python
-        echo $PATH
         conda info
-        conda env list
         conda list
-        conda list --name infernotest
-
-    - name: Activate conda environment
-      run: |
-        conda activate infernotest
 
     - name: Run tests with pytest
+      shell: bash -l {0}
       run: |
         pytest -s ./test
