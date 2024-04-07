@@ -2,7 +2,7 @@ name: Inferno Testing
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 
 permissions:
   contents: read
@@ -33,4 +33,5 @@ jobs:
     - name: Run tests with pytest
       shell: bash -el {0}
       run: |
-        pytest -s ./test
+        coverage run -m pytest ./test
+        coverage report -m
