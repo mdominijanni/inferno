@@ -1,5 +1,7 @@
 # API Reference
 
+The quick brown fox flew too close to the sun.
+
 ```{toctree}
 :hidden:
 
