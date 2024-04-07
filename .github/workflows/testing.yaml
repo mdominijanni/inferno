@@ -20,15 +20,11 @@ jobs:
     - name: Configure miniconda
       uses: conda-incubator/setup-miniconda@v3
       with:
+        activate-env: infernotest
+        environment-file: envs/testenv-ubuntu.yaml
+        python-version: 3.11
         auto-update-conda: true
-
-    - name: Create conda environment from config
-      run: |
-        conda env create -f envs/testenv-ubuntu.yaml
-
-    - name: Activate conda testing environment
-      run: |
-        conda activate infernotest
+        auto-activate-base: false
 
     - name: Run tests with pytest
       run: |
