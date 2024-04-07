@@ -39,7 +39,7 @@ jobs:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         projectName: inferno
-        directory: docs/_build
+        directory: docs/_build/html/
         gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         branch: dev
         wranglerVersion: '3'
