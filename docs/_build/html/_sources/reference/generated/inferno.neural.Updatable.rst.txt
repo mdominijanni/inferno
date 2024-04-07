@@ -1,8 +1,0 @@
-﻿Updatable
-=========
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: Updatable
-    :members:
-    :show-inheritance:

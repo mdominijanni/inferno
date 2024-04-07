@@ -1,8 +1,0 @@
-﻿SynapseConstructor
-==================
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: SynapseConstructor
-    :members:
-    :show-inheritance:

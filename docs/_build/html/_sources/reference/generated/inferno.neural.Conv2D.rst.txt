@@ -1,8 +1,0 @@
-﻿Conv2D
-======
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: Conv2D
-    :members:
-    :show-inheritance:

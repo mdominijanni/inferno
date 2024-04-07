@@ -1,0 +1,43 @@
+name: Inferno Build Docs
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+
+permissions:
+  contents: write
+  deployments: write
+
+jobs:
+  doc-deploy:
+    runs-on: macos-14
+    steps:
+    - uses: actions/checkout@v4
+    - name: Configure miniconda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        environment-file: envs/docenv-macos.yaml
+        python-version: 3.11
+        auto-update-conda: true
+        auto-activate-base: false
+        activate-environment: infernodoc
+    - name: Conda environment info
+      shell: bash -el {0}
+      run: |
+        conda info
+        conda list
+    - name: Build sphinx documentation
+      working-directory: docs/
+      shell: bash -el {0}
+      run: |
+        python makedoc.py
+    - name: Publish to Cloudflare Pages
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: inferno
+        directory: docs/_build/html/
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        branch: dev
+        wranglerVersion: '3'

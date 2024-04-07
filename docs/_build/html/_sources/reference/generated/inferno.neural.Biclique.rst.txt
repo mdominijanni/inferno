@@ -1,8 +1,0 @@
-﻿Biclique
-========
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: Biclique
-    :members:
-    :show-inheritance:

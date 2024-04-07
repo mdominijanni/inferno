@@ -1,6 +1,0 @@
-﻿extrap\_linear\_backward
-========================
-
-.. currentmodule:: inferno.functional
-
-.. autofunction:: extrap_linear_backward

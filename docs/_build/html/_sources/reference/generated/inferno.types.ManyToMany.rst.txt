@@ -1,8 +1,0 @@
-﻿ManyToMany
-==========
-
-.. currentmodule:: inferno.types
-
-.. autoclass:: ManyToMany
-    :members:
-    :show-inheritance:

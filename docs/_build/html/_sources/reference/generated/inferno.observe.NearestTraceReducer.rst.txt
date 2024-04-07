@@ -1,8 +1,0 @@
-﻿NearestTraceReducer
-===================
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: NearestTraceReducer
-    :members:
-    :show-inheritance:

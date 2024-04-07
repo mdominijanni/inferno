@@ -1,8 +1,0 @@
-﻿ShapedTensor
-============
-
-.. currentmodule:: inferno
-
-.. autoclass:: ShapedTensor
-    :members:
-    :show-inheritance:

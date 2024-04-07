@@ -1,8 +1,0 @@
-﻿WeightBiasMixin
-===============
-
-.. currentmodule:: inferno.neural.connections.mixins
-
-.. autoclass:: WeightBiasMixin
-    :members:
-    :show-inheritance:

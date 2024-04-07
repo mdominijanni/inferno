@@ -1,8 +1,0 @@
-﻿LinearDirect
-============
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: LinearDirect
-    :members:
-    :show-inheritance:

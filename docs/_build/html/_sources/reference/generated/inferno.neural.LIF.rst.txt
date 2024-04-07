@@ -1,8 +1,0 @@
-﻿LIF
-===
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: LIF
-    :members:
-    :show-inheritance:

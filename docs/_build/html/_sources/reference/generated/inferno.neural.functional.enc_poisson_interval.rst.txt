@@ -1,6 +1,0 @@
-﻿enc\_poisson\_interval
-======================
-
-.. currentmodule:: inferno.neural.functional
-
-.. autofunction:: enc_poisson_interval

@@ -1,6 +1,0 @@
-﻿full
-====
-
-.. currentmodule:: inferno
-
-.. autofunction:: full

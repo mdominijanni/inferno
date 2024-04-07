@@ -1,6 +1,0 @@
-﻿interp\_linear
-==============
-
-.. currentmodule:: inferno.functional
-
-.. autofunction:: interp_linear

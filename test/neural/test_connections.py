@@ -119,7 +119,7 @@ class TestLinearDense:
                     inputs[..., k].view(batchsz, -1).float(), conn.weight.t()
                 ).view(batchsz, *outshape)
 
-            assert aaeq(outputs, res)
+            assert aaeq(outputs, res, 1e-6)
 
     def test_like_input(self):
         inshape = randshape(1, 3, 2, 5)

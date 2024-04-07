@@ -1,6 +1,0 @@
-﻿interp\_nearest
-===============
-
-.. currentmodule:: inferno.functional
-
-.. autofunction:: interp_nearest

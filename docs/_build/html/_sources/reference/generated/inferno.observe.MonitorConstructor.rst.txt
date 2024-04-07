@@ -1,8 +1,0 @@
-﻿MonitorConstructor
-==================
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: MonitorConstructor
-    :members:
-    :show-inheritance:

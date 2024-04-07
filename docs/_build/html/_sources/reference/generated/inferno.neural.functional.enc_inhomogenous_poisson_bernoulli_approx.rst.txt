@@ -1,6 +1,0 @@
-﻿enc\_inhomogenous\_poisson\_bernoulli\_approx
-=============================================
-
-.. currentmodule:: inferno.neural.functional
-
-.. autofunction:: enc_inhomogenous_poisson_bernoulli_approx

@@ -1,8 +1,0 @@
-﻿Hook
-====
-
-.. currentmodule:: inferno
-
-.. autoclass:: Hook
-    :members:
-    :show-inheritance:

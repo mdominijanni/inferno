@@ -1,8 +1,0 @@
-﻿TopRateClassifier
-=================
-
-.. currentmodule:: inferno.learn
-
-.. autoclass:: TopRateClassifier
-    :members:
-    :show-inheritance:

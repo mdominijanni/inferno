@@ -1,0 +1,37 @@
+name: Inferno Testing
+
+on:
+  pull_request:
+    branches: [ "main", "dev" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure miniconda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        environment-file: envs/testenv-ubuntucpu.yaml
+        python-version: 3.11
+        auto-update-conda: true
+        auto-activate-base: false
+        activate-environment: infernotest
+
+    - name: Conda environment info
+      shell: bash -el {0}
+      run: |
+        conda info
+        conda list
+
+    - name: Run tests with pytest
+      shell: bash -el {0}
+      run: |
+        coverage run -m pytest ./test
+        coverage report -m

@@ -1,8 +1,0 @@
-﻿Synapse
-=======
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: Synapse
-    :members:
-    :show-inheritance:

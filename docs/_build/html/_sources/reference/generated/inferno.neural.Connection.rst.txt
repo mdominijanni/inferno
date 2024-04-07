@@ -1,8 +1,0 @@
-﻿Connection
-==========
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: Connection
-    :members:
-    :show-inheritance:

@@ -1,8 +1,0 @@
-﻿ScaledCumulativeTraceReducer
-============================
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: ScaledCumulativeTraceReducer
-    :members:
-    :show-inheritance:

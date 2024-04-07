@@ -1,8 +1,0 @@
-﻿VoltageMixin
-============
-
-.. currentmodule:: inferno.neural.neurons.mixins
-
-.. autoclass:: VoltageMixin
-    :members:
-    :show-inheritance:

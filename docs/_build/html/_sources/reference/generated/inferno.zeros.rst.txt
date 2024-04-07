@@ -1,6 +1,0 @@
-﻿zeros
-=====
-
-.. currentmodule:: inferno
-
-.. autofunction:: zeros

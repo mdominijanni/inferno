@@ -1,8 +1,0 @@
-﻿BatchShapeMixin
-===============
-
-.. currentmodule:: inferno.neural.mixins
-
-.. autoclass:: BatchShapeMixin
-    :members:
-    :show-inheritance:

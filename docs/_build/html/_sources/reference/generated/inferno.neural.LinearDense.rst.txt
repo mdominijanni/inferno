@@ -1,8 +1,0 @@
-﻿LinearDense
-===========
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: LinearDense
-    :members:
-    :show-inheritance:

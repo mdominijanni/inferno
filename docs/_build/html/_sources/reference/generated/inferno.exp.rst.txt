@@ -1,6 +1,0 @@
-﻿exp
-===
-
-.. currentmodule:: inferno
-
-.. autofunction:: exp

@@ -1,8 +1,0 @@
-﻿ALIF
-====
-
-.. currentmodule:: inferno.neural
-
-.. autoclass:: ALIF
-    :members:
-    :show-inheritance:

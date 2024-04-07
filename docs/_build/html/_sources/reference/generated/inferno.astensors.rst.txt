@@ -1,6 +1,0 @@
-﻿astensors
-=========
-
-.. currentmodule:: inferno
-
-.. autofunction:: astensors

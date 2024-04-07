@@ -1,8 +1,0 @@
-﻿EventReducer
-============
-
-.. currentmodule:: inferno.observe
-
-.. autoclass:: EventReducer
-    :members:
-    :show-inheritance:

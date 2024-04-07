@@ -1,8 +1,0 @@
-﻿DelayedMixin
-============
-
-.. currentmodule:: inferno.neural.mixins
-
-.. autoclass:: DelayedMixin
-    :members:
-    :show-inheritance:

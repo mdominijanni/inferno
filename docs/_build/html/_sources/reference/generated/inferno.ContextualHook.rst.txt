@@ -1,8 +1,0 @@
-﻿ContextualHook
-==============
-
-.. currentmodule:: inferno
-
-.. autoclass:: ContextualHook
-    :members:
-    :show-inheritance:

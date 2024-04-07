@@ -1,6 +1,0 @@
-﻿extrap\_previous
-================
-
-.. currentmodule:: inferno.functional
-
-.. autofunction:: extrap_previous

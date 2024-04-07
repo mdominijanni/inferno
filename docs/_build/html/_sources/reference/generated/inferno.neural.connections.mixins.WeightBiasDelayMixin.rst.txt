@@ -1,8 +1,0 @@
-﻿WeightBiasDelayMixin
-====================
-
-.. currentmodule:: inferno.neural.connections.mixins
-
-.. autoclass:: WeightBiasDelayMixin
-    :members:
-    :show-inheritance:

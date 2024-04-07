@@ -1,6 +1,0 @@
-﻿extrap\_neighbors
-=================
-
-.. currentmodule:: inferno.functional
-
-.. autofunction:: extrap_neighbors

@@ -1,0 +1,27 @@
+name: infernotest
+channels:
+  - pytorch
+  - plotly
+  - domdfcoding
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  # pytorch
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cpuonly
+  # math-sci
+  - einops
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  # devtools
+  - black
+  - flake8
+  - pytest
+  - pytest-cov
+  # other
+  - tomli-w

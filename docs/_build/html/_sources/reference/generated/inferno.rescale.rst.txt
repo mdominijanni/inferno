@@ -1,6 +1,0 @@
-﻿rescale
-=======
-
-.. currentmodule:: inferno
-
-.. autofunction:: rescale

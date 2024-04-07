@@ -1,8 +1,0 @@
-﻿SpikeCurrentMixin
-=================
-
-.. currentmodule:: inferno.neural.synapses.mixins
-
-.. autoclass:: SpikeCurrentMixin
-    :members:
-    :show-inheritance:
