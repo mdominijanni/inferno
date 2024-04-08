@@ -164,13 +164,6 @@ def trace_cumulative_scaled(
     the trace value, in addition to the additive component.
 
     .. math::
-        x_{t + \Delta t} =
-        \begin{cases}
-            a + Sf + x_t \exp (\Delta t / \tau) &K(f_{t + \Delta t}) \\
-            x_t \exp (\Delta t / \tau) &\text{otherwise}
-        \end{cases}
-
-    .. math::
         x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
         + (sh + A) \left[\lvert J(h) \right]
 
@@ -202,3 +195,35 @@ def trace_cumulative_scaled(
         return (scale * observation + amplitude) * mask
     else:
         return (decay * trace) + (scale * observation + amplitude) * mask
+
+
+def trace_cumulative_value(
+    observation: torch.Tensor,
+    trace: torch.Tensor | None,
+    *,
+    decay: float | torch.Tensor,
+    scale: int | float | complex | torch.Tensor,
+) -> torch.Tensor:
+    r"""Performs a trace for a time step, considering all prior values.
+
+    .. math::
+        x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
+        + sh
+
+    Args:
+        observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
+        trace (torch.Tensor | None): current value of the trace, :math:`x`,
+            if not the inital condition.
+        decay (float | torch.Tensor): exponential decay for adaptations,
+            :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
+        scale (int | float | complex | torch.Tensor): value to multiply inputs by for
+            the trace, :math:`s`.
+
+    Returns:
+        torch.Tensor: updated trace, incorporating the new observation.
+    """
+    # compute new state
+    if trace is None:
+        return scale * observation
+    else:
+        return (decay * trace) + (scale * observation)

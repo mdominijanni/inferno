@@ -1,22 +1,25 @@
 from __future__ import annotations
 from .. import IndependentTrainer
-from ... import Module
+from ... import Module, trace_cumulative_value
 from ..._internal import argtest
+from ...functional import interp_expdecay
 from ...neural import Cell
 from ...observe import (
     StateMonitor,
     MultiStateMonitor,
     CumulativeTraceReducer,
-    ConditionalCumulativeTraceReducer,
+    FoldReducer,
     PassthroughReducer,
 )
+import einops as ein
 from itertools import repeat
+import math
 import torch
 from typing import Any, Callable
 import weakref
 
 
-class EligibilityTraceReducer(ConditionalCumulativeTraceReducer):
+class EligibilityTraceReducer(FoldReducer):
     r"""Reducer used by MSTDPET for eligibility trace.
 
     Identical to :py:class:`ConditionalCumulativeTraceReducer`, except it will wrap the
@@ -36,18 +39,33 @@ class EligibilityTraceReducer(ConditionalCumulativeTraceReducer):
         duration: float = 0.0,
     ):
         # call superclass constructor
-        ConditionalCumulativeTraceReducer.__init__(
-            self,
-            step_time=step_time,
-            time_constant=time_constant,
-            amplitude=amplitude,
-            scale=scale,
-            duration=duration,
-        )
+        FoldReducer.__init__(self, step_time, duration, 0)
+
+        # register state
+        self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
+        self.decay = math.exp(-self.dt / self.time_constant)
+        self.scale = 1 / self.time_constant
 
         # add reshape and reduce references
         self.obs_reshape = obs_reshape
         self.cond_reshape = cond_reshape
+
+    @property
+    def dt(self) -> float:
+        r"""Length of the simulation time step, in milliseconds.
+
+        Args:
+            value (float): new simulation time step length.
+
+        Returns:
+            float: length of the simulation time step.
+        """
+        return FoldReducer.dt.fget(self)
+
+    @dt.setter
+    def dt(self, value: float):
+        FoldReducer.dt.fset(self, value)
+        self.decay = math.exp(-self.dt / self.time_constant)
 
     def fold(
         self, obs: torch.Tensor, cond: torch.Tensor, state: torch.Tensor | None
@@ -63,8 +81,38 @@ class EligibilityTraceReducer(ConditionalCumulativeTraceReducer):
         Returns:
             torch.Tensor: state for the current time step.
         """
-        return ConditionalCumulativeTraceReducer.fold(
-            self, self.obs_reshape()(obs), self.cond_reshape()(cond), state
+        return trace_cumulative_value(
+            ein.einsum(
+                self.obs_reshape()(obs),
+                self.cond_reshape()(cond),
+                "b ... r, b ... r -> b ...",
+            ),
+            state,
+            decay=self.decay,
+            scale=self.scale,
+        )
+
+    def interpolate(
+        self,
+        prev_data: torch.Tensor,
+        next_data: torch.Tensor,
+        sample_at: torch.Tensor,
+        step_time: float,
+    ) -> torch.Tensor:
+        r"""Exponential decay interpolation between observations.
+
+        Args:
+            prev_data (torch.Tensor): most recent observation prior to sample time.
+            next_data (torch.Tensor): most recent observation subsequent to sample time.
+            sample_at (torch.Tensor): relative time at which to sample data.
+            step_time (float): length of time between the prior and
+                subsequent observations.
+
+        Returns:
+            torch.Tensor: interpolated data at sample time.
+        """
+        return interp_expdecay(
+            prev_data, next_data, sample_at, step_time, time_constant=self.time_constant
         )
 
 
@@ -138,9 +186,6 @@ class MSTDPET(IndependentTrainer):
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce updates over the batch dimension, :py:func:`torch.sum`
             when None. Defaults to None.
-        field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-            function to reduce updates over the receptive field dimension,
-            :py:func:`torch.sum` when None. Defaults to None.
 
     Important:
         It is expected for this to be called after every trainable batch. Variables
@@ -176,9 +221,6 @@ class MSTDPET(IndependentTrainer):
         batch_reduction: (
             Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
         ) = None,
-        field_reduction: (
-            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
-        ) = None,
         **kwargs,
     ):
         # call superclass constructor
@@ -193,7 +235,6 @@ class MSTDPET(IndependentTrainer):
         self.tc_eligibility = argtest.gt("tc_eligibility", tc_eligibility, 0, float)
         self.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
         self.batchreduce = batch_reduction if batch_reduction else torch.sum
-        self.fieldreduce = field_reduction if field_reduction else torch.sum
 
     def _build_cell_state(self, **kwargs) -> Module:
         r"""Builds auxiliary state for a cell.
@@ -213,7 +254,6 @@ class MSTDPET(IndependentTrainer):
         tc_eligibility = kwargs.get("tc_eligibility", self.tc_eligibility)
         interp_tolerance = kwargs.get("interp_tolerance", self.tolerance)
         batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
-        field_reduction = kwargs.get("field_reduction", self.fieldreduce)
 
         state.step_time = argtest.gt("step_time", step_time, 0, float)
         state.lr_post = float(lr_post)
@@ -224,9 +264,6 @@ class MSTDPET(IndependentTrainer):
         state.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
         state.batchreduce = (
             batch_reduction if (batch_reduction is not None) else torch.sum
-        )
-        state.fieldreduce = (
-            field_reduction if (field_reduction is not None) else torch.sum
         )
 
         return state
@@ -424,8 +461,8 @@ class MSTDPET(IndependentTrainer):
                 continue
 
             # eligibility traces (shaped like batched weights)
-            z_post = state.fieldreduce(monitors["elig_post"].peek(), -1)
-            z_pre = state.fieldreduce(monitors["elig_pre"].peek(), -1)
+            z_post = monitors["elig_post"].peek()
+            z_pre = monitors["elig_pre"].peek()
 
             # process update
             if isinstance(reward, torch.Tensor):
