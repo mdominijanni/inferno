@@ -228,7 +228,6 @@ class TestMSTDPET:
         base_tc_eligibility = random.uniform(15.0, 30.0)
         base_interp_tolerance = random.uniform(1e-7, 1e-5)
         base_batch_reduction = torch.amax
-        base_field_reduction = torch.mean
 
         override_step_time = random.uniform(0.7, 1.4)
         override_lr_post = random.uniform(-1.0, 1.0)
@@ -238,7 +237,6 @@ class TestMSTDPET:
         override_tc_eligibility = random.uniform(15.0, 30.0)
         override_interp_tolerance = random.uniform(1e-7, 1e-5)
         override_batch_reduction = torch.amin
-        override_field_reduction = torch.sum
 
         updater = MSTDPET(
             step_time=base_step_time,
@@ -249,7 +247,6 @@ class TestMSTDPET:
             tc_eligibility=base_tc_eligibility,
             interp_tolerance=base_interp_tolerance,
             batch_reduction=base_batch_reduction,
-            field_reduction=base_field_reduction,
         )
 
         unit = updater.register_cell(
@@ -263,7 +260,6 @@ class TestMSTDPET:
             tc_eligibility=override_tc_eligibility,
             interp_tolerance=override_interp_tolerance,
             batch_reduction=override_batch_reduction,
-            field_reduction=override_field_reduction,
         )
 
         assert override_step_time == unit.state.step_time
@@ -274,7 +270,6 @@ class TestMSTDPET:
         assert override_tc_eligibility == unit.state.tc_eligibility
         assert override_interp_tolerance == unit.state.tolerance
         assert override_batch_reduction == unit.state.batchreduce
-        assert override_field_reduction == unit.state.fieldreduce
 
     def test_default_passthrough(self):
         shape = randshape(1, 3, 3, 5)
@@ -292,7 +287,6 @@ class TestMSTDPET:
         base_tc_eligibility = random.uniform(15.0, 30.0)
         base_interp_tolerance = random.uniform(1e-7, 1e-5)
         base_batch_reduction = torch.amax
-        base_field_reduction = torch.mean
 
         updater = MSTDPET(
             step_time=base_step_time,
@@ -303,7 +297,6 @@ class TestMSTDPET:
             tc_eligibility=base_tc_eligibility,
             interp_tolerance=base_interp_tolerance,
             batch_reduction=base_batch_reduction,
-            field_reduction=base_field_reduction,
         )
 
         unit = updater.register_cell("onlyone", layer.cell)
@@ -316,7 +309,6 @@ class TestMSTDPET:
         assert base_tc_eligibility == unit.state.tc_eligibility
         assert base_interp_tolerance == unit.state.tolerance
         assert base_batch_reduction == unit.state.batchreduce
-        assert base_field_reduction == unit.state.fieldreduce
 
     @pytest.mark.parametrize(
         "kind",
@@ -358,7 +350,6 @@ class TestMSTDPET:
         tc_eligibility = random.uniform(15.0, 30.0)
         interp_tolerance = random.uniform(1e-7, 1e-5)
         batch_reduction = torch.sum
-        field_reduction = torch.sum
 
         updater = MSTDPET(
             step_time=step_time,
@@ -369,7 +360,6 @@ class TestMSTDPET:
             tc_eligibility=tc_eligibility,
             interp_tolerance=interp_tolerance,
             batch_reduction=batch_reduction,
-            field_reduction=field_reduction,
         )
 
         _ = updater.register_cell("onlyone", layer.cell)

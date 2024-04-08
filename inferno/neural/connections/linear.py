@@ -246,15 +246,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
                 * :math:`M` is the number of elements across input dimensions.
                 * :math:`N` is the number of elements across output dimensions.
         """
-        match data.ndim:
-            case 3:
-                return ein.rearrange(data, "b i o -> b o i 1")
-            case 2:
-                return ein.rearrange(data, "b i -> b 1 i 1")
-            case _:
-                raise RuntimeError(
-                    f"data with invalid number of dimensions {data.ndim} received."
-                )
+        return ein.rearrange(data, "b i ... -> b (...) i 1")
 
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection output for pre-post learning methods.
@@ -326,9 +318,9 @@ class LinearDense(WeightBiasDelayMixin, Connection):
             res = self.syncurrent  # B I O
 
             if self.biased:
-                res = torch.sum(res * self.weight.t(), dim=1) + self.bias
+                res = ein.einsum(res, self.weight, "b i o, o i -> b o") + self.bias
             else:
-                res = torch.sum(res * self.weight.t(), dim=1)
+                res = ein.einsum(res, self.weight, "b i o, o i -> b o")
 
         else:
             res = F.linear(res, self.weight, self.bias)
@@ -554,10 +546,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
                 * :math:`B` is the batch size.
                 * :math:`N` is the number of elements across output dimensions.
         """
-        if data.ndim == 3:
-            return data
-        else:
-            return ein.rearrange(data, "b n -> b n 1")
+        return ein.rearrange(data, "b n ... -> b n (...)")
 
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection output for pre-post learning methods.

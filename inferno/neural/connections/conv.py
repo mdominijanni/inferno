@@ -107,8 +107,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             self.kernel = (k, k)
         except IndexError:
             raise ValueError(
-                "nonscalar 'kernel' must be of length 2, is of "
-                f"length {len(kernel)}"
+                "nonscalar 'kernel' must be of length 2, is of " f"length {len(kernel)}"
             )
 
         try:
@@ -118,14 +117,13 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             self.stride = (s, s)
         except IndexError:
             raise ValueError(
-                "nonscalar 'stride' must be of length 2, is of "
-                f"length {len(stride)}"
+                "nonscalar 'stride' must be of length 2, is of " f"length {len(stride)}"
             )
 
         try:
             self.padding = argtest.ofsequence("padding", padding, argtest.gte, 0, int)
         except TypeError:
-            p = argtest.gt("padding", padding, 0, int)
+            p = argtest.gte("padding", padding, 0, int)
             self.padding = (p, p)
         except IndexError:
             raise ValueError(
@@ -146,7 +144,13 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
         self.outheight, self.outwidth = (
             math.floor(
-                (size + 2 * padding[d] - dilation[d] * (kernel[d] - 1) - 1) / stride[d]
+                (
+                    size
+                    + 2 * self.padding[d]
+                    - self.dilation[d] * (self.kernel[d] - 1)
+                    - 1
+                )
+                / self.stride[d]
                 + 1
             )
             for d, size in enumerate((self.height, self.width))
@@ -156,7 +160,10 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         Connection.__init__(
             self,
             synapse=synapse(
-                (channels * math.prod(kernel), self.outheight * self.outwidth),
+                (
+                    self.channels * math.prod(self.kernel),
+                    self.outheight * self.outwidth,
+                ),
                 step_time,
                 0.0 if delay is None else delay,
                 batch_size,
@@ -166,9 +173,13 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         # call mixin constructor
         WeightBiasDelayMixin.__init__(
             self,
-            weight=torch.rand(filters, channels, *kernel),
-            bias=(None if not bias else torch.rand(filters)),
-            delay=(None if delay is None else torch.zeros(filters, channels, *kernel)),
+            weight=torch.rand(self.filters, self.channels, *self.kernel),
+            bias=(None if not bias else torch.rand(self.filters)),
+            delay=(
+                None
+                if delay is None
+                else torch.zeros(self.filters, self.channels, *self.kernel)
+            ),
             requires_grad=False,
         )
 
@@ -303,14 +314,14 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         """
         return F.fold(
             data,
-            (self.outheight, self.outwidth),
+            (self.height, self.width),
             self.kernel,
             dilation=self.dilation,
             padding=self.padding,
             stride=self.stride,
         ) / F.fold(
             torch.ones_like(data),
-            (self.outheight, self.outwidth),
+            (self.height, self.width),
             self.kernel,
             dilation=self.dilation,
             padding=self.padding,
@@ -392,27 +403,13 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`W_\text{out}` is the output width.
                 * :math:`F` is the number of filters (output channels).
         """
-        match data.ndim:
-            case 4:
-                return ein.rearrange(
-                    data,
-                    "b n l f -> b f c kh kw l",
-                    c=self.channels,
-                    kh=self.kernel[0],
-                    kw=self.kernel[1],
-                )
-            case 3:
-                return ein.rearrange(
-                    data,
-                    "b n l -> b 1 c kh kw l",
-                    c=self.channels,
-                    kh=self.kernel[0],
-                    kw=self.kernel[1],
-                )
-            case _:
-                raise RuntimeError(
-                    f"`data` must have 3 or 4 dimensions, has {data.ndim} dimensions."
-                )
+        return ein.rearrange(
+            data,
+            "b n l ... -> b (...) c kh kw l",
+            c=self.channels,
+            kh=self.kernel[0],
+            kw=self.kernel[1],
+        )
 
     def postsyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection output for pre-post learning methods.
@@ -489,19 +486,19 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             *(self.like_synaptic(inp) for inp in inputs), **kwargs
         )  # B N L
 
+        kernel = ein.rearrange(self.weight, "f c h w -> f (c h w)")  # F N
+
         if self.delayedby:
             res = ein.rearrange(self.syncurrent, "b n l f -> b f n l")
-            kernel = ein.rearrange(self.weight, "f c h w -> f 1 (c h w)")  # F 1 L
 
             res = ein.rearrange(
+                ein.einsum(kernel, res, "f n, b f n l -> b f l"),
                 torch.matmul(kernel, res),
                 "b f 1 (oh ow) -> b f oh ow",
                 oh=self.outshape[0],
                 ow=self.outshape[1],
             )
         else:
-            kernel = ein.rearrange(self.weight, "f c h w -> f (c h w)")  # F L
-
             res = ein.rearrange(
                 torch.matmul(kernel, res),
                 "b f (oh ow) -> b f oh ow",

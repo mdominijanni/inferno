@@ -32,6 +32,7 @@ from .core import (
     trace_cumulative,
     trace_nearest_scaled,
     trace_cumulative_scaled,
+    trace_cumulative_value,
 )
 
 __all__ = [
@@ -66,4 +67,5 @@ __all__ = [
     "trace_cumulative",
     "trace_nearest_scaled",
     "trace_cumulative_scaled",
+    "trace_cumulative_value",
 ]
