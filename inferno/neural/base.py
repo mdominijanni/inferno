@@ -1167,11 +1167,11 @@ class Connection(Updatable, Module, ABC):
             ``return``:
 
             :math:`B \times` `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_
-            with :py:attr:`weight` :math:`\times L`
+            with :py:attr:`weight` :math:`\times L\cdot`
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`L` is a connection-dependent value.
+                * :math:`L\cdot` is a connection-dependent value.
         """
         raise NotImplementedError(
             f"{type(self).__name__}(Connection) must implement "
@@ -1202,11 +1202,11 @@ class Connection(Updatable, Module, ABC):
             ``return``:
 
             :math:`B \times` `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_
-            with :py:attr:`weight` :math:`\times L`
+            with :py:attr:`weight` :math:`\times L\cdot`
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`L` is a connection-dependent value.
+                * :math:`L\cdot` is a connection-dependent value.
         """
         raise NotImplementedError(
             f"{type(self).__name__}(Connection) must implement "

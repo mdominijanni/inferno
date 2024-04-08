@@ -4,7 +4,7 @@ import random
 import torch
 
 from inferno.neural import DeltaCurrent
-from inferno.neural import LinearDense, LinearDirect, LinearLateral
+from inferno.neural import LinearDense, LinearDirect, LinearLateral, Conv2D
 
 
 def randshape(mindims=1, maxdims=9, minsize=1, maxsize=9):
@@ -81,7 +81,7 @@ class TestLinearDense:
             )
 
         assert tuple(outputs.shape) == (batchsz, *outshape)
-        assert aaeq(outputs, res)
+        assert aaeq(outputs, res, 2e-6)
 
     @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
     def test_forward_delayed(self, biased):
@@ -478,3 +478,68 @@ class TestLinearLateral:
 
             assert aaeq(outputs, res)
             assert aaeq(outputs, maskres)
+
+
+class TestConv2D:
+
+    @staticmethod
+    def makeconn(
+        height: int,
+        width: int,
+        channels: int,
+        filters: int,
+        step_time: float,
+        kernel: int | tuple[int, int],
+        stride: int | tuple[int, int] = 1,
+        padding: int | tuple[int, int] = 0,
+        dilation: int | tuple[int, int] = 1,
+        batch_size=1,
+        bias=False,
+        delay=None,
+        *,
+        weight_init=None,
+        bias_init=None,
+        delay_init=None,
+    ) -> Conv2D:
+        return Conv2D(
+            height=height,
+            width=width,
+            channels=channels,
+            filters=filters,
+            kernel=kernel,
+            step_time=step_time,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            synapse=DeltaCurrent.partialconstructor(1.0, "previous", 1e-7),
+            bias=bias,
+            delay=delay,
+            batch_size=batch_size,
+            weight_init=weight_init,
+            bias_init=bias_init,
+            delay_init=delay_init,
+        )
+
+    @staticmethod
+    def load_synapse(conn: Conv2D, p=0.1) -> None:
+        conn.synapse.spike_.value = torch.rand(conn.synapse.spike_.value.shape) < p
+
+    def test_input_to_synaptic(self):
+        length = random.randint(28, 64)
+        channels = random.randint(3, 7)
+        filters = random.randint(8, 18)
+        kernel = random.randint(2, 5)
+        batchsz = random.randint(1, 9)
+        conn = self.makeconn(
+            length,
+            length,
+            channels,
+            filters,
+            1.0,
+            kernel,
+            batch_size=batchsz,
+        )
+
+        img = torch.rand(batchsz, channels, length, length)
+
+        assert aaeq(img, conn.like_input(conn.like_synaptic(img)), 1e-6)

@@ -9,6 +9,7 @@ from ...observe import (
     NearestTraceReducer,
     PassthroughReducer,
 )
+import einops as ein
 import torch
 from typing import Any, Callable, Literal
 
@@ -75,9 +76,6 @@ class STDP(IndependentTrainer):
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce updates over the batch dimension, :py:func:`torch.mean`
             when None. Defaults to None.
-        field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-            function to reduce updates over the receptive field dimension,
-            :py:func:`torch.sum` when None. Defaults to None.
 
     Important:
         When ``delayed`` is ``True``, the history for the presynaptic activity (spike
@@ -120,9 +118,6 @@ class STDP(IndependentTrainer):
         batch_reduction: (
             Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
         ) = None,
-        field_reduction: (
-            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
-        ) = None,
         **kwargs,
     ):
         # call superclass constructor
@@ -140,7 +135,6 @@ class STDP(IndependentTrainer):
             "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
         )
         self.batchreduce = batch_reduction if batch_reduction else torch.mean
-        self.fieldreduce = field_reduction if field_reduction else torch.sum
 
     def _build_cell_state(self, **kwargs) -> Module:
         r"""Builds auxiliary state for a cell.
@@ -161,7 +155,6 @@ class STDP(IndependentTrainer):
         interp_tolerance = kwargs.get("interp_tolerance", self.tolerance)
         trace_mode = kwargs.get("trace_mode", self.trace)
         batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
-        field_reduction = kwargs.get("field_reduction", self.fieldreduce)
 
         state.step_time = argtest.gt("step_time", step_time, 0, float)
         state.lr_post = float(lr_post)
@@ -185,9 +178,6 @@ class STDP(IndependentTrainer):
                 )
         state.batchreduce = (
             batch_reduction if (batch_reduction is not None) else torch.mean
-        )
-        state.fieldreduce = (
-            field_reduction if (field_reduction is not None) else torch.sum
         )
 
         return state
@@ -348,14 +338,12 @@ class STDP(IndependentTrainer):
             )
 
             # partial updates
-            dpost = (
-                state.batchreduce(state.fieldreduce(i_post * x_pre, -1), 0)
-                * abs(state.lr_post)
-            )
-            dpre = (
-                state.batchreduce(state.fieldreduce(i_pre * x_post, -1), 0)
-                * abs(state.lr_pre)
-            )
+            dpost = state.batchreduce(
+                ein.einsum(i_post, x_pre, "b ... r, b ... r -> b ..."), 0
+            ) * abs(state.lr_post)
+            dpre = state.batchreduce(
+                ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ..."), 0
+            ) * abs(state.lr_pre)
 
             # accumulate partials with mode condition
             match (state.lr_post >= 0, state.lr_pre >= 0):
