@@ -247,7 +247,7 @@ def lt(
     cast: type | None = None,
     limit_name: str | None = None,
     prefix: str | None = None,
-) -> Any | tuple[Any, Any]:
+) -> Any:
     r"""Casts a value and then tests it is less than a limit.
 
     Args:
@@ -262,7 +262,7 @@ def lt(
             Defaults to None.
 
     Returns:
-        Any | tuple[Any, Any]: value (and limit if given a name) after being cast.
+        Any: value (and limit if given a name) after being cast.
 
     Note:
         When "limit_name" is not None, it will be casted as well and will be displayed
@@ -301,7 +301,7 @@ def lte(
     cast: type | None = None,
     limit_name: str | None = None,
     prefix: str | None = None,
-) -> Any | tuple[Any, Any]:
+) -> Any:
     r"""Casts a value and then tests it is less or equal to than a limit.
 
     Args:
@@ -316,7 +316,7 @@ def lte(
             Defaults to None.
 
     Returns:
-        Any | tuple[Any, Any]: value (and limit if given a name) after being cast.
+        Any: value (and limit if given a name) after being cast.
 
     Note:
         When "limit_name" is not None, it will be casted as well and will be displayed
@@ -355,7 +355,7 @@ def gt(
     cast: type | None = None,
     limit_name: str | None = None,
     prefix: str | None = None,
-) -> Any | tuple[Any, Any]:
+) -> Any:
     r"""Casts a value and then tests it is greater than a limit.
 
     Args:
@@ -370,7 +370,7 @@ def gt(
             Defaults to None.
 
     Returns:
-        Any | tuple[Any, Any]: value (and limit if given a name) after being cast.
+        Any: value (and limit if given a name) after being cast.
 
     Note:
         When "limit_name" is not None, it will be casted as well and will be displayed
@@ -409,7 +409,7 @@ def gte(
     cast: type | None = None,
     limit_name: str | None = None,
     prefix: str | None = None,
-) -> Any | tuple[Any, Any]:
+) -> Any:
     r"""Casts a value and then tests it is greater or equal to than a limit.
 
     Args:
@@ -424,7 +424,7 @@ def gte(
             Defaults to None.
 
     Returns:
-        Any | tuple[Any, Any]: value (and limit if given a name) after being cast.
+        Any: value (and limit if given a name) after being cast.
 
     Note:
         When "limit_name" is not None, it will be casted as well and will be displayed
@@ -465,7 +465,7 @@ def neq(
     cast: type | None = None,
     limit_name: str | None = None,
     prefix: str | None = None,
-) -> Any | tuple[Any, Any]:
+) -> Any:
     r"""Casts a value and then tests it is not equal to a limit.
 
     Args:
@@ -480,7 +480,7 @@ def neq(
             Defaults to None.
 
     Returns:
-        Any | tuple[Any, Any]: value (and limit if given a name) after being cast.
+        Any: value (and limit if given a name) after being cast.
 
     Note:
         When "limit_name" is not None, it will be casted as well and will be displayed
