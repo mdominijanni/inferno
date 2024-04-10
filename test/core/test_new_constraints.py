@@ -3,9 +3,10 @@ import pytest
 import random
 import torch
 import torch.nn as nn
+import weakref
 import uuid
 
-from inferno import Module, ShapedTensor, RecordTensor
+from inferno import Module, ShapedTensor, RecordTensor, VirtualTensor
 
 
 @pytest.fixture
@@ -2061,3 +2062,117 @@ class TestRecordTensor:
         assert getattr(infmodule, rt.attributes.constraints)[-1] == rt.recordsz
         assert getattr(infmodule, rt.attributes.constraints)[-2] == shape[-1]
         assert getattr(infmodule, rt.attributes.constraints)[0] == shape[0]
+
+
+class TestVirtualTensor:
+
+    class VirtualModule(Module):
+        def __init__(self, mask, scale):
+            Module.__init__(self)
+            self.register_buffer("mask", mask.bool())
+            self.scale = scale
+
+            def matf(module, dtype, device):
+                return module.mask.to(dtype=dtype, device=device) * module.scale
+
+            self.matf = matf
+
+        def matm(self, dtype, device):
+            return self.mask.to(dtype=dtype, device=device) * self.scale
+
+        def badmatm(self, dtype, device):
+            return self.mask * self.scale
+
+    @pytest.fixture
+    def shape(self):
+        return randshape(2, 3, 3, 5)
+
+    def test_finalizer_method_materializer(self, shape, testattr):
+        vm = self.VirtualModule(torch.rand(shape) > 0.7, 2.0)
+
+        setattr(vm, testattr, VirtualTensor(vm, testattr, "matm"))
+        wr = weakref.ref(getattr(vm, testattr))
+
+        assert hasattr(vm, f"_{testattr}_ref")
+
+        delattr(vm, testattr)
+
+        assert not hasattr(vm, testattr)
+        assert not hasattr(vm, f"_{testattr}_ref")
+        assert wr() is None
+
+    def test_finalizer_extfunc_materializer(self, shape, testattr):
+        vm = self.VirtualModule(torch.rand(shape) > 0.7, 2.0)
+
+        def materializer(module, dtype, device):
+            return module.mask.to(dtype=dtype, device=device) * module.scale
+
+        setattr(vm, testattr, VirtualTensor(vm, testattr, materializer))
+        wr = weakref.ref(getattr(vm, testattr))
+
+        assert hasattr(vm, f"_{testattr}_ref")
+
+        delattr(vm, testattr)
+
+        assert not hasattr(vm, testattr)
+        assert not hasattr(vm, f"_{testattr}_ref")
+        assert wr() is None
+
+    def test_finalizer_intfunc_materializer(self, shape, testattr):
+        vm = self.VirtualModule(torch.rand(shape) > 0.7, 2.0)
+
+        setattr(vm, testattr, VirtualTensor(vm, testattr, vm.matf))
+        wr = weakref.ref(getattr(vm, testattr))
+
+        assert hasattr(vm, f"_{testattr}_ref")
+
+        delattr(vm, testattr)
+
+        assert not hasattr(vm, testattr)
+        assert not hasattr(vm, f"_{testattr}_ref")
+        assert wr() is None
+
+    @pytest.mark.parametrize(
+        "persist",
+        (True, False),
+        ids=("persist=True", "persist=False"),
+    )
+    def test_persistence(self, shape, testattr, persist):
+        vm = self.VirtualModule(torch.rand(shape) > 0.7, 2)
+        VirtualTensor.create(vm, testattr, "matm", persist=persist)
+
+        assert f"_{testattr}_ref" in vm._buffers
+        if not persist:
+            assert f"_{testattr}_ref" in vm._non_persistent_buffers_set
+
+    def test_value_dtype_switch(self, shape, testattr):
+        vm = self.VirtualModule(torch.rand(shape) > 0.7, 2)
+        VirtualTensor.create(vm, testattr, "matm", dtype=torch.float32)
+        vt = getattr(vm, testattr)
+
+        vt.to(dtype=torch.bfloat16)
+
+        assert vt.dtype == torch.bfloat16
+        assert vt.value.dtype == torch.bfloat16
+
+        vt.dtype = torch.float64
+
+        assert vt.dtype == torch.float64
+        assert vt.value.dtype == torch.float64
+
+        vm.to(dtype=torch.complex128)
+
+        assert vm.mask.dtype == torch.bool
+        assert getattr(vm, vt.attributes.ref).dtype == torch.complex128
+        assert vt.value.dtype == torch.complex128
+
+    def test_dtype_coercion(self, shape, testattr):
+        vm = self.VirtualModule(torch.rand(shape) > 0.7, 2)
+        VirtualTensor.create(vm, testattr, "badmatm", dtype=torch.float32)
+        vt = getattr(vm, testattr)
+
+        vt.to(dtype=torch.bfloat16)
+
+        assert vt.dtype == torch.bfloat16
+        assert vt.value.dtype == torch.bfloat16
+        assert vm.badmatm(vt.dtype, vt.device).dtype != torch.bfloat16

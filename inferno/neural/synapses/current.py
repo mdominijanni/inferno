@@ -69,15 +69,24 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
                     "'nearest' or 'previous'."
                 )
 
+        # derivation of currents from spikes
+        def spike_to_current(
+            synapse: DeltaCurrent,
+            dtype: torch.dtype,
+            device: torch.device,
+            spikes: torch.Tensor,
+        ) -> torch.Tensor:
+            return spikes.to(dtype=dtype, device=device) * (
+                synapse.spike_q / synapse.dt
+            )
+
         # call mixin constructor
         SpikeDerivedCurrentMixin.__init__(
             self,
             torch.zeros(*self.batchedshape, dtype=torch.bool),
-            "_to_current",
-            current_interp=interp,
-            current_interp_kwargs={},
-            spike_interp=interp,
-            spike_interp_kwargs={},
+            spike_to_current,
+            interp=interp,
+            interp_kwargs={},
             current_overbound=current_overbound,
             spike_overbound=spike_overbound,
             tolerance=interp_tol,

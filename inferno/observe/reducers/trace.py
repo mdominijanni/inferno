@@ -38,6 +38,10 @@ class NearestTraceReducer(FoldReducer):
             still count as a match, :math:`\epsilon`. Defaults to None.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
+
+    Important:
+        Because the input tensor to :py:meth:`fold` is treated as an event condition,
+        it will have its datatype cast to that of the reducer itself.
     """
 
     def __init__(
@@ -91,7 +95,7 @@ class NearestTraceReducer(FoldReducer):
             torch.Tensor: state for the current time step.
         """
         return trace_nearest(
-            obs,
+            obs.to(dtype=self.data.dtype),
             state,
             decay=self.decay,
             amplitude=self.amplitude,
@@ -143,6 +147,10 @@ class CumulativeTraceReducer(FoldReducer):
             still count as a match, :math:`\epsilon`. Defaults to None.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
+
+    Important:
+        Because the input tensor to :py:meth:`fold` is treated as an event condition,
+        it will have its datatype cast to that of the reducer itself.
     """
 
     def __init__(
@@ -196,7 +204,7 @@ class CumulativeTraceReducer(FoldReducer):
             torch.Tensor: state for the current time step.
         """
         return trace_cumulative(
-            obs,
+            obs.to(dtype=self.data.dtype),
             state,
             decay=self.decay,
             amplitude=self.amplitude,

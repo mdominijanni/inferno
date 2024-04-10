@@ -174,6 +174,67 @@ def full(
     )
 
 
+def fullc(
+    tensor: torch.Tensor,
+    value: bool | int | float | complex,
+    *,
+    shape: tuple[int] | torch.Size | None = None,
+    dtype: torch.dtype | None = None,
+    layout: torch.layout | None = None,
+    device: torch.device | None = None,
+    requires_grad: bool | None = None,
+) -> torch.Tensor:
+    r"""Returns a float or complex tensor based on input filled with specified value.
+
+    This is like :py:func:`full` except if ``dtype`` is ``None`` and the datatype of
+    ``tensor`` is neither floating point nor complex, the default float type will
+    be used.
+
+    Args:
+        tensor (torch.Tensor): determines default output properties.
+        value (bool | int | float | complex): value with to fill the output.
+        shape (tuple[int] | torch.Size | None, optional): overrides shape from
+            ``tensor`` if specified. Defaults to None.
+        dtype (torch.dtype | None, optional): overrides data type from ``tensor``
+            if specified. Defaults to None.
+        layout (torch.layout | None, optional): overrides layout from ``tensor``
+            if specified. Defaults to None.
+        device (torch.device | None, optional): overrides device from ``tensor``
+            if specified. Defaults to None.
+        requires_grad (bool | None, optional): overrides gradient requirement from
+            ``tensor`` if specified. Defaults to None.
+
+    Returns:
+        torch.Tensor: tensor like ``tensor``, modified by parameters, filled
+        with ``value``.
+
+    Note:
+        To construct a scalar, set ``shape`` to ``()``.
+    """
+    shape = tensor.shape if shape is None else shape
+    dtype = (
+        (
+            tensor.dtype
+            if tensor.is_floating_point() or tensor.is_complex()
+            else torch.get_default_dtype()
+        )
+        if dtype is None
+        else dtype
+    )
+    layout = tensor.layout if layout is None else layout
+    device = tensor.device if device is None else device
+    requires_grad = tensor.requires_grad if requires_grad is None else requires_grad
+
+    return torch.full(
+        shape,
+        fill_value=value,
+        dtype=dtype,
+        layout=layout,
+        device=device,
+        requires_grad=requires_grad,
+    )
+
+
 def uniform(
     tensor: torch.Tensor,
     *,

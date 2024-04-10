@@ -67,16 +67,16 @@ class TestLinearDense:
             weight_init=(lambda x: torch.rand_like(x)),
         )
 
-        inputs = torch.rand(batchsz, *inshape)
+        inputs = torch.rand(batchsz, *inshape) < 0.5
         outputs = conn(inputs)
 
         if biased:
             res = (
-                torch.matmul(inputs.view(batchsz, -1), conn.weight.t())
+                torch.matmul(inputs.float().view(batchsz, -1), conn.weight.t())
                 + conn.bias.view(1, -1)
             ).view(batchsz, *outshape)
         else:
-            res = torch.matmul(inputs.view(batchsz, -1), conn.weight.t()).view(
+            res = torch.matmul(inputs.float().view(batchsz, -1), conn.weight.t()).view(
                 batchsz, *outshape
             )
 
@@ -242,15 +242,15 @@ class TestLinearDirect:
             weight_init=(lambda x: torch.rand_like(x)),
         )
 
-        inputs = torch.rand(batchsz, *shape)
+        inputs = torch.rand(batchsz, *shape) < 0.5
         outputs = conn(inputs)
 
         if biased:
-            res = (inputs.view(batchsz, -1) * conn.weight + conn.bias.view(1, -1)).view(
+            res = (inputs.float().view(batchsz, -1) * conn.weight + conn.bias.view(1, -1)).view(
                 batchsz, *shape
             )
         else:
-            res = (inputs.view(batchsz, -1) * conn.weight).view(batchsz, *shape)
+            res = (inputs.float().view(batchsz, -1) * conn.weight).view(batchsz, *shape)
 
         assert tuple(outputs.shape) == (batchsz, *shape)
         assert aaeq(outputs, res)
@@ -404,26 +404,26 @@ class TestLinearLateral:
             weight_init=(lambda x: torch.rand_like(x)),
         )
 
-        inputs = torch.rand(batchsz, *shape)
+        inputs = torch.rand(batchsz, *shape) < 0.5
         outputs = conn(inputs)
 
         if biased:
             res = (
-                torch.matmul(inputs.view(batchsz, -1), conn.weight.t())
+                torch.matmul(inputs.float().view(batchsz, -1), conn.weight.t())
                 + conn.bias.view(1, -1)
             ).view(batchsz, *shape)
             maskres = (
                 torch.matmul(
-                    inputs.view(batchsz, -1), (conn.weight * self.mask(shape)).t()
+                    inputs.float().view(batchsz, -1), (conn.weight * self.mask(shape)).t()
                 )
                 + conn.bias.view(1, -1)
             ).view(batchsz, *shape)
         else:
-            res = torch.matmul(inputs.view(batchsz, -1), conn.weight.t()).view(
+            res = torch.matmul(inputs.float().view(batchsz, -1), conn.weight.t()).view(
                 batchsz, *shape
             )
             maskres = torch.matmul(
-                inputs.view(batchsz, -1), (conn.weight * self.mask(shape)).t()
+                inputs.float().view(batchsz, -1), (conn.weight * self.mask(shape)).t()
             ).view(batchsz, *shape)
 
         assert tuple(outputs.shape) == (batchsz, *shape)

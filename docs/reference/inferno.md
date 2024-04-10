@@ -13,6 +13,7 @@
     Module
     ShapedTensor
     RecordTensor
+    VirtualTensor
     Hook
     ContextualHook
     StateHook
@@ -28,6 +29,7 @@
     ones
     empty
     full
+    fullc
     uniform
     normal
     scalar
