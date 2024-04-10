@@ -13,6 +13,7 @@
     Module
     ShapedTensor
     RecordTensor
+    VirtualTensor
     Hook
     ContextualHook
     StateHook

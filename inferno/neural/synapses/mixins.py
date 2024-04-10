@@ -226,7 +226,7 @@ class SpikeMixin:
 
     @spike.setter
     def spike(self, value: torch.Tensor) -> None:
-        self.spike_.push(value)
+        self.spike_.push(value.bool())
 
     def spike_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Retrieves previous spike inputs.
