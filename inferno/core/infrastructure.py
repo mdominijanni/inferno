@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .tensor import empty, full, zeros
+from .tensor import empty, full, fullc, zeros
 from ..functional import Interpolation, Extrapolation, interp_nearest, extrap_nearest
 from .._internal import argtest
 from abc import ABC, abstractmethod
@@ -8,6 +8,7 @@ from itertools import chain, repeat, starmap
 import math
 import torch
 import torch.nn as nn
+from types import MethodType
 from typing import Any, Callable
 import weakref
 
@@ -356,11 +357,11 @@ class ShapedTensor:
 
         .. code-block:: python
 
-            module.attr = ShapedTensor(module, attr, value)
+            module.name = ShapedTensor(module, name, value)
 
         .. code-block:: python
 
-            ShapedTensor.create(module, attr, value)
+            ShapedTensor.create(module, name, value)
 
         Args:
             owner (Module): module to which this attribute will belong.
@@ -956,7 +957,7 @@ class RecordTensor(ShapedTensor):
 
         .. code-block:: python
 
-            RecordTensor.create(module, attr, step_time, duration, value)
+            RecordTensor.create(module, name, step_time, duration, value)
 
         Args:
             owner (Module): module to which this attribute will belong.
@@ -2028,7 +2029,7 @@ class RecordTensor(ShapedTensor):
                 return interp(
                     data[..., _unwind_ptr(ptr, math.ceil(offset), recordsz)],
                     data[..., _unwind_ptr(ptr, math.floor(offset), recordsz)],
-                    full(data, dt * (shift % 1), shape=data.shape[:-1]),
+                    fullc(data, dt * (shift % 1), shape=data.shape[:-1]),
                     dt,
                     **(interp_kwargs if interp_kwargs else {}),
                 )
@@ -2219,7 +2220,7 @@ class RecordTensor(ShapedTensor):
                 # extrapolate data to write
                 prev_exobs, next_exobs = extrap(
                     obs,
-                    full(data, dt * (shift % 1), shape=data.shape[:-1]),
+                    fullc(data, dt * (shift % 1), shape=data.shape[:-1]),
                     data[..., prev_idx],
                     data[..., next_idx],
                     dt,
@@ -2262,6 +2263,252 @@ class RecordTensor(ShapedTensor):
             self.align()
 
         return ShapedTensor.reconstrain(self, dim - (dim < 0), size)
+
+
+def _virtualtensor_finalization(owner: weakref.ReferenceType, name: str) -> None:
+    r"""Finalizer function for VirtualTensor."""
+    owner = owner()
+    if owner:
+        if hasattr(owner, f"_{name}_ref"):
+            delattr(owner, f"_{name}_ref")
+
+
+class VirtualTensor:
+    r"""Tensor attribute derived from other attributes.
+
+    This wraps the functionality around creating a tensor derived from other
+    attributes of an object while preserving the type and device conversion enabled by
+    :py:meth:`~torch.nn.Module.to`.
+
+    Args:
+        owner (Module): module to which this attribute will belong.
+        name (str): name of the attribute.
+        materializer (str | Callable[[Module, torch.dtype, torch.device], torch.Tensor]): function
+            to calculate the value of the virtual tensor.
+        dtype (torch.dtype | None, optional): data type of the virtual tensor, PyTorch
+            default when ``None``. Defaults to ``None``.
+        device (torch.device | None, optional): device on which the virtual tensor is
+            stored, PyTorch default when ``None``. Defaults to ``None``.
+        persist (bool, optional): if the buffer which stores the dtype and device should
+            persist across the state dictionary. Defaults to ``False``.
+
+    Raises:
+        AttributeError: string ``materializer`` must be an attribute of ``owner``.
+        TypeError: attribute specified by ``materializer`` must be a method.
+
+    Caution:
+        This has a finalizer which will delete the attributes added to the module when
+        its reference count goes to zero.
+
+    Note:
+        When ``materializer`` is a string, it will weakly reference the method in
+        ``owner`` as a :py:class:`~weakref.WeakMethod`. Otherwise a strong reference
+        is created to the function, and the weakref to ``owner`` is dereferenced and
+        passed in on each call.
+    """
+
+    LinkedAttributes = namedtuple("VirtualTensorAttributes", ("ref"))
+
+    def __init__(
+        self,
+        owner: Module,
+        name: str,
+        materializer: str | Callable[[Module, torch.dtype, torch.device], torch.Tensor],
+        dtype: torch.dtype | None = None,
+        device: torch.device | None = None,
+        persist: bool = False,
+    ):
+        # ensure the name is a valid identifier
+        _ = argtest.identifier("name", name)
+
+        # basic internal state
+        self.__owner = weakref.ref(owner)
+        self.__name = name
+        self.__finalizer = weakref.finalize(
+            self, _virtualtensor_finalization, self.__owner, self.__name
+        )
+
+        # materializer state
+        if isinstance(materializer, str):
+            if not hasattr(owner, materializer):
+                raise AttributeError(f"'owner' has no attribute '{materializer}'")
+            elif not isinstance(getattr(owner, materializer), MethodType):
+                raise TypeError(
+                    f"attribute '{materializer}' in 'owner' must be a method"
+                )
+            else:
+                self.__materializer = weakref.WeakMethod(getattr(owner, materializer))
+        else:
+            self.__materializer = materializer
+
+        # registered attribute names
+        self.__attributes = VirtualTensor.LinkedAttributes(f"_{self.__name}_ref")
+
+        # register reference
+        if isinstance(owner, nn.Module):
+            owner.register_buffer(
+                self.__attributes.ref,
+                torch.empty(0, dtype=dtype, device=device),
+                persistent=persist,
+            )
+        else:
+            setattr(
+                owner, self.__attributes.ref, torch.empty(0, dtype=dtype, device=device)
+            )
+
+    @classmethod
+    def create(
+        cls,
+        owner: Module,
+        name: str,
+        materializer: str | Callable[[Module, torch.dtype, torch.device], torch.Tensor],
+        dtype: torch.dtype | None = None,
+        device: torch.device | None = None,
+        persist: bool = False,
+    ) -> None:
+        r"""Creates a record tensor and adds it as an attribute.
+
+        The following two calls are equivalent.
+
+        .. code-block:: python
+
+            module.name = VirtualTensor(owner, name, materializer)
+
+        .. code-block:: python
+
+            VirtualTensor.create(module, name, materializer)
+
+        Args:
+            owner (Module): module to which this attribute will belong.
+            name (str): name of the attribute.
+            materializer (str | Callable[[Module, torch.dtype, torch.device], torch.Tensor]): function
+                to calculate the value of the virtual tensor.
+            dtype (torch.dtype | None, optional): data type of the virtual tensor,
+                PyTorch default when ``None``. Defaults to ``None``.
+            device (torch.device | None, optional): device on which the virtual tensor
+                is stored, PyTorch default when ``None``. Defaults to ``None``.
+            persist (bool, optional): if the buffer which stores the dtype and device
+                should persist across the state dictionary. Defaults to ``False``.
+        """
+        virtual = cls(
+            owner,
+            name,
+            materializer,
+            dtype=dtype,
+            device=device,
+            persist=persist,
+        )
+        setattr(virtual.owner, virtual.name, virtual)
+
+    @property
+    def __ref(self) -> torch.Tensor:
+        r"""Module internal reference getter."""
+        return getattr(self.__owner(), self.__attributes.ref)
+
+    @__ref.setter
+    def __ref(self, value: torch.Tensor) -> None:
+        r"""Module internal reference setter."""
+        return setattr(self.__owner(), self.__attributes.ref, value)
+
+    @property
+    def owner(self) -> Module | None:
+        r"""Module which owns this attribute.
+
+        Returns:
+            Module | None: owner of the attribute if it exists.
+        """
+        return self.__owner()
+
+    @property
+    def name(self) -> str:
+        r"""Name of the attribute.
+
+        Two attributes with names derived from ``name`` are added to the owner.
+
+        * ``_{name}_ref``, the data type and device reference tensor.
+
+        Returns:
+            str: name of the attribute.
+        """
+        return self.__name
+
+    @property
+    def attributes(self) -> ShapedTensor.LinkedAttributes:
+        r"""Names of the dependent attributes created.
+
+        This is a named tuple with attribute ``ref``.
+
+        Returns:
+            VirtualTensor.LinkedAttributes: names of the created attributes in the
+            containing module.
+        """
+        return self.__attributes
+
+    @property
+    def dtype(self) -> torch.dtype:
+        r"""Data type of the reference tensor.
+
+        Args:
+            value (torch.dtype): data type of the reference tensor.
+
+        Returns:
+            torch.dtype: data type of the reference tensor.
+        """
+        return self.__ref.dtype
+
+    @dtype.setter
+    def dtype(self, value: torch.dtype) -> None:
+        self.__ref = self.__ref.to(dtype=value)
+
+    @property
+    def device(self) -> torch.device:
+        r"""Compute device of the reference tensor.
+
+        Args:
+            value (torch.device): compute device of the reference tensor.
+
+        Returns:
+            torch.device: compute device of the reference tensor.
+        """
+        return self.__ref.device
+
+    @device.setter
+    def device(self, value: torch.device) -> None:
+        self.__ref = self.__ref.to(device=value)
+
+    @property
+    def value(self) -> torch.Tensor:
+        r"""Computed value of the virtual tensor.
+
+        Although the reference data type and device will be passed into the
+        ``materializer`` specified on initialization, it will also be cast with
+        :py:meth:`~torch.Tensor.to` afterwards. This should be considered a fallback
+        in the event the materializer fails to ensure the output is of the specified
+        data type and located on the specified device.
+
+        Returns:
+            torch.Tensor: computed tensor.
+        """
+        # strongly reference underlying tensor
+        ref = self.__ref
+
+        # as a method if initialized with a string
+        if isinstance(self.__materializer, weakref.WeakMethod):
+            return self.__materializer()(ref.dtype, ref.device).to(
+                dtype=ref.dtype, device=ref.device
+            )
+        else:
+            return self.__materializer(self.__owner(), ref.dtype, ref.device).to(
+                dtype=ref.dtype, device=ref.device
+            )
+
+    def to(self, *args, **kwargs) -> None:
+        r"""Sets dtype and/or device for the reference tensor.
+
+        This calls :py:meth:`~torch.Tensor.to` with the given positional arguments and
+        keyword arguments and reassigns the reference tensor accordingly.
+        """
+        self.__ref = self.__ref.to(*args, **kwargs)
 
 
 def _detach_handles(*handles):
