@@ -1,10 +1,10 @@
-from ... import RecordTensor
+from ... import RecordTensor, VirtualTensor
 from ..._internal import argtest
 from ...functional import Interpolation
 from ...types import OneToOne
 from ..base import InfernoSynapse
 import torch
-from typing import Any
+from typing import Any, Callable
 
 
 def _synparam_at(
@@ -270,20 +270,17 @@ class CurrentDerivedSpikeMixin(CurrentMixin):
 
     Args:
         currents (torch.Tensor): initial synaptic currents, in :math:`\text{nA}`.
-        to_spikes (str): attribute containing a callable which, when passed the
-            currents, will return the corresponding spikes.
-        current_interp (Interpolation): interpolation function used when selecting
-            prior currents.
-        current_interp_kwargs (dict[str, Any]): keyword arguments passed into the
-            interpolation function for currents.
-        spike_interp (Interpolation): interpolation function used when selecting
-            prior spikes.
-        spike_interp_kwargs (dict[str, Any]): keyword arguments passed into the
-            interpolation function for spikes.
+        to_spikes (Callable[[InfernoSynapse, torch.dtype, torch.device, torch.Tensor], torch.Tensor]): function
+            which takes the synapse, data type, device, and a tensor of currents, and
+            returns the corresponding spikes.
+        interp (Interpolation): interpolation function used when selecting
+            prior currents and spikes derived therefrom.
+        interp_kwargs (dict[str, Any]): keyword arguments passed into the
+            interpolation function.
         current_overbound (float | None): value to replace currents out of
-            bounds, uses values at observation limits if None.
+            bounds, uses values at observation limits if ``None``.
         spike_overbound (bool | None): value to replace spikes out of bounds,
-            uses values at observation limits if None.
+            uses values at observation limits if ``None``.
         tolerance (float): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`.
     """
@@ -291,11 +288,11 @@ class CurrentDerivedSpikeMixin(CurrentMixin):
     def __init__(
         self,
         currents: torch.Tensor,
-        to_spikes: str,
-        current_interp: Interpolation,
-        current_interp_kwargs: dict[str, Any],
-        spike_interp: Interpolation,
-        spike_interp_kwargs: dict[str, Any],
+        to_spikes: Callable[
+            [InfernoSynapse, torch.dtype, torch.device, torch.Tensor], torch.Tensor
+        ],
+        interp: Interpolation,
+        interp_kwargs: dict[str, Any],
         current_overbound: float | None,
         spike_overbound: bool | None,
         tolerance: float,
@@ -303,18 +300,38 @@ class CurrentDerivedSpikeMixin(CurrentMixin):
         CurrentMixin.__init__(
             self,
             currents,
-            current_interp,
-            current_interp_kwargs,
+            interp,
+            interp_kwargs,
             current_overbound,
             tolerance,
         )
-        self.__to_spikes = to_spikes
-        self.__spike_interp = spike_interp
-        self.__spike_interp_kwargs = spike_interp_kwargs
+        self.__to_spike = to_spikes
+        self.__interp = interp
+        self.__interp_kwargs = interp_kwargs
         self.__spike_overbound = (
             None if spike_overbound is None else bool(spike_overbound)
         )
-        self.__spike_tolerance = argtest.gte("tolerance", tolerance, 0, float)
+        self.__tolerance = argtest.gte("tolerance", tolerance, 0, float)
+
+        VirtualTensor.create(
+            self,
+            "spike_",
+            "_derived_spike",
+            dtype=torch.bool,
+            persist=False,
+        )
+
+    def _derived_spike(self, dtype: torch.dtype, device: torch.device) -> torch.Tensor:
+        r"""Used by VirtualTensor for spikes.
+
+        Args:
+            dtype (torch.dtype): data type for the spikes.
+            device (torch.device): device for the spikess.
+
+        Returns:
+            torch.Tensor: calculated spikess.
+        """
+        return self.__to_spike(self, dtype, device, self.current)
 
     @property
     def spike(self) -> torch.Tensor:
@@ -329,7 +346,7 @@ class CurrentDerivedSpikeMixin(CurrentMixin):
         Note:
             The setter does nothing as spikes are derived from currents.
         """
-        return getattr(self, self.__to_spikes)(self.current)
+        return self.spike_.value
 
     @spike.setter
     def spike(self, value: torch.Tensor) -> None:
@@ -364,12 +381,12 @@ class CurrentDerivedSpikeMixin(CurrentMixin):
         return _synparam_at(
             self.current_,
             selector,
-            self.__spike_interp,
-            self.__spike_interp_kwargs,
-            self.__spike_tolerance,
+            self.__interp,
+            self.__interp_kwargs,
+            self.__tolerance,
             self.__spike_overbound,
-            getattr(self, self.__to_spikes),
-        )
+            lambda d, m=self: m.__to_spike(m, m.spike_.dtype, m.spike_.device, d),
+        ).to(dtype=self.spike_.dtype, device=self.spike_.device)
 
 
 class SpikeDerivedCurrentMixin(SpikeMixin):
@@ -377,20 +394,17 @@ class SpikeDerivedCurrentMixin(SpikeMixin):
 
     Args:
         spikes (torch.Tensor): initial input spikes.
-        to_currents (str): attribute containing a callable which, when passed the
-            spikes, will return the corresponding currents.
-        current_interp (Interpolation): interpolation function used when selecting
-            prior currents.
-        current_interp_kwargs (dict[str, Any]): keyword arguments passed into the
-            interpolation function for currents.
-        spike_interp (Interpolation): interpolation function used when selecting
-            prior spikes.
-        spike_interp_kwargs (dict[str, Any]): keyword arguments passed into the
-            interpolation function for spikes.
+        to_currents (Callable[[InfernoSynapse, torch.dtype, torch.device, torch.Tensor], torch.Tensor]): function
+            which takes the synapse, data type, device, and a tensor of spikes, and
+            returns the corresponding current.
+        interp (Interpolation): interpolation function used when selecting
+            prior spikes and currents derived therefrom.
+        interp_kwargs (dict[str, Any]): keyword arguments passed into the
+            interpolation function.
         current_overbound (float | None): value to replace currents out of
-            bounds, uses values at observation limits if None.
+            bounds, uses values at observation limits if ``None``.
         spike_overbound (bool | None): value to replace spikes out of bounds,
-            uses values at observation limits if None.
+            uses values at observation limits if ``None``.
         tolerance (float): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`.
     """
@@ -398,25 +412,46 @@ class SpikeDerivedCurrentMixin(SpikeMixin):
     def __init__(
         self,
         spikes: torch.Tensor,
-        to_currents: str,
-        current_interp: Interpolation,
-        current_interp_kwargs: dict[str, Any],
-        spike_interp: Interpolation,
-        spike_interp_kwargs: dict[str, Any],
+        to_currents: Callable[
+            [InfernoSynapse, torch.dtype, torch.device, torch.Tensor], torch.Tensor
+        ],
+        interp: Interpolation,
+        interp_kwargs: dict[str, Any],
         current_overbound: float | None,
         spike_overbound: bool | None,
         tolerance: float,
     ):
         SpikeMixin.__init__(
-            self, spikes, spike_interp, spike_interp_kwargs, spike_overbound, tolerance
+            self, spikes, interp, interp_kwargs, spike_overbound, tolerance
         )
-        self.__to_currents = to_currents
-        self.__current_interp = current_interp
-        self.__current_interp_kwargs = current_interp_kwargs
+        self.__to_current = to_currents
+        self.__interp = interp
+        self.__interp_kwargs = interp_kwargs
         self.__current_overbound = (
             None if current_overbound is None else float(current_overbound)
         )
-        self.__current_tolerance = argtest.gte("tolerance", tolerance, 0, float)
+        self.__tolerance = argtest.gte("tolerance", tolerance, 0, float)
+
+        VirtualTensor.create(
+            self,
+            "current_",
+            "_derived_current",
+            persist=False,
+        )
+
+    def _derived_current(
+        self, dtype: torch.dtype, device: torch.device
+    ) -> torch.Tensor:
+        r"""Used by VirtualTensor for currents.
+
+        Args:
+            dtype (torch.dtype): data type for the currents.
+            device (torch.device): device for the currents.
+
+        Returns:
+            torch.Tensor: calculated currents.
+        """
+        return self.__to_current(self, dtype, device, self.spike)
 
     @property
     def current(self) -> torch.Tensor:
@@ -431,7 +466,7 @@ class SpikeDerivedCurrentMixin(SpikeMixin):
         Note:
             The setter does nothing as currents are derived from spikes.
         """
-        return getattr(self, self.__to_currents)(self.spike)
+        return self.current_.value
 
     @current.setter
     def current(self, value: torch.Tensor) -> None:
@@ -466,12 +501,12 @@ class SpikeDerivedCurrentMixin(SpikeMixin):
         return _synparam_at(
             self.spike_,
             selector,
-            self.__current_interp,
-            self.__current_interp_kwargs,
-            self.__current_tolerance,
+            self.__interp,
+            self.__interp_kwargs,
+            self.__tolerance,
             self.__current_overbound,
-            getattr(self, self.__to_currents),
-        )
+            lambda d, m=self: m.__to_current(m, m.current_.dtype, m.current_.device, d),
+        ).to(dtype=self.current_.dtype, device=self.current_.device)
 
 
 class SpikeCurrentMixin(CurrentMixin, SpikeMixin):
@@ -518,5 +553,10 @@ class SpikeCurrentMixin(CurrentMixin, SpikeMixin):
             tolerance,
         )
         SpikeMixin.__init__(
-            self, spikes, spike_interp, spike_interp_kwargs, spike_overbound, tolerance
+            self,
+            spikes,
+            spike_interp,
+            spike_interp_kwargs,
+            spike_overbound,
+            tolerance,
         )
