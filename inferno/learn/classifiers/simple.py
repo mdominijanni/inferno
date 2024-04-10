@@ -297,19 +297,18 @@ class TopRateClassifier(Module):
                 * :math:`N_0, \ldots` are the dimensions of the spikes being classified.
         """
         # number of instances per-class
-        clscounts = torch.bincount(labels, None, self.nclass)
+        clscounts = torch.bincount(labels, None, self.nclass).to(dtype=self.rates.dtype)
 
         # compute per-class scaled spike rates
         rates = (
-            torch.zeros_like(self.rates)
-            .scatter_add_(
+            torch.scatter_add(
+                torch.zeros_like(self.rates),
                 dim=-1,
                 index=labels.expand(*self.shape, -1),
                 src=ein.rearrange(inputs, "b ... -> ... b"),
             )
-            .div_(clscounts)
-            .nan_to_num(nan=0, posinf=0)
-        )
+            / clscounts
+        ).nan_to_num(nan=0, posinf=0)
 
         # update rates, other properties update automatically
         self.rates = torch.exp(-self.decay * clscounts) * self.rates + rates

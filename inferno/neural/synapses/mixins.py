@@ -262,7 +262,7 @@ class SpikeMixin:
             self.__overbound,
             self.__tolerance,
             None,
-        )
+        ).to(dtype=self.spike_.value.dtype, device=self.spike_.value.device)
 
 
 class CurrentDerivedSpikeMixin(CurrentMixin):

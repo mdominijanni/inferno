@@ -17,7 +17,8 @@ class EventReducer(FoldReducer):
 
     Important:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
-        :py:data:`torch.bool`.
+        :py:data:`torch.bool`. The datatype returned by :py:meth:`fold` will be the
+        same as that of the reducer itself.
     """
 
     def __init__(
@@ -44,9 +45,13 @@ class EventReducer(FoldReducer):
             torch.Tensor: state for the current time step.
         """
         if state is None:
-            return torch.where(self.criterion(obs), 0, float("inf"))
+            return torch.where(self.criterion(obs), 0, float("inf")).to(
+                dtype=self.data.dtype
+            )
         else:
-            return torch.where(self.criterion(obs), 0, state + self.dt)
+            return torch.where(self.criterion(obs), 0, state + self.dt).to(
+                dtype=self.data.dtype
+            )
 
     def interpolate(
         self,

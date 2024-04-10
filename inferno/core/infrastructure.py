@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .tensor import empty, full, zeros
+from .tensor import empty, full, fullc, zeros
 from ..functional import Interpolation, Extrapolation, interp_nearest, extrap_nearest
 from .._internal import argtest
 from abc import ABC, abstractmethod
@@ -2029,7 +2029,7 @@ class RecordTensor(ShapedTensor):
                 return interp(
                     data[..., _unwind_ptr(ptr, math.ceil(offset), recordsz)],
                     data[..., _unwind_ptr(ptr, math.floor(offset), recordsz)],
-                    full(data, dt * (shift % 1), shape=data.shape[:-1]),
+                    fullc(data, dt * (shift % 1), shape=data.shape[:-1]),
                     dt,
                     **(interp_kwargs if interp_kwargs else {}),
                 )
@@ -2220,7 +2220,7 @@ class RecordTensor(ShapedTensor):
                 # extrapolate data to write
                 prev_exobs, next_exobs = extrap(
                     obs,
-                    full(data, dt * (shift % 1), shape=data.shape[:-1]),
+                    fullc(data, dt * (shift % 1), shape=data.shape[:-1]),
                     data[..., prev_idx],
                     data[..., next_idx],
                     dt,

@@ -29,6 +29,7 @@
     ones
     empty
     full
+    fullc
     uniform
     normal
     scalar

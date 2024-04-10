@@ -6,10 +6,10 @@ def trace_nearest(
     observation: torch.Tensor,
     trace: torch.Tensor | None,
     *,
-    decay: float | torch.Tensor,
-    amplitude: int | float | complex | torch.Tensor,
-    target: int | float | bool | complex | torch.Tensor,
-    tolerance: int | float | torch.Tensor | None = None,
+    decay: float,
+    amplitude: int | float | complex,
+    target: int | float | bool | complex,
+    tolerance: int | float | None = None,
 ) -> torch.Tensor:
     r"""Performs a trace for a time step, considering the latest match.
 
@@ -21,17 +21,20 @@ def trace_nearest(
             & \left[\lvert h(t) - h^* \rvert > \epsilon\right]
         \end{cases}
 
+    When ``trace`` is ``None``, the event mask created will be cast to the datatype
+    of ``observation``.
+
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
             if not the inital condition.
-        decay (float | torch.Tensor): exponential decay for adaptations,
+        decay (float): exponential decay for adaptations,
             :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
-        amplitude (int | float | complex | torch.Tensor): value to set trace to for
+        amplitude (int | float | complex): value to set trace to for
             matching elements, :math:`A`.
-        target (int | float | bool | complex | torch.Tensor): target value to set
+        target (int | float | bool | complex): target value to set
             trace to, :math:`h^*`.
-        tolerance (int | float | torch.Tensor | None, optional): allowable absolute
+        tolerance (int | float | None, optional): allowable absolute
             difference to still count as a match, :math:`\epsilon`. Defaults to None.
 
     Returns:
@@ -45,7 +48,7 @@ def trace_nearest(
 
     # compute new state
     if trace is None:
-        return amplitude * mask
+        return amplitude * mask.to(dtype=observation.dtype)
     else:
         return torch.where(mask, amplitude, decay * trace)
 
@@ -54,10 +57,10 @@ def trace_cumulative(
     observation: torch.Tensor,
     trace: torch.Tensor | None,
     *,
-    decay: float | torch.Tensor,
-    amplitude: int | float | complex | torch.Tensor,
-    target: int | float | bool | complex | torch.Tensor,
-    tolerance: int | float | torch.Tensor | None = None,
+    decay: float,
+    amplitude: int | float | complex,
+    target: int | float | bool | complex,
+    tolerance: int | float | None = None,
 ) -> torch.Tensor:
     r"""Performs a trace for a time step, considering all prior matches.
 
@@ -65,17 +68,20 @@ def trace_cumulative(
         x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
         + A \left[\lvert h(t) - h^* \rvert \leq \epsilon\right]
 
+    The event mask created will be cast to the datatype of ``observation`` if ``trace``
+    is ``None`` and to the datatype of ``trace`` otherwise.
+
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
             if not the inital condition.
-        decay (float | torch.Tensor): exponential decay for adaptations,
+        decay (float): exponential decay for adaptations,
             :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
-        amplitude (int | float | complex | torch.Tensor): value to add to trace to for
+        amplitude (int | float | complex): value to add to trace to for
             matching elements, :math:`A`.
-        target (int | float | bool | complex | torch.Tensor): target value to set
+        target (int | float | bool | complex): target value to set
             trace to, :math:`h^*`.
-        tolerance (int | float | torch.Tensor | None, optional): allowable absolute
+        tolerance (int | float | None, optional): allowable absolute
             difference to still count as a match, :math:`\epsilon`. Defaults to None.
 
     Returns:
@@ -89,18 +95,18 @@ def trace_cumulative(
 
     # compute new state
     if trace is None:
-        return amplitude * mask
+        return amplitude * mask.to(dtype=observation.dtype)
     else:
-        return (decay * trace) + (amplitude * mask)
+        return (decay * trace) + (amplitude * mask.to(dtype=trace.dtype))
 
 
 def trace_nearest_scaled(
     observation: torch.Tensor,
     trace: torch.Tensor | None,
     *,
-    decay: float | torch.Tensor,
-    amplitude: int | float | complex | torch.Tensor,
-    scale: int | float | complex | torch.Tensor,
+    decay: float,
+    amplitude: int | float | complex,
+    scale: int | float | complex,
     matchfn: Callable[[torch.Tensor], torch.Tensor],
 ) -> torch.Tensor:
     r"""Performs a trace for a time step, considering the latest match, scaled by the inputs.
@@ -122,11 +128,11 @@ def trace_nearest_scaled(
         observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
             if not the inital condition.
-        decay (float | torch.Tensor): exponential decay for adaptations,
+        decay (float): exponential decay for adaptations,
             :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
-        amplitude (int | float | complex | torch.Tensor): value to add to trace
+        amplitude (int | float | complex): value to add to trace
             for matching elements, :math:`A`.
-        scale (int | float | complex | torch.Tensor): value to multiply matching
+        scale (int | float | complex): value to multiply matching
             inputs by for the trace, :math:`s`.
         matchfn (Callable[[torch.Tensor], torch.Tensor]): test if the inputs are considered a
             match for the trace, :math:`J`.
@@ -151,9 +157,9 @@ def trace_cumulative_scaled(
     observation: torch.Tensor,
     trace: torch.Tensor | None,
     *,
-    decay: float | torch.Tensor,
-    amplitude: int | float | complex | torch.Tensor,
-    scale: int | float | complex | torch.Tensor,
+    decay: float,
+    amplitude: int | float | complex,
+    scale: int | float | complex,
     matchfn: Callable[[torch.Tensor], torch.Tensor],
 ) -> torch.Tensor:
     r"""Performs a trace for a time step, considering all prior matches, scaled by the inputs.
@@ -171,11 +177,11 @@ def trace_cumulative_scaled(
         observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
             if not the inital condition.
-        decay (float | torch.Tensor): exponential decay for adaptations,
+        decay (float): exponential decay for adaptations,
             :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
-        amplitude (int | float | complex | torch.Tensor): value to add to trace
+        amplitude (int | float | complex): value to add to trace
             to for matching elements, :math:`A`.
-        scale (int | float | complex | torch.Tensor): value to multiply matching
+        scale (int | float | complex): value to multiply matching
             inputs by for the trace, :math:`s`.
         matchfn (Callable[[torch.Tensor], torch.Tensor]): test if the inputs are considered a
             match for the trace, :math:`J`.
@@ -201,8 +207,8 @@ def trace_cumulative_value(
     observation: torch.Tensor,
     trace: torch.Tensor | None,
     *,
-    decay: float | torch.Tensor,
-    scale: int | float | complex | torch.Tensor,
+    decay: float,
+    scale: int | float | complex,
 ) -> torch.Tensor:
     r"""Performs a trace for a time step, considering all prior values.
 
@@ -214,9 +220,9 @@ def trace_cumulative_value(
         observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
             if not the inital condition.
-        decay (float | torch.Tensor): exponential decay for adaptations,
+        decay (float): exponential decay for adaptations,
             :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
-        scale (int | float | complex | torch.Tensor): value to multiply inputs by for
+        scale (int | float | complex): value to multiply inputs by for
             the trace, :math:`s`.
 
     Returns:
