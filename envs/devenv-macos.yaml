@@ -23,7 +23,6 @@ dependencies:
   - plotly
   # ui
   - tqdm
-  - streamlit
   # mlops
   - tensorboard
   - wandb
