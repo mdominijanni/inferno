@@ -121,35 +121,3 @@ class Extrapolation(Protocol):
     ) -> tuple[torch.Tensor, torch.Tensor]:
         r"""Callback protocol function."""
         ...
-
-
-class DimensionReduction(Protocol):
-    r"""Callable used to reduce the dimensions of a tensor.
-
-    For simpler cases, these will wrap PyTorch methods such as :py:func:`torch.mean` for
-    convenience. When the ``kwargs`` are defined with a partial function, these should
-    be compatible with parameters in Inferno such as ``batch_reduction`` and should be
-    compatible with ``einops.reduce``. To this end, any implementation should maintain
-    the default behavior for ``keepdim``.
-
-    Args:
-        data (torch.Tensor): tensor to which operations should be applied.
-        dim (tuple[int, ...] | int | None, optional): dimension(s) along which the
-            reduction should be applied, all dimensions when ``None``.
-            Defaults to ``None``.
-        keepdim (bool, optional): if the dimensions should be retained in the output.
-            Defaults to ``False``.
-
-    Returns:
-        torch.Tensor: dimensionally reduced tensor.
-    """
-
-    def __call__(
-        self,
-        data: torch.Tensor,
-        dim: tuple[int, ...] | int | None = None,
-        keepdim: bool = False,
-        **kwargs,
-    ) -> torch.Tensor:
-        r"""Callback protocol function."""
-        ...

@@ -3,7 +3,6 @@ from .protocols import (
     FullBounding,
     Interpolation,
     Extrapolation,
-    DimensionReduction
 )
 
 from .bounding import (
@@ -46,30 +45,12 @@ from .extrapolation import (
     extrap_expratedecay,
 )
 
-from .dimreductiion import (
-    sum,
-    nansum,
-    min,
-    absmin,
-    max,
-    absmax,
-    mean,
-    nanmean,
-    quantile,
-    nanquantile,
-    median,
-    nanmedian,
-    geomean,
-    nangeomean,
-)
-
 __all__ = [
     # types
     "HalfBounding",
     "FullBounding",
     "Interpolation",
     "Extrapolation",
-    "DimensionReduction",
     # bounding
     "bound_upper_power",
     "bound_lower_power",
@@ -96,19 +77,4 @@ __all__ = [
     "extrap_linear_backward",
     "extrap_expdecay",
     "extrap_expratedecay",
-    # dimension reduction
-    "sum",
-    "nansum",
-    "min",
-    "absmin",
-    "max",
-    "absmax",
-    "mean",
-    "nanmean",
-    "quantile",
-    "nanquantile",
-    "median",
-    "nanmedian",
-    "geomean",
-    "nangeomean",
 ]

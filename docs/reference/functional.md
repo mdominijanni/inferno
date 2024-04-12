@@ -5,7 +5,6 @@
 ```
 
 ## Protocols
-
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -15,11 +14,9 @@
     FullBounding
     Interpolation
     Extrapolation
-    DimensionReduction
 ```
 
 ## Bounding
-
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -37,7 +34,6 @@
 ```
 
 ## Interpolation
-
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -52,7 +48,6 @@
 ```
 
 ## Extrapolation
-
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -66,27 +61,4 @@
     extrap_linear_backward
     extrap_expdecay
     extrap_expratedecay
-```
-
-## Dimension Reductions
-
-```{eval-rst}
-.. autosummary::
-    :nosignatures:
-    :toctree: generated
-
-    sum
-    nansum
-    min
-    max
-    absmin
-    absmax
-    mean
-    nanmean
-    median
-    nanmedian
-    geomean
-    nangeomean
-    quantile
-    nanquantile
 ```
