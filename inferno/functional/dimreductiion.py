@@ -348,7 +348,7 @@ def geomean(
 
     The geometric mean is calculated by taking the arithmetic mean of the log,
     where zero values are ignored. If all elements being reduced are zero, then the
-    output is ``NaN``.
+    output is zero.
 
     Args:
         data (torch.Tensor): tensor to which operations should be applied.
@@ -362,11 +362,16 @@ def geomean(
         torch.Tensor: dimensionally reduced tensor.
     """
     logdata = data.log()
-    return torch.exp(
-        torch.sum(
-            torch.where(logdata != float("-inf"), logdata, 0), dim, keepdim=keepdim
-        )
-        / torch.count_nonzero(data, dim)
+    counts = torch.count_nonzero(data, dim)
+    return torch.where(
+        counts.bool(),
+        torch.exp(
+            torch.sum(
+                torch.where(logdata != float("-inf"), logdata, 0), dim, keepdim=keepdim
+            )
+            / counts
+        ),
+        0,
     )
 
 
@@ -380,7 +385,7 @@ def nangeomean(
 
     The geometric mean is calculated by taking the arithmetic mean of the log,
     where zero and ``NaN`` values are ignored. If all elements being reduced are zero
-    or ``NaN``, then the output is ``NaN``.
+    or ``NaN``, then the output is zero.
 
     Args:
         data (torch.Tensor): tensor to which operations should be applied.
@@ -394,6 +399,10 @@ def nangeomean(
         torch.Tensor: dimensionally reduced tensor.
     """
     sanitized = torch.nan_to_num(data.log(), nan=0.0, neginf=0.0)
-    return torch.exp(
-        torch.sum(sanitized, dim, keepdim=keepdim) / torch.count_nonzero(sanitized, dim)
+    return torch.nan_to_num(
+        torch.exp(
+            torch.sum(sanitized, dim, keepdim=keepdim)
+            / torch.count_nonzero(sanitized, dim)
+        ),
+        nan=0.0,
     )
