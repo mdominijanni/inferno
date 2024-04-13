@@ -163,7 +163,7 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
                 * :math:`S` is the number of steps for which to generate spikes, ``steps``.
         """
         if online:
-            return nf.enc_homogeneous_poisson_exp_interval_online(
+            return nf.homogeneous_poisson_exp_interval_online(
                 self.frequency * inputs,
                 steps=self.steps,
                 step_time=self.dt,
@@ -172,7 +172,7 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
                 generator=self.generator,
             )
         else:
-            return nf.enc_homogeneous_poisson_exp_interval(
+            return nf.homogeneous_poisson_exp_interval(
                 self.frequency * inputs,
                 steps=self.steps,
                 step_time=self.dt,

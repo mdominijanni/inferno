@@ -11,11 +11,11 @@
     :nosignatures:
     :toctree: generated
 
-    enc_homogeneous_poisson_exp_interval
-    enc_homogeneous_poisson_exp_interval_online
-    enc_inhomogenous_poisson_bernoulli_approx
-    enc_poisson_interval
-    enc_poisson_interval_online
+    homogeneous_poisson_exp_interval
+    homogeneous_poisson_exp_interval_online
+    inhomogenous_poisson_bernoulli_approx
+    poisson_interval
+    poisson_interval_online
 ```
 
 ## Neuronal Dynamics

@@ -225,7 +225,7 @@ def quantile(
     discrete index, ``b`` is the value with the higher discrete index, and ``k`` is
     the continuous index for the quantile.
 
-    * ``"linear"``: ``a + (b - a) * k % 1
+    * ``"linear"``: ``a + (b - a) * k % 1``
     * ``"lower"``: ``a``
     * ``"higher"``: ``b``
     * ``"nearest"``: ``b if (k % 1) > 0.5 else a``
@@ -267,7 +267,7 @@ def nanquantile(
     discrete index, ``b`` is the value with the higher discrete index, and ``k`` is
     the continuous index for the quantile.
 
-    * ``"linear"``: ``a + (b - a) * k % 1
+    * ``"linear"``: ``a + (b - a) * k % 1``
     * ``"lower"``: ``a``
     * ``"higher"``: ``b``
     * ``"nearest"``: ``b if (k % 1) > 0.5 else a``

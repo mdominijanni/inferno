@@ -97,14 +97,14 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
                 * :math:`S` is the number of steps for which to generate spikes, ``steps``.
         """
         if online:
-            return nf.enc_poisson_interval_online(
+            return nf.poisson_interval_online(
                 self.frequency * inputs,
                 steps=self.steps,
                 step_time=self.dt,
                 generator=self.generator,
             )
         else:
-            return nf.enc_poisson_interval(
+            return nf.poisson_interval(
                 self.frequency * inputs,
                 steps=self.steps,
                 step_time=self.dt,

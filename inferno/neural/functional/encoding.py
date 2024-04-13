@@ -2,7 +2,7 @@ import torch
 from typing import Iterator
 
 
-def enc_poisson_interval(
+def poisson_interval(
     inputs: torch.Tensor,
     steps: int,
     step_time: float,
@@ -81,7 +81,7 @@ def enc_poisson_interval(
     return res
 
 
-def enc_poisson_interval_online(
+def poisson_interval_online(
     inputs: torch.Tensor,
     steps: int,
     step_time: float,
@@ -154,7 +154,7 @@ def enc_poisson_interval_online(
             yield spikes
 
 
-def enc_homogeneous_poisson_exp_interval(
+def homogeneous_poisson_exp_interval(
     inputs: torch.Tensor,
     steps: int,
     step_time: float,
@@ -177,7 +177,7 @@ def enc_homogeneous_poisson_exp_interval(
             in :math:`\text{ms}`.
         refrac (float | None, optional): minimum interal between spikes set to the step
             time if None, in :math:`\text{ms}`. Defaults to None.
-        compensate (bool, optioonal): if the spike generation rate should be compensate
+        compensate (bool, optional): if the spike generation rate should be compensate
             for the refractory period. Defaults to True.
         generator (torch.Generator | None, optional): pseudorandom number generator
             for sampling. Defaults to None.
@@ -257,7 +257,7 @@ def enc_homogeneous_poisson_exp_interval(
     return res
 
 
-def enc_homogeneous_poisson_exp_interval_online(
+def homogeneous_poisson_exp_interval_online(
     inputs: torch.Tensor,
     steps: int,
     step_time: float,
@@ -359,7 +359,7 @@ def enc_homogeneous_poisson_exp_interval_online(
             yield spikes
 
 
-def enc_inhomogenous_poisson_bernoulli_approx(
+def inhomogenous_poisson_bernoulli_approx(
     inputs: torch.Tensor,
     step_time: float,
     *,

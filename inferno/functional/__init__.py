@@ -3,22 +3,28 @@ from .protocols import (
     FullBounding,
     Interpolation,
     Extrapolation,
-    DimensionReduction
+    DimensionReduction,
 )
 
 from .bounding import (
     # power half bounding
     bound_upper_power,
     bound_lower_power,
+    bound_upper_scaled_power,
+    bound_lower_scaled_power,
     # multiplicative half bounding
     bound_upper_multiplicative,
     bound_lower_multiplicative,
+    bound_upper_scaled_multiplicative,
+    bound_lower_scaled_multiplicative,
     # sharp half bounding
     bound_upper_sharp,
     bound_lower_sharp,
     # full bounding
     bound_power,
+    bound_scaled_power,
     bound_multiplicative,
+    bound_scaled_multiplicative,
     bound_sharp,
 )
 
@@ -73,12 +79,18 @@ __all__ = [
     # bounding
     "bound_upper_power",
     "bound_lower_power",
+    "bound_upper_scaled_power",
+    "bound_lower_scaled_power",
     "bound_upper_multiplicative",
     "bound_lower_multiplicative",
+    "bound_upper_scaled_multiplicative",
+    "bound_lower_scaled_multiplicative",
     "bound_upper_sharp",
     "bound_lower_sharp",
     "bound_power",
+    "bound_scaled_power",
     "bound_multiplicative",
+    "bound_scaled_multiplicative",
     "bound_sharp",
     # interpolation
     "interp_previous",
