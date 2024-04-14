@@ -14,18 +14,8 @@ dependencies:
   # math-sci
   - einops
   - numpy
-  - pandas
-  - scipy
-  - scikit-learn
-  # plotting
-  - matplotlib
-  - seaborn
-  # devtools
-  - black
-  - flake8
-  - pytest
   # sphinx
-  - sphinx
+  - sphinx>=7.2.6
   - antlr4-python3-runtime
   - docutils
   - esbonio
@@ -37,5 +27,3 @@ dependencies:
   - furo
   - pydata-sphinx-theme
   - sphinx-book-theme
-  # other
-  - tomli-w

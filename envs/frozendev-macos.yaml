@@ -1,4 +1,4 @@
-name: infernodoc
+name: infernodev
 channels:
   - pytorch
   - plotly

@@ -16,7 +16,7 @@ jobs:
     - name: Configure miniconda
       uses: conda-incubator/setup-miniconda@v3
       with:
-        environment-file: envs/docsenv-tempfix.yaml
+        environment-file: envs/docenv-macos.yaml
         python-version: 3.11
         auto-update-conda: true
         auto-activate-base: false
