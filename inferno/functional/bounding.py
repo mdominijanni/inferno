@@ -5,9 +5,9 @@ import torch
 def bound_upper_power(
     param: torch.Tensor,
     update: torch.Tensor,
-    limit: float | torch.Tensor,
+    limit: float,
     *,
-    power: float | torch.Tensor,
+    power: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of upper-bound power parameter dependence.
@@ -20,8 +20,8 @@ def bound_upper_power(
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         update (torch.Tensor): potentiative update being applied, :math:`U_+`.
-        limit (float | torch.Tensor): value of the upper bound, :math:`P_\text{max}`.
-        power (float | torch.Tensor): exponent of parameter dependence, :math:`\mu_+`.
+        limit (float): value of the upper bound, :math:`P_\text{max}`.
+        power (float): exponent of parameter dependence, :math:`\mu_+`.
 
     Returns:
         torch.Tensor: bounded update.
@@ -32,9 +32,9 @@ def bound_upper_power(
 def bound_lower_power(
     param: torch.Tensor,
     update: torch.Tensor,
-    limit: float | torch.Tensor,
+    limit: float,
     *,
-    power: float | torch.Tensor,
+    power: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of lower-bound power parameter dependence.
@@ -47,8 +47,8 @@ def bound_lower_power(
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         update (torch.Tensor): depressive update being applied, :math:`U_-`.
-        limit (float | torch.Tensor): value of the upper bound, :math:`P_\text{min}`.
-        power (float | torch.Tensor): exponent of parameter dependence, :math:`\mu_-`.
+        limit (float): value of the upper bound, :math:`P_\text{min}`.
+        power (float): exponent of parameter dependence, :math:`\mu_-`.
 
     Returns:
         torch.Tensor: bounded update.
@@ -60,11 +60,11 @@ def bound_power(
     param: torch.Tensor,
     pos: torch.Tensor,
     neg: torch.Tensor,
-    max: float | torch.Tensor | None,
-    min: float | torch.Tensor | None,
+    max: float | None,
+    min: float | None,
     *,
-    upper_power: float | torch.Tensor,
-    lower_power: float | torch.Tensor,
+    upper_power: float,
+    lower_power: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of power parameter dependence.
@@ -78,13 +78,13 @@ def bound_power(
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         pos (torch.Tensor): potentiative update being applied, :math:`U_+`.
         neg (torch.Tensor): depressive update being applied, :math:`U_-`.
-        max (float | torch.Tensor | None): value of the upper bound,
+        max (float | None): value of the upper bound,
             :math:`P_\text{max}`.
-        min (float | torch.Tensor | None): value of the lower bound,
+        min (float | None): value of the lower bound,
             :math:`P_\text{min}`.
-        upper_power (float | torch.Tensor): exponent of upper-bound parameter
+        upper_power (float): exponent of upper-bound parameter
             dependence, :math:`\mu_+`.
-        lower_power (float | torch.Tensor): exponent of lower-bound parameter
+        lower_power (float): exponent of lower-bound parameter
             dependence, :math:`\mu_-`.
 
     Returns:
@@ -103,10 +103,10 @@ def bound_power(
 def bound_upper_scaled_power(
     param: torch.Tensor,
     update: torch.Tensor,
-    limit: float | torch.Tensor,
+    limit: float,
     *,
-    power: float | torch.Tensor,
-    range: float | torch.Tensor,
+    power: float,
+    range: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of upper-bound scaled power parameter dependence.
@@ -117,9 +117,9 @@ def bound_upper_scaled_power(
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         update (torch.Tensor): potentiative update being applied, :math:`U_+`.
-        limit (float | torch.Tensor): value of the upper bound, :math:`P_\text{max}`.
-        power (float | torch.Tensor): exponent of parameter dependence, :math:`\mu_+`.
-        range (float | torch.Tensor): absolute difference between the upper and lower
+        limit (float): value of the upper bound, :math:`P_\text{max}`.
+        power (float): exponent of parameter dependence, :math:`\mu_+`.
+        range (float): absolute difference between the upper and lower
             bounds, :math:`P_\text{max} - P_\text{min}`.
 
     Returns:
@@ -131,10 +131,10 @@ def bound_upper_scaled_power(
 def bound_lower_scaled_power(
     param: torch.Tensor,
     update: torch.Tensor,
-    limit: float | torch.Tensor,
+    limit: float,
     *,
-    power: float | torch.Tensor,
-    range: float | torch.Tensor,
+    power: float,
+    range: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of lower-bound scaled power parameter dependence.
@@ -145,9 +145,9 @@ def bound_lower_scaled_power(
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         update (torch.Tensor): depressive update being applied, :math:`U_-`.
-        limit (float | torch.Tensor): value of the upper bound, :math:`P_\text{min}`.
-        power (float | torch.Tensor): exponent of parameter dependence, :math:`\mu_-`.
-        range (float | torch.Tensor): absolute difference between the upper and lower
+        limit (float): value of the upper bound, :math:`P_\text{min}`.
+        power (float): exponent of parameter dependence, :math:`\mu_-`.
+        range (float): absolute difference between the upper and lower
             bounds, :math:`P_\text{max} - P_\text{min}`.
 
     Returns:
@@ -160,11 +160,11 @@ def bound_scaled_power(
     param: torch.Tensor,
     pos: torch.Tensor,
     neg: torch.Tensor,
-    max: float | torch.Tensor | None,
-    min: float | torch.Tensor | None,
+    max: float | None,
+    min: float | None,
     *,
-    upper_power: float | torch.Tensor,
-    lower_power: float | torch.Tensor,
+    upper_power: float,
+    lower_power: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of scaled power parameter dependence.
@@ -179,13 +179,13 @@ def bound_scaled_power(
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         pos (torch.Tensor): potentiative update being applied, :math:`U_+`.
         neg (torch.Tensor): depressive update being applied, :math:`U_-`.
-        max (float | torch.Tensor | None): value of the upper bound,
+        max (float | None): value of the upper bound,
             :math:`P_\text{max}`.
-        min (float | torch.Tensor | None): value of the lower bound,
+        min (float | None): value of the lower bound,
             :math:`P_\text{min}`.
-        upper_power (float | torch.Tensor): exponent of upper-bound parameter
+        upper_power (float): exponent of upper-bound parameter
             dependence, :math:`\mu_+`.
-        lower_power (float | torch.Tensor): exponent of lower-bound parameter
+        lower_power (float): exponent of lower-bound parameter
             dependence, :math:`\mu_-`.
 
     Returns:
@@ -204,7 +204,7 @@ def bound_scaled_power(
 def bound_upper_multiplicative(
     param: torch.Tensor,
     update: torch.Tensor,
-    limit: float | torch.Tensor,
+    limit: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of upper-bound multiplicative parameter dependence.
@@ -218,7 +218,7 @@ def bound_upper_multiplicative(
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         update (torch.Tensor): potentiative update being applied, :math:`U_+`.
-        limit (float | torch.Tensor): value of the upper bound, :math:`P_\text{max}`.
+        limit (float): value of the upper bound, :math:`P_\text{max}`.
 
     Returns:
         torch.Tensor: bounded update.
@@ -229,7 +229,7 @@ def bound_upper_multiplicative(
 def bound_lower_multiplicative(
     param: torch.Tensor,
     update: torch.Tensor,
-    limit: float | torch.Tensor,
+    limit: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of lower-bound multiplicative parameter dependence.
@@ -243,7 +243,7 @@ def bound_lower_multiplicative(
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         update (torch.Tensor): depressive update being applied, :math:`U_-`.
-        limit (float | torch.Tensor): value of the upper bound, :math:`P_\text{min}`.
+        limit (float): value of the upper bound, :math:`P_\text{min}`.
 
     Returns:
         torch.Tensor: bounded update.
@@ -255,8 +255,8 @@ def bound_multiplicative(
     param: torch.Tensor,
     pos: torch.Tensor,
     neg: torch.Tensor,
-    max: float | torch.Tensor | None,
-    min: float | torch.Tensor | None,
+    max: float | None,
+    min: float | None,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of multiplicative parameter dependence.
@@ -271,9 +271,9 @@ def bound_multiplicative(
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         pos (torch.Tensor): potentiative update being applied, :math:`U_+`.
         neg (torch.Tensor): depressive update being applied, :math:`U_-`.
-        max (float | torch.Tensor | None): value of the upper bound,
+        max (float | None): value of the upper bound,
             :math:`P_\text{max}`.
-        min (float | torch.Tensor | None): value of the lower bound,
+        min (float | None): value of the lower bound,
             :math:`P_\text{min}`.
 
     Returns:
@@ -292,8 +292,8 @@ def bound_multiplicative(
 def bound_upper_scaled_multiplicative(
     param: torch.Tensor,
     update: torch.Tensor,
-    limit: float | torch.Tensor,
-    range: float | torch.Tensor,
+    limit: float,
+    range: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of upper-bound scaled multiplicative parameter dependence.
@@ -307,8 +307,8 @@ def bound_upper_scaled_multiplicative(
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         update (torch.Tensor): potentiative update being applied, :math:`U_+`.
-        limit (float | torch.Tensor): value of the upper bound, :math:`P_\text{max}`.
-        range (float | torch.Tensor): absolute difference between the upper and lower
+        limit (float): value of the upper bound, :math:`P_\text{max}`.
+        range (float): absolute difference between the upper and lower
             bounds, :math:`P_\text{max} - P_\text{min}`.
 
     Returns:
@@ -320,8 +320,8 @@ def bound_upper_scaled_multiplicative(
 def bound_lower_scaled_multiplicative(
     param: torch.Tensor,
     update: torch.Tensor,
-    limit: float | torch.Tensor,
-    range: float | torch.Tensor,
+    limit: float,
+    range: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of lower-bound scaled multiplicative parameter dependence.
@@ -335,8 +335,8 @@ def bound_lower_scaled_multiplicative(
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         update (torch.Tensor): depressive update being applied, :math:`U_-`.
-        limit (float | torch.Tensor): value of the upper bound, :math:`P_\text{min}`.
-        range (float | torch.Tensor): absolute difference between the upper and lower
+        limit (float): value of the upper bound, :math:`P_\text{min}`.
+        range (float): absolute difference between the upper and lower
             bounds, :math:`P_\text{max} - P_\text{min}`.
 
     Returns:
@@ -349,8 +349,8 @@ def bound_scaled_multiplicative(
     param: torch.Tensor,
     pos: torch.Tensor,
     neg: torch.Tensor,
-    max: float | torch.Tensor | None,
-    min: float | torch.Tensor | None,
+    max: float | None,
+    min: float | None,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of multiplicative parameter dependence.
@@ -366,9 +366,9 @@ def bound_scaled_multiplicative(
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         pos (torch.Tensor): potentiative update being applied, :math:`U_+`.
         neg (torch.Tensor): depressive update being applied, :math:`U_-`.
-        max (float | torch.Tensor | None): value of the upper bound,
+        max (float | None): value of the upper bound,
             :math:`P_\text{max}`.
-        min (float | torch.Tensor | None): value of the lower bound,
+        min (float | None): value of the lower bound,
             :math:`P_\text{min}`.
 
     Returns:
@@ -387,7 +387,7 @@ def bound_scaled_multiplicative(
 def bound_upper_sharp(
     param: torch.Tensor,
     update: torch.Tensor,
-    limit: float | torch.Tensor,
+    limit: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of upper-bound sharp parameter dependence.
@@ -409,7 +409,7 @@ def bound_upper_sharp(
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         update (torch.Tensor): potentiative update being applied, :math:`U_+`.
-        limit (float | torch.Tensor): value of the upper bound, :math:`P_\text{max}`.
+        limit (float): value of the upper bound, :math:`P_\text{max}`.
 
     Returns:
         torch.Tensor: bounded update.
@@ -421,7 +421,7 @@ def bound_upper_sharp(
 def bound_lower_sharp(
     param: torch.Tensor,
     update: torch.Tensor,
-    limit: float | torch.Tensor,
+    limit: float,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of lower-bound sharp parameter dependence.
@@ -443,7 +443,7 @@ def bound_lower_sharp(
     Args:
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         update (torch.Tensor): depressive update being applied, :math:`U_-`.
-        limit (float | torch.Tensor): value of the upper bound, :math:`P_\text{min}`.
+        limit (float): value of the upper bound, :math:`P_\text{min}`.
 
     Returns:
         torch.Tensor: bounded update.
@@ -456,8 +456,8 @@ def bound_sharp(
     param: torch.Tensor,
     pos: torch.Tensor,
     neg: torch.Tensor,
-    max: float | torch.Tensor | None,
-    min: float | torch.Tensor | None,
+    max: float | None,
+    min: float | None,
     **kwargs,
 ) -> torch.Tensor:
     r"""Computes the scaled update of sharp parameter dependence.
@@ -481,9 +481,9 @@ def bound_sharp(
         param (torch.Tensor): parameter with update bounding, :math:`P`.
         pos (torch.Tensor): potentiative update being applied, :math:`U_+`.
         neg (torch.Tensor): depressive update being applied, :math:`U_-`.
-        max (float | torch.Tensor | None): value of the upper bound,
+        max (float | None): value of the upper bound,
             :math:`P_\text{max}`.
-        min (float | torch.Tensor | None): value of the lower bound,
+        min (float | None): value of the lower bound,
             :math:`P_\text{min}`.
 
     Returns:

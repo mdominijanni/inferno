@@ -50,6 +50,66 @@ def nansum(
     return torch.nansum(data, dim, keepdim=keepdim)
 
 
+def divsum(
+    data: torch.Tensor,
+    dim: tuple[int, ...] | int | None = None,
+    keepdim: bool = False,
+    denom: int | float | complex = 1,
+    **kwargs: Any,
+) -> torch.Tensor:
+    r"""Returns a tensor with dimensions reduced via summation then divided by a constant.
+
+    Args:
+        data (torch.Tensor): tensor to which operations should be applied.
+        dim (tuple[int, ...] | int | None, optional): dimension(s) along which the
+            reduction should be applied, all dimensions when ``None``.
+            Defaults to ``None``.
+        keepdim (bool, optional): if the dimensions should be retained in the output.
+            Defaults to ``False``.
+        denom (int | float | complex, optional): value by which to divide the sum.
+            Defaults to 1.
+
+    Returns:
+        torch.Tensor: dimensionally reduced tensor.
+
+    Tip:
+        This is useful in cases where the mean over a larger sample is to be computed,
+        but only a subset of the sample is being reduced.
+    """
+    return torch.sum(data, dim, keepdim=keepdim) / denom
+
+
+def nandivsum(
+    data: torch.Tensor,
+    dim: tuple[int, ...] | int | None = None,
+    keepdim: bool = False,
+    denom: int | float | complex = 1,
+    **kwargs: Any,
+) -> torch.Tensor:
+    r"""Returns a tensor with dimensions reduced via summation  then divided by a constant, excluding NaN values.
+
+    This is a wrapper around :py:func:`torch.nansum`.
+
+    Args:
+        data (torch.Tensor): tensor to which operations should be applied.
+        dim (tuple[int, ...] | int | None, optional): dimension(s) along which the
+            reduction should be applied, all dimensions when ``None``.
+            Defaults to ``None``.
+        keepdim (bool, optional): if the dimensions should be retained in the output.
+            Defaults to ``False``.
+        denom (int | float | complex, optional): value by which to divide the sum.
+            Defaults to 1.
+
+    Returns:
+        torch.Tensor: dimensionally reduced tensor.
+
+    Tip:
+        This is useful in cases where the mean over a larger sample is to be computed,
+        but only a subset of the sample is being reduced.
+    """
+    return torch.nansum(data, dim, keepdim=keepdim) / denom
+
+
 def min(
     data: torch.Tensor,
     dim: tuple[int, ...] | int | None = None,
@@ -362,7 +422,7 @@ def geomean(
         torch.Tensor: dimensionally reduced tensor.
     """
     logdata = data.log()
-    counts = torch.count_nonzero(data, dim)
+    counts = torch.sum(data != 0, dim, keepdim=keepdim)
     return torch.where(
         counts.bool(),
         torch.exp(
@@ -402,7 +462,7 @@ def nangeomean(
     return torch.nan_to_num(
         torch.exp(
             torch.sum(sanitized, dim, keepdim=keepdim)
-            / torch.count_nonzero(sanitized, dim)
+            / torch.sum(sanitized != 0, dim, keepdim=keepdim)
         ),
         nan=0.0,
     )

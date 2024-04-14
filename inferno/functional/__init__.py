@@ -55,6 +55,8 @@ from .extrapolation import (
 from .dimreductiion import (
     sum,
     nansum,
+    divsum,
+    nandivsum,
     min,
     absmin,
     max,
@@ -111,6 +113,8 @@ __all__ = [
     # dimension reduction
     "sum",
     "nansum",
+    "divsum",
+    "nandivsum",
     "min",
     "absmin",
     "max",

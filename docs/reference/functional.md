@@ -83,6 +83,8 @@
 
     sum
     nansum
+    divsum
+    nandivsum
     min
     max
     absmin
