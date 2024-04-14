@@ -5,6 +5,7 @@
 ```
 
 ## Protocols
+
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -14,9 +15,11 @@
     FullBounding
     Interpolation
     Extrapolation
+    DimensionReduction
 ```
 
 ## Bounding
+
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -25,15 +28,22 @@
     bound_power
     bound_upper_power
     bound_lower_power
+    bound_scaled_power
+    bound_upper_scaled_power
+    bound_lower_scaled_power
     bound_multiplicative
     bound_upper_multiplicative
     bound_lower_multiplicative
+    bound_scaled_multiplicative
+    bound_upper_scaled_multiplicative
+    bound_lower_scaled_multiplicative
     bound_sharp
     bound_upper_sharp
     bound_lower_sharp
 ```
 
 ## Interpolation
+
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -48,6 +58,7 @@
 ```
 
 ## Extrapolation
+
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
@@ -61,4 +72,29 @@
     extrap_linear_backward
     extrap_expdecay
     extrap_expratedecay
+```
+
+## Dimension Reductions
+
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    sum
+    nansum
+    divsum
+    nandivsum
+    min
+    max
+    absmin
+    absmax
+    mean
+    nanmean
+    median
+    nanmedian
+    geomean
+    nangeomean
+    quantile
+    nanquantile
 ```

@@ -3,21 +3,28 @@ from .protocols import (
     FullBounding,
     Interpolation,
     Extrapolation,
+    DimensionReduction,
 )
 
 from .bounding import (
     # power half bounding
     bound_upper_power,
     bound_lower_power,
+    bound_upper_scaled_power,
+    bound_lower_scaled_power,
     # multiplicative half bounding
     bound_upper_multiplicative,
     bound_lower_multiplicative,
+    bound_upper_scaled_multiplicative,
+    bound_lower_scaled_multiplicative,
     # sharp half bounding
     bound_upper_sharp,
     bound_lower_sharp,
     # full bounding
     bound_power,
+    bound_scaled_power,
     bound_multiplicative,
+    bound_scaled_multiplicative,
     bound_sharp,
 )
 
@@ -45,21 +52,47 @@ from .extrapolation import (
     extrap_expratedecay,
 )
 
+from .dimreductiion import (
+    sum,
+    nansum,
+    divsum,
+    nandivsum,
+    min,
+    absmin,
+    max,
+    absmax,
+    mean,
+    nanmean,
+    quantile,
+    nanquantile,
+    median,
+    nanmedian,
+    geomean,
+    nangeomean,
+)
+
 __all__ = [
     # types
     "HalfBounding",
     "FullBounding",
     "Interpolation",
     "Extrapolation",
+    "DimensionReduction",
     # bounding
     "bound_upper_power",
     "bound_lower_power",
+    "bound_upper_scaled_power",
+    "bound_lower_scaled_power",
     "bound_upper_multiplicative",
     "bound_lower_multiplicative",
+    "bound_upper_scaled_multiplicative",
+    "bound_lower_scaled_multiplicative",
     "bound_upper_sharp",
     "bound_lower_sharp",
     "bound_power",
+    "bound_scaled_power",
     "bound_multiplicative",
+    "bound_scaled_multiplicative",
     "bound_sharp",
     # interpolation
     "interp_previous",
@@ -77,4 +110,21 @@ __all__ = [
     "extrap_linear_backward",
     "extrap_expdecay",
     "extrap_expratedecay",
+    # dimension reduction
+    "sum",
+    "nansum",
+    "divsum",
+    "nandivsum",
+    "min",
+    "absmin",
+    "max",
+    "absmax",
+    "mean",
+    "nanmean",
+    "quantile",
+    "nanquantile",
+    "median",
+    "nanmedian",
+    "geomean",
+    "nangeomean",
 ]

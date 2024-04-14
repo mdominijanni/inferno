@@ -8,7 +8,7 @@ class HalfBounding(Protocol):
     Args:
         param (torch.Tensor): value of the parameter being bound.
         update (torch.Tensor): value of the partial update to scale.
-        limit (float | torch.Tensor): maximum or minimum value of the updated parameter.
+        limit (float): maximum or minimum value of the updated parameter.
 
     Returns:
         torch.Tensor: bounded update.
@@ -18,7 +18,7 @@ class HalfBounding(Protocol):
         self,
         param: torch.Tensor,
         update: torch.Tensor,
-        limit: float | torch.Tensor,
+        limit: float,
         **kwargs,
     ) -> torch.Tensor:
         r"""Callback protocol function."""
@@ -32,8 +32,8 @@ class FullBounding(Protocol):
         param (torch.Tensor): value of the parameter being bound.
         pos (torch.Tensor): value of the positive part of the update to scale.
         neg (torch.Tensor): value of the negative part of the update to scale.
-        max (float | torch.Tensor | None): maximum value of the updated parameter.
-        min (float | torch.Tensor | None): minimum value of the updated parameter.
+        max (float | None): maximum value of the updated parameter.
+        min (float | None): minimum value of the updated parameter.
 
     Returns:
         torch.Tensor: bounded update.
@@ -44,8 +44,8 @@ class FullBounding(Protocol):
         param: torch.Tensor,
         pos: torch.Tensor,
         neg: torch.Tensor,
-        max: float | torch.Tensor | None,
-        min: float | torch.Tensor | None,
+        max: float | None,
+        min: float | None,
         **kwargs,
     ) -> torch.Tensor:
         r"""Callback protocol function."""
@@ -119,5 +119,37 @@ class Extrapolation(Protocol):
         step_time: float,
         **kwargs,
     ) -> tuple[torch.Tensor, torch.Tensor]:
+        r"""Callback protocol function."""
+        ...
+
+
+class DimensionReduction(Protocol):
+    r"""Callable used to reduce the dimensions of a tensor.
+
+    For simpler cases, these will wrap PyTorch methods such as :py:func:`torch.mean` for
+    convenience. When the ``kwargs`` are defined with a partial function, these should
+    be compatible with parameters in Inferno such as ``batch_reduction`` and should be
+    compatible with ``einops.reduce``. To this end, any implementation should maintain
+    the default behavior for ``keepdim``.
+
+    Args:
+        data (torch.Tensor): tensor to which operations should be applied.
+        dim (tuple[int, ...] | int | None, optional): dimension(s) along which the
+            reduction should be applied, all dimensions when ``None``.
+            Defaults to ``None``.
+        keepdim (bool, optional): if the dimensions should be retained in the output.
+            Defaults to ``False``.
+
+    Returns:
+        torch.Tensor: dimensionally reduced tensor.
+    """
+
+    def __call__(
+        self,
+        data: torch.Tensor,
+        dim: tuple[int, ...] | int | None = None,
+        keepdim: bool = False,
+        **kwargs,
+    ) -> torch.Tensor:
         r"""Callback protocol function."""
         ...

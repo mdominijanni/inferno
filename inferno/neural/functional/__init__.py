@@ -1,9 +1,9 @@
 from .encoding import (
-    enc_homogeneous_poisson_exp_interval,
-    enc_homogeneous_poisson_exp_interval_online,
-    enc_inhomogenous_poisson_bernoulli_approx,
-    enc_poisson_interval,
-    enc_poisson_interval_online,
+    homogeneous_poisson_exp_interval,
+    homogeneous_poisson_exp_interval_online,
+    inhomogenous_poisson_bernoulli_approx,
+    poisson_interval,
+    poisson_interval_online,
 )
 
 from .neuron_dynamics import (
@@ -23,11 +23,11 @@ from .neuron_adaptation import (
 )
 
 __all__ = [
-    "enc_homogeneous_poisson_exp_interval",
-    "enc_homogeneous_poisson_exp_interval_online",
-    "enc_inhomogenous_poisson_bernoulli_approx",
-    "enc_poisson_interval",
-    "enc_poisson_interval_online",
+    "homogeneous_poisson_exp_interval",
+    "homogeneous_poisson_exp_interval_online",
+    "inhomogenous_poisson_bernoulli_approx",
+    "poisson_interval",
+    "poisson_interval_online",
     "voltage_thresholding_constant",
     "voltage_thresholding_linear",
     "voltage_integration_linear",
