@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .. import IndependentTrainer
+from .. import CellwiseTrainer
 from ... import Module, trace_cumulative_value
 from ..._internal import argtest
 from ...functional import interp_expdecay
@@ -116,7 +116,7 @@ class EligibilityTraceReducer(FoldReducer):
         )
 
 
-class MSTDPET(IndependentTrainer):
+class MSTDPET(CellwiseTrainer):
     r"""Modulated spike-timing dependent plasticity with eligibility trace updater.
 
     .. math::
@@ -224,7 +224,7 @@ class MSTDPET(IndependentTrainer):
         **kwargs,
     ):
         # call superclass constructor
-        IndependentTrainer.__init__(self, **kwargs)
+        CellwiseTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
         self.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -298,7 +298,7 @@ class MSTDPET(IndependentTrainer):
                 :py:func:`torch.sum` when None. Defaults to None.
 
         Returns:
-            IndependentTrainer.Unit: specified cell, auxiliary state, and monitors.
+            CellwiseTrainer.Unit: specified cell, auxiliary state, and monitors.
 
         Important:
             Any specified keyword arguments will override the default hyperparameters

@@ -644,7 +644,6 @@ class Biclique(Layer):
     The optional third is a function which is a callable that takes and returns a
     :py:class:`~torch.Tensor`. If present, this will be applied to the output tensor
     of the corresponding ``Connection`` or input tensor of the corresponding ``Neuron``.
-    This may be used, for example, to reshape or pad a tensor.
 
     Either a function to combine the tensors from the modules in ``connections`` to be passed
     into ``inputs`` or a string literal may be provided. These may be "sum", "mean",
