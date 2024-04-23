@@ -1,6 +1,6 @@
 from .base import (
     CellTrainer,
-    IndependentTrainer,
+    CellwiseTrainer,
 )
 
 from .updaters.ustdp import (
@@ -17,7 +17,7 @@ from .classifiers.simple import (
 
 __all__ = [
     "CellTrainer",
-    "IndependentTrainer",
+    "CellwiseTrainer",
     "STDP",
     "MSTDP",
     "MSTDPET",

@@ -307,7 +307,7 @@ class CellTrainer(Module):
         )
 
 
-class IndependentTrainer(CellTrainer, ABC):
+class CellwiseTrainer(CellTrainer, ABC):
     r"""Trainer for update methods without inter-cell dependencies.
 
     Important:
@@ -361,7 +361,7 @@ class IndependentTrainer(CellTrainer, ABC):
                 dict(self.monitor_pool_.named_monitors_of(name)),
             )
 
-    def get_unit(self, name: str) -> IndependentTrainer.Unit:
+    def get_unit(self, name: str) -> CellwiseTrainer.Unit:
         r"""Gets a trainable unit.
 
         This can be used if a single trainer should handle training on different
@@ -377,7 +377,7 @@ class IndependentTrainer(CellTrainer, ABC):
             name (str): name of the cell to get alongside its auxiliary state.
 
         Returns:
-            IndependentTrainer.Unit: specified cell, auxiliary state, and monitors.
+            CellwiseTrainer.Unit: specified cell, auxiliary state, and monitors.
         """
         return self.Unit(
             getitem(self.cells_, name),
@@ -386,7 +386,7 @@ class IndependentTrainer(CellTrainer, ABC):
         )
 
     @abstractmethod
-    def register_cell(self, name: str, cell: Cell, **kwargs) -> IndependentTrainer.Unit:
+    def register_cell(self, name: str, cell: Cell, **kwargs) -> CellwiseTrainer.Unit:
         r"""Adds a cell with any required state.
 
         Args:
@@ -394,13 +394,13 @@ class IndependentTrainer(CellTrainer, ABC):
             cell (Cell): cell to add.
 
         Returns:
-            IndependentTrainer.Unit: specified cell, auxiliary state, and monitors,
+            CellwiseTrainer.Unit: specified cell, auxiliary state, and monitors,
             as returned by :py:meth:`unit`.
 
         Raises:
             NotImplementedError: ``register_cell`` must be implemented by the subclass.
         """
         raise NotImplementedError(
-            f"{type(self).__name__}(IndependentTrainer) must implement "
+            f"{type(self).__name__}(CellwiseTrainer) must implement "
             "the method 'register_cell'"
         )
