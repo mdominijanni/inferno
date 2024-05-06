@@ -163,7 +163,7 @@ def rescale(
         resmax = srcmax
 
     # rescale and return
-    return srcmin + (((data - srcmin) * (resmax - resmin)) / (srcmax - srcmin))
+    return resmin + (((data - srcmin) * (resmax - resmin)) / (srcmax - srcmin))
 
 
 def exponential_smoothing(
