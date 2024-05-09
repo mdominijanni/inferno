@@ -18,11 +18,13 @@ pip install inferno
 ### With PyTorch 2.2.2 and CUDA 12 (Linux and Windows Only)
 #### Pip
 ```
+pip install inferno
 pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cu121
 ```
 
 ### With PyTorch 2.2.2 and CUDA 11 (Linux and Windows Only)
 #### Pip
 ```
+pip install inferno
 pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cu118
 ```
