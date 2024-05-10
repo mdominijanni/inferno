@@ -202,7 +202,7 @@ def homogeneous_poisson_exp_interval(
             * :math:`S` is the number of steps for which to generate spikes, ``steps``.
 
     Caution:
-        If the refractory period is less than or equal to the expected intervals between
+        If the refractory period is greater than or equal to the expected intervals between
         spikes, output will be nonsensical. The expected intervals are equal to
         :math:`1000 \frac{1}{f} \text{ ms}`.
 
@@ -231,7 +231,7 @@ def homogeneous_poisson_exp_interval(
             res = res - refrac
 
         # maximum possible spikes would be one per (non-refrac) time step
-        nbins = int(steps // min(refrac, 1))
+        nbins = int(steps // max(refrac, 1))
 
         # sample from exponential distribution
         res = (
@@ -304,7 +304,7 @@ def homogeneous_poisson_exp_interval_online(
             * :math:`N_0, \ldots` are the dimensions of the spikes being generated.
 
     Caution:
-        If the refractory period is less than or equal to the expected intervals between
+        If the refractory period is greater than or equal to the expected intervals between
         spikes, output will be nonsensical. The expected intervals are equal to
         :math:`1000 \frac{1}{f} \text{ ms}`.
 
