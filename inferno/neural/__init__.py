@@ -38,6 +38,7 @@ from .connections.conv import (
 
 from .encoders.poisson import (
     HomogeneousPoissonEncoder,
+    HomogeneousPoissonApproxEncoder,
 )
 
 from .encoders.special import (
@@ -84,6 +85,7 @@ __all__ = [
     "LinearLateral",
     "Conv2D",
     "HomogeneousPoissonEncoder",
+    "HomogeneousPoissonApproxEncoder",
     "PoissonIntervalEncoder",
     "Accumulator",
     "Updater",

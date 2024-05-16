@@ -1,9 +1,0 @@
-[build-system]
-requires = ["hatchling>=1.23.0"]
-build-backend = "hatchling.build"
-
-[project]
-name = "inferno"
-version = "0.0.1"
-description = "An Extensible SNN Library for Python"
-readme = "README.py"

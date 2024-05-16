@@ -1,3 +1,4 @@
+import einops as ein
 import torch
 from typing import Iterator
 
@@ -202,7 +203,7 @@ def homogeneous_poisson_exp_interval(
             * :math:`S` is the number of steps for which to generate spikes, ``steps``.
 
     Caution:
-        If the refractory period is less than or equal to the expected intervals between
+        If the refractory period is greater than or equal to the expected intervals between
         spikes, output will be nonsensical. The expected intervals are equal to
         :math:`1000 \frac{1}{f} \text{ ms}`.
 
@@ -231,7 +232,7 @@ def homogeneous_poisson_exp_interval(
             res = res - refrac
 
         # maximum possible spikes would be one per (non-refrac) time step
-        nbins = int(steps // min(refrac, 1))
+        nbins = int(steps // max(refrac, 1))
 
         # sample from exponential distribution
         res = (
@@ -304,7 +305,7 @@ def homogeneous_poisson_exp_interval_online(
             * :math:`N_0, \ldots` are the dimensions of the spikes being generated.
 
     Caution:
-        If the refractory period is less than or equal to the expected intervals between
+        If the refractory period is greater than or equal to the expected intervals between
         spikes, output will be nonsensical. The expected intervals are equal to
         :math:`1000 \frac{1}{f} \text{ ms}`.
 
@@ -359,6 +360,119 @@ def homogeneous_poisson_exp_interval_online(
             yield spikes
 
 
+def homogenous_poisson_bernoulli_approx(
+    inputs: torch.Tensor,
+    steps: int,
+    step_time: float,
+    *,
+    generator: torch.Generator | None = None,
+) -> torch.Tensor:
+    r"""Generates a tensor of spikes approximating a homogeneous Poisson distribution.
+
+    This method takes in a tensor of expected frequencies, converts them to an expected
+    probability, performs a non-reallocating expansion along the time dimension, and
+    samples randomly from a Bernoulli distribution.
+
+    Args:
+        inputs (torch.Tensor): expected spike frequencies, :math:`f`,
+            in :math:`\text{Hz}`.
+        steps (int): number of steps for which to generate spikes, :math:`S`.
+        step_time (float): length of time between outputs, :math:`\Delta t`,
+            in :math:`\text{ms}`.
+        generator (torch.Generator | None, optional): pseudorandom number generator
+            for sampling. Defaults to None.
+
+    Returns:
+        torch.Tensor: the generated spike train, time first.
+
+    .. admonition:: Shape
+        :class: tensorshape
+
+        ``inputs``:
+
+        :math:`B \times N_0 \times \cdots`
+
+        ``return``:
+
+        :math:`S \times B \times N_0 \times \cdots`
+
+        Where:
+            * :math:`S` is the number of steps for which to generate spikes.
+            * :math:`B` is the batch size.
+            * :math:`N_0, \ldots` are the dimensions of the spikes being generated.
+
+    Important:
+        All elements of ``inputs`` must be nonnegative. Inputs will also be clamped if
+        they exceed the maximum (i.e. if the expected value for the number of spikes
+        in a time step is greater than 1).
+    """
+    # disable gradient computation
+    with torch.no_grad():
+        # convert frequencies (in Hz) to expected spike probabilities (EV spikes per dt)
+        res = (inputs / 1000.0) * step_time
+
+        # sample directly from Bernoulli distribution, clamping max probability
+        return torch.bernoulli(
+            ein.repeat(res.clamp_max_(1.0), "... -> t ...", t=int(steps)),
+            generator=generator,
+        ).bool()
+
+
+def homogenous_poisson_bernoulli_approx_online(
+    inputs: torch.Tensor,
+    steps: int,
+    step_time: float,
+    *,
+    generator: torch.Generator | None = None,
+) -> Iterator[torch.Tensor]:
+    r"""Yields a generator for tensor slices approximating a homogeneous Poisson distribution.
+
+    This method takes in a tensor of expected frequencies, converts them to an expected
+    probability, and samples randomly from a Bernoulli distribution.
+
+    Args:
+        inputs (torch.Tensor): expected spike frequencies, :math:`f`,
+            in :math:`\text{Hz}`.
+        steps (int): number of steps for which to generate spikes, :math:`S`.
+        step_time (float): length of time between outputs, :math:`\Delta t`,
+            in :math:`\text{ms}`.
+        generator (torch.Generator | None, optional): pseudorandom number generator
+            for sampling. Defaults to None.
+
+    Returns:
+        torch.Tensor: the generated spike train, time first.
+
+    .. admonition:: Shape
+        :class: tensorshape
+
+        ``inputs``:
+
+        :math:`B \times N_0 \times \cdots`
+
+        ``yield``:
+
+        :math:`B \times N_0 \times \cdots`
+
+        Where:
+            * :math:`B` is the batch size.
+            * :math:`N_0, \ldots` are the dimensions of the spikes being generated.
+
+    Important:
+        All elements of ``inputs`` must be nonnegative. Inputs will also be clamped if
+        they exceed the maximum (i.e. if the expected value for the number of spikes
+        in a time step is greater than 1).
+    """
+    # disable gradient computation
+    with torch.no_grad():
+        # convert frequencies (in Hz) to expected spike probabilities (EV spikes per dt)
+        res = ((inputs / 1000.0) * step_time).clamp_max_(1.0)
+
+        # main loop
+        for _ in range(steps):
+            # sample directly from Bernouolli distribution
+            yield torch.bernoulli(res, generator=generator).bool()
+
+
 def inhomogenous_poisson_bernoulli_approx(
     inputs: torch.Tensor,
     step_time: float,
@@ -374,7 +488,8 @@ def inhomogenous_poisson_bernoulli_approx(
             in :math:`\text{Hz}`.
         step_time (float): length of time between outputs, :math:`\Delta t`,
             in :math:`\text{ms}`.
-        generator (torch.Generator | None, optional): _description_. Defaults to None.
+        generator (torch.Generator | None, optional): pseudorandom number generator
+            for sampling. Defaults to None.
 
     Returns:
         torch.Tensor: the generated spike train, time first.
@@ -405,5 +520,5 @@ def inhomogenous_poisson_bernoulli_approx(
         # convert frequencies (in Hz) to expected spike probabilities (EV spikes per dt)
         res = (inputs / 1000.0) * step_time
 
-        # sample directly from Bernoulli distribution. clamping max probability
+        # sample directly from Bernoulli distribution, clamping max probability
         return torch.bernoulli(res.clamp_max_(1.0), generator=generator).bool()
