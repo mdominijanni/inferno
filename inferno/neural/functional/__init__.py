@@ -1,6 +1,8 @@
 from .encoding import (
     homogeneous_poisson_exp_interval,
     homogeneous_poisson_exp_interval_online,
+    homogenous_poisson_bernoulli_approx,
+    homogenous_poisson_bernoulli_approx_online,
     inhomogenous_poisson_bernoulli_approx,
     poisson_interval,
     poisson_interval_online,
@@ -25,6 +27,8 @@ from .neuron_adaptation import (
 __all__ = [
     "homogeneous_poisson_exp_interval",
     "homogeneous_poisson_exp_interval_online",
+    "homogenous_poisson_bernoulli_approx",
+    "homogenous_poisson_bernoulli_approx_online",
     "inhomogenous_poisson_bernoulli_approx",
     "poisson_interval",
     "poisson_interval_online",
