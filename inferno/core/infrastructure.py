@@ -1179,6 +1179,11 @@ class RecordTensor(ShapedTensor):
 
         Returns:
             bool: if the duration represents the maximum accessible range.
+
+        Note:
+            :py:attr:`duration` will remain the same but its interpretation may change.
+            If :py:attr:`inclusive` is set to a different value, :py:attr:`recordsz` will
+            change and the storage will be rebuilt.
         """
         return self.__inclusive
 
@@ -1197,17 +1202,11 @@ class RecordTensor(ShapedTensor):
     def recordsz(self) -> int:
         r"""Number of observations stored.
 
-        ``inclusive == True``:
-
         .. math::
-            N = \max\left(\left\lceil \frac{T}{\Delta t} \right\rceil + 1, 1\right)
+            N = \max\left(\left\lceil \frac{T}{\Delta t} \right\rceil + [\text{incl}], 1\right)
 
-        ``inclusive == False``:
-
-        .. math::
-            N = \max\left(\left\lceil \frac{T}{\Delta t} \right\rceil, 1\right)
-
-        For :py:attr:`duration` :math:`T` and :py:attr:`dt` :math:`\Delta t`.
+        For :py:attr:`duration` :math:`T`, :py:attr:`dt` :math:`\Delta t`, and
+        :py:attr:`inclusive` :math:`\text{incl}`.
 
         Returns:
             int: length of the record as the number of observations.
