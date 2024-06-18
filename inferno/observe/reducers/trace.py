@@ -38,6 +38,7 @@ class NearestTraceReducer(FoldReducer):
             still count as a match, :math:`\epsilon`. Defaults to None.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
+        inclusive (bool): if the duration should be inclusive. Defaults to False.
 
     Important:
         Because the input tensor to :py:meth:`fold` is treated as an event condition,
@@ -53,9 +54,10 @@ class NearestTraceReducer(FoldReducer):
         tolerance: int | float | None = None,
         *,
         duration: float = 0.0,
+        inclusive: bool = False,
     ):
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, 0)
+        FoldReducer.__init__(self, step_time, duration, inclusive, 0)
 
         # reducer attributes
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -147,6 +149,7 @@ class CumulativeTraceReducer(FoldReducer):
             still count as a match, :math:`\epsilon`. Defaults to None.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
+        inclusive (bool): if the duration should be inclusive. Defaults to False.
 
     Important:
         Because the input tensor to :py:meth:`fold` is treated as an event condition,
@@ -162,9 +165,10 @@ class CumulativeTraceReducer(FoldReducer):
         tolerance: int | float | None = None,
         *,
         duration: float = 0.0,
+        inclusive: bool = False
     ):
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, 0)
+        FoldReducer.__init__(self, step_time, duration, inclusive, 0)
 
         # reducer attributes
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -260,6 +264,7 @@ class ScaledNearestTraceReducer(FoldReducer):
             a match for the purpose of tracing, :math:`J`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
+        inclusive (bool): if the duration should be inclusive. Defaults to False.
 
     Note:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
@@ -275,9 +280,10 @@ class ScaledNearestTraceReducer(FoldReducer):
         criterion: OneToOne[torch.Tensor],
         *,
         duration: float = 0.0,
+        inclusive: bool = False
     ):
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, 0)
+        FoldReducer.__init__(self, step_time, duration, inclusive, 0)
 
         # reducer attributes
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -367,6 +373,7 @@ class ScaledCumulativeTraceReducer(FoldReducer):
             a match for the purpose of tracing, :math:`J`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
+        inclusive (bool): if the duration should be inclusive. Defaults to False.
 
     Note:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
@@ -382,9 +389,10 @@ class ScaledCumulativeTraceReducer(FoldReducer):
         criterion: OneToOne[torch.Tensor],
         *,
         duration: float = 0.0,
+        inclusive: bool = False
     ):
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, 0)
+        FoldReducer.__init__(self, step_time, duration, inclusive, 0)
 
         # register state
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -476,6 +484,7 @@ class ConditionalNearestTraceReducer(FoldReducer):
             :math:`s`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
+        inclusive (bool): if the duration should be inclusive. Defaults to False.
 
     Note:
         This is equivalent to :py:class:`ScaledNearestTraceReducer` except rather than
@@ -491,9 +500,10 @@ class ConditionalNearestTraceReducer(FoldReducer):
         scale: int | float | complex,
         *,
         duration: float = 0.0,
+        inclusive: bool = False
     ):
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, 0)
+        FoldReducer.__init__(self, step_time, duration, inclusive, 0)
 
         # reducer attributes
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)
@@ -583,6 +593,7 @@ class ConditionalCumulativeTraceReducer(FoldReducer):
             :math:`s`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
+        inclusive (bool): if the duration should be inclusive. Defaults to False.
 
     Note:
         This is equivalent to :py:class:`ScaledCumulativeTraceReducer` except rather than
@@ -598,9 +609,10 @@ class ConditionalCumulativeTraceReducer(FoldReducer):
         scale: int | float | complex,
         *,
         duration: float = 0.0,
+        inclusive: bool = False
     ):
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, 0)
+        FoldReducer.__init__(self, step_time, duration, inclusive, 0)
 
         # register state
         self.time_constant = argtest.gt("time_constant", time_constant, 0, float)

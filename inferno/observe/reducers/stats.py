@@ -27,6 +27,7 @@ class EMAReducer(FoldReducer):
         alpha (float): exponential smoothing factor, :math:`\alpha`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
+        inclusive (bool): if the duration should be inclusive. Defaults to False.
 
     Note:
         ``alpha`` is decoupled from the step time, so if the step time changes, then the
@@ -38,9 +39,10 @@ class EMAReducer(FoldReducer):
         step_time: float,
         alpha: float,
         duration: float = 0.0,
+        inclusive: bool = False,
     ):
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, 0)
+        FoldReducer.__init__(self, step_time, duration, inclusive, 0)
 
         # set state
         self.alpha = argtest.minmax_incl("alpha", alpha, 0, 1, float)

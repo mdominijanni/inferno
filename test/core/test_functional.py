@@ -76,7 +76,10 @@ class TestISI:
 
         for idx in allindices(shape):
             upisi = libisi[:, *idx][torch.logical_not(torch.isnan(libisi[:, *idx]))]
-            icisi = torch.diff(torch.nonzero(spikes[:, *idx]).squeeze() * dt)
+            icd = torch.nonzero(spikes[:, *idx]).squeeze() * dt
+            if not icd.ndim:
+                icd = icd.unsqueeze(0)
+            icisi = torch.diff(icd)
             assert icisi.numel() == upisi.numel()
             assert torch.all((icisi - upisi).abs() < 5e-7)
 
