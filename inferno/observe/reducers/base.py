@@ -329,11 +329,11 @@ class FoldReducer(RecordReducer, ABC):
 
         Note:
             Results are temporally ordered from most recent to oldest, along the
-            last dimension.
+            first dimension.
         """
         if not self._initial:
             self.data_.align(0)
-            return self.data_.value.flip(-1)
+            return self.data_.value.flip(0)
 
     def peek(self, **kwargs) -> torch.Tensor | None:
         r"""Returns the reducer's current state.
