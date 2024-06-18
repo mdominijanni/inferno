@@ -4,6 +4,7 @@ from ..functional import Interpolation, Extrapolation, interp_nearest, extrap_ne
 from .._internal import argtest
 from abc import ABC, abstractmethod
 from collections import namedtuple, OrderedDict
+import einops as ein
 from itertools import chain, repeat, starmap
 import math
 import torch
@@ -843,6 +844,11 @@ class RecordTensor(ShapedTensor):
             for the tensor. Defaults to True.
         live (bool, optional): if constraint validity should be tested on
             assignment. Defaults to False.
+
+    Note:
+        While the last dimension of a selector tensor is used to index times, the
+        underlying storage uses the first dimension such that each time slice is stored
+        contiguously.
     """
 
     LinkedAttributes = namedtuple(
@@ -872,19 +878,19 @@ class RecordTensor(ShapedTensor):
 
         # alter constraints
         constraints = {
-            (d - 1 if d < 0 else d): s
+            (d + 1 if d >= 0 else d): s
             for d, s in (constraints if constraints else {}).items()
-        } | {-1: size}
+        } | {0: size}
 
         # reshape value if not ignored
         if not self._ignore(value):
             if isinstance(value, nn.Parameter):
-                value.data = value.data.unsqueeze(-1).repeat(
-                    *chain(repeat(1, times=value.ndim), (size,))
+                value.data = value.data.unsqueeze(0).repeat(
+                    *chain((size,), repeat(1, times=value.ndim))
                 )
             else:
-                value = value.unsqueeze(-1).repeat(
-                    *chain(repeat(1, times=value.ndim), (size,))
+                value = value.unsqueeze(0).repeat(
+                    *chain((size,), repeat(1, times=value.ndim))
                 )
 
         # call superclass constructor
@@ -1040,7 +1046,7 @@ class RecordTensor(ShapedTensor):
     @property
     def __recordsz(self) -> int:
         r"""Module internal record size getter."""
-        return self.__constraints.get(-1)
+        return self.__constraints.get(0)
 
     @property
     def attributes(self) -> RecordTensor.LinkedAttributes:
@@ -1067,9 +1073,7 @@ class RecordTensor(ShapedTensor):
             dict[int, int]: dictionary of constraints.
         """
         return {
-            (d + 1 if d < -1 else d): s
-            for d, s in self.__constraints.items()
-            if d != -1
+            (d - 1 if d >= 0 else d): s for d, s in self.__constraints.items() if d != 0
         }
 
     @property
@@ -1106,7 +1110,7 @@ class RecordTensor(ShapedTensor):
         if size != self.__recordsz:
             with torch.no_grad():
                 self.align(0)
-                _ = ShapedTensor.reconstrain(self, -1, size)
+                _ = ShapedTensor.reconstrain(self, 0, size)
 
     @property
     def duration(self) -> float:
@@ -1146,7 +1150,7 @@ class RecordTensor(ShapedTensor):
         if size != self.__recordsz:
             with torch.no_grad():
                 self.align(0)
-                _ = ShapedTensor.reconstrain(self, -1, size)
+                _ = ShapedTensor.reconstrain(self, 0, size)
 
     @property
     def recordsz(self) -> int:
@@ -1176,7 +1180,7 @@ class RecordTensor(ShapedTensor):
         if self._ignore(data):
             return None
         else:
-            return (*data.shape[:-1],)
+            return (*data.shape[1:],)
 
     @property
     def pointer(self) -> int:
@@ -1241,13 +1245,13 @@ class RecordTensor(ShapedTensor):
 
             ``value``, ``return``:
 
-            :math:`S_0 \times \cdots \times N`
+            :math:`N \times S_0 \times \cdots`
 
             Where:
-                * :math:`S_0, \ldots` are the dimensions of each observation, given
-                  by :py:attr:`shape`.
                 * :math:`N` is the number of observations the storage can hold,
                   equal to :py:attr:`recordsz`.
+                * :math:`S_0, \ldots` are the dimensions of each observation, given
+                  by :py:attr:`shape`.
 
         Caution:
             This should be used for setting properties of the underlying storage
@@ -1290,7 +1294,7 @@ class RecordTensor(ShapedTensor):
 
         # only constrained state can be aligned
         if not self._ignore(data):
-            self.__data = data.roll(index - self.__pointer, -1)
+            self.__data = data.roll(index - self.__pointer, 0)
             self.__pointer = index
         else:
             raise RuntimeError("cannot align uninitialized storage")
@@ -1344,7 +1348,7 @@ class RecordTensor(ShapedTensor):
         # pytorch uninitialized buffer or parameter
         if isinstance(data, nn.UninitializedBuffer | nn.UninitializedParameter):
             # materialize, which alters in-place
-            data.materialize((*shape, recordsz), device=device, dtype=dtype)
+            data.materialize((recordsz, *shape), device=device, dtype=dtype)
 
             # fill in-place
             with torch.no_grad():
@@ -1354,13 +1358,13 @@ class RecordTensor(ShapedTensor):
         elif isinstance(data, torch.Tensor):
             # reassign using value defaults, automatic parameter assignment test
             self.__data = full(
-                data, fill, shape=(*shape, recordsz), dtype=dtype, device=device
+                data, fill, shape=(recordsz, *shape), dtype=dtype, device=device
             )
 
         # none value, always a buffer, simple overwrite
         else:
             self.__data = torch.full(
-                (*shape, recordsz), fill, dtype=dtype, device=device
+                (recordsz, *shape), fill, dtype=dtype, device=device
             )
 
         # set pointer to zero and return created or materialized attribute
@@ -1570,7 +1574,7 @@ class RecordTensor(ShapedTensor):
         if self._ignore(data):
             raise RuntimeError("cannot read from uninitialized storage")
         else:
-            return data[..., _unwind_ptr(ptr, offset, recordsz)]
+            return data[_unwind_ptr(ptr, offset, recordsz), ...]
 
     def write(self, obs: torch.Tensor, offset: int = 0, inplace: bool = False) -> None:
         r"""Writes an observation at an index relative to the pointer.
@@ -1613,28 +1617,28 @@ class RecordTensor(ShapedTensor):
             raise RuntimeError("cannot write to uninitialized storage")
 
         # shape must be the same as an observation
-        elif (*obs.shape,) != (*data.shape[:-1],):
+        elif (*obs.shape,) != (*data.shape[1:],):
             raise ValueError(
                 f"shape of 'obs' {(*obs.shape,)} must have the shape "
-                f"{(*data.shape[:-1],)}, like a stored observation"
+                f"{(*data.shape[1:],)}, like a stored observation"
             )
 
         # in-place overwrite
         elif inplace:
             with torch.no_grad():
                 index = _unwind_ptr(ptr, offset, recordsz)
-                data[..., index] = obs
+                data[index, ...] = obs
 
         # splice in
         else:
             index = _unwind_ptr(ptr, offset, recordsz)
             self.__data = torch.cat(
                 (
-                    data[..., slice(None, index)],
-                    obs.unsqueeze(-1),
-                    data[..., slice(index + 1, None)],
+                    data[slice(None, index), ...],
+                    obs.unsqueeze(0),
+                    data[slice(index + 1, None), ...],
                 ),
-                -1,
+                0,
             )
 
     def readrange(
@@ -1706,25 +1710,30 @@ class RecordTensor(ShapedTensor):
             end = _unwind_ptr(ptr, offset - length, recordsz)
 
             if start > end:
-                return torch.cat((data[..., start:], data[..., :end]), -1)
+                return ein.rearrange(
+                    torch.cat((data[start:, ...], data[:end, ...]), 0), "t ... -> ... t"
+                )
             else:
-                return data[..., start:end]
+                return ein.rearrange(data[start:end, ...], "t ... -> ... t")
 
         # shape must be the same as an observation
-        elif (*offset.shape,) != (*data.shape[:-1],):
+        elif (*offset.shape,) != (*data.shape[1:],):
             raise ValueError(
                 f"shape of 'offset' {(*offset.shape,)} must have the shape "
-                f"{(*data.shape[:-1],)}, like a stored observation"
+                f"{(*data.shape[1:],)}, like a stored observation"
             )
 
         # tensor offset
         else:
-            offset = offset.unsqueeze(-1) - torch.arange(
-                0, length, dtype=torch.int64, device=offset.device
+            offset = ein.rearrange(
+                offset.unsqueeze(-1)
+                - torch.arange(0, length, dtype=torch.int64, device=offset.device),
+                "... t -> t ...",
             )
-            return torch.gather(
-                data, -1, _unwind_tensor_ptr(ptr, offset, recordsz)
-            ).squeeze(-1)
+            return ein.rearrange(
+                torch.gather(data, 0, _unwind_tensor_ptr(ptr, offset, recordsz)),
+                "t ... -> ... t",
+            )
 
     def writerange(
         self,
@@ -1805,22 +1814,25 @@ class RecordTensor(ShapedTensor):
             raise RuntimeError("cannot write to an uninitialized storage")
 
         # observations should be shaped like storage at all but final
-        if obs.shape[:-1] != data.shape[:-1]:
+        if obs.shape[:-1] != data.shape[1:]:
             raise ValueError(
                 f"'obs' has shape {(*obs.shape,)} but must have the same shape as "
-                f"the shape of storage {(*data.shape,)} at all but the final dimension"
+                f"multiple observations {(*data.shape[1:],)} stacked along the final dimension"
             )
 
         # cannot write beyond storage
-        if obs.shape[-1] > data.shape[-1]:
+        if obs.shape[-1] > data.shape[0]:
             raise ValueError(
-                f"cannot write the {(*obs.shape[-1],)} observations from 'obs' when "
-                f"storage only holds {(*data.shape[-1],)} observations"
+                f"cannot write the ({obs.shape[-1]}) observations from 'obs' when "
+                f"storage only holds ({data.shape[0]}) observations"
             )
 
         # scalar offset
         elif not isinstance(offset, torch.Tensor):
             ptr = _unwind_ptr(ptr, offset, recordsz)
+
+            # reshape observations for compatibility
+            obs = ein.rearrange(obs, "... t -> t ...")
 
             # in-place
             if inplace:
@@ -1829,50 +1841,55 @@ class RecordTensor(ShapedTensor):
                         0, length, dtype=torch.int64, device=data.device
                     )
                     indices = _unwind_tensor_ptr(ptr, offset, recordsz)
-                    data[..., indices] = obs
+                    data[indices, ...] = obs
 
             # noncontiguous range
             elif ptr + length > recordsz:
                 self.__data = torch.cat(
                     (
-                        obs[..., slice(recordsz - ptr, None)],
-                        data[..., slice(length - (recordsz - ptr), ptr)],
-                        obs[..., slice(None, recordsz - ptr)],
+                        obs[slice(recordsz - ptr, None), ...],
+                        data[slice(length - (recordsz - ptr), ptr), ...],
+                        obs[slice(None, recordsz - ptr), ...],
                     ),
-                    -1,
+                    0,
                 )
 
             # contiguous range
             else:
                 self.__data = torch.cat(
                     (
-                        data[..., slice(0, ptr)],
+                        data[slice(0, ptr), ...],
                         obs,
-                        data[..., slice(ptr + length, None)],
+                        data[slice(ptr + length, None), ...],
                     ),
-                    -1,
+                    0,
                 )
 
         # shape must be the same as an observation
-        elif (*offset.shape,) != (*data.shape[:-1],):
+        elif (*offset.shape,) != (*data.shape[1:],):
             raise ValueError(
                 f"shape of 'offset' {(*offset.shape,)} must have the shape "
-                f"{(*data.shape[:-1],)}, like a stored observation"
+                f"{(*data.shape[1:],)}, like a stored observation"
             )
 
         # tensor offset
         else:
-            offset = offset.unsqueeze(-1) - torch.arange(
-                0, length, dtype=torch.int64, device=offset.device
+            offset = ein.rearrange(
+                offset.unsqueeze(-1)
+                - torch.arange(0, length, dtype=torch.int64, device=offset.device),
+                "... t -> t ...",
             )
             indices = _unwind_tensor_ptr(ptr, offset, recordsz)
+
+            # reshape observations for compatibility
+            obs = ein.rearrange(obs, "... t -> t ...")
 
             # write to storage
             if inplace:
                 with torch.no_grad():
-                    data.scatter_(-1, indices, obs)
+                    data.scatter_(0, indices, obs)
             else:
-                self.__data = torch.scatter(data, -1, indices, obs)
+                self.__data = torch.scatter(data, 0, indices, obs)
 
     def select(
         self,
@@ -1968,8 +1985,9 @@ class RecordTensor(ShapedTensor):
             # compute continuous shft
             shift = time / dt
             shiftr = shift.round()
-            shift = torch.where(
-                torch.abs(dt * shiftr - time) <= tolerance, shiftr, shift
+            shift = ein.rearrange(
+                torch.where(torch.abs(dt * shiftr - time) <= tolerance, shiftr, shift),
+                "... t -> t ...",
             )
 
             # update offset with shift
@@ -1978,14 +1996,14 @@ class RecordTensor(ShapedTensor):
             # indices of the nearest observations
             prev_idx, next_idx = offset.ceil(), offset.floor()
             stacked_idx = _unwind_tensor_ptr(
-                ptr, torch.cat((prev_idx, next_idx), -1), recordsz
+                ptr, torch.cat((prev_idx, next_idx), 0), recordsz
             )
 
             # get stored observations at specified indices
             prev_data, next_data = torch.tensor_split(
-                torch.gather(data, -1, stacked_idx),
-                (offset.shape[-1],),
-                -1,
+                torch.gather(data, 0, stacked_idx),
+                (offset.shape[0],),
+                0,
             )
 
             # interpolate from neighboring observations
@@ -1998,7 +2016,9 @@ class RecordTensor(ShapedTensor):
             )
 
             # bypass interpolation for exact indices
-            res = torch.where(prev_idx == next_idx, prev_data, res)
+            res = ein.rearrange(
+                torch.where(prev_idx == next_idx, prev_data, res), "t ... -> ... t"
+            )
 
             # conditionally squeeze and return
             return res.squeeze(-1) if squeeze else res
@@ -2019,7 +2039,7 @@ class RecordTensor(ShapedTensor):
 
             # directly read when within tolerance
             if abs(dt * round(shift) - time) <= tolerance:
-                return data[..., _unwind_ptr(ptr, offset + round(shift), recordsz)]
+                return data[_unwind_ptr(ptr, offset + round(shift), recordsz), ...]
 
             # interpolate between observation
             else:
@@ -2027,9 +2047,9 @@ class RecordTensor(ShapedTensor):
                 offset = offset + shift
 
                 return interp(
-                    data[..., _unwind_ptr(ptr, math.ceil(offset), recordsz)],
-                    data[..., _unwind_ptr(ptr, math.floor(offset), recordsz)],
-                    fullc(data, dt * (shift % 1), shape=data.shape[:-1]),
+                    data[_unwind_ptr(ptr, math.ceil(offset), recordsz), ...],
+                    data[_unwind_ptr(ptr, math.floor(offset), recordsz), ...],
+                    fullc(data, dt * (shift % 1), shape=data.shape[1:]),
                     dt,
                     **(interp_kwargs if interp_kwargs else {}),
                 )
@@ -2109,19 +2129,19 @@ class RecordTensor(ShapedTensor):
             raise RuntimeError("cannot insert into uninitialized storage")
 
         # shape must be the same as an observation
-        elif (*obs.shape,) != (*data.shape[:-1],):
+        elif (*obs.shape,) != (*data.shape[1:],):
             raise ValueError(
                 f"shape of 'obs' {(*obs.shape,)} must have the shape "
-                f"{(*data.shape[:-1],)}, like a stored observation"
+                f"{(*data.shape[1:],)}, like a stored observation"
             )
 
         # tensor time
         elif isinstance(time, torch.Tensor):
             # shape must be the same as an observation
-            if (*time.shape,) != (*data.shape[:-1],):
+            if (*time.shape,) != (*data.shape[1:],):
                 raise ValueError(
                     f"shape of 'time' {(*time.shape,)} must have the shape "
-                    f"{(*data.shape[:-1],)}, like a stored observation"
+                    f"{(*data.shape[1:],)}, like a stored observation"
                 )
 
             # check that times are in range
@@ -2140,9 +2160,9 @@ class RecordTensor(ShapedTensor):
                 torch.abs(dt * shiftr - time) <= tolerance, shiftr, shift
             )
 
-            # unsqueeze final dimension
-            obs = obs.unsqueeze(-1)
-            shift = shift.unsqueeze(-1)
+            # unsqueeze first dimension
+            obs = obs.unsqueeze(0)
+            shift = shift.unsqueeze(0)
 
             # update offset with shift
             offset = offset + shift
@@ -2150,12 +2170,12 @@ class RecordTensor(ShapedTensor):
             # indices of the nearest observations
             prev_idx, next_idx = offset.ceil(), offset.floor()
             stacked_idx = _unwind_tensor_ptr(
-                ptr, torch.cat((prev_idx, next_idx), -1), recordsz
+                ptr, torch.cat((prev_idx, next_idx), 0), recordsz
             )
 
             # get stored observations at specified indices
             prev_data, next_data = torch.tensor_split(
-                torch.gather(data, -1, stacked_idx), 2, -1
+                torch.gather(data, 0, stacked_idx), 2, 0
             )
 
             # extrapolate data to write
@@ -2177,17 +2197,17 @@ class RecordTensor(ShapedTensor):
             if inplace:
                 with torch.no_grad():
                     data.scatter_(
-                        -1,
+                        0,
                         stacked_idx,
-                        torch.cat((prev_exobs, next_exobs), -1).to(dtype=data.dtype),
+                        torch.cat((prev_exobs, next_exobs), 0).to(dtype=data.dtype),
                     )
 
             else:
                 self.__data = torch.scatter(
                     data,
-                    -1,
+                    0,
                     stacked_idx,
-                    torch.cat((prev_exobs, next_exobs), -1).to(dtype=data.dtype),
+                    torch.cat((prev_exobs, next_exobs), 0).to(dtype=data.dtype),
                 )
 
         # scalar time
@@ -2220,9 +2240,9 @@ class RecordTensor(ShapedTensor):
                 # extrapolate data to write
                 prev_exobs, next_exobs = extrap(
                     obs,
-                    fullc(data, dt * (shift % 1), shape=data.shape[:-1]),
-                    data[..., prev_idx],
-                    data[..., next_idx],
+                    fullc(data, dt * (shift % 1), shape=data.shape[1:]),
+                    data[prev_idx, ...],
+                    data[next_idx, ...],
                     dt,
                     **(extrap_kwargs if extrap_kwargs else {}),
                 )
@@ -2230,8 +2250,8 @@ class RecordTensor(ShapedTensor):
                 # in-place write
                 if inplace:
                     with torch.no_grad():
-                        data[..., prev_idx] = prev_exobs
-                        data[..., next_idx] = next_exobs
+                        data[prev_idx, ...] = prev_exobs
+                        data[next_idx, ...] = next_exobs
 
                 # write as contiguous range
                 else:
@@ -2262,7 +2282,7 @@ class RecordTensor(ShapedTensor):
         if not self._ignore(self.__data):
             self.align()
 
-        return ShapedTensor.reconstrain(self, dim - (dim < 0), size)
+        return ShapedTensor.reconstrain(self, dim + (dim >= 0), size)
 
 
 def _virtualtensor_finalization(owner: weakref.ReferenceType, name: str) -> None:
