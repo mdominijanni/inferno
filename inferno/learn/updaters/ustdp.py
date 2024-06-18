@@ -261,7 +261,7 @@ class STDP(CellwiseTrainer):
             "spike_post",
             "neuron.spike",
             StateMonitor.partialconstructor(
-                reducer=PassthroughReducer(state.step_time, duration=0.0),
+                reducer=PassthroughReducer(state.step_time, duration=0.0, inclusive=True,),
                 **monitor_kwargs,
             ),
             False,
@@ -282,6 +282,7 @@ class STDP(CellwiseTrainer):
                     amplitude=1.0,
                     target=True,
                     duration=cell.connection.delayedby if delayed else 0.0,
+                    inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
@@ -303,6 +304,7 @@ class STDP(CellwiseTrainer):
                 reducer=PassthroughReducer(
                     state.step_time,
                     duration=cell.connection.delayedby if delayed else 0.0,
+                    inclusive=True,
                 ),
                 **monitor_kwargs,
             ),

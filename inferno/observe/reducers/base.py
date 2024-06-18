@@ -163,11 +163,12 @@ class FoldReducer(RecordReducer, ABC):
     Args:
         step_time (float): length of time between observations.
         duration (float): length of time for which observations should be stored.
+        inclusive (bool): if the duration should be inclusive. Defaults to False.
         fill (Any, optional): value with which to fill the stored record on clearing and
             initialization. Defaults to 0.
     """
 
-    def __init__(self, step_time: float, duration: float, fill: Any = 0):
+    def __init__(self, step_time: float, duration: float, inclusive: bool = False, fill: Any = 0):
         # call superclass constructor
         RecordReducer.__init__(self, step_time, duration)
 
@@ -183,6 +184,7 @@ class FoldReducer(RecordReducer, ABC):
             persist_temporal=False,
             strict=True,
             live=False,
+            inclusive=inclusive,
         )
         self.add_record("data_")
         self.register_extra("_initial", True)
