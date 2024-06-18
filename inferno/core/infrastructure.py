@@ -813,6 +813,8 @@ def _recordtensor_finalization(owner: weakref.ReferenceType, name: str) -> None:
             delattr(owner, f"_{name}_dt")
         if hasattr(owner, f"_{name}_duration"):
             delattr(owner, f"_{name}_duration")
+        if hasattr(owner, f"_{name}_inclusive"):
+            delattr(owner, f"_{name}_inclusive")
         if hasattr(owner, f"_{name}_pointer"):
             delattr(owner, f"_{name}_pointer")
 
@@ -844,6 +846,8 @@ class RecordTensor(ShapedTensor):
             for the tensor. Defaults to True.
         live (bool, optional): if constraint validity should be tested on
             assignment. Defaults to False.
+        inclusive (bool): if the duration should represent the maximum time which can
+            be sampled. Defaults to False.
 
     Note:
         While the last dimension of a selector tensor is used to index times, the
@@ -852,7 +856,8 @@ class RecordTensor(ShapedTensor):
     """
 
     LinkedAttributes = namedtuple(
-        "RecordTensorAttributes", ("data", "constraints", "dt", "duration", "pointer")
+        "RecordTensorAttributes",
+        ("data", "constraints", "dt", "duration", "inclusive", "pointer"),
     )
 
     def __init__(
@@ -868,13 +873,14 @@ class RecordTensor(ShapedTensor):
         persist_temporal: bool = False,
         strict: bool = True,
         live: bool = False,
+        inclusive: bool = False,
     ):
         # argument validation
         step_time = argtest.gt("step_time", step_time, 0, float)
         duration = argtest.gte("duration", duration, 0, float)
 
         # size of the history dimension
-        size = math.ceil(duration / step_time) + 1
+        size = max(math.ceil(duration / step_time) + bool(inclusive), 1)
 
         # alter constraints
         constraints = {
@@ -921,6 +927,7 @@ class RecordTensor(ShapedTensor):
             ShapedTensor.attributes.fget(self).constraints,
             f"_{self.name}_dt",
             f"_{self.name}_duration",
+            f"_{self.name}_inclusive",
             f"_{self.name}_pointer",
         )
 
@@ -928,9 +935,11 @@ class RecordTensor(ShapedTensor):
         if isinstance(owner, Module) and persist_temporal:
             owner.register_extra(self.__attributes.dt, step_time)
             owner.register_extra(self.__attributes.duration, duration)
+            owner.register_extra(self.__attributes.inclusive, inclusive)
         else:
             setattr(owner, self.__attributes.dt, step_time)
             setattr(owner, self.__attributes.duration, duration)
+            setattr(owner, self.__attributes.inclusive, inclusive)
 
         # register the pointer (persist if possible)
         if isinstance(owner, Module):
@@ -952,6 +961,7 @@ class RecordTensor(ShapedTensor):
         persist_temporal: bool = False,
         strict: bool = True,
         live: bool = False,
+        inclusive: bool = False,
     ) -> None:
         r"""Creates a record tensor and adds it as an attribute.
 
@@ -984,6 +994,8 @@ class RecordTensor(ShapedTensor):
                 for the tensor. Defaults to True.
             live (bool, optional): if constraint validity should be tested on
                 assignment. Defaults to False.
+            inclusive (bool): if the duration should represent the maximum time which can
+                be sampled. Defaults to False.
         """
         constrained = cls(
             owner,
@@ -997,6 +1009,7 @@ class RecordTensor(ShapedTensor):
             persist_temporal=persist_temporal,
             strict=strict,
             live=live,
+            inclusive=inclusive,
         )
         setattr(constrained.owner, constrained.name, constrained)
 
@@ -1032,6 +1045,11 @@ class RecordTensor(ShapedTensor):
     def __duration(self) -> torch.Tensor:
         r"""Module internal duration getter."""
         return getattr(self.__owner(), self.__attributes.duration)
+
+    @property
+    def __inclusive(self) -> torch.Tensor:
+        r"""Module internal inclusivity getter."""
+        return getattr(self.__owner(), self.__attributes.inclusive)
 
     @property
     def __pointer(self) -> int:
@@ -1104,7 +1122,7 @@ class RecordTensor(ShapedTensor):
         setattr(self.__owner(), self.__attributes.dt, value)
 
         # recompute size of the history dimension
-        size = math.ceil(self.__duration / self.__dt) + 1
+        size = max(math.ceil(self.__duration / self.__dt) + self.__inclusive, 1)
 
         # reconstrain if required
         if size != self.__recordsz:
@@ -1144,7 +1162,7 @@ class RecordTensor(ShapedTensor):
         setattr(self.__owner(), self.__attributes.duration, value)
 
         # recompute size of the history dimension
-        size = math.ceil(self.__duration / self.__dt) + 1
+        size = max(math.ceil(self.__duration / self.__dt) + self.__inclusive, 1)
 
         # reconstrain if required
         if size != self.__recordsz:
@@ -1153,11 +1171,41 @@ class RecordTensor(ShapedTensor):
                 _ = ShapedTensor.reconstrain(self, 0, size)
 
     @property
+    def inclusive(self) -> bool:
+        r"""If the duration represents the maximum accessible range.
+
+        Args:
+            value (bool): inclusivity of observations.
+
+        Returns:
+            bool: if the duration represents the maximum accessible range.
+        """
+        return self.__inclusive
+
+    @inclusive.setter
+    def inclusive(self, value: bool) -> None:
+        # copy current duration
+        duration = self.__duration
+
+        # assign updated inclusivity
+        setattr(self.__owner(), self.__attributes.inclusive, value)
+
+        # reassign duration via propety
+        self.duration = duration
+
+    @property
     def recordsz(self) -> int:
         r"""Number of observations stored.
 
+        ``inclusive == True``:
+
         .. math::
-            N = \left\lceil \frac{T}{\Delta t} \right\rceil + 1
+            N = \max\left(\left\lceil \frac{T}{\Delta t} \right\rceil + 1, 1\right)
+
+        ``inclusive == False``:
+
+        .. math::
+            N = \max\left(\left\lceil \frac{T}{\Delta t} \right\rceil, 1\right)
 
         For :py:attr:`duration` :math:`T` and :py:attr:`dt` :math:`\Delta t`.
 

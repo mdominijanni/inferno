@@ -116,7 +116,7 @@ class TestDeltaCurrent:
         synapse = DeltaCurrent(shape, **hyper)
         spikes = torch.rand(hyper["batch_size"], *shape) > 0.5
         selector = (torch.rand(hyper["batch_size"], *shape) > 0.5) * (
-            hyper["delay"] + 1
+            hyper["delay"] + hyper["step_time"]
         )
 
         _ = synapse(spikes)

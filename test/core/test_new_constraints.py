@@ -624,7 +624,7 @@ class TestRecordTensor:
                 infmodule,
                 name,
                 step_time=1.0,
-                duration=(recordsz - 1.0),
+                duration=recordsz,
                 value=None,
                 constraints=constraints,
                 persist_data=False,

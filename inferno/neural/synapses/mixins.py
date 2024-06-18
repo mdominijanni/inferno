@@ -108,6 +108,7 @@ class CurrentMixin:
             persist_temporal=False,
             strict=True,
             live=False,
+            inclusive=True,
         )
         self.add_delayed("current_")
         self.add_batched("current_")
@@ -204,6 +205,7 @@ class SpikeMixin:
             persist_temporal=False,
             strict=True,
             live=False,
+            inclusive=True,
         )
         self.add_delayed("spike_")
         self.add_batched("spike_")
