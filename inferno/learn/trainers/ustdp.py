@@ -15,7 +15,7 @@ from typing import Any, Callable, Literal
 
 
 class STDP(CellwiseTrainer):
-    r"""Spike-timing dependent plasticity updater.
+    r"""Spike-timing dependent plasticity trainer.
 
     .. math::
         w(t + \Delta t) - w(t) = \eta_\text{post} x_\text{pre}(t) \bigl[t = t^f_\text{post}\bigr] +
@@ -246,6 +246,7 @@ class STDP(CellwiseTrainer):
                     amplitude=1.0,
                     target=True,
                     duration=0.0,
+                    inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
@@ -261,7 +262,11 @@ class STDP(CellwiseTrainer):
             "spike_post",
             "neuron.spike",
             StateMonitor.partialconstructor(
-                reducer=PassthroughReducer(state.step_time, duration=0.0, inclusive=True,),
+                reducer=PassthroughReducer(
+                    state.step_time,
+                    duration=0.0,
+                    inclusive=True,
+                ),
                 **monitor_kwargs,
             ),
             False,
