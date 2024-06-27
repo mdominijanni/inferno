@@ -888,8 +888,12 @@ class MSTDP(CellwiseTrainer):
             )
 
             # unscaled partial updates
-            dpost = ein.einsum(i_post, x_pre, "b ... r, b ... r -> b ...")
-            dpre = ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ...")
+            dpost = ein.einsum(i_post, x_pre, "b ... r, b ... r -> b ...") * abs(
+                state.lr_post
+            )
+            dpre = ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ...") * abs(
+                state.lr_pre
+            )
 
             # process update
             if isinstance(reward, torch.Tensor):
@@ -931,10 +935,8 @@ class MSTDP(CellwiseTrainer):
 
             else:
                 # scale and reduce partial updates
-                dpost = state.batchreduce(dpost, 0) * abs(
-                    state.lr_post * reward * scale
-                )
-                dpre = state.batchreduce(dpre, 0) * abs(state.lr_pre * reward * scale)
+                dpost = state.batchreduce(dpost, 0) * abs(reward * scale)
+                dpre = state.batchreduce(dpre, 0) * abs(reward * scale)
 
                 # accumulate partials with mode condition
                 match (state.lr_post * reward >= 0, state.lr_pre * reward >= 0):

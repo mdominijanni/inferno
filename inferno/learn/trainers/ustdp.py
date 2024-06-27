@@ -346,11 +346,15 @@ class STDP(CellwiseTrainer):
 
             # partial updates
             dpost = state.batchreduce(
-                ein.einsum(i_post, x_pre, "b ... r, b ... r -> b ..."), 0
-            ) * abs(state.lr_post)
+                ein.einsum(i_post, x_pre, "b ... r, b ... r -> b ...")
+                * abs(state.lr_post),
+                0,
+            )
             dpre = state.batchreduce(
-                ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ..."), 0
-            ) * abs(state.lr_pre)
+                ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ...")
+                * abs(state.lr_pre),
+                0,
+            )
 
             # accumulate partials with mode condition
             match (state.lr_post >= 0, state.lr_pre >= 0):

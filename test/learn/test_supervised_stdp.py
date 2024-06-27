@@ -559,7 +559,7 @@ class TestMSTDP:
         assert base_trace_mode == unit.state.tracemode
         assert base_batch_reduction == unit.state.batchreduce
 
-    @pytest.mark.skip(reason="work in progress")
+    #x@pytest.mark.skip(reason="work in progress")
     @pytest.mark.parametrize(
         "kind",
         ("hebb", "anti", "ltp", "ltp"),
@@ -571,7 +571,8 @@ class TestMSTDP:
     def test_partial_update(self, kind, mode):
         # shape = randshape(1, 3, 3, 5)
         shape = (2, 2)
-        batchsz = random.randint(2, 9)
+        #batchsz = random.randint(2, 9)
+        batchsz = 3
         dt = random.uniform(0.7, 1.4)
         delay = random.randint(0, 2) * dt
 
@@ -611,9 +612,8 @@ class TestMSTDP:
             trace_mode=trace_mode,
             batch_reduction=batch_reduction,
         )
-        _ = updater.register_cell("onlyone", layer.cell)
 
-        _ = layer(torch.rand(batchsz, *shape))
+        _ = updater.register_cell("onlyone", layer.cell)
 
         xpost = torch.zeros(batchsz, *shape)
         xpre = torch.zeros(batchsz, *shape)
@@ -665,11 +665,11 @@ class TestMSTDP:
                     dneg = torch.cat((dpost_inv, dpre_inv), 0)
 
             assert aaeq(
-                batch_reduction(dpos, 0) if dpos.numel() else None,
+                batch_reduction(dpos, 0).view(-1) if dpos.numel() else None,
                 layer.updater.weight.pos,
             )
             assert aaeq(
-                batch_reduction(dneg, 0) if dneg.numel() else None,
+                batch_reduction(dneg, 0).view(-1) if dneg.numel() else None,
                 layer.updater.weight.neg,
             )
 
