@@ -13,7 +13,7 @@ dependencies:
   - torchaudio
   # math-sci
   - einops
-  - numpy
+  - numpy >=1.26, <2
   # sphinx
   - sphinx>=7.2.6
   - antlr4-python3-runtime

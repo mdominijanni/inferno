@@ -40,7 +40,6 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/", None),
     "torch": ("https://pytorch.org/docs/master/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "attrs": ("https://www.attrs.org/en/stable/", None),
 }
 
 myst_enable_extensions = ["amsmath", "dollarmath", "smartquotes", "colon_fence"]
