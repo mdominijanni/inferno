@@ -3,7 +3,7 @@
 Inspired by the PyTorch [example](https://pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html) of the same name, we go through a simple example of implementing a model and a training/testing loop.
 
 ## Prerequisites
-This tutorial requires Inferno, its dependency PyTorch, and TorchVision for working with the dataset.
+This tutorial requires Inferno (and its dependencies, including PyTorch) and TorchVision for working with the dataset. We'll start with the necessary import statements.
 
 ```{code} python
 import inferno
@@ -15,7 +15,7 @@ from torchvision.datasets import MNIST
 from torchvision.transforms.v2 import Compose, ToImage, ToDtype, Lambda
 ```
 
-We'll also set some values used throughout this example.
+Then we set some values used throughout this example.
 
 ```{code} python
 shape = (10, 10)
@@ -96,7 +96,13 @@ inh = neural.LIF(
 
 Then connections take these boolean spikes and produce real-valued currents which have been transformed by some trainable mapping. The process of transforming spikes into currents is performed by synapses. Because certain internal properties of synapses depend upon properties of the connection with which they're associated, Inferno has synapses constructed by the connection and composed within it.
 
-Here we're creating three connections: `enc2exc`, `inh2exc`, and `exc2inh`.
+Here we're creating three connections: `enc2exc`, `inh2exc`, and `exc2inh`—and are building a model similar to the one described in [this](https://www.frontiersin.org/journals/computational-neuroscience/articles/10.3389/fncom.2015.00099/full) paper. Each connection does the following.
+
+- `enc2exc`: trainable mapping from the encoded inputs to the excitatory neurons.
+- `inh2exc`: applies "lateral inhibition", where the firing of every excitatory neuron other than itself inhibits other excitatory neurons from firing.
+- `exc2inh`: triggers the lateral inhibition.
+
+In order to do this, we use the three different types of linear connections offered by Inferno. {py:class}`~inferno.neural.LinearDense` acts exactly like a normal {py:class}`~torch.nn.Linear` connection, providing a linear all-to-all mapping between inputs and outputs. {py:class}`~inferno.neural.LinearLateral` masks the parameters along the diagonal with zeros, making an all-to-"all but self" mapping. {py:class}`~inferno.neural.LinearDirect` provides a one-to-one mapping.
 
 ```{code} python
 enc2exc = neural.LinearDense(
@@ -121,6 +127,12 @@ exc2inh = neural.LinearDirect(
     weight_init=inferno.full(x, 22.5),
 )
 ```
+
+## Creating the Model
+With all of the separate components created, we can now put them together into a single model. Inferno models a set of connections and a set of neurons which take input from those connections with the
+{py:class}`~inferno.neural.Layer` class. As in the model here, neuron groups can be shared across layers (connections normally will not be and care will need to be taken to avoid complications beyond the scope of this example, but Inferno doesn't explicitally prohibit it). The mapping between connections is customizable, although Inferno provides some common layer architectures for convenience. {py:class}`~inferno.neural.Serial` maps a single connection to a single group of neurons.
+
+Implementing the `Model` class follows the normal PyTorch pattern. Here, we use the previously built components to create the layers. We then write the `forward()` function such that it takes in the tensor of spikes from the encoder, applies the inputs at each step, and returns the concatenated output. It will also update the connection if a trainer is passed in (more on this in the next section).
 
 ```{code} python
 class Model(inferno.Module):
@@ -153,8 +165,29 @@ class Model(inferno.Module):
             return res
 
         return torch.stack([step(x) for x in inputs], dim=0)
+
+model = Model(exc, inh, enc2exc, inh2exc, exc2inh)
+model.to(device=device)
+```
+
+## Configuring the Trainer
+Unlike in artificial neural networks where parameters are *optimized*, typically via a variant of gradient descent, parameters in spiking neural networks are trained using a variety of methods (including optimization).
+
+```{code} python
+# create the trainer
 ```
 
 ```{code} python
-encoder = neural.
+# adding the updater
 ```
+
+```{code} python
+# create the classifier
+```
+
+## Training/Testing Loop
+
+```{code} python
+encoder = neural.HomogeneousPoissonEncoder(250, step_time, 128.0)
+```
+
