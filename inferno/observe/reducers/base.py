@@ -75,13 +75,19 @@ class Reducer(Module, ABC):
 class RecordReducer(Reducer, ABC):
     r"""Abstract base class for the reducers utilizing multiple RecordTensors."""
 
-    def __init__(self, step_time: float, duration: float):
+    def __init__(
+        self,
+        step_time: float,
+        duration: float,
+        inclusive: bool = False,
+    ):
         # call superclass constructor
         Reducer.__init__(self)
 
         # validate parameters
         self.__step_time = argtest.gt("step_time", step_time, 0, float)
         self.__duration = argtest.gte("duration", duration, 0, float)
+        self.__inclusive = bool(inclusive)
 
         # collection of record names
         self.__records = set()
@@ -102,6 +108,7 @@ class RecordReducer(Reducer, ABC):
             else:
                 getattr(self, a).dt = self.__step_time
                 getattr(self, a).duration = self.__duration
+                getattr(self, a).inclusive = self.__inclusive
                 self.__records.add(a)
 
     @property
@@ -168,9 +175,11 @@ class FoldReducer(RecordReducer, ABC):
             initialization. Defaults to 0.
     """
 
-    def __init__(self, step_time: float, duration: float, inclusive: bool = False, fill: Any = 0):
+    def __init__(
+        self, step_time: float, duration: float, inclusive: bool = False, fill: Any = 0
+    ):
         # call superclass constructor
-        RecordReducer.__init__(self, step_time, duration)
+        RecordReducer.__init__(self, step_time, duration, inclusive)
 
         # register data buffer and helpers
         RecordTensor.create(

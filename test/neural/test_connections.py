@@ -2,6 +2,7 @@ import math
 import pytest
 import random
 import torch
+import torch.nn as nn
 
 from inferno.neural import DeltaCurrent
 from inferno.neural import LinearDense, LinearDirect, LinearLateral, Conv2D
@@ -246,9 +247,9 @@ class TestLinearDirect:
         outputs = conn(inputs)
 
         if biased:
-            res = (inputs.float().view(batchsz, -1) * conn.weight + conn.bias.view(1, -1)).view(
-                batchsz, *shape
-            )
+            res = (
+                inputs.float().view(batchsz, -1) * conn.weight + conn.bias.view(1, -1)
+            ).view(batchsz, *shape)
         else:
             res = (inputs.float().view(batchsz, -1) * conn.weight).view(batchsz, *shape)
 
@@ -414,7 +415,8 @@ class TestLinearLateral:
             ).view(batchsz, *shape)
             maskres = (
                 torch.matmul(
-                    inputs.float().view(batchsz, -1), (conn.weight * self.mask(shape)).t()
+                    inputs.float().view(batchsz, -1),
+                    (conn.weight * self.mask(shape)).t(),
                 )
                 + conn.bias.view(1, -1)
             ).view(batchsz, *shape)
@@ -543,3 +545,77 @@ class TestConv2D:
         img = torch.rand(batchsz, channels, length, length)
 
         assert aaeq(img, conn.like_input(conn.like_synaptic(img)), 1e-6)
+
+    @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
+    def test_forward_undelayed(self, biased):
+        height = random.randint(14, 53)
+        width = random.randint(14, 53)
+        channels = random.randint(3, 7)
+        filters = random.randint(8, 18)
+        kernel = random.randint(2, 5)
+        batchsz = random.randint(1, 9)
+
+        conn = self.makeconn(
+            height=height,
+            width=width,
+            channels=channels,
+            filters=filters,
+            step_time=1.0,
+            kernel=kernel,
+            batch_size=batchsz,
+            bias=biased,
+            delay=None,
+        )
+
+        refconn = nn.Conv2d(channels, filters, kernel, bias=biased)
+
+        conn.weight = refconn.weight
+        if biased:
+            conn.bias = refconn.bias
+
+        for _ in range(10):
+            data = torch.rand(batchsz, channels, height, width) < 0.3
+            assert aaeq(conn(data), refconn(data.float()), 1e-6)
+
+    @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
+    def test_forward_delayed(self, biased):
+        height = random.randint(14, 53)
+        width = random.randint(14, 53)
+        channels = random.randint(3, 7)
+        filters = random.randint(8, 18)
+        kernel = random.randint(2, 5)
+        batchsz = random.randint(1, 9)
+        delay = float(random.randint(3, 7))
+
+        conn = self.makeconn(
+            height=height,
+            width=width,
+            channels=channels,
+            filters=filters,
+            step_time=1.0,
+            kernel=kernel,
+            batch_size=batchsz,
+            bias=biased,
+            delay=float(delay),
+        )
+
+        refconn = nn.Conv2d(channels, filters, kernel, bias=biased)
+
+        conn.weight = refconn.weight
+        if biased:
+            conn.bias = refconn.bias
+
+        _ = conn.delay.fill_(delay)
+
+        data = [
+            torch.rand(batchsz, channels, height, width) < 0.3
+            for _ in range(2 * int(delay) + 1)
+        ]
+        res = []
+        for n, d in enumerate(data):
+            r = conn(d)
+            if n >= delay:
+                res.append(r)
+
+        for s, r in zip(data, res):
+            assert aaeq(r, refconn(s.float()), 1e-6)

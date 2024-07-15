@@ -21,6 +21,7 @@
     :toctree: generated
 
     STDP
+    MSTDP
     MSTDPET
 ```
 

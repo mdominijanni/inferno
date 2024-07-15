@@ -1,5 +1,6 @@
 from .mixins import WeightBiasDelayMixin
 from ..base import Connection, SynapseConstructor
+from ...core import ones
 from ..._internal import argtest
 from ...types import OneToOne
 import einops as ein
@@ -311,22 +312,48 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`W_\text{out}` is the output width.
                 * :math:`H` is the input height.
                 * :math:`W` is the input width.
+
+        Note:
+            PyTorch's :py:meth:`~torch.nn.functional.fold` and
+            :py:meth:`~torch.nn.functional.unfold` are only implemented for floating
+            point values. Intermediate casting to the same datatype as connection
+            weights will be performed if required.
         """
-        return F.fold(
-            data,
-            (self.height, self.width),
-            self.kernel,
-            dilation=self.dilation,
-            padding=self.padding,
-            stride=self.stride,
-        ) / F.fold(
-            torch.ones_like(data),
-            (self.height, self.width),
-            self.kernel,
-            dilation=self.dilation,
-            padding=self.padding,
-            stride=self.stride,
-        )
+        if torch.is_floating_point(data):
+            return F.fold(
+                data,
+                (self.height, self.width),
+                self.kernel,
+                dilation=self.dilation,
+                padding=self.padding,
+                stride=self.stride,
+            ) / F.fold(
+                torch.ones_like(data),
+                (self.height, self.width),
+                self.kernel,
+                dilation=self.dilation,
+                padding=self.padding,
+                stride=self.stride,
+            )
+        else:
+            return (
+                F.fold(
+                    data.to(dtype=self.weight.dtype),
+                    (self.height, self.width),
+                    self.kernel,
+                    dilation=self.dilation,
+                    padding=self.padding,
+                    stride=self.stride,
+                )
+                / F.fold(
+                    ones(data, dtype=self.weight.dtype),
+                    (self.height, self.width),
+                    self.kernel,
+                    dilation=self.dilation,
+                    padding=self.padding,
+                    stride=self.stride,
+                )
+            ).to(dtype=data.dtype)
 
     def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection input to synapse input.
@@ -358,14 +385,29 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`kW` is the kernel width.
                 * :math:`H_\text{out}` is the output height.
                 * :math:`W_\text{out}` is the output width.
+
+        Note:
+            PyTorch's :py:meth:`~torch.nn.functional.fold` and
+            :py:meth:`~torch.nn.functional.unfold` are only implemented for floating
+            point values. Intermediate casting to the same datatype as connection
+            weights will be performed if required.
         """
-        return F.unfold(
-            data,
-            self.kernel,
-            dilation=self.dilation,
-            padding=self.padding,
-            stride=self.stride,
-        )
+        if torch.is_floating_point(data):
+            return F.unfold(
+                data,
+                self.kernel,
+                dilation=self.dilation,
+                padding=self.padding,
+                stride=self.stride,
+            )
+        else:
+            return F.unfold(
+                data.to(dtype=self.weight.dtype),
+                self.kernel,
+                dilation=self.dilation,
+                padding=self.padding,
+                stride=self.stride,
+            ).to(dtype=data.dtype)
 
     def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like the synapse state for pre-post learning methods.
@@ -493,17 +535,16 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
             res = ein.rearrange(
                 ein.einsum(kernel, res, "f n, b f n l -> b f l"),
-                torch.matmul(kernel, res),
-                "b f 1 (oh ow) -> b f oh ow",
-                oh=self.outshape[0],
-                ow=self.outshape[1],
+                "b f (oh ow) -> b f oh ow",
+                oh=self.outheight,
+                ow=self.outwidth,
             )
         else:
             res = ein.rearrange(
                 torch.matmul(kernel, res),
                 "b f (oh ow) -> b f oh ow",
-                oh=self.outshape[0],
-                ow=self.outshape[1],
+                oh=self.outheight,
+                ow=self.outwidth,
             )
 
         if self.biased:

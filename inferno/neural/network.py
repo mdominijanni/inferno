@@ -35,6 +35,13 @@ class Cell(Module, Observable):
         Module.__init__(self)
         Observable.__init__(self, layer, "_realign_attribute", names, None)
 
+        # test for shape compatibility
+        if connection.outshape != neuron.shape:
+            raise RuntimeError(
+                f"connection output shape {connection.outshape} is incompatible "
+                f"with neuron shape {neuron.shape}"
+            )
+
         # component elements
         self.connection_ = connection
         self.neuron_ = neuron

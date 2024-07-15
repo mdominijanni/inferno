@@ -9,6 +9,7 @@
 :hidden:
 
 reference/index
+examples/index
 guide/index
 zoo/index
 ```

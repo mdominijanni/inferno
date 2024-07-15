@@ -3,12 +3,12 @@ from .base import (
     CellwiseTrainer,
 )
 
-from .updaters.ustdp import (
+from .trainers.ustdp import (
     STDP,
 )
 
-from .updaters.sstdp import (
-    MSTDPET,
+from .trainers.sstdp import (
+    MSTDPET, MSTDP,
 )
 
 from .classifiers.simple import (
