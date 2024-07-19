@@ -4,7 +4,7 @@ Typically STDP is parameterized such that it performs Hebbian learning (often su
 
 Most STDP methods are phrased in the context of Hebbian learning, although they do not need to be. For instance, STDP can reverse the direction of the weight updates for causal and anti-causal firings (this is called anti-Hebbian learning). For the below methods, they will be written as they are most commonly described, although Inferno typically supports generalization.
 
-## Spike Timing-Dependent Plasticity (STDP)
+## Spike-Timing Dependent Plasticity (STDP)
 ### Formulation
 $$
 \frac{dw}{dt} = A_+ x_\text{pre}(t) \sum_{\mathcal{F}_\text{post}} \delta(t - t^f_\text{post}) - A_- x_\text{post}(t) \sum_{\mathcal{F}_\text{pre}} \delta(t - t^f_\text{pre})
@@ -32,7 +32,7 @@ $$
 
 $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
 
-## Delayed Spike Timing-Dependent Plasticity (Delayed STDP)
+## Delayed Spike-Timing Dependent Plasticity (Delayed STDP)
 ### Formulation
 $$
 \Delta w_t =

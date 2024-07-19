@@ -8,7 +8,7 @@ This tutorial requires Inferno (and its dependencies, including PyTorch) and Tor
 ```{code} python
 import inferno
 import torch
-from inferno import neural, learning
+from inferno import neural, learn
 from torch import nn
 from torch.utils.data import Dataloader
 from torchvision.datasets import MNIST
@@ -132,7 +132,7 @@ exc2inh = neural.LinearDirect(
 With all of the separate components created, we can now put them together into a single model. Inferno models a set of connections and a set of neurons which take input from those connections with the
 {py:class}`~inferno.neural.Layer` class. As in the model here, neuron groups can be shared across layers (connections normally will not be and care will need to be taken to avoid complications beyond the scope of this example, but Inferno doesn't explicitally prohibit it). The mapping between connections is customizable, although Inferno provides some common layer architectures for convenience. {py:class}`~inferno.neural.Serial` maps a single connection to a single group of neurons.
 
-Implementing the `Model` class follows the normal PyTorch pattern. Here, we use the previously built components to create the layers. We then write the `forward()` function such that it takes in the tensor of spikes from the encoder, applies the inputs at each step, and returns the concatenated output. It will also update the connection if a trainer is passed in (more on this in the next section).
+Implementing the `Model` class follows the normal PyTorch pattern. Here, we use the previously built components to create the layers. We then write the `forward()` function such that it takes in the tensor of spikes from the encoder, applies the inputs at each step, and returns the concatenated output. It will also update the connection if a trainer is passed in (more on this in the next section) and the module is in `training` mode.
 
 ```{code} python
 class Model(inferno.Module):
@@ -158,7 +158,7 @@ class Model(inferno.Module):
             _ = self.inhibit(self.trigger(res))
 
             # train
-            if trainer:
+            if self.training and trainer:
                 trainer()
                 self.feedfwd.connection.update()
 
@@ -171,21 +171,49 @@ model.to(device=device)
 ```
 
 ## Configuring the Trainer
-Unlike in artificial neural networks where parameters are *optimized*, typically with a variant of gradient descent, parameters in spiking neural networks are trained using a variety of methods (including optimization). Inferno's development to-date has focused on the use of surrogate.
+Unlike in artificial neural networks where parameters are *optimized*, typically with a variant of gradient descent, parameters in spiking neural networks are trained using a variety of methods (including optimization). Inferno's development to date has focused on the use of plasticity rules such as [spike-timing dependent plasticity (STDP)](<zoo/learning-stdp:Spike-Timing Dependent Plasticity (STDP)>).
+
+In this example, we will use {py:class}`~inferno.learn.STDP` itself. When constructing `STDP`, it will take in a set of default hyperparameters which will apply to the training for each {py:class}`~inferno.neural.Cell` we register with it, although it can be overridden on a cell-by-cell base. Inferno uses the concept of a `Cell` for defining the structure of a trainable model. Each cell represents a tuple of a {py:class}`~inferno.neural.Connection` and a {py:class}`~inferno.neural.Neuron`, where the latter takes its output from the former.
+
+A limit imposed on cells is that the output shape, {py:attr}`~inferno.neural.Connection.outshape`, of any connection must be the same as the {py:attr}`~inferno.neural.Neuron.shape` of the neurons. These are constructed by {py:class}`~inferno.neural.Layer` classes, where {py:class}`~inferno.neural.Serial` does so automatically. Any custom layer implementation should create cells along the "trainable path".
 
 ```{code} python
-# create the trainer
+trainer = learn.STDP(
+        step_time=step_time,
+        lr_post=5e-4,
+        lr_pre=-5e-6,
+        tc_post=30.0,
+        tc_pre=30.0,
+        delayed=False,
+        interp_tolerance=0.0,
+        trace_mode="cumulative",
+        batch_reduction="mean",
+    )
+```
+
+If we look at the `STDP` class, we'll see that it inherits from {py:class}`~inferno.learn.IndependentCellTrainer`, which has some implementation to help with developing classes for training methods where the training of each cell is independent of every other cell. This inherits from {py:class}`~inferno.learn.CellTrainer`, which provides a more limited implementation and should be used for training methods where some dependency between cells does exist.
+
+Before we can add the trainable cell in our model to our trainer, we need to make it trainable. This means we need to give it an {py:class}`~inferno.neural.Updater`. The updater is responsible for accumulating and applying updates to the trainable parameters of a connection. The behavior of how updates are applied can then be controlled (more on this in the next section). Here, we'll add the default updater to our connection, then register the cell we want to train.
+
+```{code} python
+model.feedfwd.connection.updater = model.feedfwd.connection.defaultupdater()
+trainer.register_cell("feedfwd", model.feedfwd.cell)
+```
+
+## Adding Update Hooks
+```{code} python
+# add bounding hooks
 ```
 
 ```{code} python
-# adding the updater
+# add normalization hook
 ```
+
+## Training/Testing Loop
 
 ```{code} python
 # create the classifier
 ```
-
-## Training/Testing Loop
 
 ```{code} python
 encoder = neural.HomogeneousPoissonEncoder(250, step_time, 128.0)

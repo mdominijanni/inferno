@@ -1,7 +1,7 @@
-from sage.all import *
+from PIL import Image
+from sage.all import plot_slope_field, line, text, exp
 
 # Global Setting
-saveplots = True
 dispres = 300
 saveres = 300
 
@@ -12,6 +12,9 @@ vmin = vrest - 5
 vmax = vcrit + 5
 labelv = 0.625
 labelh = 0.03
+
+# light mode
+fn = "qif_slope_field_light.png"
 
 qif_slopefield = plot_slope_field(
     lambda t, v: (v - vrest) * (v - vcrit), (0, 1), (vmin, vmax), color="black"
@@ -38,12 +41,47 @@ vcrit_label = text(
 )
 
 P = qif_slopefield + vrest_line + vrest_label + vcrit_line + vcrit_label
+P.save(fn, dpi=saveres)
 
-if saveplots:
-    P.save("qif_slope_field.png", dpi=saveres)
-else:
-    P.show(dpi=dispres)
+# dark mode
+fn = "qif_slope_field_dark.png"
 
+qif_slopefield = plot_slope_field(
+    lambda t, v: (v - vrest) * (v - vcrit),
+    (0, 1),
+    (vmin, vmax),
+    color="white",
+    transparent=True,
+)
+
+vrest_line = line([(0, vrest), (1, vrest)], color="blue")
+vrest_label = text(
+    r"$V_R$",
+    (1 - labelh, vrest - labelv),
+    color="blue",
+    vertical_alignment="top",
+    fontsize=18,
+    background_color="black",
+)
+
+vcrit_line = line([(0, vcrit), (1, vcrit)], color="red")
+vcrit_label = text(
+    r"$V_C$",
+    (1 - labelh, vcrit + labelv),
+    color="red",
+    vertical_alignment="bottom",
+    fontsize=18,
+    background_color="black",
+)
+
+P = qif_slopefield + vrest_line + vrest_label + vcrit_line + vcrit_label
+P.axes_color("white")
+P.axes_label_color("white")
+P.tick_label_color("white")
+
+P.save(fn, dpi=saveres)
+P = Image.open(fn)
+Image.alpha_composite(Image.new("RGB", P.size, "black").convert("RGBA"), P).save(fn)
 
 # LIF Slope Field
 vrest = -60
@@ -53,6 +91,9 @@ hmin = 0
 hmax = 2
 labelh = 0.03 * (hmax - hmin)
 labelv = 0.0
+
+# light mode
+fn = "lif_slope_field_light.png"
 
 lif_slopefield = plot_slope_field(
     lambda t, v: -(v - vrest), (hmin, hmax), (vmin, vmax), color="black"
@@ -69,12 +110,37 @@ vrest_label = text(
 )
 
 P = lif_slopefield + vrest_line + vrest_label
+P.save(fn, dpi=saveres)
 
-if saveplots:
-    P.save("lif_slope_field.png", dpi=saveres)
-else:
-    P.show(dpi=dispres)
+# dark mode
+fn = "lif_slope_field_dark.png"
 
+lif_slopefield = plot_slope_field(
+    lambda t, v: -(v - vrest),
+    (hmin, hmax),
+    (vmin, vmax),
+    color="white",
+    transparent=True,
+)
+
+vrest_line = line([(hmin, vrest), (hmax, vrest)], color="blue")
+vrest_label = text(
+    r"$V_R$",
+    (hmax - labelh, vrest - labelv),
+    color="blue",
+    vertical_alignment="center",
+    fontsize=18,
+    background_color="black",
+)
+
+P = lif_slopefield + vrest_line + vrest_label
+P.axes_color("white")
+P.axes_label_color("white")
+P.tick_label_color("white")
+
+P.save(fn, dpi=saveres)
+P = Image.open(fn)
+Image.alpha_composite(Image.new("RGB", P.size, "black").convert("RGBA"), P).save(fn)
 
 # EIF Slope Field
 vrest = -60
@@ -88,12 +154,22 @@ hmax = 1
 labelh = 0.03 * (hmax - hmin)
 labelv = 0.625 * ((vmax - vmin) / 20)
 
+# light mode
+fn1 = "eif_slope_field_d1_light.png"
+fn2 = "eif_slope_field_d2_light.png"
+
 eif_slopefield_d1 = plot_slope_field(
-    lambda t, v: -(v - vrest) + D1 * exp((v - vt) / D1), (hmin, hmax), (vmin, vmax), color="black"
+    lambda t, v: -(v - vrest) + D1 * exp((v - vt) / D1),
+    (hmin, hmax),
+    (vmin, vmax),
+    color="black",
 )
 
 eif_slopefield_d2 = plot_slope_field(
-    lambda t, v: -(v - vrest) + D2 * exp((v - vt) / D2), (hmin, hmax), (vmin, vmax), color="black"
+    lambda t, v: -(v - vrest) + D2 * exp((v - vt) / D2),
+    (hmin, hmax),
+    (vmin, vmax),
+    color="black",
 )
 
 vrest_line = line([(hmin, vrest), (hmax, vrest)], color="blue")
@@ -119,9 +195,63 @@ vt_label = text(
 P1 = eif_slopefield_d1 + vrest_line + vrest_label + vt_line + vt_label
 P2 = eif_slopefield_d2 + vrest_line + vrest_label + vt_line + vt_label
 
-if saveplots:
-    P1.save("eif_slope_field_d1.png", dpi=saveres)
-    P2.save("eif_slope_field_d2.png", dpi=saveres)
-else:
-    P1.show(dpi=dispres)
-    P2.show(dpi=dispres)
+P1.save(fn1, dpi=saveres)
+P2.save(fn2, dpi=saveres)
+
+# dark mode
+fn1 = "eif_slope_field_d1_dark.png"
+fn2 = "eif_slope_field_d2_dark.png"
+
+eif_slopefield_d1 = plot_slope_field(
+    lambda t, v: -(v - vrest) + D1 * exp((v - vt) / D1),
+    (hmin, hmax),
+    (vmin, vmax),
+    color="white",
+    transparent=True,
+)
+
+eif_slopefield_d2 = plot_slope_field(
+    lambda t, v: -(v - vrest) + D2 * exp((v - vt) / D2),
+    (hmin, hmax),
+    (vmin, vmax),
+    color="white",
+    transparent=True,
+)
+
+vrest_line = line([(hmin, vrest), (hmax, vrest)], color="blue")
+vrest_label = text(
+    r"$V_R$",
+    (hmax - labelh, vrest - labelv),
+    color="blue",
+    vertical_alignment="top",
+    fontsize=18,
+    background_color="black",
+)
+
+vt_line = line([(hmin, vt), (hmax, vt)], color="red")
+vt_label = text(
+    r"$V_T$",
+    (hmax - labelh, vt + labelv),
+    color="red",
+    vertical_alignment="bottom",
+    fontsize=18,
+    background_color="black",
+)
+
+P1 = eif_slopefield_d1 + vrest_line + vrest_label + vt_line + vt_label
+P1.axes_color("white")
+P1.axes_label_color("white")
+P1.tick_label_color("white")
+
+P2 = eif_slopefield_d2 + vrest_line + vrest_label + vt_line + vt_label
+P2.axes_color("white")
+P2.axes_label_color("white")
+P2.tick_label_color("white")
+
+P1.save(fn1, dpi=saveres)
+P1 = Image.open(fn1)
+Image.alpha_composite(Image.new("RGB", P1.size, "black").convert("RGBA"), P1).save(fn1)
+
+P2.save(fn2, dpi=saveres)
+P2 = Image.open(fn2)
+Image.alpha_composite(Image.new("RGB", P2.size, "black").convert("RGBA"), P2).save(fn2)
