@@ -27,12 +27,14 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         interp_mode (Literal["nearest", "previous"], optional): interpolation mode
             for selectors between observations. Defaults to "nearest".
         interp_tol (float, optional): maximum difference in time from an observation
-            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
+            to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         current_overbound (float | None, optional): value to replace currents out of
-            bounds, uses values at observation limits if None. Defaults to 0.0.
+            bounds, uses values at observation limits if ``None``. Defaults to ``0.0``.
         spike_overbound (bool | None, optional): value to replace spikes out of bounds,
-            uses values at observation limits if None. Defaults to False.
+            uses values at observation limits if ``None``. Defaults to ``False``.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+        inplace (bool): if write operations on :py:class:`RecordTensor` attributes
+            should be performed with in-place operations. Defaults to  ``False``.
 
     See Also:
         For more details and references, visit
@@ -51,9 +53,10 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         current_overbound: float | None = 0.0,
         spike_overbound: bool | None = False,
         batch_size: int = 1,
+        inplace: bool = False,
     ):
         # call superclass constructor
-        InfernoSynapse.__init__(self, shape, step_time, delay, batch_size)
+        InfernoSynapse.__init__(self, shape, step_time, delay, batch_size, inplace)
 
         # synapse attributes
         self.spike_q = argtest.neq("spike_q", spike_q, 0, float)
@@ -100,6 +103,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         interp_tol: float = 0.0,
         current_overbound: float | None = 0.0,
         spike_overbound: bool | None = False,
+        inplace: bool = False,
     ) -> SynapseConstructor:
         r"""Returns a function with a common signature for synapse construction.
 
@@ -114,9 +118,11 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
                 bounds, uses values at observation limits if None. Defaults to 0.0.
             spike_overbound (bool | None, optional): value to replace spikes out of
                 bounds, uses values at observation limits if None. Defaults to False.
+            inplace (bool): if write operations on :py:class:`RecordTensor` attributes
+                should be performed with in-place operations. Defaults to  ``False``.
 
         Returns:
-           SynapseConstructor: partial constructor for synapse.
+            SynapseConstructor: partial constructor for synapse.
         """
 
         def constructor(
@@ -135,6 +141,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
                 current_overbound=current_overbound,
                 spike_overbound=spike_overbound,
                 batch_size=batch_size,
+                inplace=inplace,
             )
 
         return constructor
@@ -198,6 +205,8 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
         spike_overbound (bool | None, optional): value to replace spikes out of bounds,
             uses values at observation limits if None. Defaults to False.
         batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+        inplace (bool): if write operations on :py:class:`RecordTensor` attributes
+            should be performed with in-place operations. Defaults to  ``False``.
 
     See Also:
         For more details and references, visit
@@ -216,9 +225,10 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
         current_overbound: float | None = 0.0,
         spike_overbound: bool | None = False,
         batch_size: int = 1,
+        inplace: bool = False,
     ):
         # call superclass constructor
-        InfernoSynapse.__init__(self, shape, step_time, delay, batch_size)
+        InfernoSynapse.__init__(self, shape, step_time, delay, batch_size, inplace)
 
         # synapse attributes
         self.spike_q = argtest.neq("spike_q", spike_q, 0, float)
@@ -256,6 +266,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
         interp_tol: float = 0.0,
         current_overbound: float | None = 0.0,
         spike_overbound: bool | None = False,
+        inplace: bool = False,
     ) -> SynapseConstructor:
         r"""Returns a function with a common signature for synapse construction.
 
@@ -270,9 +281,11 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
                 bounds, uses values at observation limits if None. Defaults to 0.0.
             spike_overbound (bool | None, optional): value to replace spikes out of
                 bounds, uses values at observation limits if None. Defaults to False.
+            inplace (bool): if write operations on :py:class:`RecordTensor` attributes
+                should be performed with in-place operations. Defaults to  ``False``.
 
         Returns:
-           SynapseConstructor: partial constructor for synapse.
+            SynapseConstructor: partial constructor for synapse.
         """
 
         def constructor(
@@ -291,6 +304,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
                 current_overbound=current_overbound,
                 spike_overbound=spike_overbound,
                 batch_size=batch_size,
+                inplace=inplace,
             )
 
         return constructor

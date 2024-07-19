@@ -171,7 +171,7 @@ model.to(device=device)
 ```
 
 ## Configuring the Trainer
-Unlike in artificial neural networks where parameters are *optimized*, typically via a variant of gradient descent, parameters in spiking neural networks are trained using a variety of methods (including optimization).
+Unlike in artificial neural networks where parameters are *optimized*, typically with a variant of gradient descent, parameters in spiking neural networks are trained using a variety of methods (including optimization). Inferno's development to-date has focused on the use of surrogate.
 
 ```{code} python
 # create the trainer
