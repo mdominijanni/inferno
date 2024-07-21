@@ -70,7 +70,7 @@ html_css_files = [
 
 html_theme_options = {
     "light_logo": "logo-light-padded.png",
-    "dark_logo": "logo-dark-padded.png",
+    "dark_logo": "logo-neutral-padded.png",
 }
 
 
