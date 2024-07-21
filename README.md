@@ -1,4 +1,4 @@
-![Inferno Header](./misc/assets/inferno-header-github.png)
+![Inferno Header](https://raw.githubusercontent.com/mdominijanni/inferno/dev/misc/assets/inferno-header-github.png)
 
 ## About
 Inferno is an extensible library for simulating spiking neural networks. It is built on top of [PyTorch](https://github.com/pytorch/pytorch) and is designed with machine learning practitioners in mind. This project is still an early release and features may be subject to change.
