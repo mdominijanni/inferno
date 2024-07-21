@@ -213,9 +213,9 @@ If we look at the `STDP` class, we'll see that it inherits from {py:class}`~infe
 Before we can add the cell in our model to our trainer, we need to make it trainable. This means we need to give the connection in it an {py:class}`~inferno.neural.Updater`. The updater is responsible for accumulating and applying updates to the trainable parameters of a connection. The behavior of how updates are applied can then be controlled (more on this in the next section). Here, we'll add the default updater to our connection, then register the cell.
 
 ```{code} python
-model.feedfwd.connection.updater = (
-    model.feedfwd.connection.defaultupdater()
-)
+updater = model.feedfwd.connection.defaultupdater()
+model.feedfwd.connection.updater = updater
+
 trainer.register_cell("feedfwd", model.feedfwd.cell)
 ```
 
@@ -225,18 +225,19 @@ Clamping the weights are done in much the same way as normalizing them, except t
 
 ```{code} python
 clamp_hook = neural.Clamping(
-    model.feedfwd.connection.updater,
+    updater,
     "parent.weight",
     min=0.0,
 )
 clamp_hook.register()
 ```
 
-Adding parameter dependence is done by accessing the {py:class}`~inferno.neural.Accumulator` associated with the specific parameter to limit. To only bound the upper limit, {py:meth}`~inferno.neural.Updater.upperbound` is called and a function which follows the {py:class}`~inferno.functional.HalfBounding` protocol.
+Adding parameter dependence is done by accessing the {py:class}`~inferno.neural.Accumulator` for the associated parameter. To only bound the upper limit, {py:meth}`~inferno.neural.Updater.upperbound` is called and a function which follows the {py:class}`~inferno.functional.HalfBounding` protocol.
 
 ```{code} python
-model.feedfwd.connection.updater.weight.upperbound(
-    functional.bound_upper_multiplicative, max=1.0
+updater.weight.upperbound(
+    functional.bound_upper_multiplicative,
+    max=1.0,
 )
 ```
 

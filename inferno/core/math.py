@@ -253,23 +253,23 @@ def holt_linear_smoothing(
 
 
 def isi(
-    spikes: torch.Tensor, step_time: float | None = None, time_first: bool = False
+    spikes: torch.Tensor, step_time: float | None = None, time_first: bool = True
 ) -> torch.Tensor:
     r"""Transforms spike trains into inter-spike intervals.
 
     The returned tensor will be padded with ``NaN`` values where an interval could not
     be computed but the position existed (e.g. padding at the end of) spike trains
     with fewer spikes. If no intervals could be generated at all, a tensor with a
-    final dimension of zero will be returned. The returned tensor will have a floating
+    time dimension of zero will be returned. The returned tensor will have a floating
     point type, as required for the padding.
 
     Args:
         spikes (torch.Tensor): spike trains for which to calculate intervals.
         step_time (float | None, optional): length of the simulation step,
-            in :math:`\text{ms}`, if None returned intervals will be as a multiple
-            of simulation steps. Defaults to None.
+            in :math:`\text{ms}`, if ``None`` the returned intervals will be as a
+            multiple of simulation steps. Defaults to ``None``.
         time_first (bool, optional): if the time dimension is given first rather than
-            last. Defaults to False.
+            last. Defaults to ``True``.
 
     Returns:
         torch.Tensor: interspike intervals for the given spike trains.
@@ -279,11 +279,11 @@ def isi(
 
         ``spikes``:
 
-        :math:`N_0 \times \cdots \times T` or :math:`T \times N_0 \times \cdots`
+        :math:`T \times N_0 \times \cdots` or :math:`N_0 \times \cdots \times T`
 
         ``return``:
 
-        :math:`N_0 \times \cdots \times (C - 1)` or :math:`(C - 1) \times N_0 \times \cdots`
+        :math:`(C - 1) \times N_0 \times \cdots` or :math:`N_0 \times \cdots \times (C - 1)`
 
         Where:
             * :math:`N_0, \ldots` shape of the generating population (batch, neuron shape, etc).
