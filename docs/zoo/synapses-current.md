@@ -1,4 +1,4 @@
-# Synapse Models, Current-Based
+# Synapses, Current
 
 ## Delta (CUBA Variant)
 ### Formulation

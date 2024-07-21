@@ -1,4 +1,4 @@
-# Neuron Models, Linear
+# Neurons, Linear
 
 ## Leaky Integrate-and-Fire (LIF)
 ### Formulation
@@ -179,10 +179,16 @@ Also called "leaky integrate-and-fire with biologically defined reset rules (LIF
 2. [Allen Institute GLIF Whitepaper](http://web.archive.org/web/20230428012128/https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf)
 
 ## Generalized Leaky Integrate-and-Fire 3 (GLIF{sub}`3`)
-***(To Be Implemented)***
+```{admonition} Work In Progress
+This is not yet implemented and the documentation is incomplete.
+```
 
 ## Generalized Leaky Integrate-and-Fire 4 (GLIF{sub}`4`)
-***(To Be Implemented)***
+```{admonition} Work In Progress
+This is not yet implemented and the documentation is incomplete.
+```
 
 ## Generalized Leaky Integrate-and-Fire 5 (GLIF{sub}`5`)
-***(To Be Implemented)***
+```{admonition} Work In Progress
+This is not yet implemented and the documentation is incomplete.
+```

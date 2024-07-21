@@ -1,6 +1,4 @@
 # Neuronal Adaptation
-
-## Overview
 The dynamics imposed by most neuron models (without adaptation) cannot respond to changes with regard to their input. This implies that, for a given constant input, the neuron's firing frequency will remain steady over time. Adaptation, in this context, gives the neuron model one or more additional degrees of freedom, allowing it to respond to the presented input.
 
 Generally, this will either be applied as a modification to the presynaptic current (either dampening or amplifying the input) or as a modification to the membrane voltage threshold at which the neuron will fire (either raising or lowering this threshold). Dampening the input or raising the threshold will depress the neuron's spiking behavior, and amplifying the input or lowering the threshold will potentiate it.
