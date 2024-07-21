@@ -29,6 +29,7 @@ dependencies:
   # devtools
   - black
   - flake8
+  - mypy
   - pytest
   - pytest-cov
   # sphinx

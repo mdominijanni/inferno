@@ -144,7 +144,7 @@ class Module(nn.Module):
             or hasattr(descriptor, "__set__")
             or hasattr(descriptor, "__delete__")
         ):
-            descriptor.__set__(self, value)
+            descriptor.__set__(self, value)  # type: ignore
         else:
             _extras = self.__dict__.get("_extras")
             if _extras is not None and name in _extras:
@@ -225,7 +225,7 @@ def _constraints_consistent(constraints: dict[int, int], ndims: int) -> bool:
     Returns:
         bool: if a tensor of given dimensionality can be constrained consistently.
     """
-    hypoth = list(repeat(None, times=ndims))
+    hypoth: list[int | None] = list(repeat(None, times=ndims))
 
     for dim, size in constraints.items():
         if hypoth[dim] is None:
@@ -284,7 +284,7 @@ class ShapedTensor:
         its reference count goes to zero.
     """
 
-    LinkedAttributes = namedtuple("ShapedTensorAttributes", ("data", "constraints"))
+    LinkedAttributes = namedtuple("ShapedTensorAttributes", ("data", "constraints"))  # type: ignore
 
     def __init__(
         self,
@@ -313,9 +313,8 @@ class ShapedTensor:
         constraints = dict(constraints) if constraints else {}
 
         # invalid initial constraints
-        if not (
-            self._ignore(value) or _constraints_compatible(value, constraints, strict)
-        ):
+        if not self._ignore_or_compatible(value, constraints, strict):
+            assert value is not None
             raise RuntimeError(
                 f"initial value of shape {tuple(value.shape)} is not compatible with "
                 f"constraints: {tuple(constraints.items())}"
@@ -423,9 +422,34 @@ class ShapedTensor:
         Returns:
             bool: if the value will be ignored by constraints.
         """
-        return isinstance(
-            tensor, None | nn.UninitializedBuffer | nn.UninitializedParameter
-        ) or not (tensor.numel() or tensor.ndim > 1)
+        return (
+            tensor is None
+            or isinstance(tensor, nn.UninitializedBuffer | nn.UninitializedParameter)
+            or not (tensor.numel() or tensor.ndim > 1)
+        )
+
+    @staticmethod
+    def _ignore_or_compatible(
+        tensor: torch.Tensor | nn.Parameter | None,
+        constraints: dict[int, int],
+        strict: bool,
+    ) -> bool:
+        r"""Tests if compatibility for the input should be ignored or they are compatible.
+
+        Args:
+            tensor (torch.Tensor | nn.Parameter | None): value to check if ignored or compatible.
+            constraints (dict[int, int]): dictionary of constraints.
+            strict (bool): if constraints should be applied strictly.
+
+        Returns:
+            bool: if the value will be ignored by constraints or is compatible with constraints.
+        """
+        return (
+            tensor is None
+            or isinstance(tensor, nn.UninitializedBuffer | nn.UninitializedParameter)
+            or not (tensor.numel() or tensor.ndim > 1)
+            or _constraints_compatible(tensor, constraints, strict)
+        )
 
     @staticmethod
     def resize(
@@ -586,11 +610,10 @@ class ShapedTensor:
             raise RuntimeError("cannot assign None to a constrained parameter")
         # live constrain
         if self.__live:
-            if self._ignore(value) or _constraints_compatible(
-                value, self.__constraints, self.__strict
-            ):
+            if self._ignore_or_compatible(value, self.__constraints, self.__strict):
                 self.__data = value
             else:
+                assert value is not None
                 raise ValueError(
                     f"cannot set a tensor with shape {tuple(value.shape)} with "
                     f"constraints: {tuple(self.__constraints.items())}"
@@ -667,9 +690,8 @@ class ShapedTensor:
         Returns:
             bool: if the shaped tensor is valid.
         """
-        return self.__owner() and (
-            self._ignore(self.__data)
-            or _constraints_compatible(self.__data, self.__constraints, self.__strict)
+        return bool(self.__owner()) and self._ignore_or_compatible(
+            self.__data, self.__constraints, self.__strict
         )
 
     @property
@@ -735,27 +757,34 @@ class ShapedTensor:
 
         # create constraint
         elif dim not in constraints:
+            # size cannot be none
+            assert size is not None
+
             # safe to add with an ignored tensor
             if self._ignore(data):
                 constraints[dim] = size
 
             # check if the tensor has been invalidated
-            elif _constraints_compatible(data, constraints, self.__strict):
+            else:
+                # data cannot be none
+                assert data is not None
 
-                # add if compatible
-                if _constraints_compatible(
-                    data, constraints | {dim: size}, self.__strict
-                ):
-                    constraints[dim] = size
+                if _constraints_compatible(data, constraints, self.__strict):
+
+                    # add if compatible
+                    if _constraints_compatible(
+                        data, constraints | {dim: size}, self.__strict
+                    ):
+                        constraints[dim] = size
+
+                    else:
+                        raise ValueError(
+                            "constrained tensor would be invalidated by constraint of "
+                            f"size {size} on dim {dim}"
+                        )
 
                 else:
-                    raise ValueError(
-                        "constrained tensor would be invalidated by constraint of "
-                        f"size {size} on dim {dim}"
-                    )
-
-            else:
-                raise RuntimeError("constrained tensor has been invalidated")
+                    raise RuntimeError("constrained tensor has been invalidated")
 
         # remove constraint
         elif size is None:
@@ -763,10 +792,7 @@ class ShapedTensor:
             del constraints[dim]
 
             # check that tensor is still valid
-            if not (
-                self._ignore(data)
-                or _constraints_compatible(data, constraints, self.__strict)
-            ):
+            if not self._ignore_or_compatible(data, constraints, self.__strict):
                 raise RuntimeError("constrained tensor has been invalidated")
 
         # alter constraint
@@ -775,23 +801,27 @@ class ShapedTensor:
             if self._ignore(data):
                 constraints[dim] = size
 
-            # tensor has sufficient dimensionality
-            elif data.ndim >= _constraint_dimensionality(
-                constraints, self.__strict
-            ) and _constraints_consistent(constraints | {dim: size}, data.ndim):
-                # edit the constraint
-                constraints[dim] = size
-
-                # alter if not already compatible
-                if not _constraints_compatible(data, constraints, self.__strict):
-                    self.__data = self.__make_compatible(data, dim, size)
-                    data = self.__data
-
-            # tensor has insufficient dimensionality
             else:
-                raise RuntimeError(
-                    "constrained tensor cannot be made valid with altered constraint"
-                )
+                # data cannot be none
+                assert data is not None
+
+                # tensor has sufficient dimensionality
+                if data.ndim >= _constraint_dimensionality(
+                    constraints, self.__strict
+                ) and _constraints_consistent(constraints | {dim: size}, data.ndim):
+                    # edit the constraint
+                    constraints[dim] = size
+
+                    # alter if not already compatible
+                    if not _constraints_compatible(data, constraints, self.__strict):
+                        self.__data = self.__make_compatible(data, dim, size)
+                        data = self.__data
+
+                # tensor has insufficient dimensionality
+                else:
+                    raise RuntimeError(
+                        "constrained tensor cannot be made valid with altered constraint"
+                    )
 
         # return altered value
         return data
@@ -855,7 +885,7 @@ class RecordTensor(ShapedTensor):
         contiguously.
     """
 
-    LinkedAttributes = namedtuple(
+    LinkedAttributes = namedtuple(  # type: ignore
         "RecordTensorAttributes",
         ("data", "constraints", "dt", "duration", "inclusive", "pointer"),
     )
@@ -890,6 +920,7 @@ class RecordTensor(ShapedTensor):
 
         # reshape value if not ignored
         if not self._ignore(value):
+            assert value is not None
             if isinstance(value, nn.Parameter):
                 value.data = value.data.unsqueeze(0).repeat(
                     *chain((size,), repeat(1, times=value.ndim))
@@ -922,9 +953,9 @@ class RecordTensor(ShapedTensor):
         )
 
         # registered attribute names
-        self.__attributes = RecordTensor.LinkedAttributes(
-            ShapedTensor.attributes.fget(self).data,
-            ShapedTensor.attributes.fget(self).constraints,
+        self.__attributes: RecordTensor.LinkedAttributes = RecordTensor.LinkedAttributes(  # type: ignore
+            ShapedTensor.attributes.fget(self).data,  # type: ignore
+            ShapedTensor.attributes.fget(self).constraints,  # type: ignore
             f"_{self.name}_dt",
             f"_{self.name}_duration",
             f"_{self.name}_inclusive",
@@ -948,7 +979,7 @@ class RecordTensor(ShapedTensor):
             setattr(owner, self.__attributes.pointer, 0)
 
     @classmethod
-    def create(
+    def create(  # type: ignore
         cls,
         owner: Module,
         name: str,
@@ -1037,17 +1068,17 @@ class RecordTensor(ShapedTensor):
             setattr(self.__owner(), self.__attributes.data, value)
 
     @property
-    def __dt(self) -> torch.Tensor:
+    def __dt(self) -> float:
         r"""Module internal step time getter."""
         return getattr(self.__owner(), self.__attributes.dt)
 
     @property
-    def __duration(self) -> torch.Tensor:
+    def __duration(self) -> float:
         r"""Module internal duration getter."""
         return getattr(self.__owner(), self.__attributes.duration)
 
     @property
-    def __inclusive(self) -> torch.Tensor:
+    def __inclusive(self) -> bool:
         r"""Module internal inclusivity getter."""
         return getattr(self.__owner(), self.__attributes.inclusive)
 
@@ -1064,10 +1095,10 @@ class RecordTensor(ShapedTensor):
     @property
     def __recordsz(self) -> int:
         r"""Module internal record size getter."""
-        return self.__constraints.get(0)
+        return self.__constraints[0]
 
     @property
-    def attributes(self) -> RecordTensor.LinkedAttributes:
+    def attributes(self) -> RecordTensor.LinkedAttributes:  # type: ignore
         r"""Names of the dependent attributes created.
 
         This is a named tuple with attributes ``data``, ``constraints``, ``dt``,
@@ -1106,10 +1137,10 @@ class RecordTensor(ShapedTensor):
         still be accessible.
 
         Args:
-            value (torch.Tensor | float): new time step length.
+            value (float): new time step length.
 
         Returns:
-            torch.Tensor: length of the time step.
+            float: length of the time step.
         """
         return self.__dt
 
@@ -1154,7 +1185,7 @@ class RecordTensor(ShapedTensor):
         return self.__duration
 
     @duration.setter
-    def duration(self, value: torch.Tensor | float) -> None:
+    def duration(self, value: float) -> None:
         # validate argument
         value = argtest.gte("duration", value, 0, float)
 
@@ -1227,6 +1258,7 @@ class RecordTensor(ShapedTensor):
         if self._ignore(data):
             return None
         else:
+            assert data is not None
             return (*data.shape[1:],)
 
     @property
@@ -1310,13 +1342,13 @@ class RecordTensor(ShapedTensor):
             If after assigning the new value, :py:attr:`ignored` is ``True``, the
             pointer will be moved to ``0``, otherwise it will not be changed.
         """
-        return ShapedTensor.value.fget(self)
+        return ShapedTensor.value.fget(self)  # type: ignore
 
     @value.setter
     def value(
         self, value: torch.Tensor | nn.Parameter | None
-    ) -> torch.Tensor | nn.Parameter | None:
-        _ = ShapedTensor.value.fset(self, value)
+    ) -> None:
+        _ = ShapedTensor.value.fset(self, value)  # type: ignore
         if self._ignore(self.__data):
             setattr(self.__owner(), f"_{self.__name}_pointer", 0)
 
@@ -1341,6 +1373,7 @@ class RecordTensor(ShapedTensor):
 
         # only constrained state can be aligned
         if not self._ignore(data):
+            assert data is not None
             self.__data = data.roll(index - self.__pointer, 0)
             self.__pointer = index
         else:
@@ -1359,6 +1392,7 @@ class RecordTensor(ShapedTensor):
         if fill is not None:
             # perform fill if not ignored
             if not self._ignore(data):
+                assert data is not None
                 with torch.no_grad():
                     data.fill_(fill)
 
@@ -1400,6 +1434,8 @@ class RecordTensor(ShapedTensor):
             # fill in-place
             with torch.no_grad():
                 data.fill_(fill)
+
+            assert isinstance(self.__data, torch.Tensor | nn.Parameter)
 
         # initialized but empty tensor or parameter
         elif isinstance(data, torch.Tensor):
@@ -1445,7 +1481,7 @@ class RecordTensor(ShapedTensor):
 
         if isinstance(data, nn.Parameter):
             if use_uninitialized:
-                self.__data = nn.UninitializedParameter(
+                self.__data = nn.UninitializedParameter(  # type: ignore
                     requires_grad=data.requires_grad,
                     device=data.device,
                     dtype=data.dtype,
@@ -1460,7 +1496,7 @@ class RecordTensor(ShapedTensor):
 
         elif isinstance(data, torch.Tensor):
             if use_uninitialized:
-                self.__data = nn.UninitializedBuffer(
+                self.__data = nn.UninitializedBuffer(  # type: ignore
                     requires_grad=data.requires_grad,
                     device=data.device,
                     dtype=data.dtype,

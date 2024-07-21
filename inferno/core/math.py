@@ -104,7 +104,7 @@ def normalize(
     data: torch.Tensor,
     order: int | float,
     scale: float | complex = 1.0,
-    dim: int | tuple[int] | None = None,
+    dim: int | tuple[int, ...] | None = None,
     epsilon: float = 1e-12,
 ) -> torch.Tensor:
     r"""Normalizes a tensor.
@@ -114,7 +114,7 @@ def normalize(
         order (int | float): order of :math:`p`-norm by which to normalize.
         scale (float | complex, optional): desired :math:`p`-norm of elements along
             specified dimensions. Defaults to 1.0.
-        dim (int | tuple[int] | None, optional): dimension(s) along which to normalize,
+        dim (int | tuple[int, ...] | None, optional): dimension(s) along which to normalize,
             all dimensions if None. Defaults to None.
         epsilon (float, optional): value added to the demoninator in case of
             zero-valued norms. Defaults to 1e-12.
@@ -122,7 +122,7 @@ def normalize(
     Returns:
         torch.Tensor: normalized tensor.
     """
-    return scale * F.normalize(data, p=order, dim=dim, eps=epsilon)
+    return scale * F.normalize(data, p=order, dim=dim, eps=epsilon)  # type: ignore
 
 
 def rescale(
@@ -154,9 +154,9 @@ def rescale(
     """
     # perform substitutions
     if srcmin is None:
-        srcmin = torch.amin(data, dim=dim, keepdim=True)
+        srcmin = torch.amin(data, dim=dim, keepdim=True)  # type: ignore
     if srcmax is None:
-        srcmax = torch.amax(data, dim=dim, keepdim=True)
+        srcmax = torch.amax(data, dim=dim, keepdim=True)  # type: ignore
     if resmin is None:
         resmin = srcmin
     if resmax is None:
@@ -207,7 +207,7 @@ def holt_linear_smoothing(
     *,
     alpha: float | int | complex | torch.Tensor,
     beta: float | int | complex | torch.Tensor,
-) -> tuple[torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor | None]:
     r"""Performs Holt linear smoothing for a time step.
 
     .. math::
@@ -231,7 +231,7 @@ def holt_linear_smoothing(
             :math:`\beta`.
 
     Returns:
-        tuple[torch.Tensor, int | torch.Tensor]: tuple containing output/updated state:
+        tuple[torch.Tensor, torch.Tensor | None]: tuple containing output/updated state:
 
             level: revised exponentially smoothed level.
 
@@ -246,8 +246,8 @@ def holt_linear_smoothing(
         trend = obs - level
 
     # t>0 condition
-    s = exponential_smoothing(obs, level + trend, alpha)
-    b = exponential_smoothing(s - level, trend, beta)
+    s = exponential_smoothing(obs, level + trend, alpha=alpha)
+    b = exponential_smoothing(s - level, trend, alpha=beta)
 
     return s, b
 
