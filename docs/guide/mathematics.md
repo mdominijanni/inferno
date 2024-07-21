@@ -1,4 +1,4 @@
-# Mathematical Refresher
+# Math Reference
 
 ## Exponential Decay and Time Constants
 Because spiking neural networks represent stateful systems that change over time, the notion of *exponential decay* frequently comes up. Exponential decay is defined as a phenomenon where the rate at which a quantity decreases is proportional to its current value. It can be described by the differential equation

@@ -1,7 +1,5 @@
 # Model Zoo
-
-## Overview
-Here, the neuron models as well as the training methods implemented in Inferno are described in-depth and references to works relating to them are included. Planned for the future are more detailed descriptions of how the given hyperparameters affect their behavior.
+The various models used in simulating neuronal systems, as well as the methods used to train them, are described here. While not comprehensive, those methods implemented by Inferno are described here, along with external references.
 
 ## Neurons
 ```{toctree}

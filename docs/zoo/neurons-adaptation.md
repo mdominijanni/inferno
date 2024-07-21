@@ -38,7 +38,9 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 2. [DOI:10.1152/jn.00686.2005](https://journals.physiology.org/doi/full/10.1152/jn.00686.2005)
 
 ## Adaptive Current, Linear Spike-Dependent
-***(To Be Implemented)***
+```{admonition} Work In Progress
+This is not yet implemented and the documentation is incomplete. The information presented may be incorrect.
+```
 ### Formulation
 $$
 \begin{align*}

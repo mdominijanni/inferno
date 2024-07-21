@@ -1,4 +1,4 @@
-# Concepts in Spiking Networks
+# SNN Concepts
 
 ## Trace
 In the context of spiking neural networks, the notion of "trace" frequently arises. When performing computations which care about the history of spiking activity, they may be formally described as summing over all the previous times in which a spike occurred. However, this is not practical for the purposes of simulation, as an all-to-all comparison grows in complexity quadratically with respect to the length of the simulation time.

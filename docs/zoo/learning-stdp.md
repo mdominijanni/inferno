@@ -1,7 +1,9 @@
 # Learning, STDP
-Typically STDP is parameterized such that it performs Hebbian learning (often summarized as "cells that fire together wire together"). In Hebbian learning methods, if there exists a "postsynaptic" neuron which receives input from a "presynaptic" neuron, then if the presynaptic neuron fires and afterwards the postsynaptic neuron fires, its considered to be "causal". Likewise, if the postsynaptic neuron fires then the presynaptic neuron fires, its considered to be "anti-causal". Hebbian learning increases the connection weight on neuron firings which are causal and decreases it on anti-causal firings.
+Typically STDP is parameterized such that it performs Hebbian learning (often summarized as "cells that fire together wire together"). In Hebbian learning methods there is a *postsynaptic* neuron which receives input from a *presynaptic* neuron. Then, if the presynaptic neuron fires and after the postsynaptic neuron fires, the connection between them is considered to be *causal*. Likewise, if the postsynaptic neuron fires then the presynaptic neuron fires, it's considered to be *anti-causal*. Hebbian learning increases the connection weight on neuron firings which are causal and decreases it on anti-causal firings. Most STDP methods are phrased in the context of Hebbian learning, although some explicitly are not, while others are flexible even if written in terms of Hebbian learning.
 
-Most STDP methods are phrased in the context of Hebbian learning, although they do not need to be. For instance, STDP can reverse the direction of the weight updates for causal and anti-causal firings (this is called anti-Hebbian learning). For the below methods, they will be written as they are most commonly described, although Inferno typically supports generalization.
+```{note}
+Although STDP methods are phrased as originally described, Inferno tries to introduce flexibility where possible. The settings for controlling the behavior of each method will be described in the relevant {py:class}`~inferno.learn.CellTrainer` class.
+```
 
 ## Spike-Timing Dependent Plasticity (STDP)
 ### Formulation
