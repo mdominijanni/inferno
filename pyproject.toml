@@ -3,7 +3,7 @@ requires = ["hatchling>=1.23.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "inferno"
+name = "inferno-ai"
 version = "0.0.1"
 description = "An Extensible Spiking Neural Network Library"
 readme = "README.md"
@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Marissa Dominijanni", email = "mdomini@buffalo.edu" }]
 
-dependencies = ["numpy~=1.26", "einops~=0.7"]
+dependencies = ["numpy~=1.26", "einops~=0.8"]
 
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -24,15 +24,23 @@ classifiers = [
 
 [project.optional-dependencies]
 torch = [
-    "torch==2.2.2 ; sys_platform == 'darwin'",
-    "torchvision==0.17.2 ; sys_platform == 'darwin'",
-    "torch==2.2.2 ; sys_platform == 'win32'",
-    "torchvision==0.17.2 ; sys_platform == 'win32'",
+    "torch==2.3.1 ; sys_platform == 'darwin'",
+    "torchvision==0.18.1 ; sys_platform == 'darwin'",
+    "torch==2.3.1 ; sys_platform == 'win32'",
+    "torchvision==0.18.1 ; sys_platform == 'win32'",
+    "torch==2.3.1 ; sys_platform == 'linux'",
+    "torchvision==0.18.1 ; sys_platform == 'linux'",
 ]
 
 [project.urls]
 Homepage = "https://github.com/mdominijanni/inferno"
 Documentation = "https://inferno-ai.dev"
 
+[tool.hatch.metadata]
+package = "inferno"
+
 [tool.hatch.build.targets.sdist]
+only-include = ["inferno"]
+
+[tool.hatch.build.targets.wheel]
 only-include = ["inferno"]

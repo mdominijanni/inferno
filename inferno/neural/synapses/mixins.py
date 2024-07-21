@@ -131,7 +131,7 @@ class CurrentMixin:
 
     @current.setter
     def current(self, value: torch.Tensor) -> None:
-        self.current_.push(value)
+        self.current_.push(value, self.inplace)
 
     def current_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Retrieves previous synaptic currents, in nanoamperes.
@@ -228,7 +228,7 @@ class SpikeMixin:
 
     @spike.setter
     def spike(self, value: torch.Tensor) -> None:
-        self.spike_.push(value.bool())
+        self.spike_.push(value.bool(), self.inplace)
 
     def spike_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Retrieves previous spike inputs.

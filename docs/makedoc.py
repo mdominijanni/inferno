@@ -16,8 +16,8 @@ with open("conf.py", "w") as file:
 os.system("make clean html")
 
 # replace generated files with overrides
-osrsplit = (
-    lambda S, L: L
+osrsplit = lambda S, L: (
+    L
     if not S
     else osrsplit(
         *(sstr if not idx else [sstr] + L for idx, sstr in enumerate(os.path.split(S)))
@@ -38,6 +38,10 @@ with open("conf.py", "w") as file:
 
 # run to generate html files
 os.system("make clean html")
+
+# copy image files
+shutil.copy("images/logo-darkmode.png", "_build/html/_static/logo-darkmode.png")
+shutil.copy("images/logo-lightmode.png", "_build/html/_static/logo-lightmode.png")
 
 # delete config file
 os.remove("conf.py")

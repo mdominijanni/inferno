@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .. import CellwiseTrainer
+from .. import IndependentCellTrainer
 from ... import Module
 from ..._internal import argtest
 from ...neural import Cell
@@ -14,7 +14,7 @@ import torch
 from typing import Any, Callable, Literal
 
 
-class STDP(CellwiseTrainer):
+class STDP(IndependentCellTrainer):
     r"""Spike-timing dependent plasticity trainer.
 
     .. math::
@@ -102,7 +102,7 @@ class STDP(CellwiseTrainer):
 
     See Also:
         For more details and references, visit
-        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)` in the zoo.
+        :ref:`zoo/learning-stdp:Spike-Timing Dependent Plasticity (STDP)` in the zoo.
     """
 
     def __init__(
@@ -121,7 +121,7 @@ class STDP(CellwiseTrainer):
         **kwargs,
     ):
         # call superclass constructor
-        CellwiseTrainer.__init__(self, **kwargs)
+        IndependentCellTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
         self.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -214,7 +214,7 @@ class STDP(CellwiseTrainer):
                 :py:func:`torch.sum` when None. Defaults to None.
 
         Returns:
-            CellwiseTrainer.Unit: specified cell, auxiliary state, and monitors.
+            IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
 
         Important:
             Any specified keyword arguments will override the default hyperparameters

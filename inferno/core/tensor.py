@@ -1,11 +1,12 @@
 import torch
+from collections.abc import Sequence
 from typing import Any, Callable
 
 
 def zeros(
     tensor: torch.Tensor,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -15,7 +16,7 @@ def zeros(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
             ``tensor`` if specified. Defaults to None.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
             if specified. Defaults to None.
@@ -46,7 +47,7 @@ def zeros(
 def ones(
     tensor: torch.Tensor,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -56,7 +57,7 @@ def ones(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
             ``tensor`` if specified. Defaults to None.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
             if specified. Defaults to None.
@@ -87,7 +88,7 @@ def ones(
 def empty(
     tensor: torch.Tensor,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -97,7 +98,7 @@ def empty(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
             ``tensor`` if specified. Defaults to None.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
             if specified. Defaults to None.
@@ -129,7 +130,7 @@ def full(
     tensor: torch.Tensor,
     value: bool | int | float | complex,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -140,7 +141,7 @@ def full(
     Args:
         tensor (torch.Tensor): determines default output properties.
         value (bool | int | float | complex): value with to fill the output.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
             ``tensor`` if specified. Defaults to None.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
             if specified. Defaults to None.
@@ -178,7 +179,7 @@ def fullc(
     tensor: torch.Tensor,
     value: bool | int | float | complex,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -193,7 +194,7 @@ def fullc(
     Args:
         tensor (torch.Tensor): determines default output properties.
         value (bool | int | float | complex): value with to fill the output.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
             ``tensor`` if specified. Defaults to None.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
             if specified. Defaults to None.
@@ -238,7 +239,7 @@ def fullc(
 def uniform(
     tensor: torch.Tensor,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -249,7 +250,7 @@ def uniform(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
             ``tensor`` if specified. Defaults to None.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
             if specified. Defaults to None.
@@ -291,7 +292,7 @@ def uniform(
 def normal(
     tensor: torch.Tensor,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -302,7 +303,7 @@ def normal(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
             ``tensor`` if specified. Defaults to None.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
             if specified. Defaults to None.

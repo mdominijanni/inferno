@@ -420,7 +420,7 @@ class Synapse(Module, ABC):
                 by the subclass.
 
         Returns:
-           SynapseConstructor: partial constructor for synapses of a given class.
+            SynapseConstructor: partial constructor for synapses of a given class.
         """
         raise NotImplementedError(
             f"{cls.__name__}(Synapse) must implement " "the method 'partialconstructor'"
@@ -599,6 +599,8 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         step_time (float): length of a simulation time step, in :math:`ms`.
         delay (float): maximum supported delay, in :math:`ms`.
         batch_size (int): size of the batch dimension.
+        inplace (bool): if write operations on :py:class:`RecordTensor` attributes
+            should be performed with in-place operations.
     """
 
     def __init__(
@@ -607,6 +609,7 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         step_time: float,
         delay: float,
         batch_size: int,
+        inplace: bool,
     ):
         # superclass constructors
         Synapse.__init__(self)
@@ -614,6 +617,9 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         # mixin constructors
         BatchShapeMixin.__init__(self, shape, batch_size)
         DelayedMixin.__init__(self, step_time, delay)
+
+        # set attributes
+        self.__inplace = bool(inplace)
 
     @classmethod
     def partialconstructor(cls, *args, **kwargs) -> SynapseConstructor:
@@ -624,7 +630,7 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
                 by the subclass.
 
         Returns:
-           SynapseConstructor: partial constructor for synapses of a given class.
+            SynapseConstructor: partial constructor for synapses of a given class.
         """
         raise NotImplementedError(
             f"{cls.__name__}(Synapse) must implement " "the method 'partialconstructor'"
@@ -660,6 +666,26 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
     def delay(self, value: float) -> None:
         DelayedMixin.delay.fset(self, value)
         self.clear()
+
+    @property
+    def inplace(self) -> bool:
+        r"""If write operations should be performed in-place.
+
+        Args:
+            value (bool): new simulation time step length.
+
+        Returns:
+            bool: if write operations should be performed in-place.
+
+        Note:
+            Generally if gradient computation is required, this should be set to
+            ``False``.
+        """
+        return self.__inplace
+
+    @inplace.setter
+    def inplace(self, value: bool) -> None:
+        self.__inplace = bool(value)
 
     @property
     def current(self) -> torch.Tensor:

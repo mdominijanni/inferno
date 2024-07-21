@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .. import CellwiseTrainer
+from .. import IndependentCellTrainer
 from ... import Module, trace_cumulative_value
 from ..._internal import argtest
 from ...functional import interp_expdecay
@@ -116,7 +116,7 @@ class EligibilityTraceReducer(FoldReducer):
         )
 
 
-class MSTDPET(CellwiseTrainer):
+class MSTDPET(IndependentCellTrainer):
     r"""Modulated spike-timing dependent plasticity with eligibility trace trainer.
 
     .. math::
@@ -224,7 +224,7 @@ class MSTDPET(CellwiseTrainer):
         **kwargs,
     ):
         # call superclass constructor
-        CellwiseTrainer.__init__(self, **kwargs)
+        IndependentCellTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
         self.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -298,7 +298,7 @@ class MSTDPET(CellwiseTrainer):
                 :py:func:`torch.sum` when None. Defaults to None.
 
         Returns:
-            CellwiseTrainer.Unit: specified cell, auxiliary state, and monitors.
+            IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
 
         Important:
             Any specified keyword arguments will override the default hyperparameters
@@ -526,7 +526,7 @@ class MSTDPET(CellwiseTrainer):
                         cell.updater.weight = (dpost + dpre, None)
 
 
-class MSTDP(CellwiseTrainer):
+class MSTDP(IndependentCellTrainer):
     r"""Modulated spike-timing dependent plasticity trainer.
 
     .. math::
@@ -644,7 +644,7 @@ class MSTDP(CellwiseTrainer):
         **kwargs,
     ):
         # call superclass constructor
-        CellwiseTrainer.__init__(self, **kwargs)
+        IndependentCellTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
         self.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -734,7 +734,7 @@ class MSTDP(CellwiseTrainer):
                 function to reduce updates over the batch dimension.
 
         Returns:
-            CellwiseTrainer.Unit: specified cell, auxiliary state, and monitors.
+            IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
 
         Important:
             Any specified keyword arguments will override the default hyperparameters

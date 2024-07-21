@@ -247,7 +247,7 @@ class Accumulator(Module):
 
 
 class Updater(Module):
-    """Managed accumulated updates for module parameters.
+    r"""Managed accumulated updates for module parameters.
 
     The added parameters are all set as properties which return an
     :py:class:`Accumulator` corresponding to that parameter. Care must be taken to
