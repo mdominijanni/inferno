@@ -21,8 +21,8 @@ $$
 - $w$, connection weight
 - $A_+$, update magnitude for Hebbian long-term potentiation (LTP)
 - $A_-$, update magnitude for Hebbian long-term depression (LTD)
-- $x_\text{post}$, [spike trace](<guide/mathematics:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
-- $x_\text{pre}$, [spike trace](<guide/mathematics:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
+- $x_\text{post}$, [spike trace](<guide/concepts:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
+- $x_\text{pre}$, [spike trace](<guide/concepts:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
 - $t^f_\text{post}$, time of (the most recent) postsynaptic spike
 - $t^f_\text{pre}$, time of (the most recent) presynaptic spike
@@ -89,8 +89,8 @@ $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true 
 - $r$, reward term
 - $A_+$, update magnitude for Hebbian long-term potentiation (LTP)
 - $A_-$, update magnitude for Hebbian long-term depression (LTD)
-- $P^-$, [spike trace](<guide/mathematics:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
-- $P^+$, [spike trace](<guide/mathematics:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
+- $P^-$, [spike trace](<guide/concepts:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
+- $P^+$, [spike trace](<guide/concepts:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
 - $t^f_\text{post}$, time of (the most recent) postsynaptic spike
 - $t^f_\text{pre}$, time of (the most recent) presynaptic spike
@@ -100,7 +100,7 @@ $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true 
 
 
 ### Description
-This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent reward term $r$. Note that $P^+$ is the presynaptic spike trace and $P^-$ is the postsynaptic spike trace (calculated as [cumulative trace](<guide/mathematics:Cumulative Trace>)).
+This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent reward term $r$. Note that $P^+$ is the presynaptic spike trace and $P^-$ is the postsynaptic spike trace (calculated as [cumulative trace](<guide/concepts:Cumulative Trace>)).
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
@@ -136,8 +136,8 @@ $$
 - $r$, reward term
 - $A_+$, update magnitude for Hebbian long-term potentiation (LTP)
 - $A_-$, update magnitude for Hebbian long-term depression (LTD)
-- $P^-$, [spike trace](<guide/mathematics:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
-- $P^+$, [spike trace](<guide/mathematics:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
+- $P^-$, [spike trace](<guide/concepts:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
+- $P^+$, [spike trace](<guide/concepts:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
 - $t^f_\text{post}$, time of (the most recent) postsynaptic spike
 - $t^f_\text{pre}$, time of (the most recent) presynaptic spike

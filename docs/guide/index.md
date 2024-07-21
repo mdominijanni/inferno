@@ -3,7 +3,8 @@
 ```{toctree}
 :hidden:
 
+concepts
 mathematics
-neurons
-considerations
+neuronal
+pragmatics
 ```

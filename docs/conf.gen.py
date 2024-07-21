@@ -62,7 +62,17 @@ remove_from_toctrees = ["reference/generated/*"]
 html_theme = "furo"  # "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_title = "Inferno"
+# html_logo = "images/logo.png"
 
 html_css_files = [
     "css/shape.css",
 ]
+
+html_theme_options = {
+    "light_logo": "logo-light-padded.png",
+    "dark_logo": "logo-dark-padded.png",
+}
+
+
+# pygments_style = "sphinx"
+# pygments_dark_style = "dracula"

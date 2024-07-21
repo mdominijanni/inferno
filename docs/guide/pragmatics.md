@@ -1,7 +1,7 @@
 # Pragmatic Considerations
 
 ## Minibatching
-Unlike the artificial neurons typically found in ANNs, the neurons in SNNs are fundamentally stateful. In biological neurons, the electric potential difference between the interior and exterior of a cell is the driving force behind the generation of action potentials. This extends to the simplified models used in SNNs.
+Unlike the neurons typically found in ANNs, the neurons in spiking neural networks (SNNs) are fundamentally stateful. In biological neurons, the electric potential difference between the interior and exterior of a cell is the driving force behind the generation of action potentials. This extends to the simplified models used in SNNs.
 
 When using minibatches with SNNs, it's important to treat these state variables as separated for each of the samples presented during a minibatch. Fixed hyperparameters meanwhile do not need to be duplicated and instead will be broadcast to each sample in the batch.
 
@@ -15,8 +15,7 @@ Detailed information on minibatch processing with SNNs can be found at [arXiv:19
 Because Inferno performs simulations over discrete units of time, there are relevant considerations for how the computations match with the theoretical continuous-time descriptions.
 
 ### Refractory Periods
-Refractory periods are specified using some length of time, given in milliseconds. On each simulation step, the amount of time that has elapsed is subtracted from the remaining time in the neurons will be in their refractory period (inclusive minimum bound of zero). When equal to zero, a neuron is considered to be out of its refractory period. Therefore, if the refractory period is not evenly divisible by the length of the simualted step time, the practical length of the refractory period is "rounded up" to the next integer multiple of the step time.
-
+Refractory periods are specified using some length of time, given in milliseconds. On each simulation step, the amount of time that has elapsed is subtracted from the remaining time in their refractory period (inclusive minimum bound of zero). When equal to zero, a neuron is considered to be out of its refractory period. Therefore, if the refractory period is not evenly divisible by the length of the simulated step time, the practical length of the refractory period is "rounded up" to the next integer multiple of the step time.
 
 ## Model Saving and Restoring
 Because batch size affects not only the data passed through a model, but the model itself, special consideration must be given when saving and loading models. The batch size of a model saved must match the batch size of the model loaded. This same principle extends to modules which record state over time (e.g. reducers and synapses). While a step time and duration are specified, this changes the underlying structure of the data and therefore should match on load and restore. Note that the included property setters can be used to modify this state after loading.
