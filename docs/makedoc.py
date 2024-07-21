@@ -40,11 +40,8 @@ with open("conf.py", "w") as file:
 os.system("make clean html")
 
 # copy image files
-shutil.copy("images/logo-dark-padded.png", "_build/html/_static/logo-dark-padded.png")
-shutil.copy("images/logo-light-padded.png", "_build/html/_static/logo-light-padded.png")
-shutil.copy(
-    "images/logo-neutral-padded.png", "_build/html/_static/logo-neutral-padded.png"
-)
+shutil.copy("images/logo-darkmode.png", "_build/html/_static/logo-darkmode.png")
+shutil.copy("images/logo-lightmode.png", "_build/html/_static/logo-lightmode.png")
 
 # delete config file
 os.remove("conf.py")

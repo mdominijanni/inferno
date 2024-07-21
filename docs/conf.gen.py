@@ -14,8 +14,8 @@ sys.path.insert(0, os.path.abspath(".."))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "Inferno"
-copyright = "2023, MD"
-author = "MD"
+copyright = "2024, Marissa Dominijanni"
+author = "Marissa Dominijanni"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -69,8 +69,8 @@ html_css_files = [
 ]
 
 html_theme_options = {
-    "light_logo": "logo-light-padded.png",
-    "dark_logo": "logo-neutral-padded.png",
+    "light_logo": "logo-lightmode.png",
+    "dark_logo": "logo-darkmode.png",
 }
 
 
