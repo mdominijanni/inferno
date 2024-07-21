@@ -3,6 +3,8 @@
 ## About
 Inferno is an extensible library for simulating spiking neural networks. It is built on top of [PyTorch](https://github.com/pytorch/pytorch) and is designed with machine learning practitioners in mind. This project is still an early release and features may be subject to change.
 
+*Note: This package is not yet complete. Expect a full public release soon.*
+
 ## Installation
 ### Pip
 #### With PyTorch 2.3.1 (CPU Only)
