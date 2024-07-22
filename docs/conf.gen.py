@@ -62,15 +62,15 @@ remove_from_toctrees = ["reference/generated/*"]
 html_theme = "furo"  # "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_title = "Inferno"
-# html_logo = "images/logo.png"
+# html_logo = "images/logo-anymode.svg"
 
 html_css_files = [
     "css/shape.css",
 ]
 
 html_theme_options = {
-    "light_logo": "logo-lightmode.png",
-    "dark_logo": "logo-darkmode.png",
+    "light_logo": "logo-lightmode.svg",
+    "dark_logo": "logo-darkmode.svg",
     "footer_icons": [
         {
             "name": "PyPi",
