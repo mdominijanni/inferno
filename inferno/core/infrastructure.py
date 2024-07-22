@@ -1710,7 +1710,7 @@ class RecordTensor(ShapedTensor):
         elif inplace:
             with torch.no_grad():
                 index = _unwind_ptr(ptr, offset, recordsz)
-                data[index, ...] = obs
+                data[index, ...] = obs.to(dtype=data.dtype)
 
         # splice in
         else:
@@ -1718,7 +1718,7 @@ class RecordTensor(ShapedTensor):
             self.__data = torch.cat(
                 (
                     data[slice(None, index), ...],
-                    obs.unsqueeze(0),
+                    obs.to(dtype=data.dtype).unsqueeze(0),
                     data[slice(index + 1, None), ...],
                 ),
                 0,
@@ -1924,15 +1924,15 @@ class RecordTensor(ShapedTensor):
                         0, length, dtype=torch.int64, device=data.device
                     )
                     indices = _unwind_tensor_ptr(ptr, offset, recordsz)
-                    data[indices, ...] = obs
+                    data[indices, ...] = obs.to(dtype=data.dtype)
 
             # noncontiguous range
             elif ptr + length > recordsz:
                 self.__data = torch.cat(
                     (
-                        obs[slice(recordsz - ptr, None), ...],
+                        obs[slice(recordsz - ptr, None), ...].to(dtype=data.dtype),
                         data[slice(length - (recordsz - ptr), ptr), ...],
-                        obs[slice(None, recordsz - ptr), ...],
+                        obs[slice(None, recordsz - ptr), ...].to(dtype=data.dtype),
                     ),
                     0,
                 )

@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Marissa Dominijanni", email = "mdomini@buffalo.edu" }]
 
-dependencies = ["numpy~=1.26", "einops~=0.8"]
+dependencies = ["numpy~=1.26", "einops~=0.7"]
 
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",

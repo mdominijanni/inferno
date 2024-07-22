@@ -6,13 +6,15 @@ Inferno is an extensible library for simulating spiking neural networks. It is b
 *Note: This package is not yet complete. Expect a full public release soon.*
 
 ## Installation
-### Pip
-#### With PyTorch 2.3.1 (CPU Only)
+At this time, installation is only supported via pip. Future support for installation with conda is planned.
+
+### With PyTorch (CPU Only)
 ```
 pip install inferno-ai[torch]
 ```
+Installation with the "torch" flag will install PyTorch 2.3.1 and the corresponding version of TorchVision.
 
-#### Without PyTorch
+### Without PyTorch
 ```
 pip install inferno-ai
 ```
