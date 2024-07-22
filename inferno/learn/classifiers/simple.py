@@ -1,12 +1,13 @@
-import einops as ein
 from ... import Module
 from ..._internal import argtest
+from collections.abc import Sequence
+import einops as ein
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
-class TopRateClassifier(Module):
+class MaxRateClassifier(Module):
     r"""Classifies spikes by maximum per-class rates.
 
     The classifier uses an internal parameter :py:attr:`rates` for other
@@ -14,23 +15,35 @@ class TopRateClassifier(Module):
     :math:`\exp (-\lambda b_k)` where :math:`b_k` is the number of elements of class
     :math:`k` in the batch.
 
+    Each neuron is assigned a class based on its maximum normalized per-class rate (i.e.
+    the class with which it fires most frequently, accounting for a non-uniform class
+    distribution). Given a sample, the firing rate for each neuron is added to the
+    class to which it is assigned. These per-class sample rates are divided by the number
+    of neurons assigned to that class. The maximum of these unnormalized logits is the
+    predicted class.
+
     Args:
-        shape (tuple[int, ...] | int): shape of the group of neurons with
+        shape (Sequence[int] | int): shape of the group of neurons with
             their output being classified.
         num_classes (int): total number of possible classes.
         decay_rate (float): per-update amount by which previous results
-            are scaled, :math:`\lambda`.
-        proportional (float, optional): if logits should be computed with
-            class-proportional rates. Defaults to True.
+            are scaled, :math:`\lambda`. Defaults to `0.0`.
+
+    Note:
+        The methods :py:meth:`regress`, :py:meth:`classify`, and :py:meth:`forward` take
+        an argument ``proportional``. When ``True``, the contribution of each neuron's
+        assigned class is weighted by relative affinity of that neuron for the
+        corresponding class. For example, if half of the times a neuron spiked it did
+        so on samples with its assigned class, the sample rate will be multiplied by
+        :math:`\frac{1}{2}` rather than :math:`1`.
     """
 
     def __init__(
         self,
-        shape: tuple[int, ...] | int,
+        shape: Sequence[int] | int,
         num_classes: int,
         *,
-        decay: float = 1.0,
-        proportional: float = True,
+        decay: float = 0.0,
     ):
         # call superclass constructor
         Module.__init__(self)
@@ -39,12 +52,15 @@ class TopRateClassifier(Module):
         try:
             shape = (argtest.gt("shape", shape, 0, int),)
         except TypeError:
-            shape = argtest.ofsequence("shape", shape, argtest.gt, 0, int)
+            if isinstance(shape, Sequence):
+                shape = argtest.ofsequence("shape", shape, argtest.gt, 0, int)
+            else:
+                raise TypeError(
+                    f"'shape' ({argtest._typename(type(shape))}) cannot be interpreted "
+                    "as an integer or a sequence thereof"
+                )
 
         num_classes = argtest.gt("num_classes", num_classes, 0, int)
-
-        # class attributes
-        self._proportional = proportional
 
         # register parameter
         self.register_parameter(
@@ -169,22 +185,6 @@ class TopRateClassifier(Module):
         self.occurances_ = torch.bincount(self.assignments.view(-1), None, self.nclass)
 
     @property
-    def proportional(self) -> bool:
-        r"""If inference is weighted by class-average rates.
-
-        Args:
-            value (bool): if inference should be computed using class-average rates.
-
-        Returns:
-            bool: if inference is weighted by class-average rates.
-        """
-        return self._proportional
-
-    @proportional.setter
-    def proportional(self, value: bool) -> None:
-        return self._proportional
-
-    @property
     def ndim(self) -> int:
         r"""Number of dimensions of the spikes being classified, excluding batch and time.
 
@@ -211,20 +211,16 @@ class TopRateClassifier(Module):
         """
         return tuple(self.assignments.shape)
 
-    def infer(
-        self,
-        inputs: torch.Tensor,
-        logits: bool,
-    ) -> torch.Tensor:
-        r"""Infers classes from reduced spikes
+    def regress(self, inputs: torch.Tensor, proportional: bool = True) -> torch.Tensor:
+        r"""Computes class logits from spike rates.
 
         Args:
-            inputs (torch.Tensor): batch spike rates to classify.
-            proportional (bool): if inference is weighted by class-average rates.
-            logits (bool): if logits rather than class predictions should be returned.
+            inputs (torch.Tensor): batched spike rates to classify.
+            proportional (bool, optional): if inference is weighted by class-average
+                rates. Defaults to ``True``.
 
         Returns:
-            torch.Tensor: inferences, either logits or predictions.
+            torch.Tensor: predicted logits.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -233,11 +229,7 @@ class TopRateClassifier(Module):
 
             :math:`B \times N_0 \times \cdots`
 
-            ``return (logits=False)``:
-
-            :math:`B`
-
-            ``return (logits=True)``:
+            ``return``:
 
             :math:`B \times K`
 
@@ -247,7 +239,7 @@ class TopRateClassifier(Module):
                 * :math:`K` is the number of possible classes.
         """
         # associations between neurons and classes
-        if self.proportional:
+        if proportional:
             assocs = F.one_hot(self.assignments.view(-1), self.nclass) * ein.rearrange(
                 self.proportions, "... k -> (...) k"
             )
@@ -265,20 +257,41 @@ class TopRateClassifier(Module):
         )
 
         # return logits or predictions
-        if logits:
-            return ylogits
-        else:
-            return torch.argmax(ylogits, dim=1)
+        return ylogits
 
-    def learn(
-        self,
-        inputs: torch.Tensor,
-        labels: torch.Tensor,
-    ) -> None:
-        r"""Updates stored rates from reduced spikes and labels
+    def classify(self, inputs: torch.Tensor, proportional: bool = True) -> torch.Tensor:
+        r"""Computes class labels from spike rates.
 
         Args:
-            inputs (torch.Tensor): batch spike rates from which to update state.
+            inputs (torch.Tensor): batched spike rates to classify.
+            proportional (bool, optional): if inference is weighted by class-average
+                rates. Defaults to ``True``.
+
+        Returns:
+            torch.Tensor: predicted labels.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``inputs``:
+
+            :math:`B \times N_0 \times \cdots`
+
+            ``return``:
+
+            :math:`B`
+
+            Where:
+                * :math:`B` is the batch size.
+                * :math:`N_0, \ldots` are the dimensions of the spikes being classified.
+        """
+        return torch.argmax(self.regress(inputs, proportional), dim=1)
+
+    def update(self, inputs: torch.Tensor, labels: torch.Tensor) -> None:
+        r"""Updates stored rates from spike rates and labels.
+
+        Args:
+            inputs (torch.Tensor): batched spike rates from which to update state.
             labels (torch.Tensor): ground-truth sample labels.
 
         .. admonition:: Shape
@@ -315,29 +328,32 @@ class TopRateClassifier(Module):
 
     def forward(
         self,
-        spikes: torch.Tensor,
+        inputs: torch.Tensor,
         labels: torch.Tensor | None,
-        logits: bool = False,
-    ) -> torch.Tensor | None:
-        r"""Performs inference and if labels are specified, updates state.
+        logits: bool | None = False,
+        proportional: bool = True,
+    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor] | None:
+        r"""Performs inference and updates the classifier state.
 
         Args:
-            spikes (torch.Tensor): spikes or spike rates to classify.
+            inputs (torch.Tensor): spikes or spike rates to classify.
             labels (torch.Tensor | None): ground-truth sample labels.
-            logits (bool, optional): if logits rather than class predictions
-                should be returned.. Defaults to False.
-            proportional (bool | None, optional): if not None, then it overrides the
-                class inference behavior. Defaults to None.
+            logits (bool | None, optional): if predicted class logits should be
+                returned along with labels, inference is skipped if ``None``.
+                Defaults to ``False``.
+            proportional (bool, optional): if inference is weighted by class-average
+                rates. Defaults to ``True``.
 
         Returns:
-            torch.Tensor: inferences, either logits or predictions.
+            torch.Tensor | tuple[torch.Tensor, torch.Tensor] | None: predicted class
+            labels, with unnormalized logits if specified.
 
         .. admonition:: Shape
             :class: tensorshape
 
-            ``spikes``:
+            ``inputs``:
 
-            :math:`B \times N_0 \times \cdots \times [T]`
+            :math:`[T] \times B \times N_0 \times \cdots`
 
             ``labels``:
 
@@ -349,26 +365,33 @@ class TopRateClassifier(Module):
 
             ``return (logits=True)``:
 
-            :math:`B \times K`
+            :math:`(B, B \times K)`
 
             Where:
+                * :math:`T` is the number of simulation steps over which spikes were gathered.
                 * :math:`B` is the batch size.
                 * :math:`N_0, \ldots` are the dimensions of the spikes being classified.
-                * :math:`T` is the number of simulation steps over which spikes were gathered.
                 * :math:`K` is the number of possible classes.
+
+        Important:
+            This method will always perform the inference step prior to updating the classifier.
         """
         # reduce along input time dimension, if present, to generate spike counts
-        if spikes.ndim == self.ndim + 2:
-            spikes = ein.reduce(
-                spikes.to(dtype=self.rates.dtype), "b ... t -> b ...", "mean"
-            )
+        if inputs.ndim == self.ndim + 2:
+            inputs = inputs.to(dtype=self.rates.dtype).mean(dim=0, keepdim=False)
 
         # inference
-        inferred = self.infer(spikes, logits=logits)
+        if logits is None:
+            res = None
+        elif not logits:
+            res = self.classify(inputs, proportional)
+        else:
+            res = self.regress(inputs, proportional)
+            res = (torch.argmax(res, dim=1), res)
 
-        # update state
+        # update
         if labels is not None:
-            self.learn(spikes, labels)
+            self.update(inputs, labels)
 
         # return inference
-        return inferred
+        return res

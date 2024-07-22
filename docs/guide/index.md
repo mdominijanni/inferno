@@ -1,7 +1,7 @@
 # Guidebook
 
 ```{toctree}
-:hidden:
+:maxdepth: 2
 
 concepts
 mathematics

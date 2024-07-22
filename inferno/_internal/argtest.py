@@ -9,7 +9,7 @@ def _typename(type_: type | UnionType, sep: str = ", ") -> str:
 
     Args:
         type_ (type | UnionType): type to get the name of.
-        sep (str, optional): added seperator between types in a union. Defaults to ", ".
+        sep (str, optional): added separator between types in a union. Defaults to ", ".
 
     Returns:
         str: name of a type (including a union type).
@@ -114,8 +114,8 @@ def oneof(
         value (Any): variable being testing.
         *targets (Any): values to test against.
         op (Callable[[Any], Any] | None, optional): operation to apply to ``value``
-            before comparison. Defaults to None.
-        prefix (str | None, optional): error message prefix. Defaults to None.
+            before comparison. Defaults to ``None``.
+        prefix (str | None, optional): error message prefix. Defaults to ``None``.
 
     Returns:
         Any: input value with operation applied.
@@ -135,7 +135,7 @@ def onedefined(*nvpairs: tuple[str, Any], prefix: str | None = None) -> tuple[An
     Args:
         *nvpairs (tuple[str, Any]): tuples each containing the display name of a
             variable being tested and the variable itself.
-        prefix (str | None, optional): error message prefix. Defaults to None.
+        prefix (str | None, optional): error message prefix. Defaults to ``None``.
 
     Returns:
         tuple[Any, ...]: values tested.
@@ -192,20 +192,20 @@ def dimensions(
 ) -> int | tuple[int, ...] | None:
     r"""Checks if a value can be interpreted as a shape or dimensions.
 
-    Generally, set ``permit_none`` to True for dimensions, and ``wrap_output`` to True
-    for a shape.
+    Generally, set ``permit_none`` to `True` for dimensions, and ``wrap_output``
+    to ``True`` for a shape.
 
     Args:
         name (str): display name of the variable tested.
         value (Any): variable being testing.
         lower (Any | None): inclusive lower index bound, if any.
         upper (Any | None): inclusive upper index bound, if any.
-        permit_none (bool, optional): if a value of None should be permitted.
-            Defaults to False.
-        wrap_output (bool, optional): if non-None singleton output should be wrapped.
-            Defaults to False.
+        permit_none (bool, optional): if a value of ``None`` should be permitted.
+            Defaults to ``False``.
+        wrap_output (bool, optional): if non-``None`` singleton output should be wrapped.
+            Defaults to ``False``.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         int | tuple[int, ...] | None: input after standardization.
@@ -255,19 +255,19 @@ def lt(
         value (Any): variable being testing.
         limit (Any): permitted exclusive upper bound.
         cast (type | None, optional): type to which value should be cast.
-            Defaults to None.
-        limit_name (str | None, optional): name definining the limit, if not a constant.
-            Defaults to None.
+            Defaults to ``None``.
+        limit_name (str | None, optional): name defining the limit, if not a constant.
+            Defaults to ``None``.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: value (and limit if given a name) after being cast.
 
     Note:
-        When "limit_name" is not None, it will be casted as well and will be displayed
-        in the error message. Use this if the limit is not constant but is dependent
-        upon another value.
+        When "limit_name" is not ``None``, it will be casted as well and will be
+        displayed in the error message. Use this if the limit is not constant but is
+        dependent upon another value.
     """
     # casts given value to appropriate type
     casted = _cast(name, value, cast, prefix)
@@ -309,19 +309,19 @@ def lte(
         value (Any): variable being testing.
         limit (Any): permitted inclusive upper bound.
         cast (type | None, optional): type to which value should be cast.
-            Defaults to None.
-        limit_name (str | None, optional): name definining the limit, if not a constant.
-            Defaults to None.
+            Defaults to ``None``.
+        limit_name (str | None, optional): name defining the limit, if not a constant.
+            Defaults to ``None``.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: value (and limit if given a name) after being cast.
 
     Note:
-        When "limit_name" is not None, it will be casted as well and will be displayed
-        in the error message. Use this if the limit is not constant but is dependent
-        upon another value.
+        When "limit_name" is not ``None``, it will be casted as well and will be
+        displayed in the error message. Use this if the limit is not constant but is
+        dependent upon another value.
     """
     # casts given value to appropriate type
     casted = _cast(name, value, cast, prefix)
@@ -363,19 +363,19 @@ def gt(
         value (Any): variable being testing.
         limit (Any): permitted exclusive lower bound.
         cast (type | None, optional): type to which value should be cast.
-            Defaults to None.
-        limit_name (str | None, optional): name definining the limit, if not a constant.
-            Defaults to None.
+            Defaults to ``None``.
+        limit_name (str | None, optional): name defining the limit, if not a constant.
+            Defaults to ``None``.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: value (and limit if given a name) after being cast.
 
     Note:
-        When "limit_name" is not None, it will be casted as well and will be displayed
-        in the error message. Use this if the limit is not constant but is dependent
-        upon another value.
+        When "limit_name" is not ``None``, it will be casted as well and will be
+        displayed in the error message. Use this if the limit is not constant but is
+        dependent upon another value.
     """
     # casts given value to appropriate type
     casted = _cast(name, value, cast, prefix)
@@ -417,19 +417,19 @@ def gte(
         value (Any): variable being testing.
         limit (Any): permitted inclusive lower bound.
         cast (type | None, optional): type to which value should be cast.
-            Defaults to None.
-        limit_name (str | None, optional): name definining the limit, if not a constant.
-            Defaults to None.
+            Defaults to ``None``.
+        limit_name (str | None, optional): name defining the limit, if not a constant.
+            Defaults to ``None``.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: value (and limit if given a name) after being cast.
 
     Note:
-        When "limit_name" is not None, it will be casted as well and will be displayed
-        in the error message. Use this if the limit is not constant but is dependent
-        upon another value.
+        When "limit_name" is not ``None``, it will be casted as well and will be
+        displayed in the error message. Use this if the limit is not constant but is
+        dependent upon another value.
     """
     # casts given value to appropriate type
     casted = _cast(name, value, cast, prefix)
@@ -473,19 +473,19 @@ def neq(
         value (Any): variable being testing.
         limit (Any): forbidden value.
         cast (type | None, optional): type to which value should be cast.
-            Defaults to None.
-        limit_name (str | None, optional): name definining the limit, if not a constant.
-            Defaults to None.
+            Defaults to ``None``.
+        limit_name (str | None, optional): name defining the limit, if not a constant.
+            Defaults to ``None``.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: value (and limit if given a name) after being cast.
 
     Note:
-        When "limit_name" is not None, it will be casted as well and will be displayed
-        in the error message. Use this if the limit is not constant but is dependent
-        upon another value.
+        When "limit_name" is not ``None``, it will be casted as well and will be
+        displayed in the error message. Use this if the limit is not constant but is
+        dependent upon another value.
     """
     # casts given value to appropriate type
     casted = _cast(name, value, cast, prefix)
@@ -526,9 +526,9 @@ def minmax_incl(
         lower (Any): permitted inclusive lower bound.
         upper (Any): permitted inclusive upper bound.
         cast (type | None, optional): type to which value should be cast.
-            Defaults to None.
+            Defaults to ``None``.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: value after being cast.
@@ -562,9 +562,9 @@ def minmax_excl(
         lower (Any): permitted exclusive lower bound.
         upper (Any): permitted exclusive upper bound.
         cast (type | None, optional): type to which value should be cast.
-            Defaults to None.
+            Defaults to ``None``.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: value after being cast.
@@ -598,9 +598,9 @@ def min_excl_max_incl(
         lower (Any): permitted exclusive lower bound.
         upper (Any): permitted inclusive upper bound.
         cast (type | None, optional): type to which value should be cast.
-            Defaults to None.
+            Defaults to ``None``.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: value after being cast.
@@ -634,9 +634,9 @@ def min_incl_max_excl(
         lower (Any): permitted inclusive lower bound.
         upper (Any): permitted exclusive upper bound.
         cast (type | None, optional): type to which value should be cast.
-            Defaults to None.
+            Defaults to ``None``.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: value after being cast.
@@ -667,7 +667,7 @@ def instance(
         obj (Any): object being tested.
         typespec (type | UnionType | tuple[type | UnionType, ...]): allowed types.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: tested object.
@@ -695,7 +695,7 @@ def members(name: str, obj: Any, *attr: str, prefix: str | None = None) -> Any:
         obj (Any): object being tested.
         attr (str): required attributes.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: tested object.
@@ -717,7 +717,7 @@ def nestedmembers(name: str, obj: Any, *attr: str, prefix: str | None = None) ->
         obj (Any): object being tested.
         attr (str): required nested attributes.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         Any: tested object.
@@ -736,13 +736,13 @@ def nestedmembers(name: str, obj: Any, *attr: str, prefix: str | None = None) ->
 
 
 def identifier(name: str, value: str, prefix: str | None = None) -> str:
-    r"""Checks if a string is a valid identifier. Does not check for existance.
+    r"""Checks if a string is a valid identifier. Does not check for existence.
 
     Args:
         name (str): display name of the object being tested.
         value (str): value (Any): variable being testing.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         str: tested object.
@@ -758,13 +758,13 @@ def identifier(name: str, value: str, prefix: str | None = None) -> str:
 
 
 def nestedidentifier(name: str, value: str, prefix: str | None = None) -> str:
-    r"""Checks if a string is a valid identifier, or dot seperated identifiers. Does not check for existance.
+    r"""Checks if a string is a valid identifier, or dot separated identifiers. Does not check for existence.
 
     Args:
         name (str): display name of the object being tested.
         value (str): value (Any): variable being testing.
         prefix (str | None, optional): error message prefix to display.
-            Defaults to None.
+            Defaults to ``None``.
 
     Returns:
         str: tested object.
@@ -775,7 +775,7 @@ def nestedidentifier(name: str, value: str, prefix: str | None = None) -> str:
     elif any(map(lambda s: not s.isidentifier(), value.split("."))):
         val, pfx = _valuestr(value), _prefixstr(prefix)
         raise ValueError(
-            f"{pfx}'{name}' ({val}) is not a valid dot-seperated identifier"
+            f"{pfx}'{name}' ({val}) is not a valid dot-separated identifier"
         )
     else:
         return value
@@ -795,8 +795,8 @@ def index(
         value (int): variable being testing.
         length (int): length of the sequence being tested against
         length_name (str | None, optional): name of the sequence, if not a constant.
-            Defaults to None.
-        prefix (str | None, optional): error message prefix. Defaults to None.
+            Defaults to ``None``.
+        prefix (str | None, optional): error message prefix. Defaults to ``None``.
 
     Returns:
         int: value tested

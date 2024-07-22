@@ -67,7 +67,7 @@ def divsum(
         keepdim (bool, optional): if the dimensions should be retained in the output.
             Defaults to ``False``.
         denom (int | float | complex, optional): value by which to divide the sum.
-            Defaults to 1.
+            Defaults to ``1``.
 
     Returns:
         torch.Tensor: dimensionally reduced tensor.
@@ -98,7 +98,7 @@ def nandivsum(
         keepdim (bool, optional): if the dimensions should be retained in the output.
             Defaults to ``False``.
         denom (int | float | complex, optional): value by which to divide the sum.
-            Defaults to 1.
+            Defaults to ``1``.
 
     Returns:
         torch.Tensor: dimensionally reduced tensor.
@@ -298,7 +298,7 @@ def quantile(
             Defaults to ``None``.
         keepdim (bool, optional): if the dimensions should be retained in the output.
             Defaults to ``False``.
-        q (float, optional): :math:`q^\text{th}` quantile to take. Defaults to 0.5.
+        q (float, optional): :math:`q^\text{th}` quantile to take. Defaults to ``0.5``.
         interpolation (str, optional): method of interpolation when the quantile lies
             between two data points. Defaults to "linear".
 
@@ -340,7 +340,7 @@ def nanquantile(
             Defaults to ``None``.
         keepdim (bool, optional): if the dimensions should be retained in the output.
             Defaults to ``False``.
-        q (float, optional): :math:`q^\text{th}` quantile to take. Defaults to 0.5.
+        q (float, optional): :math:`q^\text{th}` quantile to take. Defaults to ``0.5``.
         interpolation (str, optional): method of interpolation when the quantile lies
             between two data points. Defaults to "linear".
 
@@ -404,7 +404,7 @@ def geomean(
     keepdim: bool = False,
     **kwargs,
 ) -> torch.Tensor:
-    """Returns a tensor with dimensions reduced by taking the geometric mean.
+    r"""Returns a tensor with dimensions reduced by taking the geometric mean.
 
     The geometric mean is calculated by taking the arithmetic mean of the log,
     where zero values are ignored. If all elements being reduced are zero, then the
@@ -441,7 +441,7 @@ def nangeomean(
     keepdim: bool = False,
     **kwargs,
 ) -> torch.Tensor:
-    """Returns a tensor with dimensions reduced by taking the geometric mean, excluding NaN values.
+    r"""Returns a tensor with dimensions reduced by taking the geometric mean, excluding NaN values.
 
     The geometric mean is calculated by taking the arithmetic mean of the log,
     where zero and ``NaN`` values are ignored. If all elements being reduced are zero

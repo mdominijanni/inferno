@@ -8,11 +8,12 @@ from .trainers.ustdp import (
 )
 
 from .trainers.sstdp import (
-    MSTDPET, MSTDP,
+    MSTDPET,
+    MSTDP,
 )
 
 from .classifiers.simple import (
-    TopRateClassifier,
+    MaxRateClassifier,
 )
 
 __all__ = [
@@ -21,5 +22,5 @@ __all__ = [
     "STDP",
     "MSTDP",
     "MSTDPET",
-    "TopRateClassifier",
+    "MaxRateClassifier",
 ]

@@ -278,8 +278,7 @@ class TestSTDP:
                                 )
                                 * layer.connection.presyn_receptive(
                                     unit.monitors["trace_pre"].peek()
-                                )
-                                * abs(lr_post),
+                                ),
                                 -1,
                             ),
                             0,
@@ -297,8 +296,7 @@ class TestSTDP:
                                 )
                                 * layer.connection.postsyn_receptive(
                                     unit.monitors["trace_post"].peek()
-                                )
-                                * abs(lr_pre),
+                                ),
                                 -1,
                             ),
                             0,
@@ -317,8 +315,7 @@ class TestSTDP:
                                 )
                                 * layer.connection.presyn_receptive(
                                     unit.monitors["trace_pre"].peek()
-                                )
-                                * abs(lr_post),
+                                ),
                                 -1,
                             ),
                             0,
@@ -336,8 +333,7 @@ class TestSTDP:
                                 )
                                 * layer.connection.postsyn_receptive(
                                     unit.monitors["trace_post"].peek()
-                                )
-                                * abs(lr_pre),
+                                ),
                                 -1,
                             ),
                             0,
@@ -357,8 +353,7 @@ class TestSTDP:
                                     )
                                     * layer.connection.presyn_receptive(
                                         unit.monitors["trace_pre"].peek()
-                                    )
-                                    * abs(lr_post),
+                                    ),
                                     -1,
                                 ),
                                 0,
@@ -370,8 +365,7 @@ class TestSTDP:
                                     )
                                     * layer.connection.postsyn_receptive(
                                         unit.monitors["trace_post"].peek()
-                                    )
-                                    * abs(lr_pre),
+                                    ),
                                     -1,
                                 ),
                                 0,
@@ -393,8 +387,7 @@ class TestSTDP:
                                     )
                                     * layer.connection.presyn_receptive(
                                         unit.monitors["trace_pre"].peek()
-                                    )
-                                    * abs(lr_post),
+                                    ),
                                     -1,
                                 ),
                                 0,
@@ -406,8 +399,7 @@ class TestSTDP:
                                     )
                                     * layer.connection.postsyn_receptive(
                                         unit.monitors["trace_post"].peek()
-                                    )
-                                    * abs(lr_pre),
+                                    ),
                                     -1,
                                 ),
                                 0,

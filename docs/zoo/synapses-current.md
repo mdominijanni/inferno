@@ -1,4 +1,4 @@
-# Synapse Models, Current-Based
+# Synapses, Current
 
 ## Delta (CUBA Variant)
 ### Formulation
@@ -30,7 +30,7 @@ case, $\delta(t - t_f)$ has units $\text{ms}^{-1}$.
 ### Description
 This is a very simplified model for a synapse. In simulations its role is to normalize
 the current delivered for a given spike such that simulation time step does not dramatically
-change the integration of current from actional potentials into the neuron.
+change the integration of current from action potentials into the neuron.
 
 ### References
 1. [ISBN:9780262548083](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)

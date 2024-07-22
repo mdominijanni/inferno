@@ -265,15 +265,15 @@ class ShapedTensor:
         name (str): name of the attribute.
         value (torch.Tensor | nn.Parameter | None): tensor-like data for the attribute.
         constraints (dict[int, int] | None, optional): constraints given as a
-            dictionary of dimensions to their corresponding size. Defaults to None.
+            dictionary of dimensions to their corresponding size. Defaults to ``None``.
         persist_data (bool, optional): if the data should persist across the
-            state dictionary, only used with buffers. Defaults to True.
+            state dictionary, only used with buffers. Defaults to ``True``.
         persist_constraints (bool, optional): if the constraints should persist
-            across the state dictionary. Defaults to False.
+            across the state dictionary. Defaults to ``False``.
         strict (bool, optional): if each dimension must specify a unique dimension
-            for the tensor. Defaults to True.
+            for the tensor. Defaults to ``True``.
         live (bool, optional): if constraint validity should be tested on
-            assignment. Defaults to False.
+            assignment. Defaults to ``False``.
 
     Raises:
         RuntimeError: given data is neither ignored nor compatible with given
@@ -369,15 +369,16 @@ class ShapedTensor:
             value (torch.Tensor | nn.Parameter | None): tensor-like data for the
                 attribute.
             constraints (dict[int, int] | None, optional): constraints given as a
-                dictionary of dimensions to their corresponding size. Defaults to None.
+                dictionary of dimensions to their corresponding size.
+                Defaults to ``None``.
             persist_data (bool, optional): if the data should persist across the
-                state dictionary, only used with buffers. Defaults to True.
+                state dictionary, only used with buffers. Defaults to ``True``.
             persist_constraints (bool, optional): if the constraints should persist
-                across the state dictionary. Defaults to False.
+                across the state dictionary. Defaults to ``False``.
             strict (bool, optional): if each dimension must specify a unique dimension
-                for the tensor. Defaults to True.
+                for the tensor. Defaults to ``True``.
             live (bool, optional): if constraint validity should be tested on
-                assignment. Defaults to False.
+                assignment. Defaults to ``False``.
         """
         constrained = cls(
             owner,
@@ -482,9 +483,9 @@ class ShapedTensor:
             dim (int): dimension to resize.
             size (int): new size for the dimension.
             preserve_tail (bool, optional): if the tail (higher indices) of a tensor
-                should be unaltered. Defaults to True.
+                should be unaltered. Defaults to ``True``.
             fill (Any, optional): value with which to fill expanded dimensions.
-                Defaults to 0.
+                Defaults to ``0``.
 
         Returns:
             torch.Tensor | nn.Parameter: resized tensor.
@@ -635,7 +636,7 @@ class ShapedTensor:
 
     @property
     def ignored(self) -> bool:
-        r"""If the current tensor is ignored
+        r"""If the current tensor is ignored.
 
         Returns:
             bool: if the current tensor is ignored.
@@ -865,19 +866,19 @@ class RecordTensor(ShapedTensor):
         duration (float): length of time over which prior values are stored.
         value (torch.Tensor | nn.Parameter | None): tensor-like data for the attribute.
         constraints (dict[int, int] | None, optional): constraints given as a
-            dictionary of dimensions to their corresponding size. Defaults to None.
+            dictionary of dimensions to their corresponding size. Defaults to ``None``.
         persist_data (bool, optional): if the data should persist across the
             state dictionary, only used with buffers. Defaults to True.
         persist_constraints (bool, optional): if the constraints should persist
-            across the state dictionary. Defaults to False.
+            across the state dictionary. Defaults to ``False``.
         persist_temporal (bool, optional): if temporal information (step time and
-            duration) should persist across the state dictionary. Defaults to False.
+            duration) should persist across the state dictionary. Defaults to ``False``.
         strict (bool, optional): if each dimension must specify a unique dimension
             for the tensor. Defaults to True.
         live (bool, optional): if constraint validity should be tested on
-            assignment. Defaults to False.
+            assignment. Defaults to ``False``.
         inclusive (bool): if the duration should represent the maximum time which can
-            be sampled. Defaults to False.
+            be sampled. Defaults to ``False``.
 
     Note:
         While the last dimension of a selector tensor is used to index times, the
@@ -1014,19 +1015,21 @@ class RecordTensor(ShapedTensor):
             value (torch.Tensor | nn.Parameter | None): tensor-like data for the
                 attribute.
             constraints (dict[int, int] | None, optional): constraints given as a
-                dictionary of dimensions to their corresponding size. Defaults to None.
+                dictionary of dimensions to their corresponding size.
+                Defaults to ``None``.
             persist_data (bool, optional): if the data should persist across the
-                state dictionary, only used with buffers. Defaults to True.
+                state dictionary, only used with buffers. Defaults to ``True``.
             persist_constraints (bool, optional): if the constraints should persist
-                across the state dictionary. Defaults to False.
+                across the state dictionary. Defaults to ``False``.
             persist_temporal (bool, optional): if temporal information (step time and
-                duration) should persist across the state dictionary. Defaults to False.
+                duration) should persist across the state dictionary.
+                Defaults to ``False``.
             strict (bool, optional): if each dimension must specify a unique dimension
-                for the tensor. Defaults to True.
+                for the tensor. Defaults to ``True``.
             live (bool, optional): if constraint validity should be tested on
-                assignment. Defaults to False.
-            inclusive (bool): if the duration should represent the maximum time which can
-                be sampled. Defaults to False.
+                assignment. Defaults to ``False``.
+            inclusive (bool): if the duration should represent the maximum time which
+                can be sampled. Defaults to ``False``.
         """
         constrained = cls(
             owner,
@@ -1360,7 +1363,7 @@ class RecordTensor(ShapedTensor):
         r"""Aligns the storage such that the oldest observation is at a specified index.
 
         Args:
-            index (int, optional): index to align to. Defaults to 0.
+            index (int, optional): index to align to. Defaults to ``0``.
 
         Raises:
             RuntimeError: cannot align when storage is uninitialized (ignored).
@@ -1384,7 +1387,7 @@ class RecordTensor(ShapedTensor):
 
         Args:
             fill (Any | None, optional): value with which to fill the storage, or if
-                ``None`` no fill will be applied. Defaults to 0.
+                ``None`` no fill will be applied. Defaults to ``0``.
         """
         # strongly reference data
         data = self.__data
@@ -1418,7 +1421,8 @@ class RecordTensor(ShapedTensor):
                 place the tensor when not ``None``. Defaults to ``None``.
             dtype (torch.dtype | None, optional): overrides data tyoe of the tensor
                 when not ``None``. Defaults to ``None``.
-            fill (Any, optional): value with which to fill the tensor. Defaults to 0.
+            fill (Any, optional): value with which to fill the tensor.
+                Defaults to ``0``.
 
         Returns:
             torch.Tensor | nn.Parameter: initialized buffer or parameter.
@@ -1470,8 +1474,8 @@ class RecordTensor(ShapedTensor):
         with ``UninitializedBuffer()`` or ``torch.empty(0)``.
 
         Args:
-            use_uninitialized (bool, optional): if an uninitalized buffer or
-                uninitialized parameter should be used. Defaults to False.
+            use_uninitialized (bool, optional): if an uninitialized buffer or
+                uninitialized parameter should be used. Defaults to ``False``.
 
         Returns:
             torch.Tensor | nn.Parameter: deinitialized storage.
@@ -1526,7 +1530,7 @@ class RecordTensor(ShapedTensor):
 
         Args:
             pos (int, optional): number of steps by which to move the pointer
-                forward. Defaults to 1.
+                forward. Defaults to ``1``.
 
         Returns:
             int: new location of the pointer.
@@ -1547,7 +1551,7 @@ class RecordTensor(ShapedTensor):
 
         Args:
             pos (int, optional): number of steps by which to move the pointer
-                backward. Defaults to 1.
+                backward. Defaults to ``1``.
 
         Returns:
             int: new location of the pointer.
@@ -1631,7 +1635,8 @@ class RecordTensor(ShapedTensor):
         value ``offset=1`` will return the most recently pushed observation.
 
         Args:
-            offset (int, optional): number of steps before the pointer. Defaults to 1.
+            offset (int, optional): number of steps before the pointer.
+                Defaults to ``1``.
 
         Raises:
             RuntimeError: cannot read from uninitialized (ignored) storage.
@@ -1668,7 +1673,8 @@ class RecordTensor(ShapedTensor):
 
         Args:
             obs (torch.Tensor): observation to write at the specified offset.
-            offset (int, optional): number of steps before the pointer. Defaults to 0.
+            offset (int, optional): number of steps before the pointer.
+                Defaults to ``0``.
             inplace (bool, optional): if the operation should be performed in-place
                 with :py:func:`torch.no_grad`. Defaults to ``False``.
 
@@ -1710,7 +1716,7 @@ class RecordTensor(ShapedTensor):
         elif inplace:
             with torch.no_grad():
                 index = _unwind_ptr(ptr, offset, recordsz)
-                data[index, ...] = obs
+                data[index, ...] = obs.to(dtype=data.dtype)
 
         # splice in
         else:
@@ -1718,7 +1724,7 @@ class RecordTensor(ShapedTensor):
             self.__data = torch.cat(
                 (
                     data[slice(None, index), ...],
-                    obs.unsqueeze(0),
+                    obs.to(dtype=data.dtype).unsqueeze(0),
                     data[slice(index + 1, None), ...],
                 ),
                 0,
@@ -1749,7 +1755,7 @@ class RecordTensor(ShapedTensor):
         Args:
             length (int): number of observations to read.
             offset (int | torch.Tensor, optional): number of steps before the pointer.
-                Defaults to 1.
+                Defaults to ``1``.
             forward (bool, optional): if the offset pointer indicates the index of the
                 first observation. Defaults to ``False``.
 
@@ -1924,15 +1930,15 @@ class RecordTensor(ShapedTensor):
                         0, length, dtype=torch.int64, device=data.device
                     )
                     indices = _unwind_tensor_ptr(ptr, offset, recordsz)
-                    data[indices, ...] = obs
+                    data[indices, ...] = obs.to(dtype=data.dtype)
 
             # noncontiguous range
             elif ptr + length > recordsz:
                 self.__data = torch.cat(
                     (
-                        obs[slice(recordsz - ptr, None), ...],
+                        obs[slice(recordsz - ptr, None), ...].to(dtype=data.dtype),
                         data[slice(length - (recordsz - ptr), ptr), ...],
-                        obs[slice(None, recordsz - ptr), ...],
+                        obs[slice(None, recordsz - ptr), ...].to(dtype=data.dtype),
                     ),
                     0,
                 )
@@ -1999,8 +2005,10 @@ class RecordTensor(ShapedTensor):
             interp (Interpolation | None, optional): function to interpolate between
                 neighboring observations, nearest when ``None``. Defaults to ``None``.
             tolerance (float, optional): maximum difference in time from a discrete
-                sample to consider a time co-occuring with the sample. Defaults to 1e-6.
-            offset (int, optional): number of steps before the pointer. Defaults to 1.
+                sample to consider a time co-occurring with the sample.
+                Defaults to ``1e-6``.
+            offset (int, optional): number of steps before the pointer.
+                Defaults to ``1``.
             interp_kwargs (dict[str, Any] | None, optional): dictionary of keyword
                 arguments to pass to ``interp``. Defaults to ``None``.
 
@@ -2169,8 +2177,10 @@ class RecordTensor(ShapedTensor):
                 observation to its neighbors, nearest when ``None``.
                 Defaults to ``None``.
             tolerance (float, optional): maximum difference in time from a discrete
-                sample to consider a time co-occuring with the sample. Defaults to 1e-6.
-            offset (int, optional): number of steps before the pointer. Defaults to 0.
+                sample to consider a time co-occurring with the sample.
+                Defaults to ``1e-6``.
+            offset (int, optional): number of steps before the pointer.
+                Defaults to ``0``.
             inplace (bool, optional): if the operation should be performed in-place
                 with :py:func:`torch.no_grad`. Defaults to ``False``.
             extrap_kwargs (dict[str, Any] | None, optional): dictionary of keyword
@@ -3009,7 +3019,7 @@ class StateHook(Module, ContextualHook, ABC):
             Hook.register(self, self.module)
 
     def forward(self, force: bool = False, ignore_mode: bool = False) -> None:
-        """Executes the hook at any time, by default only when registered.
+        r"""Executes the hook at any time, by default only when registered.
 
         Args:
             force (bool, optional): run the hook even if it is unregistered.

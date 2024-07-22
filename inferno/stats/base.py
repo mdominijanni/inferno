@@ -12,7 +12,7 @@ class Distribution(ABC):
         Returns:
             dict[str, torch.Tensor | bool | None]: argument name and if it is valid,
             returned as a tensor of dtype :py:data:`torch.bool` if a non-scalar tensor
-            is given, None if not given.
+            is given, ``None`` if not given.
 
         Raises:
             NotImplementedError: must be implemented by the subclass.

@@ -1,4 +1,4 @@
-# Mathematical Refresher
+# Math Reference
 
 ## Exponential Decay and Time Constants
 Because spiking neural networks represent stateful systems that change over time, the notion of *exponential decay* frequently comes up. Exponential decay is defined as a phenomenon where the rate at which a quantity decreases is proportional to its current value. It can be described by the differential equation
@@ -15,7 +15,7 @@ $$
 
 where $N_0 = N(0)$.
 
-This phenomenon is oft-used in spiking neural networks. When used in simulations involving discrete timesteps, such as those performed with Inferno, they will often appear in the form of
+This phenomenon is oft-used in spiking neural networks. When used in simulations involving discrete time steps, such as those performed with Inferno, they will often appear in the form of
 
 $$
 N(t + \Delta t) = N(t)\exp\left(-\frac{\Delta t}{\tau}\right)

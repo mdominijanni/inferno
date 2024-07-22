@@ -19,7 +19,8 @@ class PassthroughNeuron(InfernoNeuron):
             :math:`V_\text{rest}`, in :math:`\text{mV}`.
         thresh_v (float): membrane voltage at which action potentials are generated,
             in :math:`\text{mV}`.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+        batch_size (int, optional): size of input batches for simulation.
+            Defaults to ``1``.
 
     Note:
         Unlike in an actual neuron model, ``rest_v`` and ``thresh_v`` don't control any
