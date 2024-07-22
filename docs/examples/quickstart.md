@@ -44,8 +44,8 @@ train_set = MNIST(
         [
             ToImage(),
             ToDtype(torch.float32, scale=True),
-            Lambda(lambda x: x.squeeze(0))
-        ]
+            Lambda(lambda x: x.squeeze(0)),
+        ],
     ),
     download=True,
 )
@@ -57,8 +57,8 @@ test_set = MNIST(
         [
             ToImage(),
             ToDtype(torch.float32, scale=True),
-            Lambda(lambda x: x.squeeze(0))
-        ]
+            Lambda(lambda x: x.squeeze(0)),
+        ],
     ),
     download=True,
 )
@@ -120,6 +120,7 @@ enc2exc = neural.LinearDense(
     step_time,
     synapse=neural.DeltaCurrent.partialconstructor(100.0),
     weight_init=lambda x: inferno.rescale(inferno.uniform(x), 0.0, 0.3),
+    batch_size=batch_size,
 )
 
 inh2exc = neural.LinearLateral(
@@ -127,6 +128,7 @@ inh2exc = neural.LinearLateral(
     step_time,
     synapse=neural.DeltaCurrent.partialconstructor(100.0),
     weight_init=lambda x: inferno.full(x, -180.0),
+    batch_size=batch_size,
 )
 
 exc2inh = neural.LinearDirect(
@@ -134,6 +136,7 @@ exc2inh = neural.LinearDirect(
     step_time,
     synapse=neural.DeltaCurrent.partialconstructor(75.0),
     weight_init=lambda x: inferno.full(x, 22.5),
+    batch_size=batch_size,
 )
 ```
 
@@ -213,16 +216,12 @@ A limit imposed on cells is that the output shape, {py:attr}`~inferno.neural.Con
 
 ```{code} python
 trainer = learn.STDP(
-        step_time=step_time,
-        lr_post=5e-4,
-        lr_pre=-5e-6,
-        tc_post=30.0,
-        tc_pre=30.0,
-        delayed=False,
-        interp_tolerance=0.0,
-        trace_mode="cumulative",
-        batch_reduction="mean",
-    )
+    step_time=step_time,
+    lr_post=5e-4,
+    lr_pre=-5e-6,
+    tc_post=30.0,
+    tc_pre=30.0,
+)
 ```
 
 If we look at the `STDP` class, we'll see that it inherits from {py:class}`~inferno.learn.IndependentCellTrainer`, which has some implementation to help with developing classes for training methods where the training of each cell is independent of every other cell. This inherits from {py:class}`~inferno.learn.CellTrainer`, which provides a more limited implementation and should be used for training methods where some dependency between cells does exist.
@@ -234,6 +233,7 @@ updater = model.feedfwd.connection.defaultupdater()
 model.feedfwd.connection.updater = updater
 
 trainer.register_cell("feedfwd", model.feedfwd.cell)
+trainer.to(device=device)
 ```
 
 We've already specified that the weights should be normalized, but we also want to specify that they stay within a certain range. The simplest way of doing this is by clamping (also called clipping) the values within a range. This can also be done with [parameter dependence](<guide/concepts:Parameter Dependence>). For this example, the lower bound will be clamped, and the upper bound will be enforced with multiplicative parameter dependence.
@@ -254,7 +254,7 @@ Adding parameter dependence is done by accessing the {py:class}`~inferno.neural.
 ```{code} python
 updater.weight.upperbound(
     functional.bound_upper_multiplicative,
-    max=1.0,
+    1.0,
 )
 ```
 
@@ -266,6 +266,7 @@ classifier = learn.MaxRateClassifier(
     num_classes=10,
     decay=1e-6,
 )
+classifier.to(device=device)
 ```
 
 ## Training/Testing Loop
@@ -282,6 +283,8 @@ encoder = neural.HomogeneousPoissonEncoder(
 
 As previously mentioned, the convention in Inferno is for encoders to take inputs scaled between zero and one. Here, the frequency (in Hertz) is a linear scaling factor for determining the expected spike rate for a given input.
 
+We can then write the functions for the training/testing loop. Note that the classifier isn't updated every batch, but in this case every tenth batch.
+
 ```{code} python
 classify_interval = 10
 
@@ -293,12 +296,12 @@ def train(data, encoder, model, trainer, classifier):
     for batch, (X, y) in enumerate(data, start=1):
         X, y = X.to(device=device), y.to(device=device)
 
-        rates.append(model(encoder(X), trainer).mean(dim=0))
+        rates.append(model(encoder(X), trainer).float().mean(dim=0))
         labels.append(y)
 
         if batch % classify_interval == 0:
-            rates = torch.stack(rates, dim=0)
-            labels = torch.stack(labels, dim=0)
+            rates = torch.cat(rates, dim=0)
+            labels = torch.cat(labels, dim=0)
 
             pred = classifier(rates, labels)
             nc = (pred == labels).sum().item()
@@ -308,10 +311,10 @@ def train(data, encoder, model, trainer, classifier):
             print(f"acc: {(nc / rates.size(0)):.4f} [{current:>5d}/{size:>5d}]")
             rates, labels = [], []
 
-        model.apply()
-
     print(f"Training Accuracy:\n    {(correct / size):.4f}")
 ```
+
+The function for testing is very similar, except it excludes the trainer as it won't be updated. The classifier is still passed in for computing the prediction accuracy. Unlike in the training function, the true labels aren't given to the classifier, and therefore it will only infer.
 
 ```{code} python
 def test(data, encoder, model, classifier):
@@ -322,12 +325,12 @@ def test(data, encoder, model, classifier):
     for batch, (X, y) in enumerate(data, start=1):
         X, y = X.to(device=device), y.to(device=device)
 
-        rates.append(model(encoder(X), None).mean(dim=0))
+        rates.append(model(encoder(X), None).float().mean(dim=0))
         labels.append(y)
 
         if batch % classify_interval == 0:
-            rates = torch.stack(rates, dim=0)
-            labels = torch.stack(labels, dim=0)
+            rates = torch.cat(rates, dim=0)
+            labels = torch.cat(labels, dim=0)
 
             pred = classifier(rates, None)
             correct += (pred == labels).sum().item()
@@ -337,6 +340,8 @@ def test(data, encoder, model, classifier):
 
     print(f"Testing Accuracy:\n    {(correct / size):.4f}\n")
 ```
+
+For the main loop, we need to set both the model and the trainer into the correct `training` mode. This will manage the hook triggers. When the trainer is set into evaluation mode, it will also deregister any hooks it creates in order to avoid runtime tests of the `training` mode.
 
 ```{code} python
 epochs = 1
