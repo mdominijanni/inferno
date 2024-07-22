@@ -63,6 +63,7 @@ html_theme = "furo"  # "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_title = "Inferno"
 # html_logo = "images/logo-anymode.svg"
+html_favicon = "images/inferno-favicon.svg"
 
 html_css_files = [
     "css/shape.css",
