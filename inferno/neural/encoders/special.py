@@ -20,7 +20,7 @@ class PoissonIntervalEncoder(GeneratorMixin, StepMixin, Module):
         frequency (float): maximum spike frequency (associated with an input of 1),
             :math:`f`, in :math:`\text{Hz}`.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
     """
 
     def __init__(

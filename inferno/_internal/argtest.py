@@ -5,11 +5,11 @@ from typing import Any, Callable
 
 
 def _typename(type_: type | UnionType, sep: str = ", ") -> str:
-    """Module Internal: gets the name of a given type or UnionType.
+    r"""Module Internal: gets the name of a given type or UnionType.
 
     Args:
         type_ (type | UnionType): type to get the name of.
-        sep (str, optional): added separator between types in a union. Defaults to ", ".
+        sep (str, optional): added separator between types in a union. Defaults to ``", "``.
 
     Returns:
         str: name of a type (including a union type).
@@ -153,7 +153,7 @@ def integer(name: str, value: Any, prefix: str | None = None) -> int:
     Args:
         name (str): display name of the variable tested.
         value (Any): variable being testing.
-        prefix (str | None, optional): error message prefix. Defaults to None.
+        prefix (str | None, optional): error message prefix. Defaults to ``None``.
 
     Returns:
         int: value casted as an integer.

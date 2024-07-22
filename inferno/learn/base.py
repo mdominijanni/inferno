@@ -26,10 +26,10 @@ class CellTrainer(Module):
     """
 
     def __init__(self, **kwargs):
-        # call superclass
+        # call superclass constructor
         Module.__init__(self, **kwargs)
 
-        # interal storage for cells and monitors
+        # interval storage for cells and monitors
         self.cells_ = weakref.WeakValueDictionary()
         self.aux_states_ = nn.ModuleDict()
         self.monitor_pool_ = MonitorPool()
@@ -61,7 +61,7 @@ class CellTrainer(Module):
         r"""Monitors associated with a given cell.
 
         Args:
-            cell (str): name of the cell to get associted monitors of.
+            cell (str): name of the cell to get associated monitors of.
 
         Yields:
             tuple[str, Monitor]: associated monitors and their names.
@@ -96,7 +96,8 @@ class CellTrainer(Module):
         Args:
             name (str): name of the cell to add.
             cell (Cell): cell to add.
-            state (nn.Module | None, optional): any extra state to add. Defaults to None.
+            state (nn.Module | None, optional): any extra state to add.
+                Defaults to ``None``.
 
         Raises:
             ValueError: a cell with the specified name already exists.
@@ -185,10 +186,10 @@ class CellTrainer(Module):
         Args:
             cell (str): name of the cell to which the monitor will be added.
             name (str): name of the monitor to add (unique to the cell).
-            attr (str): dot-seperated attribute to monitor, relative to the cell.
+            attr (str): dot-separated attribute to monitor, relative to the cell.
             monitor (MonitorConstructor): partial constructor for the monitor.
             unique (bool): if the monitor should not be aliased from the pool
-                regardless. Defaults to False.
+                regardless. Defaults to ``False``.
             **tags (Any): tags to determine if the monitor is unique amongst monitors
                 with the same name, class, and reducer class.
 
@@ -249,8 +250,8 @@ class CellTrainer(Module):
         to do so).
 
         Args:
-            mode (bool, optional): if the trainer should be set in training mode (True)
-                or evaluation mode (False). Defaults to True.
+            mode (bool, optional): if the trainer should be set in training mode
+                (``True``) or evaluation mode (``False``). Defaults to ``True``.
 
         Returns:
             CellTrainer: self.
@@ -269,7 +270,7 @@ class CellTrainer(Module):
         return self
 
     def clear(self, **kwargs) -> None:
-        """Clears all of the monitors for the trainer.
+        r"""Clears all of the monitors for the trainer.
 
         Note:
             Keyword arguments are passed to :py:meth:`Monitor.clear` call.
@@ -297,7 +298,7 @@ class CellTrainer(Module):
             updater(**kwargs)
 
     def forward(self, *inputs, **kwargs):
-        """Processes a training step.
+        r"""Processes a training step.
 
         Raises:
             NotImplementedError: ``forward`` must be implemented by the subclass.
@@ -342,7 +343,7 @@ class IndependentCellTrainer(CellTrainer, ABC):
             self.monitors = nn.ModuleDict(monitors)
 
     def __init__(self, **kwargs):
-        # call superclass
+        # call superclass constructor
         CellTrainer.__init__(self, **kwargs)
 
     def __iter__(

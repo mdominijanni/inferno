@@ -68,14 +68,14 @@ class STDP(IndependentCellTrainer):
         tc_pre (float): time constant for exponential decay of presynaptic trace,
             :math:`tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
-            present, may change. Defaults to False.
+            present, may change. Defaults to ``False``.
         interp_tolerance (float): maximum difference in time from an observation
-            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
+            to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
-            calculating spike traces. Defaults to "cumulative".
+            calculating spike traces. Defaults to ``"cumulative"``.
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce updates over the batch dimension, :py:func:`torch.mean`
-            when None. Defaults to None.
+            when ``None``. Defaults to ``None``.
 
     Important:
         When ``delayed`` is ``True``, the history for the presynaptic activity (spike
@@ -211,7 +211,7 @@ class STDP(IndependentCellTrainer):
                 function to reduce updates over the batch dimension.
             field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
                 function to reduce updates over the receptive field dimension,
-                :py:func:`torch.sum` when None. Defaults to None.
+                :py:func:`torch.sum` when ``None``. Defaults to ``None``.
 
         Returns:
             IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
@@ -321,7 +321,7 @@ class STDP(IndependentCellTrainer):
         return self.get_unit(name)
 
     def forward(self) -> None:
-        """Processes update for given layers based on current monitor stored data."""
+        r"""Processes update for given layers based on current monitor stored data."""
         # iterate through self
         for cell, state, monitors in self:
             # skip if self or cell is not in training mode or has no updater

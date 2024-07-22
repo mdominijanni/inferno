@@ -1,4 +1,4 @@
-# Synapses, Current
+# Synapses, Current Models
 
 ## Delta (CUBA Variant)
 ### Formulation

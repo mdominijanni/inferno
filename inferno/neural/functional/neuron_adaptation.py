@@ -45,8 +45,8 @@ def adaptive_currents_linear(
         spike_increment (float | torch.Tensor): amount by which the adaptive current is
             increased after a spike, :math:`b_k`, in :math:`\text{nA}`.
         refracs (torch.Tensor | None): remaining absolute refractory periods,
-            in :math:`\text{ms}`, when not None, adaptations of neurons in their
-            absolute refractory periods are maintained. Defaults to None.
+            in :math:`\text{ms}`, when not ``None``, adaptations of neurons in their
+            absolute refractory periods are maintained. Defaults to ``None``.
 
     Returns:
         torch.Tensor: updated adaptations for input currents, in :math:`\text{nA}`.
@@ -150,12 +150,12 @@ def adaptive_thresholds_linear_voltage(
             threshold voltage term, :math:`b_k`, in :math:`\text{ms}^{-1}`.
         adapt_reset_min (float | torch.Tensor | None, optional): lower bound for
             the threshold adaptation permitted after a postsynaptic potential,
-            :math:`\theta_\text{reset}`, in :math:`\text{mV}`. Defaults to None.
+            :math:`\theta_\text{reset}`, in :math:`\text{mV}`. Defaults to ``None``.
         spikes (torch.Tensor | None, optional): if the corresponding neuron generated an
-            action potential. Defaults to None.
+            action potential. Defaults to ``None``.
         refracs (torch.Tensor | None): remaining absolute refractory periods,
-            in :math:`\text{ms}`, when not None, adaptations of neurons in their
-            absolute refractory periods are maintained. Defaults to None.
+            in :math:`\text{ms}`, when not ``None``, adaptations of neurons in their
+            absolute refractory periods are maintained. Defaults to ``None``.
 
     Returns:
         torch.Tensor: updated adaptations for membrane voltage threshold,
@@ -259,8 +259,8 @@ def adaptive_thresholds_linear_spike(
         spike_increment (torch.Tensor): amount by which the adaptive threshold is
             increased after a spike, :math:`a_k`, in :math:`\text{mV}`.
         refracs (torch.Tensor | None): remaining absolute refractory periods,
-            in :math:`\text{ms}`, when not None, adaptations of neurons in their
-            absolute refractory periods are maintained. Defaults to None.
+            in :math:`\text{ms}`, when not ``None``, adaptations of neurons in their
+            absolute refractory periods are maintained. Defaults to ``None``.
 
     Returns:
         torch.Tensor: updated adaptations for membrane voltage threshold,
@@ -318,7 +318,7 @@ def apply_adaptive_currents(
     current: torch.Tensor,
     adaptations: torch.Tensor,
 ) -> torch.Tensor:
-    r"""Applies simple adapation to presynaptic currents.
+    r"""Applies simple adaptation to presynaptic currents.
 
     Args:
         current (torch.Tensor): presynaptic currents, :math:`I_+`,
@@ -344,7 +344,7 @@ def apply_adaptive_thresholds(
     threshold: float | torch.Tensor,
     adaptations: torch.Tensor,
 ) -> torch.Tensor:
-    r"""Applies simple adapation to voltage firing thresholds.
+    r"""Applies simple adaptation to voltage firing thresholds.
 
     Args:
         threshold (float | torch.Tensor): equilibrium of the firing threshold,

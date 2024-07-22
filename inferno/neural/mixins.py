@@ -175,7 +175,7 @@ class DelayedMixin:
         return self.__step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         value = argtest.gt("dt", value, 0, float)
         if value != self.__step_time:
             for cstr in self.__constrained:

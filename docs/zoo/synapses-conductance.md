@@ -1,4 +1,4 @@
-# Synapses, Conductance
+# Synapses, Conductance Models
 
 ## Delta (COBA Variant)
 ```{admonition} Work In Progress

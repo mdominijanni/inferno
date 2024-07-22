@@ -90,7 +90,7 @@ class PassthroughNeuron(InfernoNeuron):
         return self.step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         self.step_time = argtest.gt("dt", value, 0, float)
 
     @property
@@ -110,7 +110,7 @@ class PassthroughNeuron(InfernoNeuron):
         return self.voltage_.value
 
     @voltage.setter
-    def voltage(self, value: torch.Tensor):
+    def voltage(self, value: torch.Tensor) -> None:
         pass
 
     @property
@@ -144,7 +144,7 @@ class PassthroughNeuron(InfernoNeuron):
     def refrac(self, value: torch.Tensor) -> None:
         pass
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets neurons to their resting state."""
         self.spike_.value = torch.full_like(self.spike, False)
 

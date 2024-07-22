@@ -14,19 +14,19 @@ class Normalization(StateHook):
         scale (float | complex): desired :math:`p`-norm of elements along
             specified dimensions.
         dim (int | tuple[int] | None): dimension(s) along which to normalize,
-            all dimensions if None.
-        epsilon (float, optional): value added to the demoninator in case of
-            zero-valued norms. Defaults to 1e-12.
+            all dimensions if ``None``.
+        epsilon (float, optional): value added to the denominator in case of
+            zero-valued norms. Defaults to ``1e-12``.
         train_update (bool, optional): if normalization should be performed when
-            hooked module is in train mode. Defaults to True.
+            hooked module is in train mode. Defaults to ``True``.
         eval_update (bool, optional): if normalization should be performed when
-            hooked module is in eval mode. Defaults to True.
+            hooked module is in eval mode. Defaults to ``True``.
         as_prehook (bool, optional): if normalization should occur before
-            :py:meth:`~torch.nn.Module.forward` is. Defaults to False.
+            :py:meth:`~torch.nn.Module.forward` is. Defaults to ``False``.
         prepend (bool, optional): if normalization should occur before other hooks
-            previously registered to the hooked module. Defaults to False.
+            previously registered to the hooked module. Defaults to ``False``.
         always_call (bool, optional): if the hook should be run even if an exception
-            occurs, only applies when ``as_prehook`` is False. Defaults to False.
+            occurs, only applies when ``as_prehook`` is False. Defaults to ``False``.
     """
 
     def __init__(
@@ -88,19 +88,19 @@ class Clamping(StateHook):
         module (nn.Module): module to which the hook should be registered.
         attr (str): fully-qualified string name of attribute to clamp.
         min (int | float | None, optional): inclusive lower-bound of the clamped range.
-            Defaults to None.
+            Defaults to ``None``.
         max (int | float | None, optional): inclusive upper-bound of the clamped range.
-            Defaults to None.
+            Defaults to ``None``.
         train_update (bool, optional): if normalization should be performed when
-            hooked module is in train mode. Defaults to True.
+            hooked module is in train mode. Defaults to ``True``.
         eval_update (bool, optional): if normalization should be performed when
-            hooked module is in eval mode. Defaults to True.
+            hooked module is in eval mode. Defaults to ``True``.
         as_prehook (bool, optional): if normalization should occur before
-            :py:meth:`~torch.nn.Module.forward` is. Defaults to False.
+            :py:meth:`~torch.nn.Module.forward` is. Defaults to ``False``.
         prepend (bool, optional): if normalization should occur before other hooks
-            previously registered to the hooked module. Defaults to False.
+            previously registered to the hooked module. Defaults to ``False``.
         always_call (bool, optional): if the hook should be run even if an exception
-            occurs, only applies when ``as_prehook`` is False. Defaults to False.
+            occurs, only applies when ``as_prehook`` is False. Defaults to ``False``.
     """
 
     def __init__(

@@ -20,23 +20,23 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         step_time (float): length of a simulation time step, in :math:`\text{ms}`.
         kernel (int | tuple[int, int]): size of the convolution kernel.
         stride (int | tuple[int, int], optional): stride of the convolution.
-            Defaults to 1.
+            Defaults to ``1``.
         padding (int | tuple[int, int], optional): amount of zero padding added to
-            height and width. Defaults to 0.
+            height and width. Defaults to ``0``.
         dilation (int | tuple[int, int], optional): dilation of the convolution.
-            Defaults to 1.
+            Defaults to ``1``.
         synapse (SynapseConstructor): partial constructor for inner :py:class:`Synapse`.
         bias (bool, optional): if the connection should support
-            learnable additive bias. Defaults to False.
+            learnable additive bias. Defaults to ``False``.
         delay (float | None, optional): maximum supported delay length, in
-            :math:`\text{ms}`, excludes delays when None. Defaults to None.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+            :math:`\text{ms}`, excludes delays when ``None``. Defaults to ``None``.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
         weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.
-            Defaults to None.
+            Defaults to ``None``.
         bias_init (OneToOne[torch.Tensor] | None, optional): initializer for biases.
-            Defaults to None.
+            Defaults to ``None``.
         delay_init (OneToOne[torch.Tensor] | None, optional): initializer for delays.
-            Defaults to None.
+            Defaults to ``None``.
 
     .. admonition:: Shape
         :class: tensorshape
@@ -56,17 +56,17 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             * :math:`kW` is the kernel width.
 
     Note:
-        When ``delay`` is None, no ``delay_`` parameter is created and altering the
+        When ``delay`` is ``None``, no ``delay_`` parameter is created and altering the
         maximum delay of :py:attr:`synapse` will have no effect. Setting to 0 will
         create and register a ``delay_`` parameter but not use delays unless it is
         later changed.
 
     Note:
-        If ``weight_init`` or ``bias_init`` are None, ``weight`` and ``bias`` are,
+        If ``weight_init`` or ``bias_init`` are ``None``, ``weight`` and ``bias`` are,
         respectively, initialized as uniform random values over the interval
         :math:`[0, 1)` using :py:func:`torch.rand`.
 
-        If ``delay_init`` is None, ``delay`` is initialized as zeros using
+        If ``delay_init`` is ``None``, ``delay`` is initialized as zeros using
         :py:func:`torch.rand`.
 
     Tip:

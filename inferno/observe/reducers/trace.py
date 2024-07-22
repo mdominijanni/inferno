@@ -35,10 +35,10 @@ class NearestTraceReducer(FoldReducer):
         target (int | float | bool | complex): target value test for when determining
             if an input is a match, :math:`h^*`.
         tolerance (int | float | None, optional): allowable absolute difference to
-            still count as a match, :math:`\epsilon`. Defaults to None.
+            still count as a match, :math:`\epsilon`. Defaults to ``None``.
         duration (float, optional): length of time over which results should be
-            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
-        inclusive (bool): if the duration should be inclusive. Defaults to False.
+            stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
+        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
 
     Important:
         Because the input tensor to :py:meth:`fold` is treated as an event condition,
@@ -81,7 +81,7 @@ class NearestTraceReducer(FoldReducer):
         return FoldReducer.dt.fget(self)
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
@@ -91,7 +91,7 @@ class NearestTraceReducer(FoldReducer):
         Args:
             obs (torch.Tensor): observation to incorporate into state.
             state (torch.Tensor | None): state from the prior time step,
-                None if no prior observations.
+                ``None`` if no prior observations.
 
         Returns:
             torch.Tensor: state for the current time step.
@@ -146,10 +146,10 @@ class CumulativeTraceReducer(FoldReducer):
         target (int | float | bool | complex): target value test for when determining
             if an input is a match, :math:`h^*`.
         tolerance (int | float | None, optional): allowable absolute difference to
-            still count as a match, :math:`\epsilon`. Defaults to None.
+            still count as a match, :math:`\epsilon`. Defaults to ``None``.
         duration (float, optional): length of time over which results should be
-            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
-        inclusive (bool): if the duration should be inclusive. Defaults to False.
+            stored, in the same units as :math:`\Delta t`. Defaults to ` 0.0``.
+        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
 
     Important:
         Because the input tensor to :py:meth:`fold` is treated as an event condition,
@@ -165,7 +165,7 @@ class CumulativeTraceReducer(FoldReducer):
         tolerance: int | float | None = None,
         *,
         duration: float = 0.0,
-        inclusive: bool = False
+        inclusive: bool = False,
     ):
         # call superclass constructor
         FoldReducer.__init__(self, step_time, duration, inclusive, 0)
@@ -192,7 +192,7 @@ class CumulativeTraceReducer(FoldReducer):
         return FoldReducer.dt.fget(self)
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
@@ -202,7 +202,7 @@ class CumulativeTraceReducer(FoldReducer):
         Args:
             obs (torch.Tensor): observation to incorporate into state.
             state (torch.Tensor | None): state from the prior time step,
-                None if no prior observations.
+                ``None`` if no prior observations.
 
         Returns:
             torch.Tensor: state for the current time step.
@@ -263,8 +263,8 @@ class ScaledNearestTraceReducer(FoldReducer):
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             a match for the purpose of tracing, :math:`J`.
         duration (float, optional): length of time over which results should be
-            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
-        inclusive (bool): if the duration should be inclusive. Defaults to False.
+            stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
+        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
 
     Note:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
@@ -280,7 +280,7 @@ class ScaledNearestTraceReducer(FoldReducer):
         criterion: OneToOne[torch.Tensor],
         *,
         duration: float = 0.0,
-        inclusive: bool = False
+        inclusive: bool = False,
     ):
         # call superclass constructor
         FoldReducer.__init__(self, step_time, duration, inclusive, 0)
@@ -305,7 +305,7 @@ class ScaledNearestTraceReducer(FoldReducer):
         return FoldReducer.dt.fget(self)
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
@@ -315,7 +315,7 @@ class ScaledNearestTraceReducer(FoldReducer):
         Args:
             obs (torch.Tensor): observation to incorporate into state.
             state (torch.Tensor | None): state from the prior time step,
-                None if no prior observations.
+                ``None`` if no prior observations.
 
         Returns:
             torch.Tensor: state for the current time step.
@@ -372,8 +372,8 @@ class ScaledCumulativeTraceReducer(FoldReducer):
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             a match for the purpose of tracing, :math:`J`.
         duration (float, optional): length of time over which results should be
-            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
-        inclusive (bool): if the duration should be inclusive. Defaults to False.
+            stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
+        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
 
     Note:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
@@ -389,7 +389,7 @@ class ScaledCumulativeTraceReducer(FoldReducer):
         criterion: OneToOne[torch.Tensor],
         *,
         duration: float = 0.0,
-        inclusive: bool = False
+        inclusive: bool = False,
     ):
         # call superclass constructor
         FoldReducer.__init__(self, step_time, duration, inclusive, 0)
@@ -414,7 +414,7 @@ class ScaledCumulativeTraceReducer(FoldReducer):
         return FoldReducer.dt.fget(self)
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
@@ -424,7 +424,7 @@ class ScaledCumulativeTraceReducer(FoldReducer):
         Args:
             obs (torch.Tensor): observation to incorporate into state.
             state (torch.Tensor | None): state from the prior time step,
-                None if no prior observations.
+                ``None`` if no prior observations.
 
         Returns:
             torch.Tensor: state for the current time step.
@@ -483,8 +483,8 @@ class ConditionalNearestTraceReducer(FoldReducer):
         scale (int | float | complex): multiplicative scale for contributions to trace,
             :math:`s`.
         duration (float, optional): length of time over which results should be
-            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
-        inclusive (bool): if the duration should be inclusive. Defaults to False.
+            stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
+        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
 
     Note:
         This is equivalent to :py:class:`ScaledNearestTraceReducer` except rather than
@@ -500,7 +500,7 @@ class ConditionalNearestTraceReducer(FoldReducer):
         scale: int | float | complex,
         *,
         duration: float = 0.0,
-        inclusive: bool = False
+        inclusive: bool = False,
     ):
         # call superclass constructor
         FoldReducer.__init__(self, step_time, duration, inclusive, 0)
@@ -524,7 +524,7 @@ class ConditionalNearestTraceReducer(FoldReducer):
         return FoldReducer.dt.fget(self)
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
@@ -537,7 +537,7 @@ class ConditionalNearestTraceReducer(FoldReducer):
             obs (torch.Tensor): observation to incorporate into state.
             cond (torch.Tensor): condition if observations match for the trace.
             state (torch.Tensor | None): state from the prior time step,
-                None if no prior observations.
+                ``None`` if no prior observations.
 
         Returns:
             torch.Tensor: state for the current time step.
@@ -592,8 +592,8 @@ class ConditionalCumulativeTraceReducer(FoldReducer):
         scale (int | float | complex): multiplicative scale for contributions to trace,
             :math:`s`.
         duration (float, optional): length of time over which results should be
-            stored, in the same units as :math:`\Delta t`. Defaults to 0.0.
-        inclusive (bool): if the duration should be inclusive. Defaults to False.
+            stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
+        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
 
     Note:
         This is equivalent to :py:class:`ScaledCumulativeTraceReducer` except rather than
@@ -609,7 +609,7 @@ class ConditionalCumulativeTraceReducer(FoldReducer):
         scale: int | float | complex,
         *,
         duration: float = 0.0,
-        inclusive: bool = False
+        inclusive: bool = False,
     ):
         # call superclass constructor
         FoldReducer.__init__(self, step_time, duration, inclusive, 0)
@@ -633,7 +633,7 @@ class ConditionalCumulativeTraceReducer(FoldReducer):
         return FoldReducer.dt.fget(self)
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         FoldReducer.dt.fset(self, value)
         self.decay = exp(-self.dt / self.time_constant)
 
@@ -646,7 +646,7 @@ class ConditionalCumulativeTraceReducer(FoldReducer):
             obs (torch.Tensor): observation to incorporate into state.
             cond (torch.Tensor): condition if observations match for the trace.
             state (torch.Tensor | None): state from the prior time step,
-                None if no prior observations.
+                ``None`` if no prior observations.
 
         Returns:
             torch.Tensor: state for the current time step.

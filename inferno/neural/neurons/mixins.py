@@ -13,7 +13,7 @@ class AdaptiveThresholdMixin:
         data (torch.Tensor): initial threshold adaptations.
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce adaptation updates over the batch dimension,
-            :py:func:`torch.mean` when None. Defaults to None.
+            :py:func:`torch.mean` when ``None``. Defaults to ``None``.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -30,11 +30,11 @@ class AdaptiveThresholdMixin:
         ) = None,
     ):
         _ = argtest.instance("self", self, nn.Module)
-        self.register_buffer("threshold_adapation_", data)
+        self.register_buffer("threshold_adaptation_", data)
         self.__batchreduce = batch_reduction if batch_reduction else torch.mean
 
     @property
-    def threshold_adapation(self) -> torch.Tensor:
+    def threshold_adaptation(self) -> torch.Tensor:
         r"""Threshold adaptations.
 
         If the value the setter attempts to assign has the same shape but with an
@@ -47,14 +47,14 @@ class AdaptiveThresholdMixin:
         Returns:
             torch.Tensor: present threshold adaptations.
         """
-        return self.threshold_adapation_
+        return self.threshold_adaptation_
 
-    @threshold_adapation.setter
-    def threshold_adapation(self, value: torch.Tensor):
-        if value.shape[1:] == self.threshold_adapation_.shape:
-            self.threshold_adapation_ = self.__batchreduce(value, 0)
+    @threshold_adaptation.setter
+    def threshold_adaptation(self, value: torch.Tensor) -> None:
+        if value.shape[1:] == self.threshold_adaptation_.shape:
+            self.threshold_adaptation_ = self.__batchreduce(value, 0)
         else:
-            self.threshold_adapation_ = value
+            self.threshold_adaptation_ = value
 
 
 class AdaptiveCurrentMixin:
@@ -64,7 +64,7 @@ class AdaptiveCurrentMixin:
         data (torch.Tensor): initial input adaptations.
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce adaptation updates over the batch dimension,
-            :py:func:`torch.mean` when None. Defaults to None.
+            :py:func:`torch.mean` when ``None``. Defaults to ``None``.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -89,7 +89,7 @@ class AdaptiveCurrentMixin:
         r"""Input current adaptations.
 
         If the value the setter attempts to assign has the same shape but with an
-        additonal leading dimension, it will assume that is an unreduced batch dimension
+        additional leading dimension, it will assume that is an unreduced batch dimension
         and reduce it.
 
         Args:
@@ -101,7 +101,7 @@ class AdaptiveCurrentMixin:
         return self.current_adaptation_
 
     @current_adaptation.setter
-    def current_adaptation(self, value: torch.Tensor):
+    def current_adaptation(self, value: torch.Tensor) -> None:
         if value.shape[1:] == self.current_adaptation_.shape:
             self.current_adaptation_ = self.__batchreduce(value, 0)
         else:
@@ -141,7 +141,7 @@ class CurrentMixin:
         return self.current_.value
 
     @current.setter
-    def current(self, value: torch.Tensor):
+    def current(self, value: torch.Tensor) -> None:
         self.current_.value = value
 
 
@@ -178,7 +178,7 @@ class VoltageMixin:
         return self.voltage_.value
 
     @voltage.setter
-    def voltage(self, value: torch.Tensor):
+    def voltage(self, value: torch.Tensor) -> None:
         self.voltage_.value = value
 
 

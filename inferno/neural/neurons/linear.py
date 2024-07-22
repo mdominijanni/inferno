@@ -33,8 +33,8 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
         time_constant (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\text{ms}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to ``1.0``.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
 
     See Also:
         For more details and references, visit
@@ -94,10 +94,10 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
         return self.step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         self.step_time = argtest.gt("dt", value, 0, float)
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets neurons to their resting state."""
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
@@ -109,7 +109,7 @@ class LIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I(t)`, in :math:`\text{nA}`.
             refrac_lock (bool, optional): if membrane voltages should be fixed while
-                in the refractory period. Defaults to True.
+                in the refractory period. Defaults to ``True``.
 
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential.
@@ -139,7 +139,7 @@ class ALIF(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNe
 
     ALIF is implemented as a step of leaky integrate-and-fire applying existing
     adaptations, using linear spike-dependent adaptive thresholds, then updating
-    those adaptations for the next timestep.
+    those adaptations for the next time step.
 
     .. math::
         \begin{align*}
@@ -175,11 +175,11 @@ class ALIF(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNe
         spike_increment (float | tuple[float, ...]): amount by which the adaptive
             threshold is increased after a spike, :math:`d_k`, in :math:`\text{mV}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to ``1.0``.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce adaptation updates over the batch dimension,
-            :py:func:`torch.mean` when None. Defaults to None.
+            :py:func:`torch.mean` when ``None``. Defaults to ``None``.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -213,7 +213,7 @@ class ALIF(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNe
         # call superclass constructor
         InfernoNeuron.__init__(self, shape, batch_size)
 
-        # process adapation attributes
+        # process adaptation attributes
         # tuple-wrap if singleton
         if not hasattr(tc_adaptation, "__iter__"):
             tc_adaptation = (tc_adaptation,)
@@ -283,20 +283,20 @@ class ALIF(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNe
         return self.step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         self.step_time = argtest.gt("dt", value, 0, float)
 
-    def clear(self, keep_adaptations=True, **kwargs):
+    def clear(self, keep_adaptations: bool = True, **kwargs) -> None:
         r"""Resets neurons to their resting state.
 
         Args:
             keep_adaptations (bool, optional): if learned adaptations should be
-                preserved. Defaults to True.
+                preserved. Defaults to ``True``.
         """
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
         if not keep_adaptations:
-            self.threshold_adapation = torch.zeros_like(self.threshold_adapation)
+            self.threshold_adaptation = torch.zeros_like(self.threshold_adaptation)
 
     def forward(
         self,
@@ -311,9 +311,9 @@ class ALIF(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNe
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I(t)`, in :math:`\text{nA}`.
             adapt (bool | None, optional): if adaptations should be updated
-                based on this step. Defaults to None.
+                based on this step. Defaults to ``None``.
             refrac_lock (bool, optional): if membrane voltages should be fixed
-                while in the refractory period. Defaults to True.
+                while in the refractory period. Defaults to ``True``.
 
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential.
@@ -331,7 +331,7 @@ class ALIF(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNe
             step_time=self.step_time,
             reset_v=self.reset_v,
             thresh_v=nf.apply_adaptive_thresholds(
-                self.thresh_eq_v, self.threshold_adapation
+                self.thresh_eq_v, self.threshold_adaptation
             ),
             refrac_t=self.refrac_t,
         )
@@ -344,7 +344,7 @@ class ALIF(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNe
         if adapt or (adapt is None and self.training):
             # use adaptive thresholds update function
             adaptations = nf.adaptive_thresholds_linear_spike(
-                adaptations=self.threshold_adapation,
+                adaptations=self.threshold_adaptation,
                 spikes=spikes,
                 step_time=self.step_time,
                 time_constant=self.tc_adaptation,
@@ -352,7 +352,7 @@ class ALIF(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNe
                 refracs=(self.refrac if refrac_lock else None),
             )
             # update parameter
-            self.threshold_adapation = adaptations
+            self.threshold_adaptation = adaptations
 
         # return spiking output
         return spikes
@@ -413,10 +413,10 @@ class GLIF1(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
         return LIF.dt.fget(self)
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         LIF.dt.fset(self, value)
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets neurons to their resting state."""
         LIF.clear(self, **kwargs)
 
@@ -427,7 +427,7 @@ class GLIF1(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I(t)`, in :math:`\text{nA}`.
             refrac_lock (bool, optional): if membrane voltages should be fixed while
-                in the refractory period. Defaults to True.
+                in the refractory period. Defaults to ``True``.
 
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential.
@@ -474,11 +474,11 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
         spike_increment (float | tuple[float, ...]): amount by which the adaptive
             threshold is increased after a spike, :math:`d_k`, in :math:`\text{mV}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to ``1.0``.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce adaptation updates over the batch dimension,
-            :py:func:`torch.mean` when None. Defaults to None.
+            :py:func:`torch.mean` when ``None``. Defaults to ``None``.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -513,7 +513,7 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
         # call superclass constructor
         InfernoNeuron.__init__(self, shape, batch_size)
 
-        # process adapation attributes
+        # process adaptation attributes
         # tuple-wrap if singleton
         if not hasattr(rc_adaptation, "__iter__"):
             rc_adaptation = (rc_adaptation,)
@@ -584,20 +584,20 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
         return self.step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         self.step_time = argtest.gt("dt", value, 0, float)
 
-    def clear(self, keep_adaptations=True, **kwargs):
+    def clear(self, keep_adaptations: bool = True, **kwargs) -> None:
         r"""Resets neurons to their resting state.
 
         Args:
             keep_adaptations (bool, optional): if learned adaptations should be
-                preserved. Defaults to True.
+                preserved. Defaults to ``True``.
         """
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
         if not keep_adaptations:
-            self.threshold_adapation = torch.zeros_like(self.threshold_adapation)
+            self.threshold_adaptation = torch.zeros_like(self.threshold_adaptation)
 
     def forward(
         self,
@@ -612,9 +612,9 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I(t)`, in :math:`\text{nA}`.
             adapt (bool | None, optional): if adaptations should be updated
-                based on this step. Defaults to None.
+                based on this step. Defaults to ``None``.
             refrac_lock (bool, optional): if membrane voltages should be fixed
-                while in the refractory period. Defaults to True.
+                while in the refractory period. Defaults to ``True``.
 
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential.
@@ -634,7 +634,7 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
             v_slope=self.reset_v_mul,
             v_intercept=self.reset_v_add,
             thresh_v=nf.apply_adaptive_thresholds(
-                self.thresh_eq_v, self.threshold_adapation
+                self.thresh_eq_v, self.threshold_adaptation
             ),
             refrac_t=self.refrac_t,
         )
@@ -647,7 +647,7 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
         if adapt or (adapt is None and self.training):
             # use adaptive thresholds update function
             adaptations = nf.adaptive_thresholds_linear_spike(
-                adaptations=self.threshold_adapation,
+                adaptations=self.threshold_adaptation,
                 spikes=spikes,
                 step_time=self.step_time,
                 time_constant=1 / self.rc_adaptation,
@@ -655,7 +655,7 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
                 refracs=(self.refrac if refrac_lock else None),
             )
             # update parameter
-            self.threshold_adapation = adaptations
+            self.threshold_adaptation = adaptations
 
         # return spiking output
         return spikes

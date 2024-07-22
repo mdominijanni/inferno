@@ -130,7 +130,7 @@ class RecordReducer(Reducer, ABC):
         return self.__step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         value = argtest.gt("dt", value, 0, float)
         if value != self.__step_time:
             for rec in self.__records:
@@ -156,7 +156,7 @@ class RecordReducer(Reducer, ABC):
         return self.__duration
 
     @duration.setter
-    def duration(self, value: float):
+    def duration(self, value: float) -> None:
         value = argtest.gt("duration", value, 0, float)
         if value != self.__duration:
             for rec in self.__records:
@@ -165,14 +165,14 @@ class RecordReducer(Reducer, ABC):
 
 
 class FoldReducer(RecordReducer, ABC):
-    """Subclassable reducer performing a fold operation between previous state and an observation.
+    r"""Subclassable reducer performing a fold operation between previous state and an observation.
 
     Args:
         step_time (float): length of time between observations.
         duration (float): length of time for which observations should be stored.
-        inclusive (bool): if the duration should be inclusive. Defaults to False.
+        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
         fill (Any, optional): value with which to fill the stored record on clearing and
-            initialization. Defaults to 0.
+            initialization. Defaults to ``0``.
     """
 
     def __init__(
@@ -233,7 +233,7 @@ class FoldReducer(RecordReducer, ABC):
 
         Args:
             keepshape (bool, optional): if the underlying storage shape should be
-                preserved. Defaults to False.
+                preserved. Defaults to ``False``.
         """
         if keepshape:
             self.data_.reset(self.__fill)
@@ -303,7 +303,8 @@ class FoldReducer(RecordReducer, ABC):
             time (float | torch.Tensor): times, measured before present, at which
                 to select from.
             tolerance (float, optional): maximum difference in time from a discrete
-                sample to consider it at the same time as that sample. Defaults to 1e-7.
+                sample to consider it at the same time as that sample.
+                Defaults to ``1e-7``.
 
         Returns:
             torch.Tensor | None: temporally indexed and interpolated state.
@@ -336,7 +337,7 @@ class FoldReducer(RecordReducer, ABC):
 
         Note:
             Before any samples have been added and before the data tensor has been
-            initialized, this will return None.
+            initialized, this will return ``None``.
 
         Note:
             Results are temporally ordered from most recent to oldest, along the
@@ -350,7 +351,7 @@ class FoldReducer(RecordReducer, ABC):
         r"""Returns the reducer's current state.
 
         Before any samples have been added and before the data tensor has been
-        initialized, this will return None.
+        initialized, this will return ``None``.
 
         Returns:
             torch.Tensor | None: current state, if state exists.
@@ -367,7 +368,7 @@ class FoldReducer(RecordReducer, ABC):
         self.data_.push(inputs)
 
     def forward(self, *inputs: torch.Tensor, **kwargs) -> None:
-        """Initializes state and incorporates inputs into the reducer's state.
+        r"""Initializes state and incorporates inputs into the reducer's state.
 
         This performs any required initialization steps, maps the inputs,
         and pushes the new data.

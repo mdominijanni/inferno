@@ -63,7 +63,7 @@ def conjunction(
     *constraints: Callable[
         [bool | int | float | complex | torch.Tensor | None], bool | torch.Tensor | None
     ],
-):
+) -> bool | torch.Tensor | None:
     return validate(var, lambda x: _conj(*map(lambda c: c(x), constraints)))
 
 
@@ -72,7 +72,7 @@ def disjunction(
     *constraints: Callable[
         [bool | int | float | complex | torch.Tensor | None], bool | torch.Tensor | None
     ],
-):
+) -> bool | torch.Tensor | None:
     return validate(var, lambda x: _disj(*map(lambda c: c(x), constraints)))
 
 

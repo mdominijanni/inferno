@@ -68,7 +68,7 @@ class Poisson(DiscreteDistribution):
         Args:
             rate (torch.Tensor | float): expected rate of occurrences, :math:`\lambda`.
             generator (torch.Generator | None, optional): pseudorandom number generator
-                to use for sampling. Defaults to None.
+                to use for sampling. Defaults to ``None``.
 
         Returns:
             torch.Tensor: resulting random variates, :math:`K`.
