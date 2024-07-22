@@ -243,7 +243,7 @@ class STDP(IndependentCellTrainer):
                 reducer=state.tracecls(
                     state.step_time,
                     state.tc_post,
-                    amplitude=1.0,
+                    amplitude=abs(state.lr_pre),
                     target=True,
                     duration=0.0,
                     inclusive=True,
@@ -284,7 +284,7 @@ class STDP(IndependentCellTrainer):
                 reducer=state.tracecls(
                     state.step_time,
                     state.tc_pre,
-                    amplitude=1.0,
+                    amplitude=abs(state.lr_post),
                     target=True,
                     duration=cell.connection.delayedby if delayed else 0.0,
                     inclusive=True,
@@ -346,14 +346,10 @@ class STDP(IndependentCellTrainer):
 
             # partial updates
             dpost = state.batchreduce(
-                ein.einsum(i_post, x_pre, "b ... r, b ... r -> b ...")
-                * abs(state.lr_post),
-                0,
+                ein.einsum(i_post, x_pre, "b ... r, b ... r -> b ..."), 0
             )
             dpre = state.batchreduce(
-                ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ...")
-                * abs(state.lr_pre),
-                0,
+                ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ..."), 0
             )
 
             # accumulate partials with mode condition

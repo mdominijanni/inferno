@@ -460,6 +460,13 @@ class MSTDPET(IndependentCellTrainer):
 
             Where:
                 * :math:`B` is the batch size.
+
+        Warning:
+            For performance reasons, when ``reward`` is a scalar, it and ``scale``
+            are applied after the ``batch_reduction`` function is called. Therefore,
+            if ``batch_reduction`` is not homogeneous of degree 1, the result will be
+            incorrect. A function :math:`f` is homogeneous degree 1 if it preserves
+            scalar multiplication, i.e. :math:`a f(X) = f(aX)`.
         """
         # iterate through self
         for cell, state, monitors in self:
@@ -511,8 +518,8 @@ class MSTDPET(IndependentCellTrainer):
 
             else:
                 # partial updates
-                dpost = state.batchreduce(z_post * (abs(reward) * abs(scale)), 0)
-                dpre = state.batchreduce(z_pre * (abs(reward) * abs(scale)), 0)
+                dpost = state.batchreduce(z_post, 0) * abs(reward * scale)
+                dpre = state.batchreduce(z_pre, 0) * abs(reward * scale)
 
                 # accumulate partials with mode condition
                 match (state.lr_post * reward >= 0, state.lr_pre * reward >= 0):
@@ -763,7 +770,7 @@ class MSTDP(IndependentCellTrainer):
                 reducer=state.tracecls(
                     state.step_time,
                     state.tc_post,
-                    amplitude=1.0,
+                    amplitude=abs(state.lr_pre),
                     target=True,
                     duration=0.0,
                     inclusive=True,
@@ -804,7 +811,7 @@ class MSTDP(IndependentCellTrainer):
                 reducer=state.tracecls(
                     state.step_time,
                     state.tc_pre,
-                    amplitude=1.0,
+                    amplitude=abs(state.lr_post),
                     target=True,
                     duration=cell.connection.delayedby if delayed else 0.0,
                     inclusive=True,
@@ -864,6 +871,13 @@ class MSTDP(IndependentCellTrainer):
 
             Where:
                 * :math:`B` is the batch size.
+
+        Warning:
+            For performance reasons, when ``reward`` is a scalar, it and ``scale``
+            are applied after the ``batch_reduction`` function is called. Therefore,
+            if ``batch_reduction`` is not homogeneous of degree 1, the result will be
+            incorrect. A function :math:`f` is homogeneous degree 1 if it preserves
+            scalar multiplication, i.e. :math:`a f(X) = f(aX)`.
         """
         # iterate through self
         for cell, state, monitors in self:
@@ -888,12 +902,8 @@ class MSTDP(IndependentCellTrainer):
             )
 
             # unscaled partial updates
-            dpost = ein.einsum(i_post, x_pre, "b ... r, b ... r -> b ...") * abs(
-                state.lr_post
-            )
-            dpre = ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ...") * abs(
-                state.lr_pre
-            )
+            dpost = ein.einsum(i_post, x_pre, "b ... r, b ... r -> b ...")
+            dpre = ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ...")
 
             # process update
             if isinstance(reward, torch.Tensor):
