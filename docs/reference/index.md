@@ -20,7 +20,7 @@ The common infrastructure used throughout various submodules and various functio
 The protocols and various implementations for parameter bounding, interpolation, extrapolation, and dimensionality reduction.
 
 ### [inferno.neural](<reference/neural:inferno.neural>)
-The basic components for spiking neural networks (neurons, synapses, connections), the infrastructure used for connecting them into a network and for supporting generalized parameter updates (layers, updaters), and encoding non-spiking data into spike trains.
+The basic components for spiking neural networks (neurons, synapses, connections), the infrastructure used for connecting them into a network and for supporting generalized parameter updates, and encoding non-spiking data into spike trains.
 
 ### [inferno.neural.functional](<reference/neural-functional:inferno.neural.functional>)
 The functional implementation of various components used by different models as a way to generalize and share functionality, also useful when implementing new classes that represent neural components.

@@ -27,7 +27,7 @@ def trace_nearest(
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
-            if not the inital condition.
+            if not the initial condition.
         decay (float): exponential decay for adaptations,
             :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
         amplitude (int | float | complex): value to set trace to for
@@ -35,7 +35,8 @@ def trace_nearest(
         target (int | float | bool | complex): target value to set
             trace to, :math:`h^*`.
         tolerance (int | float | None, optional): allowable absolute
-            difference to still count as a match, :math:`\epsilon`. Defaults to None.
+            difference to still count as a match, :math:`\epsilon`.
+            Defaults to ``None``.
 
     Returns:
         torch.Tensor: updated trace, incorporating the new observation.
@@ -74,7 +75,7 @@ def trace_cumulative(
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
-            if not the inital condition.
+            if not the initial condition.
         decay (float): exponential decay for adaptations,
             :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
         amplitude (int | float | complex): value to add to trace to for
@@ -82,7 +83,8 @@ def trace_cumulative(
         target (int | float | bool | complex): target value to set
             trace to, :math:`h^*`.
         tolerance (int | float | None, optional): allowable absolute
-            difference to still count as a match, :math:`\epsilon`. Defaults to None.
+            difference to still count as a match, :math:`\epsilon`.
+            Defaults to ``None``.
 
     Returns:
         torch.Tensor: updated trace, incorporating the new observation.
@@ -127,15 +129,15 @@ def trace_nearest_scaled(
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
-            if not the inital condition.
+            if not the initial condition.
         decay (float): exponential decay for adaptations,
             :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
         amplitude (int | float | complex): value to add to trace
             for matching elements, :math:`A`.
         scale (int | float | complex): value to multiply matching
             inputs by for the trace, :math:`s`.
-        matchfn (Callable[[torch.Tensor], torch.Tensor]): test if the inputs are considered a
-            match for the trace, :math:`J`.
+        matchfn (Callable[[torch.Tensor], torch.Tensor]): test if the inputs are
+            considered a match for the trace, :math:`J`.
 
     Returns:
         torch.Tensor: updated trace, incorporating the new observation.
@@ -176,7 +178,7 @@ def trace_cumulative_scaled(
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
-            if not the inital condition.
+            if not the initial condition.
         decay (float): exponential decay for adaptations,
             :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
         amplitude (int | float | complex): value to add to trace
@@ -219,7 +221,7 @@ def trace_cumulative_value(
     Args:
         observation (torch.Tensor): latest state to consider for the trace, :math:`h`.
         trace (torch.Tensor | None): current value of the trace, :math:`x`,
-            if not the inital condition.
+            if not the initial condition.
         decay (float): exponential decay for adaptations,
             :math:`\exp\left(-\frac{\Delta t}{\tau_x}\right)`, unitless.
         scale (int | float | complex): value to multiply inputs by for

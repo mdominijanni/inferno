@@ -11,7 +11,7 @@ $$
 
 where $x$ is the trace, $A$ is the amplitude of the trace, $\tau_x$ is the time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>), $t$ is the simulation time, $t^f$ are the times at which spikes occurred (over the set of spikes $f$), and $\delta$ is the Dirac delta function. The construction $\delta (t - t^f)$, when in the solution of the differential equation, evaluates to $1$ if the current time $t$ is a time at which an action potential was generated and $0$ otherwise.
 
-This equation can be interpreted as follows: whenever a spike occurs, add some value $A$ to the trace $x$, and let this trace decay exponentially with some time constant $\tau_x$. Instead of only considering spikes, $j$ is the set of true events, occuring at times $t^j$.
+This equation can be interpreted as follows: whenever a spike occurs, add some value $A$ to the trace $x$, and let this trace decay exponentially with some time constant $\tau_x$. Instead of only considering spikes, $j$ is the set of true events, occurring at times $t^j$.
 
 ### Cumulative Trace
 $$

@@ -443,7 +443,7 @@ class Layer(Module, ABC):
 
     @property
     def connections(self) -> Proxy:
-        r"""Registred connections.
+        r"""Registered connections.
 
         For a given ``name`` of a :py:class:`Connection` set via
         ``layer.add_connection(name)``, it can be accessed as ``layer.connections.name``.
@@ -460,10 +460,11 @@ class Layer(Module, ABC):
 
     @property
     def neurons(self) -> Proxy:
-        r"""Registred neurons.
+        r"""Registered neurons.
 
         For a given ``name`` of a :py:class:`Neuron` set via
-        ``layer[name] = neuron``, it can be accessed as ``layer.neurons.name``.
+        ``layer.add_neuron(name, neuron)``, it can be accessed as
+        ``layer.neurons.name``.
 
         It can be modified in-place (including setting other attributes, adding
         monitors, etc), but it can neither be deleted nor reassigned.
@@ -480,8 +481,8 @@ class Layer(Module, ABC):
         r"""Registered cells.
 
         For a given ``connection_name`` and ``neuron_name``, the :py:class:`Cell`
-        automatically constructed on ``cell = layer[connection_name, neuron_name]``,
-        it can be accessed as ``layer.cells.connection_name.neuron_name``.
+        constructed via ``layer.add_cell(connection_name, neuron_name)``
+        can be accessed as ``layer.cells.connection_name.neuron_name``.
 
         It can be modified in-place (including setting other attributes, adding
         monitors, etc), but it can neither be deleted nor reassigned.
@@ -665,7 +666,7 @@ class Biclique(Layer):
         neurons (Iterable[tuple[str, Neuron] | tuple[str, Neuron, OneToOne[torch.Tensor]]]):
             modules which produce output from the layer.
         combine (Callable[[dict[str, torch.Tensor]], torch.Tensor] | Literal["stack", "sum", "mean", "prod", "min", "max"], optional):
-            function to combine tensors from inputs into a single tensor for ouputs.
+            function to combine tensors from inputs into a single tensor for outputs.
             Defaults to "stack".
 
     Caution:

@@ -116,7 +116,7 @@ def normalize(
             specified dimensions. Defaults to 1.0.
         dim (int | tuple[int, ...] | None, optional): dimension(s) along which to normalize,
             all dimensions if None. Defaults to None.
-        epsilon (float, optional): value added to the demoninator in case of
+        epsilon (float, optional): value added to the denominator in case of
             zero-valued norms. Defaults to 1e-12.
 
     Returns:
@@ -255,7 +255,7 @@ def holt_linear_smoothing(
 def isi(
     spikes: torch.Tensor, step_time: float | None = None, time_first: bool = True
 ) -> torch.Tensor:
-    r"""Transforms spike trains into inter-spike intervals.
+    r"""Transforms spike trains into interspike intervals.
 
     The returned tensor will be padded with ``NaN`` values where an interval could not
     be computed but the position existed (e.g. padding at the end of) spike trains

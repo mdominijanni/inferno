@@ -262,7 +262,7 @@ Under the conditions $\Delta_T > 0$ and $V_T > V_\text{rest}$.
 
 ### Description
 This model uses the same underlying dynamics of the exponential integrate-and-fire neuron, but
-incorporates a linear adaptive current depeendent upon output spikes and the membrane voltage.
+incorporates a linear adaptive current dependent upon output spikes and the membrane voltage.
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)

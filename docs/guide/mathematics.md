@@ -15,7 +15,7 @@ $$
 
 where $N_0 = N(0)$.
 
-This phenomenon is oft-used in spiking neural networks. When used in simulations involving discrete timesteps, such as those performed with Inferno, they will often appear in the form of
+This phenomenon is oft-used in spiking neural networks. When used in simulations involving discrete time steps, such as those performed with Inferno, they will often appear in the form of
 
 $$
 N(t + \Delta t) = N(t)\exp\left(-\frac{\Delta t}{\tau}\right)

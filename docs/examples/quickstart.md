@@ -142,8 +142,8 @@ exc2inh = neural.LinearDirect(
 
 ## Creating the Model
 
-With all of the separate components created, we can now put them together into a single model. Inferno models a set of connections and a set of neurons which take input from those connections with the
-{py:class}`~inferno.neural.Layer` class. As in the model here, neuron groups can be shared across layers (connections normally will not be and care will need to be taken to avoid complications beyond the scope of this example, but Inferno doesn't explicitally prohibit it). The mapping between connections is customizable, although Inferno provides some common layer architectures for convenience. {py:class}`~inferno.neural.Serial` maps a single connection to a single group of neurons.
+With all the separate components created, we can now put them together into a single model. Inferno models a set of connections and a set of neurons which take input from those connections with the
+{py:class}`~inferno.neural.Layer` class. As in the model here, neuron groups can be shared across layers (connections normally will not be and care will need to be taken to avoid complications beyond the scope of this example, but Inferno doesn't explicitly prohibit it). The mapping between connections is customizable, although Inferno provides some common layer architectures for convenience. {py:class}`~inferno.neural.Serial` maps a single connection to a single group of neurons.
 
 Implementing the `Model` class follows the normal PyTorch pattern. Here, we use the previously built components to create the layers. We then write the `forward()` function such that it takes in the tensor of spikes from the encoder, applies the inputs at each step, and returns the concatenated output. It will also update the connection if a trainer is passed in (more on this in the next section) and the module is in `training` mode.
 
@@ -204,7 +204,7 @@ norm_hook.register()
 norm_hook()
 ```
 
-By default, {py:class}`~inferno.neural.Normalization` (like every hook by convention), will run as a post hook (after {py:meth}`~torch.nn.Module.forward` is run) and will run regardless of the `training` mode. Here, we're specifying that when `model.training` is `False`, the hook shouldn't be run. We're also configuring it such that `norm_hook` is a hook on `model`, so it is only run once per batch and not once per simulation step. The attribute on which the hook is applied can be specified using dot notation to target nested attributes. We then register the hook so it will be called automatically. Finally, because `Normalization` is a {py:class}`~inferno.StateHook`, we can call the hook to apply its transformation even without `model.forward()` being called.
+By default, {py:class}`~inferno.neural.Normalization` (like every hook by convention), will run as a post hook (after {py:meth}`~torch.nn.Module.forward` is run) and will run regardless of the `training` mode. Here, we're specifying that when `model.training` is `False`, the hook shouldn't be run. We're also configuring it such that `norm_hook` is a hook on `model`, so it is only run once per batch and not once per simulation step. The attribute on which the hook is applied can be specified using dot notation to target nested attributes. We then register the hook, so it will be called automatically. Finally, because `Normalization` is a {py:class}`~inferno.StateHook`, we can call the hook to apply its transformation even without `model.forward()` being called.
 
 ## Configuring the Trainer
 

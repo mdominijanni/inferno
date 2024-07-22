@@ -15,7 +15,7 @@ class Poisson(DiscreteDistribution):
     r"""Sampling from and properties of the Poisson distribution.
 
     The Poisson distribution is a discrete probability distribution used to express
-    the probability of a given number of events, :math:`k`, occuring in a fixed amount
+    the probability of a given number of events, :math:`k`, occurring in a fixed amount
     of time, given an expected number of events, :math:`\lambda`.
 
     .. admonition:: Parameters
@@ -36,10 +36,10 @@ class Poisson(DiscreteDistribution):
         r"""Tests if the arguments are valid for a Poisson distribution.
 
         Args:
-            rate (torch.Tensor | float | None, optional): expected rate of occurances,
-                :math:`\lambda`. Defaults to None.
-            support (torch.Tensor | float | None, optional): number of occurances,
-                :math:`k`. Defaults to None.
+            rate (torch.Tensor | float | None, optional): expected rate of occurrences,
+                :math:`\lambda`. Defaults to ``None``.
+            support (torch.Tensor | float | None, optional): number of occurrences,
+                :math:`k`. Defaults to ``None``.
 
         Returns:
             dict[str, torch.Tensor | bool | None]: argument name and if it is valid,
@@ -66,7 +66,7 @@ class Poisson(DiscreteDistribution):
             K \sim \text{Poisson}(\lambda)
 
         Args:
-            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.
+            rate (torch.Tensor | float): expected rate of occurrences, :math:`\lambda`.
             generator (torch.Generator | None, optional): pseudorandom number generator
                 to use for sampling. Defaults to None.
 
@@ -90,8 +90,8 @@ class Poisson(DiscreteDistribution):
             P(K=k; \lambda) = \frac{\lambda^k e^{-k}}{k!}
 
         Args:
-            support (torch.Tensor | float): number of occurances, :math:`k`.
-            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.
+            support (torch.Tensor | float): number of occurrences, :math:`k`.
+            rate (torch.Tensor | float): expected rate of occurrences, :math:`\lambda`.
 
         Returns:
             torch.Tensor: resulting point probabilities.
@@ -108,8 +108,8 @@ class Poisson(DiscreteDistribution):
             \log P(K=k; \lambda) = k \log \lambda - \lambda - \log(k!)
 
         Args:
-            support (torch.Tensor | float): number of occurances, :math:`k`.
-            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.
+            support (torch.Tensor | float): number of occurrences, :math:`k`.
+            rate (torch.Tensor | float): expected rate of occurrences, :math:`\lambda`.
 
         Returns:
             torch.Tensor: log of the resulting point probabilities.
@@ -128,8 +128,8 @@ class Poisson(DiscreteDistribution):
             \frac{\Gamma (\lfloor k + 1 \rfloor, \lambda)}{\Gamma (\lambda)}
 
         Args:
-            support (torch.Tensor | float): number of occurances, :math:`k`.
-            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.
+            support (torch.Tensor | float): number of occurrences, :math:`k`.
+            rate (torch.Tensor | float): expected rate of occurrences, :math:`\lambda`.
 
         Returns:
             torch.Tensor: resulting cumulative probabilities.
@@ -148,8 +148,8 @@ class Poisson(DiscreteDistribution):
             \frac{\Gamma (\lfloor k + 1 \rfloor, \lambda)}{\Gamma (\lambda)}
 
         Args:
-            support (torch.Tensor | float): number of occurances, :math:`k`.
-            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.
+            support (torch.Tensor | float): number of occurrences, :math:`k`.
+            rate (torch.Tensor | float): expected rate of occurrences, :math:`\lambda`.
 
         Returns:
             torch.Tensor: log of the resulting cumulative probabilities.
@@ -164,7 +164,7 @@ class Poisson(DiscreteDistribution):
             \text{E}[K \mid K \sim \text{Poisson}(\lambda)] = \lambda
 
         Args:
-            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.
+            rate (torch.Tensor | float): expected rate of occurrences, :math:`\lambda`.
 
         Returns:
             torch.Tensor: mean of the distribution with given parameters.
@@ -180,7 +180,7 @@ class Poisson(DiscreteDistribution):
             \text{Var}[K \mid K \sim \text{Poisson}(\lambda)] = \lambda
 
         Args:
-            rate (torch.Tensor | float): expected rate of occurances, :math:`\lambda`.
+            rate (torch.Tensor | float): expected rate of occurrences, :math:`\lambda`.
 
         Returns:
             torch.Tensor: variance of the distribution with given parameters.
@@ -213,15 +213,16 @@ class Normal(ContinuousDistribution):
         r"""Tests if the arguments are valid for a Normal distribution.
 
         Args:
-            scale (torch.Tensor | float): standard deviation of the distribution,
-                :math:`\sigma`.
-            support (torch.Tensor | float): location of observation, :math:`x`.
             loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.
+            scale (torch.Tensor | float | None, optional): standard deviation of the
+                distribution, :math:`\sigma`. Defaults to ``None``.
+            support (torch.Tensor | float | None, optional): location of observation,
+                :math:`x`. Defaults to ``None``.
 
         Returns:
             dict[str, torch.Tensor | bool | None]: argument name and if it is valid,
             returned as a tensor of dtype :py:data:`torch.bool` if a non-scalar tensor
-            is given, None if not given.
+            is given, ``None`` if not given.
         """
         return {
             "loc": constraints.real(loc),
@@ -233,7 +234,7 @@ class Normal(ContinuousDistribution):
     def params_mv(
         cls, mean: torch.Tensor | float, variance: torch.Tensor | float
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        r"""Computes parameters of the lnormal distribution targeting a given mean and variance.
+        r"""Computes parameters of the normal distribution targeting a given mean and variance.
 
         Computes the location :math:`\mu` and scale :math:`\sigma` as follows.
 
@@ -248,7 +249,8 @@ class Normal(ContinuousDistribution):
             variance (torch.Tensor | float): desired variance, :math:`\sigma_X^2`.
 
         Returns:
-            tuple[torch.Tensor, torch.Tensor]: tuple of the corresponding ``loc`` and ``scale``.
+            tuple[torch.Tensor, torch.Tensor]: tuple of the corresponding
+            ``loc`` and ``scale``.
         """
         mean, variance = _astensorsfloat(mean, variance)
         return mean, torch.sqrt(variance)
@@ -270,7 +272,7 @@ class Normal(ContinuousDistribution):
             scale (torch.Tensor | float): standard deviation of the distribution,
                 :math:`\sigma`.
             generator (torch.Generator | None, optional): pseudorandom number generator
-                to use for sampling. Defaults to None.
+                to use for sampling. Defaults to ``None``.
 
         Returns:
             torch.Tensor: resulting random variates :math:`X`.
@@ -294,7 +296,7 @@ class Normal(ContinuousDistribution):
             mean (torch.Tensor | float): target sample mean, :math:`\mu_X`.
             variance (torch.Tensor | float): target sample variance, :math:`\sigma_X^2`.
             generator (torch.Generator | None, optional): pseudorandom number generator
-                to use for sampling. Defaults to None.
+                to use for sampling. Defaults to ``None``.
 
         Returns:
             torch.Tensor: resulting random variates :math:`X`.
@@ -462,14 +464,17 @@ class LogNormal(ContinuousDistribution):
         r"""Tests if the arguments are valid for a Normal distribution.
 
         Args:
-            scale (torch.Tensor | float): variance of the distribution, :math:`\sigma^2`.
-            support (torch.Tensor | float): location of observation, :math:`x`.
-            loc (torch.Tensor | float): mean of the distribution, :math:`\mu`.
+            loc (torch.Tensor | float | None, optional): location of the distribution,
+                :math:`\mu`. Defaults to ``None``.
+            scale (torch.Tensor | float | None, optional): scale of the distribution,
+                :math:`\sigma`. Defaults to ``None``.
+            support (torch.Tensor | float | None, optional): support of observation,
+                :math:`x`. Defaults to ``None``.
 
         Returns:
             dict[str, torch.Tensor | bool | None]: argument name and if it is valid,
             returned as a tensor of dtype :py:data:`torch.bool` if a non-scalar tensor
-            is given, None if not given.
+            is given, ``None`` if not given.
         """
         return {
             "loc": constraints.real(loc),
@@ -522,7 +527,7 @@ class LogNormal(ContinuousDistribution):
             loc (torch.Tensor): distribution location :math:`\mu`.
             scale (torch.Tensor): distribution scale :math:`\sigma`.
             generator (torch.Generator | None, optional): pseudorandom number generator
-                to use for sampling. Defaults to None.
+                to use for sampling. Defaults to ``None``.
 
         Returns:
             torch.Tensor: resulting random variates :math:`X`.
@@ -549,7 +554,7 @@ class LogNormal(ContinuousDistribution):
             mean (torch.Tensor | float): target sample mean, :math:`\mu_X`.
             variance (torch.Tensor | float): target sample variance, :math:`\sigma_X^2`.
             generator (torch.Generator | None, optional): pseudorandom number generator
-                to use for sampling. Defaults to None.
+                to use for sampling. Defaults to ``None``.
 
         Returns:
             torch.Tensor: resulting random variates :math:`X`.
@@ -672,8 +677,8 @@ class LogNormal(ContinuousDistribution):
             \exp\left( \mu + \frac{\sigma^2}{2} \right)
 
         Args:
-            loc (torch.Tensor): distribution location :math:`\mu`.
-            scale (torch.Tensor): distribution scale :math:`\sigma`.
+            loc (torch.Tensor | float): distribution location :math:`\mu`.
+            scale (torch.Tensor | float): distribution scale :math:`\sigma`.
 
         Returns:
             torch.Tensor: mean of the distribution with given parameters.
