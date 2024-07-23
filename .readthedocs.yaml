@@ -5,6 +5,8 @@ build:
   tools:
     python: miniconda-latest
   jobs:
+    pre_build:
+      - python docs/rtd.pre.py
     post_build:
       - python docs/rtd.post.py
 
@@ -13,4 +15,4 @@ conda:
 
 sphinx:
   builder: html
-  configuration: docs/conf.rtd.py
+  configuration: docs/conf.py
