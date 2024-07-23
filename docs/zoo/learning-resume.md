@@ -1,4 +1,4 @@
-# Learning, ReSuMe
+# Learning, ReSuMe Methods
 ```{admonition} Work In Progress
 This is not yet implemented and the documentation is incomplete.
 ```

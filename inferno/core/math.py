@@ -113,11 +113,11 @@ def normalize(
         data (torch.Tensor): data to normalize.
         order (int | float): order of :math:`p`-norm by which to normalize.
         scale (float | complex, optional): desired :math:`p`-norm of elements along
-            specified dimensions. Defaults to 1.0.
+            specified dimensions. Defaults to ``1.0``.
         dim (int | tuple[int, ...] | None, optional): dimension(s) along which to normalize,
-            all dimensions if None. Defaults to None.
+            all dimensions if ``None``. Defaults to ``None``.
         epsilon (float, optional): value added to the denominator in case of
-            zero-valued norms. Defaults to 1e-12.
+            zero-valued norms. Defaults to ``1e-12``.
 
     Returns:
         torch.Tensor: normalized tensor.
@@ -139,15 +139,15 @@ def rescale(
     Args:
         data (torch.Tensor): tensor to rescale.
         resmin (int | float | torch.Tensor | None): minimum value for the
-            tensor after rescaling, unchanged if None.
+            tensor after rescaling, unchanged if ``None``.
         resmax (int | float | torch.Tensor | None): maximum value for the
-            tensor after rescaling, unchanged if None.
+            tensor after rescaling, unchanged if ``None``.
         srcmin (int | float | torch.Tensor | None, optional): minimum value for the
-            tensor before rescaling, computed if None. Defaults to None.
+            tensor before rescaling, computed if ``None``. Defaults to ``None``.
         srcmax (int | float | torch.Tensor | None, optional): maximum value for the
-            tensor before rescaling, computed if None. Defaults to None.
+            tensor before rescaling, computed if ``None``. Defaults to ``None``.
         dim (int | tuple[int, ...] | None, optional): dimension(s) along which amin/amax
-            are computed if not provided, all dimensions if None. Defaults to None.
+            are computed if not provided, all dimensions if ``None``. Defaults to ``None``.
 
     Returns:
         torch.Tensor: rescaled tensor.

@@ -42,19 +42,19 @@ class Monitor(Module, ContextualHook):
         reducer (Reducer): underlying means for reducing samples over time
             and storing them.
         module (Module | None, optional): module to register as the target for monitoring,
-            can be modified after construction. Defaults to None.
+            can be modified after construction. Defaults to ``None``.
         prehook (str | None, optional): name of the prehook method, if any, to execute,
             no prehook when ``None``. Defaults to ``None``.
         posthook (str | None, optional): name of the posthook method, if any, to execute,
             no posthook when ``None``. Defaults to ``None``.
         prehook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
-            :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to None.
+            :py:meth:`~torch.nn.Module.register_forward_pre_hook`. Defaults to ``None``.
         posthook_kwargs (dict[str, Any] | None, optional): keyword arguments passed to
-            :py:meth:`~torch.nn.Module.register_forward_hook`. Defaults to None.
+            :py:meth:`~torch.nn.Module.register_forward_hook`. Defaults to ``None``.
         train_update (bool, optional): if this monitor should be called when the module
-            being monitored is in train mode. Defaults to True.
+            being monitored is in train mode. Defaults to ``True``.
         eval_update (bool, optional): if this monitor should be called when the module
-            being monitored is in eval mode. Defaults to True.
+            being monitored is in eval mode. Defaults to ``True``.
 
     Important:
         While ``Monitor`` can be used directly, it must be subclassed to be used in
@@ -157,7 +157,7 @@ class Monitor(Module, ContextualHook):
 
         Args:
             module (Module | None, optional): module with which to register, last
-                registered if None. Defaults to None.
+                registered if ``None``. Defaults to ``None``.
 
         Raises:
             RuntimeError: weak reference to the last referenced module is no longer
@@ -195,18 +195,18 @@ class InputMonitor(Monitor):
         reducer (Reducer): underlying means for reducing samples over time
             and storing them.
         module (Module, optional): module to register as the target for monitoring,
-            can be modified after construction. Defaults to None.
+            can be modified after construction. Defaults to ``None``.
         train_update (bool, optional): if this monitor should be called when the module
-            being monitored is in train mode. Defaults to True.
+            being monitored is in train mode. Defaults to ``True``.
         eval_update (bool, optional): if this monitor should be called when the module
-            being monitored is in eval mode. Defaults to True.
+            being monitored is in eval mode. Defaults to ``True``.
         prepend (bool, optional): if this monitor should be called before other
-            registered forward prehooks. Defaults to False.
+            registered forward prehooks. Defaults to ``False``.
         filter_ (Callable[[tuple[Any, ...]], bool] | None, optional): test if the input
-            should be passed to the reducer, ignores empty when None. Defaults to None.
+            should be passed to the reducer, ignores empty when ``None``. Defaults to ``None``.
         map_ (Callable[[tuple[Any, ...]], tuple[torch.Tensor, ...]] | None, optional):
-            modifies the input before being passed to the reducer, identity when None.
-            Defaults to None.
+            modifies the input before being passed to the reducer, identity when ``None``.
+            Defaults to ``None``.
 
     Note:
         The inputs, which are received as a tuple, will be sent to ``filter_``. If this
@@ -259,16 +259,16 @@ class InputMonitor(Monitor):
             reducer (Reducer): underlying means for reducing samples over time
                 and storing them.
             train_update (bool, optional): if this monitor should be called when the
-                module being monitored is in train mode. Defaults to True.
+                module being monitored is in train mode. Defaults to ``True``.
             eval_update (bool, optional): if this monitor should be called when the
-                module being monitored is in eval mode. Defaults to True.
+                module being monitored is in eval mode. Defaults to ``True``.
             prepend (bool, optional): if this monitor should be called before other
-                registered forward prehooks or posthooks. Defaults to False.
+                registered forward prehooks or posthooks. Defaults to ``False``.
             filter_ (Callable[[tuple[Any, ...]], bool] | None, optional): test if the input
-                should be passed to the reducer, ignores empty when None. Defaults to None.
+                should be passed to the reducer, ignores empty when ``None``. Defaults to ``None``.
             map_ (Callable[[tuple[Any, ...]], torch.Tensor] | None, optional):
-                modifies the input before being passed to the reducer, 0th input if None.
-                Defaults to None.
+                modifies the input before being passed to the reducer,
+                :math:`0^\text{th}` input if ``None``. Defaults to ``None``.
 
         Returns:
             MonitorConstructor: partial constructor for monitor.
@@ -295,18 +295,18 @@ class OutputMonitor(Monitor):
         reducer (Reducer): underlying means for reducing samples over time
             and storing them.
         module (Module, optional): module to register as the target for monitoring,
-            can be modified after construction. Defaults to None.
+            can be modified after construction. Defaults to ``None``.
         train_update (bool, optional): if this monitor should be called when the module
-            being monitored is in train mode. Defaults to True.
+            being monitored is in train mode. Defaults to ``True``.
         eval_update (bool, optional): if this monitor should be called when the module
-            being monitored is in eval mode. Defaults to True.
+            being monitored is in eval mode. Defaults to ``True``.
         prepend (bool, optional): if this monitor should be called before other
-            registered forward posthooks. Defaults to False.
+            registered forward posthooks. Defaults to ``False``.
         filter_ (Callable[[Any], bool] | None, optional): test if the output should be
-            passed to the reducer, ignores None values when None. Defaults to None.
+            passed to the reducer, ignores None values when ``None``. Defaults to ``None``.
         map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies the
-            output before being passed to the reduer, wraps with a tuple if not already
-            a tuple if None. Defaults to None.
+            output before being passed to the reducer, wraps with a tuple if not already
+            a tuple if ``None``. Defaults to ``None``.
 
     Note:
         The output depends on the :py:meth:`~torch.nn.Module.forward` of the
@@ -360,16 +360,17 @@ class OutputMonitor(Monitor):
             reducer (Reducer): underlying means for reducing samples over time
                 and storing them.
             train_update (bool, optional): if this monitor should be called when the
-                module being monitored is in train mode. Defaults to True.
+                module being monitored is in train mode. Defaults to ``True``.
             eval_update (bool, optional): if this monitor should be called when the
-                module being monitored is in eval mode. Defaults to True.
+                module being monitored is in eval mode. Defaults to ``True``.
             prepend (bool, optional): if this monitor should be called before other
-                registered forward prehooks or posthooks. Defaults to False.
+                registered forward prehooks or posthooks. Defaults to ``False``.
             filter_ (Callable[[Any], bool] | None, optional): test if the output should be
-                passed to the reducer, ignores None values when None. Defaults to None.
+                passed to the reducer, ignores ``None`` values when ``None``.
+                Defaults to ``None``.
             map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies
-                the output before being passed to the reduer, wraps with a tuple if not
-                already a tuple if None. Defaults to None.
+                the output before being passed to the reducer, wraps with a tuple if not
+                already a tuple if ``None``. Defaults to ``None``.
 
         Returns:
             MonitorConstructor: partial constructor for monitor.
@@ -397,20 +398,21 @@ class StateMonitor(Monitor):
             and storing them.
         attr (str): attribute or nested attribute to target.
         module (Module, optional): module to register as the target for monitoring,
-            can be modified after construction. Defaults to None.
+            can be modified after construction. Defaults to ``None``.
         as_prehook (bool, optional): if this monitor should be called before the forward
-            call of the module being monitored. Defaults to False.
+            call of the module being monitored. Defaults to ``False``.
         train_update (bool, optional): if this monitor should be called when the module
-            being monitored is in train mode. Defaults to True.
+            being monitored is in train mode. Defaults to ``True``.
         eval_update (bool, optional): if this monitor should be called when the module
-            being monitored is in eval mode. Defaults to True.
+            being monitored is in eval mode. Defaults to ``True``.
         prepend (bool, optional): if this monitor should be called before other
-            registered forward prehooks or posthooks. Defaults to False.
+            registered forward prehooks or posthooks. Defaults to ``False``.
         filter_ (Callable[[Any], bool] | None, optional): test if the input should be
-            passed to the reducer, ignores None values when None. Defaults to None.
+            passed to the reducer, ignores ``None`` values when ``None``.
+            Defaults to ``None``.
         map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies the
-            input before being passed to the reduer, wraps with a tuple if not already
-            a tuple if None. Defaults to None.
+            input before being passed to the reducer, wraps with a tuple if not already
+            a tuple if ``None``. Defaults to ``None``.
 
     Note:
         The end target of this can be a method name, however ``map_`` will need to be
@@ -476,18 +478,19 @@ class StateMonitor(Monitor):
             reducer (Reducer): underlying means for reducing samples over time
                 and storing them.
             as_prehook (bool, optional): if this monitor should be called before the
-                forward call of the module being monitored. Defaults to False.
+                forward call of the module being monitored. Defaults to ``False``.
             train_update (bool, optional): if this monitor should be called when the
-                module being monitored is in train mode. Defaults to True.
+                module being monitored is in train mode. Defaults to ``True``.
             eval_update (bool, optional): if this monitor should be called when the
-                module being monitored is in eval mode. Defaults to True.
+                module being monitored is in eval mode. Defaults to ``True``.
             prepend (bool, optional): if this monitor should be called before other
-                registered forward prehooks or posthooks. Defaults to False.
+                registered forward prehooks or posthooks. Defaults to ``False``.
             filter_ (Callable[[Any], bool] | None, optional): test if the input should be
-                passed to the reducer, ignores None values when None. Defaults to None.
+                passed to the reducer, ignores ``None`` values when ``None``.
+                Defaults to ``None``.
             map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies
-                the input before being passed to the reduer, wraps with a tuple if not
-                already a tuple if None. Defaults to None.
+                the input before being passed to the reducer, wraps with a tuple if not
+                already a tuple if ``None``. Defaults to ``None``.
 
         Returns:
             MonitorConstructor: partial constructor for monitor.
@@ -510,22 +513,23 @@ class StateMonitor(Monitor):
 
 
 class DifferenceMonitor(Monitor):
-    """Records the difference of an attribute in a Module before and after its forward call.
+    r"""Records the difference of an attribute in a Module before and after its forward call.
 
     Args:
         reducer (Reducer): underlying means for reducing samples over time
             and storing them.
         attr (str): attribute or nested attribute to target.
         module (Module, optional): module to register as the target for monitoring,
-            can be modified after construction. Defaults to None.
+            can be modified after construction. Defaults to ``None``.
         train_update (bool, optional): if this monitor should be called when the module
-            being monitored is in train mode. Defaults to True.
+            being monitored is in train mode. Defaults to ``True``.
         eval_update (bool, optional): if this monitor should be called when the module
-            being monitored is in eval mode. Defaults to True.
+            being monitored is in eval mode. Defaults to ``True``.
         prepend (bool, optional): if this monitor should be called before other
-            registered forward prehooks or posthooks. Defaults to False.
+            registered forward prehooks or posthooks. Defaults to ``False``.
         filter_ (Callable[[Any, Any], bool] | None, optional): test if the input should
-            be passed to the reducer, ignores None values when None. Defaults to None.
+            be passed to the reducer, ignores ``None`` values when ``None``.
+            Defaults to ``None``.
         map_ (Callable[[Any, Any], tuple[torch.Tensor, ...]] | None, optional): modifies
             the input before being passed to the reducer, post-forward value minus
             pre-forward value wrapped in a tuple if ``None``. Defaults to ``None``.
@@ -621,19 +625,21 @@ class DifferenceMonitor(Monitor):
             reducer (Reducer): underlying means for reducing samples over time
                 and storing them.
             train_update (bool, optional): if this monitor should be called when the
-                module being monitored is in train mode. Defaults to True.
+                module being monitored is in train mode. Defaults to ``True``.
             eval_update (bool, optional): if this monitor should be called when the
-                module being monitored is in eval mode. Defaults to True.
+                module being monitored is in eval mode. Defaults to ``True``.
             prepend (bool, optional): if this monitor should be called before other
-                registered forward prehooks or posthooks. Defaults to False.
+                registered forward prehooks or posthooks. Defaults to ``False``.
             filter_ (Callable[[Any, Any], bool] | None, optional): test if the input should
-                be passed to the reducer, ignores None values when None. Defaults to None.
+                be passed to the reducer, ignores ``None`` values when ``None``.
+                Defaults to ``None``.
             map_ (Callable[[Any, Any], tuple[torch.Tensor, ...]] | None, optional): modifies
                 the input before being passed to the reducer, post-forward value minus
                 pre-forward value wrapped in a tuple if ``None``. Defaults to ``None``.
             op_ (Callable[[torch.Tensor, torch.Tensor], torch.Tensor] | None, optional): operation
-                to calculate the difference between post-forward and pre-forward, only used
-                when ``map_`` is ``None``, subtraction when ``None``. Defaults to ``None``.
+                to calculate the difference between post-forward and pre-forward,
+                only used when ``map_`` is ``None``, subtraction when ``None``.
+                Defaults to ``None``.
 
         Returns:
             MonitorConstructor: partial constructor for monitor.
@@ -670,21 +676,21 @@ class MultiStateMonitor(Monitor):
         attr (str): attribute or nested attribute to target.
         subattrs (tuple[str, ...]): attributes, relative to ``attr``, to target.
         module (Module, optional): module to register as the target for monitoring,
-            can be modified after construction. Defaults to None.
+            can be modified after construction. Defaults to ``None``.
         as_prehook (bool, optional): if this monitor should be called before the forward
-            call of the module being monitored. Defaults to False.
+            call of the module being monitored. Defaults to ``False``.
         train_update (bool, optional): if this monitor should be called when the module
-            being monitored is in train mode. Defaults to True.
+            being monitored is in train mode. Defaults to ``True``.
         eval_update (bool, optional): if this monitor should be called when the module
-            being monitored is in eval mode. Defaults to True.
+            being monitored is in eval mode. Defaults to ``True``.
         prepend (bool, optional): if this monitor should be called before other
-            registered forward prehooks or posthooks. Defaults to False.
+            registered forward prehooks or posthooks. Defaults to ``False``.
         filter_ (Callable[[tuple[Any, ...]], bool] | None, optional): test if the input
-            should be passed to the reducer, ignores None values when None.
-            Defaults to None.
+            should be passed to the reducer, ignores ``None`` values when ``None``.
+            Defaults to ``None``.
         map_ (Callable[[tuple[Any, ...]], tuple[torch.Tensor, ...]] | None, optional):
-            modifies the input before being passed to the reduer, identity if None.
-            Defaults to None.
+            modifies the input before being passed to the reducer, identity if ``None``.
+            Defaults to ``None``.
 
     Note:
         The end targets of this can be a method name, however ``map_`` will need to be
@@ -756,18 +762,19 @@ class MultiStateMonitor(Monitor):
                 and storing them.
             subattrs (tuple[str, ...]): attributes, relative to ``attr``, to target.
             as_prehook (bool, optional): if this monitor should be called before the
-                forward call of the module being monitored. Defaults to False.
+                forward call of the module being monitored. Defaults to ``False``.
             train_update (bool, optional): if this monitor should be called when the
-                module being monitored is in train mode. Defaults to True.
+                module being monitored is in train mode. Defaults to ``True``.
             eval_update (bool, optional): if this monitor should be called when the
-                module being monitored is in eval mode. Defaults to True.
+                module being monitored is in eval mode. Defaults to ``True``.
             prepend (bool, optional): if this monitor should be called before other
-                registered forward prehooks or posthooks. Defaults to False.
+                registered forward prehooks or posthooks. Defaults to ``False``.
             filter_ (Callable[[Any], bool] | None, optional): test if the input should be
-                passed to the reducer, ignores None values when None. Defaults to None.
+                passed to the reducer, ignores ``None`` values when ``None``.
+                Defaults to ``None``.
             map_ (Callable[[Any], tuple[torch.Tensor, ...]] | None, optional): modifies
-                the input before being passed to the reduer, wraps with a tuple if not
-                already a tuple if None. Defaults to None.
+                the input before being passed to the reducer, wraps with a tuple if not
+                already a tuple if ``None``. Defaults to ``None``.
 
         Returns:
             MonitorConstructor: partial constructor for monitor.

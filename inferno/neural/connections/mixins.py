@@ -4,12 +4,12 @@ import torch.nn as nn
 
 
 class WeightMixin:
-    """Mixin for connections with weights.
+    r"""Mixin for connections with weights.
 
     Args:
         weight (torch.Tensor): initial connection weights.
         requires_grad (bool, optional): if the parameters created require gradients.
-            Defaults to False.
+            Defaults to ``False``.
 
     Caution:
         This must be added to a class which inherits from
@@ -42,13 +42,13 @@ class WeightMixin:
 
 
 class WeightBiasMixin(WeightMixin):
-    """Mixin for connections with weights and biases.
+    r"""Mixin for connections with weights and biases.
 
     Args:
         weight (torch.Tensor): initial connection weights.
         bias (torch.Tensor): initial connection biases, if any.
         requires_grad (bool, optional): if the parameters created require gradients.
-            Defaults to False.
+            Defaults to ``False``.
 
     Caution:
         This must be added to a class which inherits from
@@ -91,14 +91,14 @@ class WeightBiasMixin(WeightMixin):
 
 
 class WeightBiasDelayMixin(WeightBiasMixin):
-    """Mixin for connections with weights, biases, and delays.
+    r"""Mixin for connections with weights, biases, and delays.
 
     Args:
         weight (torch.Tensor): initial connection weights.
         bias (torch.Tensor): initial connection biases, if any.
         delay (torch.Tensor): initial connection delays, if any.
         requires_grad (bool, optional): if the parameters created require gradients.
-            Defaults to False.
+            Defaults to ``False``.
 
     Caution:
         This must be added to a class which inherits from

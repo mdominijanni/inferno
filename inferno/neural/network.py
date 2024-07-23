@@ -54,7 +54,7 @@ class Cell(Module, Observable):
         accept the output of this as positional and keyword arguments.
 
         Args:
-            attr (str): dot-seperated attribute relative to self, to realign.
+            attr (str): dot-separated attribute relative to self, to realign.
 
         Returns:
             tuple[tuple[Any, ...], dict[str, Any]]: tuple of positional arguments and
@@ -219,7 +219,7 @@ class Layer(Module, ABC):
             AttributeError: ``neuron`` does not specify a neuron.
 
         Returns:
-            Cell: cell specifyied by the connection and neuron.
+            Cell: cell specified by the connection and neuron.
         """
         if connection not in self.connections_:
             raise AttributeError(
@@ -255,7 +255,7 @@ class Layer(Module, ABC):
                 and neuron.
 
         Returns:
-            Cell: cell specifyied by the connection and neuron.
+            Cell: cell specified by the connection and neuron.
         """
         try:
             return self.cells_[connection][neuron]
@@ -565,7 +565,7 @@ class Layer(Module, ABC):
 
         Args:
             clear (bool, optional): if accumulators should be cleared after updating.
-                Defaults to True.
+                Defaults to ``True``.
         """
         for connection in self.connections_.values():
             connection.update(clear=clear, **kwargs)
@@ -603,11 +603,11 @@ class Layer(Module, ABC):
             inputs (dict[str, tuple[torch.Tensor, ...]]): inputs passed to the
                 registered connections' forward calls.
             connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
-                arguments passed to registered connections' forward calls. Defaults to None.
+                arguments passed to registered connections' forward calls. Defaults to ``None``.
             neuron_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
-                arguments passed to registered neurons' forward calls. Defaults to None.
+                arguments passed to registered neurons' forward calls. Defaults to ``None``.
             capture_intermediate (bool, optional): if output from the connections should
-                also be returned. Defaults to False.
+                also be returned. Defaults to ``False``.
             **kwargs (Any): keyword arguments passed to :py:meth:`wiring`.
 
         Returns:
@@ -655,8 +655,7 @@ class Biclique(Layer):
 
     Either a function to combine the tensors from the modules in ``connections`` to be passed
     into ``inputs`` or a string literal may be provided. These may be "sum", "mean",
-    "prod", "min", "max", or "stack". All except for "stack" use ``einops`` to reduce
-    them, "stack" will stack the tensors along a new final dimension. When providing
+    "prod", "min", or "max". All use ``einops`` to reduce. When providing
     a function, it must take a tuple of tensors (equal to the number of inputs) and
     produce a single tensor output.
 
@@ -665,16 +664,12 @@ class Biclique(Layer):
             modules which receive inputs given to the layer.
         neurons (Iterable[tuple[str, Neuron] | tuple[str, Neuron, OneToOne[torch.Tensor]]]):
             modules which produce output from the layer.
-        combine (Callable[[dict[str, torch.Tensor]], torch.Tensor] | Literal["stack", "sum", "mean", "prod", "min", "max"], optional):
+        combine (Callable[[dict[str, torch.Tensor]], torch.Tensor] | Literal["sum", "mean", "prod", "min", "max"], optional):
             function to combine tensors from inputs into a single tensor for outputs.
-            Defaults to "stack".
+            Defaults to ``"sum"``.
 
-    Caution:
-        When a string literal is used as an argument for ``combine``, especially
-        important when using ``stack``, the tensors are used in "insertion order" based
-        on the dictionary passed into ``inputs`` in :py:meth:`Layer.forward`.
-
-        When a custom function is given, keyword arguments passed into :py:meth:`__call__`,
+    Note:
+        When ``combine`` is not a string, keyword arguments passed into :py:meth:`__call__`,
         other than those captured in :py:meth`forward` will be passed in.
     """
 
@@ -688,8 +683,8 @@ class Biclique(Layer):
         ],
         combine: (
             Callable[[dict[str, torch.Tensor]], torch.Tensor]
-            | Literal["stack", "sum", "mean", "prod", "min", "max"]
-        ) = "stack",
+            | Literal["sum", "mean", "prod", "min", "max"]
+        ) = "sum",
     ):
         # superclass constructor
         Layer.__init__(self)
@@ -698,12 +693,6 @@ class Biclique(Layer):
         self.post_input = {}
         self.pre_output = {}
         match (combine.lower() if isinstance(combine, str) else combine):
-            case "stack":
-
-                def combinefn(tensors, **kwargs):
-                    return torch.stack(list(tensors.values()), dim=-1)
-
-                self._combine = combinefn
 
             case "sum" | "mean" | "prod" | "min" | "max":
 
@@ -718,7 +707,7 @@ class Biclique(Layer):
                 if isinstance(combine, str):
                     raise ValueError(
                         f"'combine' ('{combine}'), when a string, must be one of: "
-                        "'stack', 'sum', 'mean', 'prod', 'min', 'max'"
+                        "'sum', 'mean', 'prod', 'min', 'max'"
                     )
                 else:
                     self._combine = combine
@@ -826,17 +815,18 @@ class Biclique(Layer):
 class Serial(Layer):
     r"""Layer with a single connection and single neuron group.
 
-    This wraps :py:class:`Layer` to provid
+    This wraps :py:class:`Layer` to provide simplified accessors and a simplified
+    :py:meth:`forward` method for layers with one connection and one neuron group.
 
     Args:
         connection (Connection): module which receives input to the layer.
         neuron (Neuron): module which generates output from the layer.
         transform (OneToOne[torch.Tensor] | None, optional): function
-            to apply to connection output before passing into neurons. Defaults to None.
+            to apply to connection output before passing into neurons. Defaults to ``None``.
         connection_name (str, optional): name for the connection in the layer. Defaults
-            to "serial_c".
+            to ``"serial_c"``.
         neuron_name (str, optional): name for the neuron in the layer. Defaults to
-            "serial_n".
+            ``"serial_n"``.
 
     Note:
         When ``transform`` is not specified, the identity function is used. Keyword
@@ -988,11 +978,11 @@ class Serial(Layer):
         Args:
             *inputs (torch.Tensor): values passed to the connection.
             connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
-                arguments for the connection's forward call. Defaults to None.
+                arguments for the connection's forward call. Defaults to ``None``.
             neuron_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
-                arguments for the neuron's forward call. Defaults to None.
+                arguments for the neuron's forward call. Defaults to ``None``.
             capture_intermediate (bool, optional): if output from the connections should
-                also be returned. Defaults to False.
+                also be returned. Defaults to ``False``.
             **kwargs (Any): keyword arguments passed to :py:meth:`wiring`.
 
         Returns:

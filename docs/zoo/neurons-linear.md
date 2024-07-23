@@ -1,4 +1,4 @@
-# Neurons, Linear
+# Neurons, Linear Models
 
 ## Leaky Integrate-and-Fire (LIF)
 ### Formulation

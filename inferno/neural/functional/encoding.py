@@ -21,7 +21,7 @@ def poisson_interval(
         steps (int): number of steps for which to generate spikes, :math:`S`.
         step_time (float): length of time between outputs, in :math:`\text{ms}`.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
 
     Returns:
         torch.Tensor: the generated spike train, time first.
@@ -67,7 +67,7 @@ def poisson_interval(
         # increment zero-intervals at nonzero-rates to avoid collisions
         res[:, mask] += res[:, mask] == 0
 
-        # convert intervals to steps via cumumlative summation
+        # convert intervals to steps via cumulative summation
         res = res.cumsum(dim=0)
 
         # limit steps to the maximum given
@@ -100,7 +100,7 @@ def poisson_interval_online(
         steps (int): number of steps for which to generate spikes, :math:`S`.
         step_time (float): length of time between outputs, in :math:`\text{ms}`.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
 
     Yields:
         torch.Tensor: time slices of the generated spike train.
@@ -176,12 +176,12 @@ def homogeneous_poisson_exp_interval(
         steps (int): number of steps for which to generate spikes, :math:`S`.
         step_time (float): length of time between outputs, :math:`\Delta t`,
             in :math:`\text{ms}`.
-        refrac (float | None, optional): minimum interal between spikes set to the step
-            time if None, in :math:`\text{ms}`. Defaults to None.
+        refrac (float | None, optional): minimum interval between spikes set to the step
+            time if ``None``, in :math:`\text{ms}`. Defaults to ``None``.
         compensate (bool, optional): if the spike generation rate should be compensate
-            for the refractory period. Defaults to True.
+            for the refractory period. Defaults to ``True``.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
 
     Returns:
         torch.Tensor: the generated spike train, time first.
@@ -279,12 +279,12 @@ def homogeneous_poisson_exp_interval_online(
         steps (int): number of steps for which to generate spikes, :math:`S`.
         step_time (float): length of time between outputs, :math:`\Delta t`,
             in :math:`\text{ms}`.
-        refrac (float | None, optional): minimum interal between spikes set to the step
-            time if None, in :math:`\text{ms}`. Defaults to None.
-        compensate (bool, optioonal): if the spike generation rate should be compensate
-            for the refractory period. Defaults to True.
+        refrac (float | None, optional): minimum interval between spikes set to the step
+            time if ``None``, in :math:`\text{ms}`. Defaults to ``None``.
+        compensate (bool, optional): if the spike generation rate should be compensate
+            for the refractory period. Defaults to ``True``.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
 
     Yields:
         torch.Tensor: time slices of the generated spike train.
@@ -380,7 +380,7 @@ def homogenous_poisson_bernoulli_approx(
         step_time (float): length of time between outputs, :math:`\Delta t`,
             in :math:`\text{ms}`.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
 
     Returns:
         torch.Tensor: the generated spike train, time first.
@@ -437,7 +437,7 @@ def homogenous_poisson_bernoulli_approx_online(
         step_time (float): length of time between outputs, :math:`\Delta t`,
             in :math:`\text{ms}`.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
 
     Returns:
         torch.Tensor: the generated spike train, time first.
@@ -469,11 +469,11 @@ def homogenous_poisson_bernoulli_approx_online(
 
         # main loop
         for _ in range(steps):
-            # sample directly from Bernouolli distribution
+            # sample directly from Bernoulli distribution
             yield torch.bernoulli(res, generator=generator).bool()
 
 
-def inhomogenous_poisson_bernoulli_approx(
+def inhomogeneous_poisson_bernoulli_approx(
     inputs: torch.Tensor,
     step_time: float,
     *,
@@ -489,7 +489,7 @@ def inhomogenous_poisson_bernoulli_approx(
         step_time (float): length of time between outputs, :math:`\Delta t`,
             in :math:`\text{ms}`.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
 
     Returns:
         torch.Tensor: the generated spike train, time first.

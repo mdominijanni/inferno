@@ -33,7 +33,7 @@ $$
 Ne^{-k} = N \left[\exp\left(-\frac{\Delta t}{\tau}\right)\right]^{k \tau / \Delta t}.
 $$
 
-That is, after $\tau / \Delta t$ repeated applications (simulation steps), the quantity $N$ will be reduced to $1/e$ of its starting value. To consider this outside of the notion of $1/e$ life, we can select $\tau$ as a multiple of $1 / \ln(b)$ for the $1/b$ life we want to think in. Let $\tau = \tau_b / \ln(b)$. Then the equation
+That is, after $k$ repeated applications (simulation steps), the quantity $N$ will be reduced to $1/e$ of its starting value. This can be extended beyond representing $1/e$ life to any $1/b$ life for $b \in \mathbb{R}_{> 0}$. To do this, we convert the time constant into our desired base, $\tau_b = \tau \ln(b)$. Then the equation
 
 $$
 Nb^{-k} = N \left[\exp\left(-\frac{\Delta t}{\tau}\right)\right]^{k \tau_b / \Delta t}

@@ -15,6 +15,7 @@ with open("conf.py", "w") as file:
 # run to generate .rst files
 os.system("make clean html")
 
+"""
 # replace generated files with overrides
 osrsplit = lambda S, L: (
     L
@@ -38,6 +39,7 @@ with open("conf.py", "w") as file:
 
 # run to generate html files
 os.system("make clean html")
+"""
 
 # copy image files
 shutil.copy("images/logo-darkmode.svg", "_build/html/_static/logo-darkmode.svg")

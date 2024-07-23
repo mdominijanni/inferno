@@ -1,7 +1,8 @@
-# Neuronal Systems
+# About SNNs
+
+*Work in Progress*
 
 ## Dynamics of a Neuron
-
 ### Refractory Periods
 Biological neurons have two kinds of refractory periods, an absolute refractory period (ARP) and a relative refractory period (RRP).
 

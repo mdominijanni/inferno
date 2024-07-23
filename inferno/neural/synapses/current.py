@@ -25,16 +25,16 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         spike_q (float): charge carried by each presynaptic spike, in :math:`\text{pC}`.
         delay (float, optional): maximum supported delay, in :math:`\text{ms}`.
         interp_mode (Literal["nearest", "previous"], optional): interpolation mode
-            for selectors between observations. Defaults to "nearest".
+            for selectors between observations. Defaults to ``"nearest"``.
         interp_tol (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         current_overbound (float | None, optional): value to replace currents out of
             bounds, uses values at observation limits if ``None``. Defaults to ``0.0``.
         spike_overbound (bool | None, optional): value to replace spikes out of bounds,
             uses values at observation limits if ``None``. Defaults to ``False``.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
         inplace (bool): if write operations on :py:class:`RecordTensor` attributes
-            should be performed with in-place operations. Defaults to  ``False``.
+            should be performed with in-place operations. Defaults to ``False``.
 
     See Also:
         For more details and references, visit
@@ -111,15 +111,15 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
             spike_q (float): charge carried by each presynaptic spike,
                 in :math:`\text{pC}`.
             interp_mode (Literal["nearest", "previous"], optional): interpolation mode
-                for selectors between observations. Defaults to "nearest".
+                for selectors between observations. Defaults to ``"nearest"``.
             interp_tol (float, optional): maximum difference in time from an observation
-                to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
+                to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
             current_overbound (float | None, optional): value to replace currents out of
-                bounds, uses values at observation limits if None. Defaults to 0.0.
+                bounds, uses values at observation limits if ``None``. Defaults to ``0.0``.
             spike_overbound (bool | None, optional): value to replace spikes out of
-                bounds, uses values at observation limits if None. Defaults to False.
+                bounds, uses values at observation limits if ``None``. Defaults to ``False``.
             inplace (bool): if write operations on :py:class:`RecordTensor` attributes
-                should be performed with in-place operations. Defaults to  ``False``.
+                should be performed with in-place operations. Defaults to ``False``.
 
         Returns:
             SynapseConstructor: partial constructor for synapse.
@@ -157,7 +157,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         """
         return spikes * (self.spike_q / self.dt)
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets synapses to their resting state."""
         self.spike_.reset(False)
 
@@ -197,16 +197,16 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
         spike_q (float): charge carried by each presynaptic spike, in :math:`\text{pC}`.
         delay (float, optional): maximum supported delay, in :math:`\text{ms}`.
         interp_mode (Literal["nearest", "previous"], optional): interpolation mode
-            for selectors between observations. Defaults to "nearest".
+            for selectors between observations. Defaults to ``"nearest"``.
         interp_tol (float, optional): maximum difference in time from an observation
-            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
+            to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         current_overbound (float | None, optional): value to replace currents out of
-            bounds, uses values at observation limits if None. Defaults to 0.0.
+            bounds, uses values at observation limits if ``None``. Defaults to ``0.0``.
         spike_overbound (bool | None, optional): value to replace spikes out of bounds,
-            uses values at observation limits if None. Defaults to False.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+            uses values at observation limits if ``None``. Defaults to ``False``.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
         inplace (bool): if write operations on :py:class:`RecordTensor` attributes
-            should be performed with in-place operations. Defaults to  ``False``.
+            should be performed with in-place operations. Defaults to ``False``.
 
     See Also:
         For more details and references, visit
@@ -274,15 +274,15 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
             spike_q (float): charge carried by each presynaptic spike,
                 in :math:`\text{pC}`.
             interp_mode (Literal["nearest", "previous"], optional): interpolation mode
-                for selectors between observations. Defaults to "nearest".
+                for selectors between observations. Defaults to ``"nearest"``.
             interp_tol (float, optional): maximum difference in time from an observation
-                to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
+                to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
             current_overbound (float | None, optional): value to replace currents out of
-                bounds, uses values at observation limits if None. Defaults to 0.0.
+                bounds, uses values at observation limits if ``None``. Defaults to ``0.0``.
             spike_overbound (bool | None, optional): value to replace spikes out of
-                bounds, uses values at observation limits if None. Defaults to False.
+                bounds, uses values at observation limits if ``None``. Defaults to ``False``.
             inplace (bool): if write operations on :py:class:`RecordTensor` attributes
-                should be performed with in-place operations. Defaults to  ``False``.
+                should be performed with in-place operations. Defaults to ``False``.
 
         Returns:
             SynapseConstructor: partial constructor for synapse.
@@ -309,7 +309,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
 
         return constructor
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets synapses to their resting state."""
         self.spike_.reset(False)
         self.current_.reset(0.0)

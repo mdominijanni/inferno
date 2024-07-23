@@ -35,7 +35,7 @@ class Module(nn.Module):
         nn.Module.__init__(self, *args, **kwargs)
         self._extras = OrderedDict()
 
-    def register_extra(self, name: str, value: Any):
+    def register_extra(self, name: str, value: Any) -> None:
         r"""Adds an extra variable to the module.
 
         This is typically used in a manner to
@@ -118,10 +118,10 @@ class Module(nn.Module):
     def get_extra_state(self) -> dict[str, Any]:
         return self._extras
 
-    def set_extra_state(self, state: dict[str, Any]):
+    def set_extra_state(self, state: dict[str, Any]) -> None:
         self._extras.update(state)
 
-    def __setstate__(self, state):
+    def __setstate__(self, state) -> None:
         self.__dict__.update(state)
         if "_extras" not in self.__dict__:
             self._extras = OrderedDict()
@@ -868,13 +868,13 @@ class RecordTensor(ShapedTensor):
         constraints (dict[int, int] | None, optional): constraints given as a
             dictionary of dimensions to their corresponding size. Defaults to ``None``.
         persist_data (bool, optional): if the data should persist across the
-            state dictionary, only used with buffers. Defaults to True.
+            state dictionary, only used with buffers. Defaults to ``True``.
         persist_constraints (bool, optional): if the constraints should persist
             across the state dictionary. Defaults to ``False``.
         persist_temporal (bool, optional): if temporal information (step time and
             duration) should persist across the state dictionary. Defaults to ``False``.
         strict (bool, optional): if each dimension must specify a unique dimension
-            for the tensor. Defaults to True.
+            for the tensor. Defaults to ``True``.
         live (bool, optional): if constraint validity should be tested on
             assignment. Defaults to ``False``.
         inclusive (bool): if the duration should represent the maximum time which can
@@ -1850,7 +1850,7 @@ class RecordTensor(ShapedTensor):
         Args:
             obs (torch.Tensor): observation to write at the specified offsets.
             offset (int | torch.Tensor, optional): number of steps before the pointer.
-                Defaults to 0.
+                Defaults to ``0``.
             forward (bool, optional): if the offset pointer indicates the index of the
                 first observation. Defaults to ``False``.
             inplace (bool, optional): if the operation should be performed in-place
@@ -2624,7 +2624,7 @@ class VirtualTensor:
         self.__ref = self.__ref.to(*args, **kwargs)
 
 
-def _detach_handles(*handles):
+def _detach_handles(*handles) -> None:
     for h in handles:
         if h:
             h.remove()
@@ -2727,14 +2727,14 @@ class Hook:
         # finalizer
         self.__finalizer = None
 
-    def __wrapped_prehook(self, module, *args, **kwargs):
+    def __wrapped_prehook(self, module, *args, **kwargs) -> Any | None:
         if self.trainexec and module.training:
             return self._prehook_call(module, *args, **kwargs)
 
         if self.evalexec and not module.training:
             return self._prehook_call(module, *args, **kwargs)
 
-    def __wrapped_posthook(self, module, *args, **kwargs):
+    def __wrapped_posthook(self, module, *args, **kwargs) -> Any | None:
         if self.trainexec and module.training:
             return self._posthook_call(module, *args, **kwargs)
 
@@ -2743,7 +2743,7 @@ class Hook:
 
     @property
     def trainexec(self) -> bool:
-        """If the hook is called when the module passed in is in training mode.
+        r"""If the hook is called when the module passed in is in training mode.
 
         Args:
             value (bool): if the hook should be called when the module is training.
@@ -2759,7 +2759,7 @@ class Hook:
 
     @property
     def evalexec(self) -> bool:
-        """If the hook is called when the module passed in is in evaluation mode.
+        r"""If the hook is called when the module passed in is in evaluation mode.
 
         Args:
             value (bool): if the hook should be called when the module is evaluating.

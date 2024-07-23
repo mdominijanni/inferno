@@ -19,10 +19,10 @@ class HomogeneousPoissonEncoder(GeneratorMixin, RefractoryStepMixin, Module):
             in :math:`\text{ms}`.
         frequency (float): maximum spike frequency (associated with an input of 1),
             :math:`f`, in :math:`\text{Hz}`.
-        refrac (float | None, optional): minimum interal between spikes set to the step
+        refrac (float | None, optional): minimum interval between spikes set to the step
             time if ``None``, in :math:`\text{ms}`. Defaults to ``None``.
         compensate (bool, optional): if the spike generation rate should be compensate
-            for the refractory period. Defaults to True.
+            for the refractory period. Defaults to ``True``.
         generator (torch.Generator | None, optional): pseudorandom number generator
             for sampling. Defaults to ``None``.
 

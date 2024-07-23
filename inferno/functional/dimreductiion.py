@@ -300,7 +300,7 @@ def quantile(
             Defaults to ``False``.
         q (float, optional): :math:`q^\text{th}` quantile to take. Defaults to ``0.5``.
         interpolation (str, optional): method of interpolation when the quantile lies
-            between two data points. Defaults to "linear".
+            between two data points. Defaults to ``"linear"``.
 
     Returns:
         torch.Tensor: dimensionally reduced tensor.
@@ -342,7 +342,7 @@ def nanquantile(
             Defaults to ``False``.
         q (float, optional): :math:`q^\text{th}` quantile to take. Defaults to ``0.5``.
         interpolation (str, optional): method of interpolation when the quantile lies
-            between two data points. Defaults to "linear".
+            between two data points. Defaults to ``"linear"``.
 
     Returns:
         torch.Tensor: dimensionally reduced tensor.

@@ -1,4 +1,4 @@
-# Learning, STDP
+# Learning, STDP Methods
 Typically STDP is parameterized such that it performs Hebbian learning (often summarized as "cells that fire together wire together"). In Hebbian learning methods there is a *postsynaptic* neuron which receives input from a *presynaptic* neuron. Then, if the presynaptic neuron fires and after the postsynaptic neuron fires, the connection between them is considered to be *causal*. Likewise, if the postsynaptic neuron fires then the presynaptic neuron fires, it's considered to be *anti-causal*. Hebbian learning increases the connection weight on neuron firings which are causal and decreases it on anti-causal firings. Most STDP methods are phrased in the context of Hebbian learning, although some explicitly are not, while others are flexible even if written in terms of Hebbian learning.
 
 ```{note}

@@ -1,4 +1,4 @@
-# Neurons, Nonlinear
+# Neurons, Nonlinear Models
 
 ## Quadratic Integrate-and-Fire (QIF)
 ### Formulation

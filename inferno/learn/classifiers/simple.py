@@ -72,7 +72,7 @@ class MaxRateClassifier(Module):
             "assignments_", torch.zeros(*shape).long(), persistent=False
         )
         self.register_buffer(
-            "occurances_", torch.zeros(num_classes).long(), persistent=False
+            "occurrences_", torch.zeros(num_classes).long(), persistent=False
         )
         self.register_buffer(
             "proportions_", torch.zeros(*shape, num_classes).float(), persistent=False
@@ -108,7 +108,7 @@ class MaxRateClassifier(Module):
         return self.assignments_
 
     @property
-    def occurances(self) -> torch.Tensor:
+    def occurrences(self) -> torch.Tensor:
         r"""Number of assigned neurons per-class.
 
         The number of neurons which are assigned to each label.
@@ -124,7 +124,7 @@ class MaxRateClassifier(Module):
             Where:
                 * :math:`K` is the number of possible classes.
         """
-        return self.occurances_
+        return self.occurrences_
 
     @property
     def proportions(self) -> torch.Tensor:
@@ -163,7 +163,7 @@ class MaxRateClassifier(Module):
 
         Note:
             The attributes :py:attr:`proportions`, :py:attr:`assignments`, and
-            :py:attr:`occurances` are automatically recalculated on assignment.
+            :py:attr:`occurrences` are automatically recalculated on assignment.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -182,7 +182,7 @@ class MaxRateClassifier(Module):
         self.rates_.data = value
         self.proportions_ = F.normalize(self.rates, p=1, dim=-1)
         self.assignments_ = torch.argmax(self.proportions, dim=-1)
-        self.occurances_ = torch.bincount(self.assignments.view(-1), None, self.nclass)
+        self.occurrences_ = torch.bincount(self.assignments.view(-1), None, self.nclass)
 
     @property
     def ndim(self) -> int:
@@ -200,7 +200,7 @@ class MaxRateClassifier(Module):
         Returns:
             int: number of possible classes.
         """
-        return self.occurances.shape[0]
+        return self.occurrences.shape[0]
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -252,7 +252,7 @@ class MaxRateClassifier(Module):
                 ein.rearrange(inputs, "b ... -> b (...)"),
                 assocs,
             )
-            .div(self.occurances)
+            .div(self.occurrences)
             .nan_to_num(nan=0, posinf=0)
         )
 

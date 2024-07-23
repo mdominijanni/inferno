@@ -172,7 +172,7 @@ def rgetattr(obj: object, attr: str, *default) -> Any:
             raise
 
 
-def rsetattr(obj: object, attr: str, val: Any):
+def rsetattr(obj: object, attr: str, val: Any) -> None:
     r"""Sets an object attribute recursively using dot notation.
 
     For example, if we have an object ``obj`` and a string ``"so1.so2.so3"``,
@@ -187,7 +187,7 @@ def rsetattr(obj: object, attr: str, val: Any):
         val (Any): value to which the attribute will be set.
     """
     pre, _, post = attr.rpartition(".")
-    return setattr(rgetattr(obj, pre) if pre else obj, post, val)
+    setattr(rgetattr(obj, pre) if pre else obj, post, val)
 
 
 def getitem(data: Mapping[K, V], key: Iterable[K], *default: V) -> V:
