@@ -1,0 +1,30 @@
+name: infernodoc
+channels:
+  - pytorch
+  - plotly
+  - domdfcoding
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  # pytorch
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cpuonly
+  # math-sci
+  - einops
+  - numpy >=1.26, <2
+  # sphinx
+  - sphinx>=7.2.6
+  - antlr4-python3-runtime
+  - docutils
+  - esbonio
+  - myst-parser
+  - sphinx-design
+  - sphinx-autoapi
+  - sphinx-remove-toctrees
+  - sphinx-toolbox=3.5.0
+  - furo
+  - pydata-sphinx-theme
+  - sphinx-book-theme
