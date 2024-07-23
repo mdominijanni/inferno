@@ -8,7 +8,8 @@ build:
     pre_build:
       - python docs/rtd.pre.py
     post_build:
-      - python docs/rtd.post.py
+      - cp docs/images/logo-darkmode.svg $READTHEDOCS_OUTPUT/html/_static/logo-darkmode.svg
+      - cp docs/images/logo-lightmode.svg $READTHEDOCS_OUTPUT/html/_static/logo-lightmode.svg
 
 conda:
   environment: envs/docenv-linux-cpu.yaml
