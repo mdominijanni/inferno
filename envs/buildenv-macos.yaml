@@ -1,0 +1,10 @@
+name: infernobuild
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - hatch
+  - hatchling
+  - trove-classifiers
+  - twine
