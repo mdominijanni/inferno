@@ -24,7 +24,7 @@ The protocols and various implementations for parameter bounding, interpolation,
 
 <strong style="font-size: 1.5em;">[inferno.neural](reference/neural:inferno.neural)</strong>
 
-The basic components for spiking neural networks (neurons, synapses, connections), the infrastructure used for connecting them into a network and for supporting generalized parameter updates, and encoding non-spiking data into spike trains.
+The basic components for spiking neural networks, the infrastructure used for connecting them into a network and for supporting generalized parameter updates, and encoding non-spiking data into spike trains.
 
 <strong style="font-size: 1.5em;">[inferno.neural.functional](reference/neural-functional:inferno.neural.functional)</strong>
 
