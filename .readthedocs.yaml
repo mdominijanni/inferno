@@ -1,0 +1,16 @@
+version: 2
+
+build:
+  os: ubuntu-22.04
+  tools:
+    python: miniconda-latest
+  jobs:
+    post_build:
+      - python docs/rtd.post.py
+
+conda:
+  environment: envs/docenv-linux-cpu.yaml
+
+sphinx:
+  builder: html
+  configuration: docs/conf.rtd.py
