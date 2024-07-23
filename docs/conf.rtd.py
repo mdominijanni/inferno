@@ -44,6 +44,8 @@ intersphinx_mapping = {
 
 myst_enable_extensions = ["amsmath", "dollarmath", "smartquotes", "colon_fence"]
 
+autosummary_generate = True
+
 add_module_names = False
 
 autosectionlabel_prefix_document = True
