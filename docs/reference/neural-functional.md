@@ -13,7 +13,7 @@
 
     homogeneous_poisson_exp_interval
     homogeneous_poisson_exp_interval_online
-    inhomogenous_poisson_bernoulli_approx
+    inhomogeneous_poisson_bernoulli_approx
     poisson_interval
     poisson_interval_online
 ```

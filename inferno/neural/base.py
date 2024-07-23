@@ -116,7 +116,7 @@ class Neuron(Module, ABC):
 
     @dt.setter
     @abstractmethod
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(Neuron) must implement "
             "the setter for property 'dt'"
@@ -142,7 +142,7 @@ class Neuron(Module, ABC):
 
     @voltage.setter
     @abstractmethod
-    def voltage(self, value: torch.Tensor):
+    def voltage(self, value: torch.Tensor) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(Neuron) must implement "
             "the setter for property 'voltage'"
@@ -193,7 +193,7 @@ class Neuron(Module, ABC):
         )
 
     @abstractmethod
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets neurons to their resting state.
 
         Raises:
@@ -276,7 +276,7 @@ class InfernoNeuron(BatchShapeMixin, Neuron):
         )
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(InfernoNeuron) must implement "
             "the setter for property 'dt'"
@@ -300,7 +300,7 @@ class InfernoNeuron(BatchShapeMixin, Neuron):
         )
 
     @voltage.setter
-    def voltage(self, value: torch.Tensor):
+    def voltage(self, value: torch.Tensor) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(InfernoNeuron) must implement "
             "the setter for property 'voltage'"
@@ -347,7 +347,7 @@ class InfernoNeuron(BatchShapeMixin, Neuron):
             "the getter for property 'spike'"
         )
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets neurons to their resting state.
 
         Raises:
@@ -420,7 +420,7 @@ class Synapse(Module, ABC):
                 by the subclass.
 
         Returns:
-           SynapseConstructor: partial constructor for synapses of a given class.
+            SynapseConstructor: partial constructor for synapses of a given class.
         """
         raise NotImplementedError(
             f"{cls.__name__}(Synapse) must implement " "the method 'partialconstructor'"
@@ -442,7 +442,7 @@ class Synapse(Module, ABC):
         )
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         raise NotImplementedError(
             f"{self.__name__}(Synapse) must implement " "the setter for property 'dt'"
         )
@@ -489,7 +489,7 @@ class Synapse(Module, ABC):
 
     @current.setter
     @abstractmethod
-    def current(self, value: torch.Tensor):
+    def current(self, value: torch.Tensor) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(Synapse) must implement "
             "the setter for property 'current'"
@@ -516,7 +516,7 @@ class Synapse(Module, ABC):
 
     @spike.setter
     @abstractmethod
-    def spike(self, value: torch.Tensor):
+    def spike(self, value: torch.Tensor) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(Synapse) must implement "
             "the setter for property 'spike'"
@@ -557,7 +557,7 @@ class Synapse(Module, ABC):
         )
 
     @abstractmethod
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets synapses to their resting state.
 
         Raises:
@@ -599,6 +599,8 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         step_time (float): length of a simulation time step, in :math:`ms`.
         delay (float): maximum supported delay, in :math:`ms`.
         batch_size (int): size of the batch dimension.
+        inplace (bool): if write operations on :py:class:`RecordTensor` attributes
+            should be performed with in-place operations.
     """
 
     def __init__(
@@ -607,6 +609,7 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         step_time: float,
         delay: float,
         batch_size: int,
+        inplace: bool,
     ):
         # superclass constructors
         Synapse.__init__(self)
@@ -614,6 +617,9 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         # mixin constructors
         BatchShapeMixin.__init__(self, shape, batch_size)
         DelayedMixin.__init__(self, step_time, delay)
+
+        # set attributes
+        self.__inplace = bool(inplace)
 
     @classmethod
     def partialconstructor(cls, *args, **kwargs) -> SynapseConstructor:
@@ -624,7 +630,7 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
                 by the subclass.
 
         Returns:
-           SynapseConstructor: partial constructor for synapses of a given class.
+            SynapseConstructor: partial constructor for synapses of a given class.
         """
         raise NotImplementedError(
             f"{cls.__name__}(Synapse) must implement " "the method 'partialconstructor'"
@@ -643,7 +649,7 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         return DelayedMixin.dt.fget(self)
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         DelayedMixin.dt.fset(self, value)
         self.clear()
 
@@ -660,6 +666,26 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
     def delay(self, value: float) -> None:
         DelayedMixin.delay.fset(self, value)
         self.clear()
+
+    @property
+    def inplace(self) -> bool:
+        r"""If write operations should be performed in-place.
+
+        Args:
+            value (bool): new simulation time step length.
+
+        Returns:
+            bool: if write operations should be performed in-place.
+
+        Note:
+            Generally if gradient computation is required, this should be set to
+            ``False``.
+        """
+        return self.__inplace
+
+    @inplace.setter
+    def inplace(self, value: bool) -> None:
+        self.__inplace = bool(value)
 
     @property
     def current(self) -> torch.Tensor:
@@ -680,7 +706,7 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         )
 
     @current.setter
-    def current(self, value: torch.Tensor):
+    def current(self, value: torch.Tensor) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(Synapse) must implement "
             "the setter for property 'current'"
@@ -705,7 +731,7 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         )
 
     @spike.setter
-    def spike(self, value: torch.Tensor):
+    def spike(self, value: torch.Tensor) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(Synapse) must implement "
             "the setter for property 'spike'"
@@ -743,7 +769,7 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
             f"{type(self).__name__}(Synapse) must implement the method 'spike_at'"
         )
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets synapses to their resting state.
 
         Raises:
@@ -802,12 +828,12 @@ class Connection(Updatable, Module, ABC):
             value (Synapse): new synapse for this connection.
 
         Returns:
-           Synapse: registered synapse.
+            Synapse: registered synapse.
         """
         return self.synapse_
 
     @synapse.setter
-    def synapse(self, value: Synapse):
+    def synapse(self, value: Synapse) -> None:
         self.synapses = value
 
     @property
@@ -827,7 +853,7 @@ class Connection(Updatable, Module, ABC):
         return self.synapse.batchsz
 
     @batchsz.setter
-    def batchsz(self, value: int):
+    def batchsz(self, value: int) -> None:
         self.synapse.batchsz = value
 
     @property
@@ -841,13 +867,13 @@ class Connection(Updatable, Module, ABC):
             float: current length of the simulation time step.
 
         Note:
-            This calls the property :py:attr:`~ynapse.dt` on :py:attr:`synapse`,
+            This calls the property :py:attr:`~synapse.dt` on :py:attr:`synapse`,
             assuming the connection has no step time dependent state.
         """
         return self.synapse.dt
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         self.synapse.dt = value
 
     @property
@@ -947,7 +973,7 @@ class Connection(Updatable, Module, ABC):
 
     @weight.setter
     @abstractmethod
-    def weight(self, value: torch.Tensor | nn.Parameter):
+    def weight(self, value: torch.Tensor | nn.Parameter) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(Connection) must implement "
             "the setter for property `weight`."
@@ -974,7 +1000,7 @@ class Connection(Updatable, Module, ABC):
 
     @bias.setter
     @abstractmethod
-    def bias(self, value: torch.Tensor | nn.Parameter):
+    def bias(self, value: torch.Tensor | nn.Parameter) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(Connection) must implement "
             "the setter for property `bias`."
@@ -1001,7 +1027,7 @@ class Connection(Updatable, Module, ABC):
 
     @delay.setter
     @abstractmethod
-    def delay(self, value: torch.Tensor | nn.Parameter):
+    def delay(self, value: torch.Tensor | nn.Parameter) -> None:
         raise NotImplementedError(
             f"{type(self).__name__}(Connection) must implement "
             "the setter for property `delay`."
@@ -1034,10 +1060,10 @@ class Connection(Updatable, Module, ABC):
 
     @property
     def delayedby(self) -> float | None:
-        r"""Maxmimum valid learned delay, in milliseconds.
+        r"""Maximum valid learned delay, in milliseconds.
 
         Returns:
-            float: maxmimum valid learned delays.
+            float: maximum valid learned delays.
 
         Note:
             This calls the property :py:attr:`Synapse.delay` on :py:attr:`synapse`
@@ -1074,7 +1100,7 @@ class Connection(Updatable, Module, ABC):
         else:
             return self.synapse.spike
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets the state of the connection.
 
         Note:
@@ -1225,11 +1251,11 @@ class Connection(Updatable, Module, ABC):
         Args:
             *includes (str): additional instance-specific parameters to include.
             exclude_weight (bool, optional): if weight should not be an updatable
-                parameter. Defaults to False.
+                parameter. Defaults to ``False``.
             exclude_bias (bool, optional): if bias should not be an updatable
-                parameter. Defaults to False.
+                parameter. Defaults to ``False``.
             exclude_delay (bool, optional): if delay should not be an updatable
-                parameter. Defaults to False.
+                parameter. Defaults to ``False``.
 
         This will set and return an :py:class:`Updater` with the following trainable
         parameters:

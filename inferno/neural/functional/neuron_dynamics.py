@@ -36,7 +36,7 @@ def voltage_thresholding_constant(
             in :math:`\text{mV}`.
         voltages (torch.Tensor | None, optional): membrane voltages, V_m(t),
             in :math:`\text{mV}`, to maintain while in refractory periods,
-            voltages not held if None. Defaults to None.
+            voltages not held if ``None``. Defaults to ``None``.
         step_time (float | torch.Tensor): length of a simulation time step,
             in :math:`\text{ms}`.
         reset_v (float | torch.Tensor): membrane voltage after an action potential
@@ -110,7 +110,7 @@ def voltage_thresholding_linear(
             in :math:`\text{mV}`.
         voltages (torch.Tensor | None, optional): membrane voltages, V_m(t),
             in :math:`\text{mV}`, to maintain while in refractory periods,
-            voltages not held if None. Defaults to None.
+            voltages not held if ``None``. Defaults to ``None``.
         step_time (float | torch.Tensor): length of a simulation time step,
             in :math:`\text{ms}`.
         rest_v (float | torch.Tensor): membrane potential difference at equilibrium,
@@ -125,7 +125,7 @@ def voltage_thresholding_linear(
             in :math:`\text{ms}`.
         voltages (torch.Tensor | None): membrane voltages, V_m(t),
             in :math:`\text{mV}`, to maintain while in refractory periods,
-            voltages not held if None. Defaults to None.
+            voltages not held if ``None``. Defaults to ``None``.
 
     Returns:
         tuple[torch.Tensor, torch.Tensor, torch.Tensor]: tuple of output and

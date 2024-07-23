@@ -18,7 +18,7 @@ def fzip(
         seq (Iterable[T]): sequence to which functions will be applied.
         *fns (Callable[[T], T]): functions to apply.
         identity (bool, optional): if the output of the identity function should be
-            prepended to each output tuple. Defaults to True.
+            prepended to each output tuple. Defaults to ``True``.
 
     Yields:
         tuple[T, ...]: results of the functions applied to the sequence.
@@ -42,7 +42,7 @@ def unique(seq: Iterable[T], ids: bool = True) -> Iterator[T]:
     Args:
         seq (Iterable[T]): sequence of elements to filter.
         ids (bool, optional): if object ids should be used for testing presence.
-            Defaults to True.
+            Defaults to ``True``.
 
     Yields:
         T: unique elements in the iterable.
@@ -58,7 +58,7 @@ def unique(seq: Iterable[T], ids: bool = True) -> Iterator[T]:
 
 
 class Proxy:
-    r"""Controlls access to nested members.
+    r"""Controls access to nested members.
 
     This prevents overwriting class attributes sent this way and can remap attributes.
     The following example.
@@ -83,7 +83,7 @@ class Proxy:
         *otheracc (str | None): additional proxy attributes.
 
     Note:
-        Each accessor can be a dot-seperated string of attributes.
+        Each accessor can be a dot-separated string of attributes.
     """
 
     def __init__(self, inner: Any, firstacc: str | None, *otheracc: str | None):
@@ -149,7 +149,7 @@ def rgetattr(obj: object, attr: str, *default) -> Any:
         obj (object): object from which to retrieve the nested attribute.
         attr (str): string in dot notation for the nested attribute to retrieve,
             excluding the initial dot.
-        *default (Any, optional): if specified, including with None, it will be
+        *default (Any, optional): if specified, including with ``None``, it will be
             returned if attr is not found.
 
     Returns:
@@ -172,7 +172,7 @@ def rgetattr(obj: object, attr: str, *default) -> Any:
             raise
 
 
-def rsetattr(obj: object, attr: str, val: Any):
+def rsetattr(obj: object, attr: str, val: Any) -> None:
     r"""Sets an object attribute recursively using dot notation.
 
     For example, if we have an object ``obj`` and a string ``"so1.so2.so3"``,
@@ -187,7 +187,7 @@ def rsetattr(obj: object, attr: str, val: Any):
         val (Any): value to which the attribute will be set.
     """
     pre, _, post = attr.rpartition(".")
-    return setattr(rgetattr(obj, pre) if pre else obj, post, val)
+    setattr(rgetattr(obj, pre) if pre else obj, post, val)
 
 
 def getitem(data: Mapping[K, V], key: Iterable[K], *default: V) -> V:
@@ -199,7 +199,7 @@ def getitem(data: Mapping[K, V], key: Iterable[K], *default: V) -> V:
     Args:
         data (Mapping[K, V]): mapping from which to retrieve the value.
         key (Iterable[K]): keys to access.
-        *default (V, optional): if specified, including with None, it will be
+        *default (V, optional): if specified, including with ``None``, it will be
             returned if attr is not found.
 
     Returns:
@@ -219,7 +219,7 @@ def rgetitem(data: Mapping[K, V], keyseq: Iterable[K], *default: V) -> V:
     Args:
         data (Mapping[K, V]): mapping from which to retrieve the nested value.
         keyseq (Iterable[K]): sequence of keys to access.
-        *default (V, optional): if specified, including with None, it will be
+        *default (V, optional): if specified, including with ``None``, it will be
             returned if attr is not found.
 
     Raises:
@@ -230,7 +230,7 @@ def rgetitem(data: Mapping[K, V], keyseq: Iterable[K], *default: V) -> V:
         V: found value, or if not found and a default was specified, the default.
 
     Note:
-        If a default is specified, it will be returned if at any point in the chain,
+        If a default is specified, it will be returned if at any point in the chain
         the attribute is not found. If multiple values are passed with ``*default``,
         only the first will be used.
     """

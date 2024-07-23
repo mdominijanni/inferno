@@ -29,9 +29,9 @@ def _synparam_at(
         tolerance (float): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`.
         overbound (Any | None): value to replace parameter values out of bounds,
-            uses values at observation limits if None.
+            uses values at observation limits if ``None``.
         transform (OneToOne[torch.Tensor] | None, optional): function applied to
-            retrieved values before returning, identity if None. Defaults to None.
+            retrieved values before returning, identity if ``None``. Defaults to ``None``.
 
     Returns:
         torch.Tensor: selected synaptic parameter values.
@@ -83,7 +83,7 @@ class CurrentMixin:
         interp_kwargs (dict[str, Any]): keyword arguments passed into the interpolation
             function.
         overbound (float | None): value to replace currents out of bounds, uses values
-            at observation limits if None.
+            at observation limits if ``None``.
         tolerance (float): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`.
     """
@@ -108,6 +108,7 @@ class CurrentMixin:
             persist_temporal=False,
             strict=True,
             live=False,
+            inclusive=True,
         )
         self.add_delayed("current_")
         self.add_batched("current_")
@@ -130,7 +131,7 @@ class CurrentMixin:
 
     @current.setter
     def current(self, value: torch.Tensor) -> None:
-        self.current_.push(value)
+        self.current_.push(value, self.inplace)
 
     def current_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Retrieves previous synaptic currents, in nanoamperes.
@@ -179,7 +180,7 @@ class SpikeMixin:
         interp_kwargs (dict[str, Any]): keyword arguments passed into the interpolation
             function.
         overbound (bool | None): value to replace spikes out of bounds, uses values at
-            observation limits if None.
+            observation limits if ``None``.
         tolerance (float): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`.
     """
@@ -204,6 +205,7 @@ class SpikeMixin:
             persist_temporal=False,
             strict=True,
             live=False,
+            inclusive=True,
         )
         self.add_delayed("spike_")
         self.add_batched("spike_")
@@ -226,7 +228,7 @@ class SpikeMixin:
 
     @spike.setter
     def spike(self, value: torch.Tensor) -> None:
-        self.spike_.push(value.bool())
+        self.spike_.push(value.bool(), self.inplace)
 
     def spike_at(self, selector: torch.Tensor) -> torch.Tensor:
         r"""Retrieves previous spike inputs.
@@ -524,9 +526,9 @@ class SpikeCurrentMixin(CurrentMixin, SpikeMixin):
         spike_interp_kwargs (dict[str, Any]): keyword arguments passed into the
             interpolation function for spikes.
         current_overbound (float | None): value to replace currents out of
-            bounds, uses values at observation limits if None.
+            bounds, uses values at observation limits if ``None``.
         spike_overbound (bool | None): value to replace spikes out of bounds,
-            uses values at observation limits if None.
+            uses values at observation limits if ``None``.
         tolerance (float): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`.
     """

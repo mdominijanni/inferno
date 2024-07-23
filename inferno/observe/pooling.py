@@ -46,7 +46,7 @@ class Observable:
         Monitors available via this property need not have been added to a pool, but
         must have been added or retrieved through :py:meth:`monitor`.
 
-        Monitors are never explicitally removed, but if all references to them are
+        Monitors are never explicitly removed, but if all references to them are
         destroyed, then they will no longer be accessible.
 
         Returns:
@@ -62,7 +62,7 @@ class Observable:
         accept the output of this as positional and keyword arguments.
 
         Args:
-            attr (str): dot-seperated attribute relative to self, to realign.
+            attr (str): dot-separated attribute relative to self, to realign.
 
         Returns:
             tuple[tuple[Any, ...], dict[str, Any]]: tuple of positional arguments and
@@ -83,7 +83,7 @@ class Observable:
         instead.
 
         Args:
-            attr (str): dot-seperated attribute relative to self, to realign.
+            attr (str): dot-separated attribute relative to self, to realign.
 
         Returns:
             str: dot-chained nested attribute name relative to the parent of self.
@@ -114,8 +114,8 @@ class Observable:
                 monitor, when an empty-string, the observable is directly targeted.
             constructor (MonitorConstructor): partial constructor for the monitor to add.
             pool (Iterable[tuple[Observable, Mapping[str, Monitor]]] | None): pool to
-                search for compatible monitor, always creates a new one if None.
-                Defaults to None.
+                search for compatible monitor, always creates a new one if ``None``.
+                Defaults to ``None``.
             **tags (Any): tags to determine if the monitor is unique amongst monitors
                 with the same name, targeting the same attribute (aligned to the basis).
 
@@ -208,7 +208,7 @@ class MonitorPool(Module):
         r"""Monitors associated with a given observable.
 
         Args:
-            observed (str): name of the observable to get associted monitors of.
+            observed (str): name of the observable to get associated monitors of.
 
         Yields:
             tuple[str, Monitor]: associated monitors and their names.
@@ -217,7 +217,7 @@ class MonitorPool(Module):
 
     @property
     def pool(self) -> Iterator[tuple[Observable, dict[str, Monitor]]]:
-        """Pool of monitors used by ``Observable``.
+        r"""Pool of monitors used by Observable.
 
         Yields:
             tuple[Observable, dict[str, Monitor]]: tuple of observable, and its monitors.
@@ -233,20 +233,21 @@ class MonitorPool(Module):
 
         Args:
             name (str): name of the observable to add.
-            value (Observable): _description_
+            value (Observable): observable to add to this pool.
 
         Raises:
-            RuntimeError: _description_
-            RuntimeError: _description_
+            RuntimeError: an observable with the specified name already exists.
+            RuntimeError: an observable with the specified name existed and was
+                registered, but removed from memory without deleting it from the pool.
 
         Returns:
-            Observable: _description_
+            Observable: added observable.
         """
         if name in self.observed_:
             raise RuntimeError(f"'name' ('{name}') is already a registered observable")
         elif name in self.monitors_:
             raise RuntimeError(
-                f"name ('{name}') was a registered observable never deleted, "
+                f"name ('{name}') was a registered observable and never deleted, "
                 "call 'del_observed' first"
             )
         else:
@@ -301,10 +302,10 @@ class MonitorPool(Module):
         Args:
             observed (str): name of the observable to which the monitor will be added.
             name (str): name of the monitor to add (unique to the observable).
-            attr (str): dot-seperated attribute to monitor, relative to the observable.
+            attr (str): dot-separated attribute to monitor, relative to the observable.
             constructor (MonitorConstructor): partial constructor for the monitor.
             unique (bool, optional): if the monitor should never be aliased from the
-                pool. Defaults to False.
+                pool. Defaults to ``False``.
             **tags (Any): tags to determine if the monitor is unique amongst monitors
                 with the same name, targeting the same attribute (aligned to the basis).
 

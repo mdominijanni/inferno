@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .. import CellwiseTrainer
+from .. import IndependentCellTrainer
 from ... import Module
 from ..._internal import argtest
 from ...neural import Cell
@@ -14,8 +14,8 @@ import torch
 from typing import Any, Callable, Literal
 
 
-class STDP(CellwiseTrainer):
-    r"""Spike-timing dependent plasticity updater.
+class STDP(IndependentCellTrainer):
+    r"""Spike-timing dependent plasticity trainer.
 
     .. math::
         w(t + \Delta t) - w(t) = \eta_\text{post} x_\text{pre}(t) \bigl[t = t^f_\text{post}\bigr] +
@@ -68,14 +68,14 @@ class STDP(CellwiseTrainer):
         tc_pre (float): time constant for exponential decay of presynaptic trace,
             :math:`tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
-            present, may change. Defaults to False.
+            present, may change. Defaults to ``False``.
         interp_tolerance (float): maximum difference in time from an observation
-            to treat as co-occurring, in :math:`\text{ms}`. Defaults to 0.0.
+            to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
-            calculating spike traces. Defaults to "cumulative".
+            calculating spike traces. Defaults to ``"cumulative"``.
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce updates over the batch dimension, :py:func:`torch.mean`
-            when None. Defaults to None.
+            when ``None``. Defaults to ``None``.
 
     Important:
         When ``delayed`` is ``True``, the history for the presynaptic activity (spike
@@ -102,7 +102,7 @@ class STDP(CellwiseTrainer):
 
     See Also:
         For more details and references, visit
-        :ref:`zoo/learning-stdp:Spike Timing-Dependent Plasticity (STDP)` in the zoo.
+        :ref:`zoo/learning-stdp:Spike-Timing Dependent Plasticity (STDP)` in the zoo.
     """
 
     def __init__(
@@ -121,7 +121,7 @@ class STDP(CellwiseTrainer):
         **kwargs,
     ):
         # call superclass constructor
-        CellwiseTrainer.__init__(self, **kwargs)
+        IndependentCellTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
         self.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -211,10 +211,10 @@ class STDP(CellwiseTrainer):
                 function to reduce updates over the batch dimension.
             field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
                 function to reduce updates over the receptive field dimension,
-                :py:func:`torch.sum` when None. Defaults to None.
+                :py:func:`torch.sum` when ``None``. Defaults to ``None``.
 
         Returns:
-            CellwiseTrainer.Unit: specified cell, auxiliary state, and monitors.
+            IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
 
         Important:
             Any specified keyword arguments will override the default hyperparameters
@@ -243,9 +243,10 @@ class STDP(CellwiseTrainer):
                 reducer=state.tracecls(
                     state.step_time,
                     state.tc_post,
-                    amplitude=1.0,
+                    amplitude=abs(state.lr_pre),
                     target=True,
                     duration=0.0,
+                    inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
@@ -261,7 +262,11 @@ class STDP(CellwiseTrainer):
             "spike_post",
             "neuron.spike",
             StateMonitor.partialconstructor(
-                reducer=PassthroughReducer(state.step_time, duration=0.0),
+                reducer=PassthroughReducer(
+                    state.step_time,
+                    duration=0.0,
+                    inclusive=True,
+                ),
                 **monitor_kwargs,
             ),
             False,
@@ -279,9 +284,10 @@ class STDP(CellwiseTrainer):
                 reducer=state.tracecls(
                     state.step_time,
                     state.tc_pre,
-                    amplitude=1.0,
+                    amplitude=abs(state.lr_post),
                     target=True,
                     duration=cell.connection.delayedby if delayed else 0.0,
+                    inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
@@ -303,6 +309,7 @@ class STDP(CellwiseTrainer):
                 reducer=PassthroughReducer(
                     state.step_time,
                     duration=cell.connection.delayedby if delayed else 0.0,
+                    inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
@@ -314,7 +321,7 @@ class STDP(CellwiseTrainer):
         return self.get_unit(name)
 
     def forward(self) -> None:
-        """Processes update for given layers based on current monitor stored data."""
+        r"""Processes update for given layers based on current monitor stored data."""
         # iterate through self
         for cell, state, monitors in self:
             # skip if self or cell is not in training mode or has no updater
@@ -340,10 +347,10 @@ class STDP(CellwiseTrainer):
             # partial updates
             dpost = state.batchreduce(
                 ein.einsum(i_post, x_pre, "b ... r, b ... r -> b ..."), 0
-            ) * abs(state.lr_post)
+            )
             dpre = state.batchreduce(
                 ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ..."), 0
-            ) * abs(state.lr_pre)
+            )
 
             # accumulate partials with mode condition
             match (state.lr_post >= 0, state.lr_pre >= 0):

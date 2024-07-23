@@ -1,4 +1,5 @@
 from itertools import repeat
+import einops as ein
 import pytest
 import random
 import torch
@@ -571,7 +572,7 @@ class TestRecordTensor:
 
             case torch.Tensor:
                 assert torch.all(
-                    getattr(infmodule, name).value == datacopy.unsqueeze(-1)
+                    getattr(infmodule, name).value == datacopy.unsqueeze(0)
                 )
                 assert dataname in infmodule._buffers
                 if not persist:
@@ -581,7 +582,7 @@ class TestRecordTensor:
 
             case nn.Parameter:
                 assert torch.all(
-                    getattr(infmodule, name).value == datacopy.unsqueeze(-1)
+                    getattr(infmodule, name).value == datacopy.unsqueeze(0)
                 )
                 assert dataname in infmodule._parameters
 
@@ -609,8 +610,8 @@ class TestRecordTensor:
         for _ in range(random.randint(5, 11)):
             dim, size = random.randint(-4, 5), random.randint(1, 9)
             constraints[dim] = size
-            if dim < 0:
-                offset_constraints[dim - 1] = size
+            if dim >= 0:
+                offset_constraints[dim + 1] = size
             else:
                 offset_constraints[dim] = size
 
@@ -623,7 +624,7 @@ class TestRecordTensor:
                 infmodule,
                 name,
                 step_time=1.0,
-                duration=(recordsz - 1.0),
+                duration=recordsz,
                 value=None,
                 constraints=constraints,
                 persist_data=False,
@@ -635,7 +636,7 @@ class TestRecordTensor:
         cstrname = getattr(infmodule, name).attributes.constraints
 
         assert hasattr(infmodule, cstrname)
-        assert offset_constraints | {-1: recordsz} == getattr(infmodule, cstrname)
+        assert offset_constraints | {0: recordsz} == getattr(infmodule, cstrname)
         if persist:
             assert cstrname in infmodule._extras
         else:
@@ -707,7 +708,7 @@ class TestRecordTensor:
         )
         setattr(infmodule, name, rt)
 
-        assert tuple(rt.value.shape) == (*data.shape, rt.recordsz)
+        assert tuple(rt.value.shape) == (rt.recordsz, *data.shape)
 
     def test_create(self, infmodule, name):
         RecordTensor.create(
@@ -772,7 +773,7 @@ class TestRecordTensor:
         constraints, adjusted = {}, {}
         for d in range(-3, 4):
             constraints[d] = random.randint(1, 9)
-            adjusted[d - (d < 0)] = constraints[d]
+            adjusted[d + (d >= 0)] = constraints[d]
 
         rt = RecordTensor(
             infmodule,
@@ -788,7 +789,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         assert rt.constraints == constraints
-        assert ShapedTensor.constraints.fget(rt) == (adjusted | {-1: rt.recordsz})
+        assert ShapedTensor.constraints.fget(rt) == (adjusted | {0: rt.recordsz})
 
     def test_tensor_parameter_assignment(self, infmodule, name):
         data = nn.Parameter(torch.rand(randshape()), False)
@@ -830,13 +831,13 @@ class TestRecordTensor:
         )
         setattr(infmodule, name, rt)
 
-        data = torch.rand(*randshape(), rt.recordsz)
+        data = torch.rand(rt.recordsz, *randshape())
         rt.value = data.clone().detach()
 
         index = random.randint(-rt.recordsz, rt.recordsz - 1)
         rt.align(index)
 
-        assert torch.all(rt.value == torch.roll(data, index, -1))
+        assert torch.all(rt.value == torch.roll(data, index, 0))
 
         if asparam:
             assert isinstance(rt.value, nn.Parameter)
@@ -864,7 +865,7 @@ class TestRecordTensor:
         )
         setattr(infmodule, name, rt)
 
-        data = torch.rand(*randshape(), rt.recordsz)
+        data = torch.rand(rt.recordsz, *randshape())
         rt.value = data.clone().detach()
 
         ptr = random.randint(1, rt.recordsz)
@@ -876,7 +877,7 @@ class TestRecordTensor:
         if fill:
             assert torch.all(rt.value == fill)
         else:
-            assert torch.all(rt.value == data.roll(-ptr, -1))
+            assert torch.all(rt.value == data.roll(-ptr, 0))
 
         if asparam:
             assert isinstance(rt.value, nn.Parameter)
@@ -954,7 +955,7 @@ class TestRecordTensor:
 
         assert rt.value.dtype == checktype
         assert str(rt.value.device).partition(":")[0] == checkdevice
-        assert (*rt.value.shape,) == (*shape, rt.recordsz)
+        assert (*rt.value.shape,) == (rt.recordsz, *shape)
         assert torch.all(rt.value == 1)
 
         if valuetype in (nn.Parameter, nn.UninitializedParameter):
@@ -1059,12 +1060,12 @@ class TestRecordTensor:
         )
         setattr(infmodule, name, rt)
 
-        rt.value = torch.rand(*randshape(), rt.recordsz)
+        rt.value = torch.rand(rt.recordsz, *randshape())
         ptr = random.randint(1, rt.recordsz - 1)
         setattr(infmodule, rt.attributes.pointer, ptr)
 
-        assert torch.all(rt.peek() == rt.value[..., (ptr - 1) % rt.recordsz])
-        assert torch.all(rt.latest == rt.value[..., (ptr - 1) % rt.recordsz])
+        assert torch.all(rt.peek() == rt.value[(ptr - 1) % rt.recordsz, ...])
+        assert torch.all(rt.latest == rt.value[(ptr - 1) % rt.recordsz, ...])
 
     def test_pop(self, infmodule, name):
         rt = RecordTensor(
@@ -1079,16 +1080,16 @@ class TestRecordTensor:
         )
         setattr(infmodule, name, rt)
 
-        rt.value = torch.rand(*randshape(), rt.recordsz)
+        rt.value = torch.rand(rt.recordsz, *randshape())
         ptr = random.randint(1, rt.recordsz - 1)
         setattr(infmodule, rt.attributes.pointer, ptr)
 
-        assert torch.all(rt.pop() == rt.value[..., (ptr - 1) % rt.recordsz])
+        assert torch.all(rt.pop() == rt.value[(ptr - 1) % rt.recordsz, ...])
         assert rt.pointer == ptr - 1
 
         setattr(infmodule, rt.attributes.pointer, ptr)
 
-        assert torch.all(rt.latest == rt.value[..., (ptr - 1) % rt.recordsz])
+        assert torch.all(rt.latest == rt.value[(ptr - 1) % rt.recordsz, ...])
 
     def test_latest_del(self, infmodule, name):
         rt = RecordTensor(
@@ -1103,7 +1104,7 @@ class TestRecordTensor:
         )
         setattr(infmodule, name, rt)
 
-        data = torch.rand(*randshape(), rt.recordsz)
+        data = torch.rand(rt.recordsz, *randshape())
         rt.value = data.clone().detach()
         ptr = random.randint(1, rt.recordsz - 1)
         setattr(infmodule, rt.attributes.pointer, ptr)
@@ -1133,7 +1134,7 @@ class TestRecordTensor:
 
         shape = randshape()
 
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         rt.value = data.clone().detach()
         ptr = random.randint(1, rt.recordsz - 1)
         setattr(infmodule, rt.attributes.pointer, ptr)
@@ -1146,9 +1147,9 @@ class TestRecordTensor:
         assert rt.pointer == (ptr + 1) % rt.recordsz
         for d in range(rt.recordsz):
             if d == ptr:
-                assert torch.all(rt.value[..., d] == obs)
+                assert torch.all(rt.value[d, ...] == obs)
             else:
-                assert torch.all(rt.value[..., d] == data[..., d])
+                assert torch.all(rt.value[d, ...] == data[d, ...])
 
     @pytest.mark.parametrize(
         "inplace",
@@ -1182,9 +1183,9 @@ class TestRecordTensor:
             assert isinstance(rt.value, nn.Parameter)
             assert rt.value.requires_grad
 
-        assert (*rt.value.shape,) == (*shape, rt.recordsz)
-        assert torch.all(rt.value[..., 0] == obs)
-        assert torch.all(rt.value[..., 1:] == 0)
+        assert (*rt.value.shape,) == (rt.recordsz, *shape)
+        assert torch.all(rt.value[0, ...] == obs)
+        assert torch.all(rt.value[1:, ...] == 0)
 
     def test_latest_set(self, infmodule, name):
         rt = RecordTensor(
@@ -1201,7 +1202,7 @@ class TestRecordTensor:
 
         shape = randshape()
 
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         rt.value = data.clone().detach()
         ptr = random.randint(1, rt.recordsz - 1)
         setattr(infmodule, rt.attributes.pointer, ptr)
@@ -1214,9 +1215,9 @@ class TestRecordTensor:
         assert rt.pointer == (ptr + 1) % rt.recordsz
         for d in range(rt.recordsz):
             if d == ptr:
-                assert torch.all(rt.value[..., d] == obs)
+                assert torch.all(rt.value[d, ...] == obs)
             else:
-                assert torch.all(rt.value[..., d] == data[..., d])
+                assert torch.all(rt.value[d, ...] == data[d, ...])
 
     @pytest.mark.parametrize(
         "asparam",
@@ -1238,9 +1239,9 @@ class TestRecordTensor:
 
         shape = randshape(mindims=2, maxdims=4)
         if asparam:
-            rt.value = nn.Parameter(torch.zeros(*shape, rt.recordsz).float(), True)
+            rt.value = nn.Parameter(torch.zeros(rt.recordsz, *shape).float(), True)
         else:
-            rt.value = torch.zeros(*shape, rt.recordsz).float()
+            rt.value = torch.zeros(rt.recordsz, *shape).float()
 
         data = [torch.rand(shape) for _ in range(rt.recordsz)]
         for d in data:
@@ -1274,16 +1275,16 @@ class TestRecordTensor:
 
         shape = randshape(mindims=2, maxdims=4)
         if asparam:
-            rt.value = nn.Parameter(torch.zeros(*shape, rt.recordsz).float(), True)
+            rt.value = nn.Parameter(torch.zeros(rt.recordsz, *shape).float(), True)
         else:
-            rt.value = torch.zeros(*shape, rt.recordsz).float()
+            rt.value = torch.zeros(rt.recordsz, *shape).float()
 
         data = [torch.rand(shape) for _ in range(rt.recordsz)]
         for idx, d in enumerate(data):
             rt.write(d, idx, inplace)
 
         for idx, d in enumerate(data):
-            torch.all(d == rt.value[..., rt.recordsz - idx - 1])
+            torch.all(d == rt.value[rt.recordsz - idx - 1, ...])
 
     @pytest.mark.parametrize(
         "asparam",
@@ -1309,7 +1310,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1324,7 +1325,7 @@ class TestRecordTensor:
         else:
             res = rt.readrange(end - start, rt.pointer - end + 1, False)
 
-        assert torch.all(res == data[..., start:end])
+        assert torch.all(res == ein.rearrange(data[start:end, ...], "t ... -> ... t"))
 
     @pytest.mark.parametrize(
         "asparam",
@@ -1350,7 +1351,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1367,7 +1368,12 @@ class TestRecordTensor:
                 end + rt.pointer - (start) + 1, rt.pointer - end + 1, False
             )
 
-        assert torch.all(res == torch.cat((data[..., start:], data[..., :end]), -1))
+        assert torch.all(
+            res
+            == ein.rearrange(
+                torch.cat((data[start:, ...], data[:end, ...]), 0), "t ... -> ... t"
+            )
+        )
 
     @pytest.mark.parametrize(
         "asparam",
@@ -1393,7 +1399,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1408,9 +1414,14 @@ class TestRecordTensor:
         res = rt.readrange(length, offsets, forward)
 
         offsets = offsets + (length - 1) * (not forward)
-        offsets = torch.stack([offsets - k for k in range(length)], -1)
+        offsets = torch.stack([offsets - k for k in range(length)], 0)
 
-        assert torch.all(res == data.gather(-1, (ptr - offsets) % rt.recordsz))
+        assert torch.all(
+            res
+            == ein.rearrange(
+                data.gather(0, (ptr - offsets) % rt.recordsz), "t ... -> ... t"
+            )
+        )
 
     @pytest.mark.parametrize(
         "asparam",
@@ -1445,7 +1456,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1462,10 +1473,15 @@ class TestRecordTensor:
         rt.writerange(writedata, offset, forward, inplace)
         offsets = torch.full(shape, offset, dtype=torch.int64)
         offsets = offsets + (length - 1) * (not forward)
-        offsets = torch.stack([offsets - k for k in range(length)], -1)
+        offsets = torch.stack([offsets - k for k in range(length)], 0)
 
         assert torch.all(
-            rt.value == data.scatter(-1, (ptr - offsets) % rt.recordsz, writedata)
+            rt.value
+            == data.scatter(
+                0,
+                (ptr - offsets) % rt.recordsz,
+                ein.rearrange(writedata, "... t -> t ..."),
+            )
         )
 
     @pytest.mark.parametrize(
@@ -1497,7 +1513,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1514,10 +1530,15 @@ class TestRecordTensor:
         rt.writerange(writedata, offsets, forward, inplace)
 
         offsets = offsets + (length - 1) * (not forward)
-        offsets = torch.stack([offsets - k for k in range(length)], -1)
+        offsets = torch.stack([offsets - k for k in range(length)], 0)
 
         assert torch.all(
-            rt.value == data.scatter(-1, (ptr - offsets) % rt.recordsz, writedata)
+            rt.value
+            == data.scatter(
+                0,
+                (ptr - offsets) % rt.recordsz,
+                ein.rearrange(writedata, "... t -> t ..."),
+            )
         )
 
     @pytest.mark.parametrize(
@@ -1559,7 +1580,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1576,7 +1597,14 @@ class TestRecordTensor:
         res = rt.select(
             times.squeeze(-1), bad_interp, tolerance=tolerance, offset=offset
         )
-        cmp = data.gather(-1, (ptr - (indices + offset)) % rt.recordsz).squeeze(-1)
+        cmp = ein.rearrange(
+            data.gather(
+                0,
+                (ptr - (ein.rearrange(indices, "... t -> t ...") + offset))
+                % rt.recordsz,
+            ),
+            "t ... -> ... t",
+        ).squeeze(-1)
         assert torch.all(res == cmp)
 
     @pytest.mark.parametrize(
@@ -1613,7 +1641,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1625,10 +1653,10 @@ class TestRecordTensor:
         tolerance = 1e-4
         index = random.randint(0, rt.recordsz - 1)
         time = index * rt.dt + ((tolerance - 1e-6) * (-1 * (not boundedupper)))
-        indices = torch.full((*shape, 1), index)
+        indices = torch.full((1, *shape), index)
 
         res = rt.select(time, bad_interp, tolerance=tolerance, offset=offset)
-        cmp = data.gather(-1, (ptr - (indices + offset)) % rt.recordsz).squeeze(-1)
+        cmp = data.gather(0, (ptr - (indices + offset)) % rt.recordsz).squeeze(0)
         assert torch.all(res == cmp)
 
     @pytest.mark.parametrize(
@@ -1670,7 +1698,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1683,11 +1711,21 @@ class TestRecordTensor:
         times = indices * rt.dt
 
         res = rt.select(times.squeeze(-1), interp_linear, tolerance=1e-4, offset=offset)
-        cmp = interp_linear(
-            data.gather(-1, (ptr - (indices.ceil().long() + offset)) % rt.recordsz),
-            data.gather(-1, (ptr - (indices.floor().long() + offset)) % rt.recordsz),
-            times % rt.dt,
-            rt.dt,
+        indices = ein.rearrange(indices, "... t -> t ...")
+        cmp = ein.rearrange(
+            interp_linear(
+                data.gather(
+                    0,
+                    (ptr - (indices.ceil().long() + offset)) % rt.recordsz,
+                ),
+                data.gather(
+                    0,
+                    (ptr - (indices.floor().long() + offset)) % rt.recordsz,
+                ),
+                ein.rearrange(times, "... t -> t ...") % rt.dt,
+                rt.dt,
+            ),
+            "t ... -> ... t",
         ).squeeze(-1)
         assert torch.all((res - cmp).abs() < 1e-6)
 
@@ -1724,7 +1762,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1735,16 +1773,22 @@ class TestRecordTensor:
 
         index = random.randint(0, rt.recordsz - 2) + 0.5
         time = index * rt.dt
-        indices = torch.full((*shape, 1), index)
+        indices = torch.full((1, *shape), index)
         times = indices * rt.dt
 
         res = rt.select(time, interp_linear, tolerance=1e-4, offset=offset)
         cmp = interp_linear(
-            data.gather(-1, (ptr - (indices.ceil().long() + offset)) % rt.recordsz),
-            data.gather(-1, (ptr - (indices.floor().long() + offset)) % rt.recordsz),
+            data.gather(
+                0,
+                (ptr - (indices.ceil().long() + offset)) % rt.recordsz,
+            ),
+            data.gather(
+                0,
+                (ptr - (indices.floor().long() + offset)) % rt.recordsz,
+            ),
             times % rt.dt,
             rt.dt,
-        ).squeeze(-1)
+        ).squeeze(0)
         assert torch.all((res - cmp).abs() < 1e-6)
 
     @pytest.mark.parametrize(
@@ -1777,7 +1821,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1796,9 +1840,9 @@ class TestRecordTensor:
             obs, times, bad_extrap, tolerance=tolerance, offset=offset, inplace=inplace
         )
         cmp = data.scatter(
-            -1,
-            ((ptr - (indices + offset)) % rt.recordsz).unsqueeze(-1),
-            obs.unsqueeze(-1),
+            0,
+            ((ptr - (indices + offset)) % rt.recordsz).unsqueeze(0),
+            obs.unsqueeze(0),
         )
 
         assert torch.all(rt.value == cmp)
@@ -1838,7 +1882,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1857,9 +1901,9 @@ class TestRecordTensor:
             obs, time, bad_extrap, tolerance=tolerance, offset=offset, inplace=inplace
         )
         cmp = data.scatter(
-            -1,
-            ((ptr - (indices + offset)) % rt.recordsz).unsqueeze(-1),
-            obs.unsqueeze(-1),
+            0,
+            ((ptr - (indices + offset)) % rt.recordsz).unsqueeze(0),
+            obs.unsqueeze(0),
         )
 
         assert torch.all(rt.value == cmp)
@@ -1899,7 +1943,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -1923,25 +1967,25 @@ class TestRecordTensor:
             extrap_kwargs={"tc": 20.0},
         )
         pred, postd = extrap_expdecay(
-            obs.unsqueeze(-1),
-            times.unsqueeze(-1) % rt.dt,
+            obs.unsqueeze(0),
+            times.unsqueeze(0) % rt.dt,
             data.gather(
-                -1, (ptr - (indices.unsqueeze(-1).ceil().long() + offset)) % rt.recordsz
+                0, (ptr - (indices.unsqueeze(0).ceil().long() + offset)) % rt.recordsz
             ),
             data.gather(
-                -1,
-                (ptr - (indices.unsqueeze(-1).floor().long() + offset)) % rt.recordsz,
+                0,
+                (ptr - (indices.unsqueeze(0).floor().long() + offset)) % rt.recordsz,
             ),
             rt.dt,
             20.0,
         )
         cmp = data.scatter(
-            -1,
-            (ptr - (indices.unsqueeze(-1).ceil().long() + offset)) % rt.recordsz,
+            0,
+            (ptr - (indices.unsqueeze(0).ceil().long() + offset)) % rt.recordsz,
             pred,
         ).scatter(
-            -1,
-            (ptr - (indices.unsqueeze(-1).floor().long() + offset)) % rt.recordsz,
+            0,
+            (ptr - (indices.unsqueeze(0).floor().long() + offset)) % rt.recordsz,
             postd,
         )
         assert torch.all((rt.value - cmp).abs() < 1e-6)
@@ -1979,7 +2023,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=2, maxdims=4)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -2007,25 +2051,25 @@ class TestRecordTensor:
             extrap_kwargs={"tc": 20.0},
         )
         pred, postd = extrap_expdecay(
-            obs.unsqueeze(-1),
-            times.unsqueeze(-1) % rt.dt,
+            obs.unsqueeze(0),
+            times.unsqueeze(0) % rt.dt,
             data.gather(
-                -1, (ptr - (indices.unsqueeze(-1).ceil().long() + offset)) % rt.recordsz
+                0, (ptr - (indices.unsqueeze(0).ceil().long() + offset)) % rt.recordsz
             ),
             data.gather(
-                -1,
-                (ptr - (indices.unsqueeze(-1).floor().long() + offset)) % rt.recordsz,
+                0,
+                (ptr - (indices.unsqueeze(0).floor().long() + offset)) % rt.recordsz,
             ),
             rt.dt,
             20.0,
         )
         cmp = data.scatter(
-            -1,
-            (ptr - (indices.unsqueeze(-1).ceil().long() + offset)) % rt.recordsz,
+            0,
+            (ptr - (indices.unsqueeze(0).ceil().long() + offset)) % rt.recordsz,
             pred,
         ).scatter(
-            -1,
-            (ptr - (indices.unsqueeze(-1).floor().long() + offset)) % rt.recordsz,
+            0,
+            (ptr - (indices.unsqueeze(0).floor().long() + offset)) % rt.recordsz,
             postd,
         )
         assert torch.all((rt.value - cmp).abs() < 1e-6)
@@ -2049,7 +2093,7 @@ class TestRecordTensor:
         setattr(infmodule, name, rt)
 
         shape = randshape(mindims=3, maxdims=5)
-        data = torch.rand(*shape, rt.recordsz)
+        data = torch.rand(rt.recordsz, *shape)
         if asparam:
             rt.value = nn.Parameter(data.clone().detach(), True)
         else:
@@ -2059,9 +2103,9 @@ class TestRecordTensor:
         rt.reconstrain(0, shape[0])
         assert rt.constraints[-1] == shape[-1]
         assert rt.constraints[0] == shape[0]
-        assert getattr(infmodule, rt.attributes.constraints)[-1] == rt.recordsz
-        assert getattr(infmodule, rt.attributes.constraints)[-2] == shape[-1]
-        assert getattr(infmodule, rt.attributes.constraints)[0] == shape[0]
+        assert getattr(infmodule, rt.attributes.constraints)[0] == rt.recordsz
+        assert getattr(infmodule, rt.attributes.constraints)[-1] == shape[-1]
+        assert getattr(infmodule, rt.attributes.constraints)[1] == shape[0]
 
 
 class TestVirtualTensor:

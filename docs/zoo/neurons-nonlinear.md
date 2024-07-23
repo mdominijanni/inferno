@@ -1,4 +1,4 @@
-# Neuron Models, Nonlinear
+# Neurons, Nonlinear Models
 
 ## Quadratic Integrate-and-Fire (QIF)
 ### Formulation
@@ -35,12 +35,20 @@ two fixed points: the stable $V_\text{rest}$ and unstable $V_\text{crit}$. The r
 the membrane voltage is attracted towards $V_\text{rest}$ and repelled away from $V_\text{crit}$
 is controlled by $a$.
 
-```{image} ../images/plots/qif_slope_field.png
+```{image} ../images/plots/qif_slope_field_light.png
 :alt: Quadratic Integrate-and-Fire Slope Field of Memrane Voltage
-:class: bg-primary
+:class: only-light
 :scale: 30 %
 :align: center
 ```
+
+```{image} ../images/plots/qif_slope_field_dark.png
+:alt: Quadratic Integrate-and-Fire Slope Field of Memrane Voltage
+:class: only-dark
+:scale: 30 %
+:align: center
+```
+
 Slope field of the membrane voltage without any input current showing the relation between it
 and the critical voltage $(V_C = -50 \text{ mV})$ and rest voltage $(V_R = -60 \text{ mV})$
 parameters. Plotted with values $\tau_m=1 \text{ ms}$ and $a=1$ over a time of $1 \text{ ms}$.
@@ -167,21 +175,37 @@ Below are two slope fields showing the relation between the threshold voltage $V
 rest voltage $V_R$ in relation to the membrane voltage. Examples with two $\Delta_T$ settings
 are used to illustrate its effect.
 
-```{image} ../images/plots/eif_slope_field_d1.png
+```{image} ../images/plots/eif_slope_field_d1_light.png
 :alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 1$)
-:class: bg-primary
+:class: only-light
 :scale: 30 %
 :align: center
 ```
+
+```{image} ../images/plots/eif_slope_field_d1_dark.png
+:alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 1$)
+:class: only-dark
+:scale: 30 %
+:align: center
+```
+
 Membrane voltage with no input current. Plotted with values $V_R = -60\text{ mV}$,
 $V_T = -50$, $\Delta_T = 1$, and $\tau_m=1 \text{ ms}$ over a time of $1 \text{ ms}$.
 
-```{image} ../images/plots/eif_slope_field_d2.png
+```{image} ../images/plots/eif_slope_field_d2_light.png
 :alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 2$)
-:class: bg-primary
+:class: only-light
 :scale: 30 %
 :align: center
 ```
+
+```{image} ../images/plots/eif_slope_field_d2_dark.png
+:alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 2$)
+:class: only-dark
+:scale: 30 %
+:align: center
+```
+
 Membrane voltage with no input current. Plotted with values $V_R = -60\text{ mV}$,
 $V_T = -50$, $\Delta_T = 2$, and $\tau_m=1 \text{ ms}$ over a time of $1 \text{ ms}$.
 
@@ -238,7 +262,7 @@ Under the conditions $\Delta_T > 0$ and $V_T > V_\text{rest}$.
 
 ### Description
 This model uses the same underlying dynamics of the exponential integrate-and-fire neuron, but
-incorporates a linear adaptive current depeendent upon output spikes and the membrane voltage.
+incorporates a linear adaptive current dependent upon output spikes and the membrane voltage.
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)

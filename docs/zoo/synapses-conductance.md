@@ -1,4 +1,6 @@
-# Synapse Models, Conductance-Based
+# Synapses, Conductance Models
 
 ## Delta (COBA Variant)
-### Formulation
+```{admonition} Work In Progress
+This is not yet implemented and the documentation is incomplete.
+```

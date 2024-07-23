@@ -1,25 +1,26 @@
 from .base import (
     CellTrainer,
-    CellwiseTrainer,
+    IndependentCellTrainer,
 )
 
-from .updaters.ustdp import (
+from .trainers.ustdp import (
     STDP,
 )
 
-from .updaters.sstdp import (
+from .trainers.sstdp import (
     MSTDPET,
+    MSTDP,
 )
 
 from .classifiers.simple import (
-    TopRateClassifier,
+    MaxRateClassifier,
 )
 
 __all__ = [
     "CellTrainer",
-    "CellwiseTrainer",
+    "IndependentCellTrainer",
     "STDP",
     "MSTDP",
     "MSTDPET",
-    "TopRateClassifier",
+    "MaxRateClassifier",
 ]

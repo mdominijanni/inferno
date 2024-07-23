@@ -96,7 +96,7 @@ class Accumulator(Module):
 
         Args:
             fn (Callable[[torch.Tensor, int], torch.Tensor] | None, optional):
-                function for reducing updates. Defaults to None.
+                function for reducing updates. Defaults to ``None``.
         """
         if fn:
             self.reduce = fn
@@ -118,7 +118,7 @@ class Accumulator(Module):
 
         Args:
             bound (HalfBounding | None): bounding function.
-            max (float | None, optional): upper bound. Defaults to None.
+            max (float | None, optional): upper bound. Defaults to ``None``.
             **kwargs (Any): keyword arguments for the bounding function.
         """
         # convert bounds to tuple
@@ -146,7 +146,7 @@ class Accumulator(Module):
 
         Args:
             bound (HalfBounding | None): bounding function.
-            min (float | None, optional): lower bound. Defaults to None.
+            min (float | None, optional): lower bound. Defaults to ``None``.
             **kwargs (Any): keyword arguments for the bounding function.
         """
         # convert bounds to tuple
@@ -175,8 +175,8 @@ class Accumulator(Module):
 
         Args:
             bound (FullBounding | None): bounding function.
-            max (float | None, optional): upper bound. Defaults to None.
-            min (float | None, optional): lower bound. Defaults to None.
+            max (float | None, optional): upper bound. Defaults to ``None``.
+            min (float | None, optional): lower bound. Defaults to ``None``.
             **kwargs (Any): keyword arguments for the bounding function.
         """
 
@@ -247,7 +247,7 @@ class Accumulator(Module):
 
 
 class Updater(Module):
-    """Managed accumulated updates for module parameters.
+    r"""Managed accumulated updates for module parameters.
 
     The added parameters are all set as properties which return an
     :py:class:`Accumulator` corresponding to that parameter. Care must be taken to
@@ -262,7 +262,7 @@ class Updater(Module):
         module (Updatable): module with updatable parameters.
         *params (str): parameters to set as trainable.
         reduction (Callable[[torch.Tensor, int], torch.Tensor] | None, optional):
-                function for reducing updates. Defaults to None.
+                function for reducing updates. Defaults to ``None``.
 
     Caution:
         An ``Updater`` only weakly references its parent module, if its parent is
@@ -402,7 +402,7 @@ class Updater(Module):
         r"""Applies accumulated updates.
 
         Args:
-            *params (str): parameters to update, all parameters when none are specified.
+            *params (str): parameters to update, all parameters when ``None`` are specified.
         """
         if not params:
             params = self.updates_.keys()
@@ -481,7 +481,7 @@ class Updatable(ABC):
 
         Args:
             clear (bool, optional): if accumulators should be cleared after updating.
-                Defaults to True.
+                Defaults to ``True``.
         """
         if self.updatable:
             self.updater(**kwargs)
@@ -494,7 +494,7 @@ class Updatable(ABC):
         Args:
             *params (str): parameters to update.
             clear (bool, optional): if accumulators should be cleared after updating.
-                Defaults to True.
+                Defaults to ``True``.
         """
         for p in params:
             self.updater(p, **kwargs)

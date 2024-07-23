@@ -40,8 +40,8 @@ class QIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
         time_constant (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\text{ms}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to ``1.0``.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
 
     See Also:
         For more details and references, visit
@@ -107,10 +107,10 @@ class QIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
         return self.step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         self.step_time = argtest.gt("dt", value, 0, float)
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets neurons to their resting state."""
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
@@ -122,7 +122,7 @@ class QIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I(t)`, in :math:`\text{nA}`.
             refrac_lock (bool, optional): if membrane voltages should be fixed while
-                in the refractory period. Defaults to True.
+                in the refractory period. Defaults to ``True``.
 
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential.
@@ -197,8 +197,8 @@ class Izhikevich(
         spike_increment (float | tuple[float, ...]): amount by which the adaptive
             current is increased after a spike, :math:`d_k`, in :math:`\text{nA}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to ``1.0``.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -236,7 +236,7 @@ class Izhikevich(
         # call superclass constructor
         InfernoNeuron.__init__(self, shape, batch_size)
 
-        # process adapation attributes
+        # process adaptation attributes
         # tuple-wrap if singleton
         if not hasattr(tc_adaptation, "__iter__"):
             tc_adaptation = (tc_adaptation,)
@@ -323,15 +323,15 @@ class Izhikevich(
         return self.step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         self.step_time = argtest.gt("dt", value, 0, float)
 
-    def clear(self, keep_adaptations=True, **kwargs):
+    def clear(self, keep_adaptations: bool = True, **kwargs) -> None:
         r"""Resets neurons to their resting state.
 
         Args:
             keep_adaptations (bool, optional): if learned adaptations should be
-                preserved. Defaults to True.
+                preserved. Defaults to ``True``.
         """
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
@@ -351,9 +351,9 @@ class Izhikevich(
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I-x(t)`, in :math:`\text{nA}`.
             adapt (bool | None, optional): if adaptations should be updated
-                based on this step. Defaults to None.
+                based on this step. Defaults to ``None``.
             refrac_lock (bool, optional): if membrane voltages should be fixed
-                while in the refractory period. Defaults to True.
+                while in the refractory period. Defaults to ``True``.
 
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential.
@@ -433,8 +433,8 @@ class EIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
         time_constant (float): time constant of exponential decay for membrane voltage,
             :math:`\tau_m`, in :math:`\text{ms}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to ``1.0``.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
 
     See Also:
         For more details and references, visit
@@ -502,10 +502,10 @@ class EIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
         return self.step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         self.step_time = argtest.gt("dt", value, 0, float)
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         r"""Resets neurons to their resting state."""
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
@@ -517,7 +517,7 @@ class EIF(VoltageMixin, SpikeRefractoryMixin, InfernoNeuron):
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I(t)`, in :math:`\text{nA}`.
             refrac_lock (bool, optional): if membrane voltages should be fixed while
-                in the refractory period. Defaults to True.
+                in the refractory period. Defaults to ``True``.
 
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential.
@@ -588,11 +588,11 @@ class AdEx(AdaptiveCurrentMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNeur
         spike_increment (float | tuple[float, ...]): amount by which the adaptive
             current is increased after a spike, :math:`b_k`, in :math:`\text{nA}`.
         resistance (float, optional): resistance across the cell membrane,
-            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to 1.0.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+            :math:`R_m`, in :math:`\text{M}\Omega`. Defaults to ``1.0``.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
             function to reduce adaptation updates over the batch dimension,
-            :py:func:`torch.mean` when None. Defaults to None.
+            :py:func:`torch.mean` when ``None``. Defaults to ``None``.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -630,7 +630,7 @@ class AdEx(AdaptiveCurrentMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNeur
         # call superclass constructor
         InfernoNeuron.__init__(self, shape, batch_size)
 
-        # process adapation attributes
+        # process adaptation attributes
         # tuple-wrap if singleton
         if not hasattr(tc_adaptation, "__iter__"):
             tc_adaptation = (tc_adaptation,)
@@ -719,15 +719,15 @@ class AdEx(AdaptiveCurrentMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNeur
         return self.step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         self.step_time = argtest.gt("dt", value, 0, float)
 
-    def clear(self, keep_adaptations=True, **kwargs):
+    def clear(self, keep_adaptations: bool = True, **kwargs) -> None:
         r"""Resets neurons to their resting state.
 
         Args:
             keep_adaptations (bool, optional): if learned adaptations should be
-                preserved. Defaults to True.
+                preserved. Defaults to ``True``.
         """
         self.voltage = torch.full_like(self.voltage, self.rest_v)
         self.refrac = torch.zeros_like(self.refrac)
@@ -747,9 +747,9 @@ class AdEx(AdaptiveCurrentMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNeur
             inputs (torch.Tensor): presynaptic currents,
                 :math:`I_x(t)`, in :math:`\text{nA}`.
             adapt (bool | None, optional): if adaptations should be updated
-                based on this step. Defaults to None.
+                based on this step. Defaults to ``None``.
             refrac_lock (bool, optional): if membrane voltages should be fixed
-                while in the refractory period. Defaults to True.
+                while in the refractory period. Defaults to ``True``.
 
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential.

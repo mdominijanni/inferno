@@ -8,12 +8,13 @@ def validate(
     var: bool | int | float | complex | torch.Tensor | None,
     test: Callable[[torch.Tensor], torch.Tensor],
 ) -> bool | torch.Tensor | None:
-    """Checks validity of a variable.
+    r"""Checks validity of a variable.
 
     Args:
         var (bool | int | float | complex | torch.Tensor | None):
             variable to test validity of.
-        test (Callable[[torch.Tensor], torch.Tensor]): validity test with boolean result.
+        test (Callable[[torch.Tensor], torch.Tensor]): validity test with
+            boolean result.
 
     Returns:
         torch.Tensor | bool | None: if the variable is valid.
@@ -62,7 +63,7 @@ def conjunction(
     *constraints: Callable[
         [bool | int | float | complex | torch.Tensor | None], bool | torch.Tensor | None
     ],
-):
+) -> bool | torch.Tensor | None:
     return validate(var, lambda x: _conj(*map(lambda c: c(x), constraints)))
 
 
@@ -71,7 +72,7 @@ def disjunction(
     *constraints: Callable[
         [bool | int | float | complex | torch.Tensor | None], bool | torch.Tensor | None
     ],
-):
+) -> bool | torch.Tensor | None:
     return validate(var, lambda x: _disj(*map(lambda c: c(x), constraints)))
 
 

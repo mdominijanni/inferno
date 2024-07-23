@@ -1,15 +1,13 @@
-# Model and Method Zoo
-
-## Overview
-Here, the neuron models as well as the training methods implemented in Inferno are described in-depth and references to academic works relating to them are included. Planned for the future are more detailed descriptions of how the given hyperparameters affect their behavior.
+# Model Zoo
+The various models used in simulating neuronal systems, as well as the methods used to train them, are described here. Note that this does *not* refer to pre-trained models. While not comprehensive, those methods implemented by Inferno are described here, along with external references.
 
 ## Neurons
 ```{toctree}
 :maxdepth: 2
 
-neurons-adaptation
 neurons-linear
 neurons-nonlinear
+neurons-adaptation
 ```
 
 ## Synapses
@@ -17,7 +15,6 @@ neurons-nonlinear
 :maxdepth: 2
 
 synapses-current
-synapses-conductance
 ```
 
 ## Learning Methods
@@ -25,5 +22,4 @@ synapses-conductance
 :maxdepth: 2
 
 learning-stdp
-learning-resume
 ```

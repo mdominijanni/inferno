@@ -138,7 +138,7 @@ class DelayedMixin:
 
     def __init__(self, step_time: float, delay: float):
         self.__step_time = argtest.gt("step_time", step_time, 0, float)
-        self.__delay = argtest.gte("duration", delay, 0, float)
+        self.__delay = argtest.gte("delay", delay, 0, float)
         self.__constrained = set()
 
     def add_delayed(self, *attr: str) -> None:
@@ -158,7 +158,8 @@ class DelayedMixin:
                 )
             else:
                 getattr(self, a).dt = self.__step_time
-                getattr(self, a).delay = self.__delay
+                getattr(self, a).duration = self.__delay
+                getattr(self, a).inclusive = True
                 self.__constrained.add(a)
 
     @property
@@ -174,7 +175,7 @@ class DelayedMixin:
         return self.__step_time
 
     @dt.setter
-    def dt(self, value: float):
+    def dt(self, value: float) -> None:
         value = argtest.gt("dt", value, 0, float)
         if value != self.__step_time:
             for cstr in self.__constrained:
@@ -195,5 +196,5 @@ class DelayedMixin:
         value = argtest.gte("delay", value, 0, float)
         if value != self.__delay:
             for cstr in self.__constrained:
-                getattr(self, cstr).duration = value
+                getattr(self, cstr).duration = value + self.__step_time
             self.__delay = value

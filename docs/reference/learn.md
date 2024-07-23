@@ -11,7 +11,7 @@
     :toctree: generated
 
     CellTrainer
-    CellwiseTrainer
+    IndependentCellTrainer
 ```
 
 ## Updaters, Spike-Timing Dependent Plasticity
@@ -21,6 +21,7 @@
     :toctree: generated
 
     STDP
+    MSTDP
     MSTDPET
 ```
 
@@ -30,5 +31,5 @@
     :nosignatures:
     :toctree: generated
 
-    TopRateClassifier
+    MaxRateClassifier
 ```

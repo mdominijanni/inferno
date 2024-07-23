@@ -3,7 +3,7 @@ from .encoding import (
     homogeneous_poisson_exp_interval_online,
     homogenous_poisson_bernoulli_approx,
     homogenous_poisson_bernoulli_approx_online,
-    inhomogenous_poisson_bernoulli_approx,
+    inhomogeneous_poisson_bernoulli_approx,
     poisson_interval,
     poisson_interval_online,
 )
@@ -29,7 +29,7 @@ __all__ = [
     "homogeneous_poisson_exp_interval_online",
     "homogenous_poisson_bernoulli_approx",
     "homogenous_poisson_bernoulli_approx_online",
-    "inhomogenous_poisson_bernoulli_approx",
+    "inhomogeneous_poisson_bernoulli_approx",
     "poisson_interval",
     "poisson_interval_online",
     "voltage_thresholding_constant",

@@ -1,10 +1,11 @@
-# STDP-Like Learning Methods
-## Hebbian Learning
-Typically STDP is parameterized such that it performs Hebbian learning (often summarized as "cells that fire together wire together"). In Hebbian learning methods, if there exists a "postsynaptic" neuron which receives input from a "presynaptic" neuron, then if the presynaptic neuron fires and afterwards the postsynaptic neuron fires, its considered to be "causal". Likewise, if the postsynaptic neuron fires then the presynaptic neuron fires, its considered to be "anti-causal". Hebbian learning increases the connection weight on neuron firings which are causal and decreases it on anti-causal firings.
+# Learning, STDP Methods
+Typically STDP is parameterized such that it performs Hebbian learning (often summarized as "cells that fire together wire together"). In Hebbian learning methods there is a *postsynaptic* neuron which receives input from a *presynaptic* neuron. Then, if the presynaptic neuron fires and after the postsynaptic neuron fires, the connection between them is considered to be *causal*. Likewise, if the postsynaptic neuron fires then the presynaptic neuron fires, it's considered to be *anti-causal*. Hebbian learning increases the connection weight on neuron firings which are causal and decreases it on anti-causal firings. Most STDP methods are phrased in the context of Hebbian learning, although some explicitly are not, while others are flexible even if written in terms of Hebbian learning.
 
-Most STDP methods are phrased in the context of Hebbian learning, although they do not need to be. For instance, STDP can reverse the direction of the weight updates for causal and anti-causal firings (this is called anti-Hebbian learning). For the below methods, they will be written as they are most commonly described, although Inferno typically supports generalization.
+```{note}
+Although STDP methods are phrased as originally described, Inferno tries to introduce flexibility where possible. The settings for controlling the behavior of each method will be described in the relevant {py:class}`~inferno.learn.CellTrainer` class.
+```
 
-## Spike Timing-Dependent Plasticity (STDP)
+## Spike-Timing Dependent Plasticity (STDP)
 ### Formulation
 $$
 \frac{dw}{dt} = A_+ x_\text{pre}(t) \sum_{\mathcal{F}_\text{post}} \delta(t - t^f_\text{post}) - A_- x_\text{post}(t) \sum_{\mathcal{F}_\text{pre}} \delta(t - t^f_\text{pre})
@@ -21,8 +22,8 @@ $$
 - $w$, connection weight
 - $A_+$, update magnitude for Hebbian long-term potentiation (LTP)
 - $A_-$, update magnitude for Hebbian long-term depression (LTD)
-- $x_\text{post}$, [spike trace](<guide/mathematics:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
-- $x_\text{pre}$, [spike trace](<guide/mathematics:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
+- $x_\text{post}$, [spike trace](<guide/concepts:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
+- $x_\text{pre}$, [spike trace](<guide/concepts:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
 - $t^f_\text{post}$, time of (the most recent) postsynaptic spike
 - $t^f_\text{pre}$, time of (the most recent) presynaptic spike
@@ -32,7 +33,10 @@ $$
 
 $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
 
-## Delayed Spike Timing-Dependent Plasticity (Delayed STDP)
+## Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)
+```{admonition} Work In Progress
+This is not yet implemented and the documentation is incomplete. The information presented may be incorrect.
+```
 ### Formulation
 $$
 \Delta w_t =
@@ -89,8 +93,8 @@ $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true 
 - $r$, reward term
 - $A_+$, update magnitude for Hebbian long-term potentiation (LTP)
 - $A_-$, update magnitude for Hebbian long-term depression (LTD)
-- $P^-$, [spike trace](<guide/mathematics:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
-- $P^+$, [spike trace](<guide/mathematics:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
+- $P^-$, [spike trace](<guide/concepts:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
+- $P^+$, [spike trace](<guide/concepts:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
 - $t^f_\text{post}$, time of (the most recent) postsynaptic spike
 - $t^f_\text{pre}$, time of (the most recent) presynaptic spike
@@ -100,7 +104,7 @@ $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true 
 
 
 ### Description
-This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent reward term $r$. Note that $P^+$ is the presynaptic spike trace and $P^-$ is the postsynaptic spike trace (calculated as [cumulative trace](<guide/mathematics:Cumulative Trace>)).
+This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent reward term $r$. Note that $P^+$ is the presynaptic spike trace and $P^-$ is the postsynaptic spike trace (calculated as [cumulative trace](<guide/concepts:Cumulative Trace>)).
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
@@ -136,8 +140,8 @@ $$
 - $r$, reward term
 - $A_+$, update magnitude for Hebbian long-term potentiation (LTP)
 - $A_-$, update magnitude for Hebbian long-term depression (LTD)
-- $P^-$, [spike trace](<guide/mathematics:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
-- $P^+$, [spike trace](<guide/mathematics:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
+- $P^-$, [spike trace](<guide/concepts:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
+- $P^+$, [spike trace](<guide/concepts:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
 - $t^f_\text{post}$, time of (the most recent) postsynaptic spike
 - $t^f_\text{pre}$, time of (the most recent) presynaptic spike
@@ -147,5 +151,3 @@ $$
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
-
-## Triplet Spike-Timing Dependent Plasticity (STDP)

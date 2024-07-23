@@ -38,7 +38,7 @@ def validate_duration(synapse: Synapse, delay: float) -> None:
 class TestDeltaCurrent:
 
     @staticmethod
-    def random_hyper(delayed=False):
+    def random_hyper(delayed=False, inplace=False):
         hyper = {}
         hyper["step_time"] = random.uniform(0.6, 1.8)
         hyper["spike_q"] = random.uniform(20, 30)
@@ -48,6 +48,7 @@ class TestDeltaCurrent:
         hyper["current_overbound"] = 0.0
         hyper["spike_overbound"] = False
         hyper["batch_size"] = random.randint(1, 9)
+        hyper["inplace"] = inplace
         return hyper
 
     def test_batchsz(self):
@@ -90,9 +91,14 @@ class TestDeltaCurrent:
         (True, False),
         ids=("delayed", "undelayed"),
     )
-    def test_current_integration(self, delayed):
+    @pytest.mark.parametrize(
+        "inplace",
+        (True, False),
+        ids=("inplace", "realloc"),
+    )
+    def test_current_integration(self, delayed, inplace):
         shape = random_shape(maxdims=5)
-        hyper = self.random_hyper(delayed)
+        hyper = self.random_hyper(delayed, inplace)
         synapse = DeltaCurrent(shape, **hyper)
         spikes = torch.rand(hyper["batch_size"], *shape) > 0.5
 
@@ -110,13 +116,18 @@ class TestDeltaCurrent:
         (True, False),
         ids=("delayed", "undelayed"),
     )
-    def test_current_overbounding(self, delayed):
+    @pytest.mark.parametrize(
+        "inplace",
+        (True, False),
+        ids=("inplace", "realloc"),
+    )
+    def test_current_overbounding(self, delayed, inplace):
         shape = random_shape(maxdims=5)
-        hyper = self.random_hyper(delayed) | {"current_overbound": -20.0}
+        hyper = self.random_hyper(delayed, inplace) | {"current_overbound": -20.0}
         synapse = DeltaCurrent(shape, **hyper)
         spikes = torch.rand(hyper["batch_size"], *shape) > 0.5
         selector = (torch.rand(hyper["batch_size"], *shape) > 0.5) * (
-            hyper["delay"] + 1
+            hyper["delay"] + hyper["step_time"]
         )
 
         _ = synapse(spikes)
@@ -139,7 +150,7 @@ class TestDeltaCurrent:
 class TestDeltaPlusCurrent:
 
     @staticmethod
-    def random_hyper(delayed=False):
+    def random_hyper(delayed=False, inplace=False):
         hyper = {}
         hyper["step_time"] = random.uniform(0.6, 1.8)
         hyper["spike_q"] = random.uniform(20, 30)
@@ -149,6 +160,7 @@ class TestDeltaPlusCurrent:
         hyper["current_overbound"] = 0.0
         hyper["spike_overbound"] = False
         hyper["batch_size"] = random.randint(1, 9)
+        hyper["inplace"] = inplace
         return hyper
 
     def test_batchsz(self):
@@ -192,13 +204,18 @@ class TestDeltaPlusCurrent:
         ids=("delayed", "undelayed"),
     )
     @pytest.mark.parametrize(
+        "inplace",
+        (True, False),
+        ids=("inplace", "realloc"),
+    )
+    @pytest.mark.parametrize(
         "ninjects",
         (0, 1, 2),
         ids=("ninjects=0", "ninjects=1", "ninjects=2"),
     )
-    def test_current_integration(self, delayed, ninjects):
+    def test_current_integration(self, delayed, inplace, ninjects):
         shape = random_shape(maxdims=5)
-        hyper = self.random_hyper(delayed)
+        hyper = self.random_hyper(delayed, inplace)
         synapse = DeltaPlusCurrent(shape, **hyper)
         spikes = torch.rand(hyper["batch_size"], *shape) > 0.5
         injects = tuple(
@@ -226,13 +243,18 @@ class TestDeltaPlusCurrent:
         ids=("delayed", "undelayed"),
     )
     @pytest.mark.parametrize(
+        "inplace",
+        (True, False),
+        ids=("inplace", "realloc"),
+    )
+    @pytest.mark.parametrize(
         "ninjects",
         (0, 1),
         ids=("ninjects=0", "ninjects=1"),
     )
-    def test_current_overbounding(self, delayed, ninjects):
+    def test_current_overbounding(self, delayed, inplace, ninjects):
         shape = random_shape(maxdims=5)
-        hyper = self.random_hyper(delayed) | {"current_overbound": -20.0}
+        hyper = self.random_hyper(delayed, inplace) | {"current_overbound": -20.0}
         synapse = DeltaPlusCurrent(shape, **hyper)
         spikes = torch.rand(hyper["batch_size"], *shape) > 0.5
         injects = tuple(

@@ -1,4 +1,4 @@
-# Neuron Models, Linear
+# Neurons, Linear Models
 
 ## Leaky Integrate-and-Fire (LIF)
 ### Formulation
@@ -29,12 +29,20 @@ $$V_m(t) \leftarrow V_\text{reset}$$
 This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or "biologically defined reset rules". This is equivalent to the [GLIF{sub}`1`](https://www.nature.com/articles/s41467-017-02717-4) (generalized leaky integrate-and-fire) model. Without presynaptic current, the membrane
 voltage decays back towards the rest voltage with rate in inverse proportion to the membrane time constant.
 
-```{image} ../images/plots/lif_slope_field.png
+```{image} ../images/plots/lif_slope_field_light.png
 :alt: Linear Integrate-and-Fire Slope Field of Memrane Voltage
-:class: bg-primary
+:class: only-light
 :scale: 30 %
 :align: center
 ```
+
+```{image} ../images/plots/lif_slope_field_dark.png
+:alt: Linear Integrate-and-Fire Slope Field of Memrane Voltage
+:class: only-dark
+:scale: 30 %
+:align: center
+```
+
 Slope field of the membrane voltage without any input current showing the decay towards
 the rest voltage $(V_R = -60 \text{ mV})$ over time. Plotted with value $\tau_m=1 \text{ ms}$
 over a time of $2 \text{ ms}$.
@@ -171,10 +179,16 @@ Also called "leaky integrate-and-fire with biologically defined reset rules (LIF
 2. [Allen Institute GLIF Whitepaper](http://web.archive.org/web/20230428012128/https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf)
 
 ## Generalized Leaky Integrate-and-Fire 3 (GLIF{sub}`3`)
-***(To Be Implemented)***
+```{admonition} Work In Progress
+This is not yet implemented and the documentation is incomplete.
+```
 
 ## Generalized Leaky Integrate-and-Fire 4 (GLIF{sub}`4`)
-***(To Be Implemented)***
+```{admonition} Work In Progress
+This is not yet implemented and the documentation is incomplete.
+```
 
 ## Generalized Leaky Integrate-and-Fire 5 (GLIF{sub}`5`)
-***(To Be Implemented)***
+```{admonition} Work In Progress
+This is not yet implemented and the documentation is incomplete.
+```

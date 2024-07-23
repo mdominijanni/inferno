@@ -1,5 +1,6 @@
 from .mixins import WeightBiasDelayMixin
 from ..base import Connection, SynapseConstructor
+from ...core import ones
 from ..._internal import argtest
 from ...types import OneToOne
 import einops as ein
@@ -19,23 +20,23 @@ class Conv2D(WeightBiasDelayMixin, Connection):
         step_time (float): length of a simulation time step, in :math:`\text{ms}`.
         kernel (int | tuple[int, int]): size of the convolution kernel.
         stride (int | tuple[int, int], optional): stride of the convolution.
-            Defaults to 1.
+            Defaults to ``1``.
         padding (int | tuple[int, int], optional): amount of zero padding added to
-            height and width. Defaults to 0.
+            height and width. Defaults to ``0``.
         dilation (int | tuple[int, int], optional): dilation of the convolution.
-            Defaults to 1.
+            Defaults to ``1``.
         synapse (SynapseConstructor): partial constructor for inner :py:class:`Synapse`.
         bias (bool, optional): if the connection should support
-            learnable additive bias. Defaults to False.
+            learnable additive bias. Defaults to ``False``.
         delay (float | None, optional): maximum supported delay length, in
-            :math:`\text{ms}`, excludes delays when None. Defaults to None.
-        batch_size (int, optional): size of input batches for simualtion. Defaults to 1.
+            :math:`\text{ms}`, excludes delays when ``None``. Defaults to ``None``.
+        batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
         weight_init (OneToOne[torch.Tensor] | None, optional): initializer for weights.
-            Defaults to None.
+            Defaults to ``None``.
         bias_init (OneToOne[torch.Tensor] | None, optional): initializer for biases.
-            Defaults to None.
+            Defaults to ``None``.
         delay_init (OneToOne[torch.Tensor] | None, optional): initializer for delays.
-            Defaults to None.
+            Defaults to ``None``.
 
     .. admonition:: Shape
         :class: tensorshape
@@ -55,17 +56,17 @@ class Conv2D(WeightBiasDelayMixin, Connection):
             * :math:`kW` is the kernel width.
 
     Note:
-        When ``delay`` is None, no ``delay_`` parameter is created and altering the
+        When ``delay`` is ``None``, no ``delay_`` parameter is created and altering the
         maximum delay of :py:attr:`synapse` will have no effect. Setting to 0 will
         create and register a ``delay_`` parameter but not use delays unless it is
         later changed.
 
     Note:
-        If ``weight_init`` or ``bias_init`` are None, ``weight`` and ``bias`` are,
+        If ``weight_init`` or ``bias_init`` are ``None``, ``weight`` and ``bias`` are,
         respectively, initialized as uniform random values over the interval
         :math:`[0, 1)` using :py:func:`torch.rand`.
 
-        If ``delay_init`` is None, ``delay`` is initialized as zeros using
+        If ``delay_init`` is ``None``, ``delay`` is initialized as zeros using
         :py:func:`torch.rand`.
 
     Tip:
@@ -311,22 +312,48 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`W_\text{out}` is the output width.
                 * :math:`H` is the input height.
                 * :math:`W` is the input width.
+
+        Note:
+            PyTorch's :py:meth:`~torch.nn.functional.fold` and
+            :py:meth:`~torch.nn.functional.unfold` are only implemented for floating
+            point values. Intermediate casting to the same datatype as connection
+            weights will be performed if required.
         """
-        return F.fold(
-            data,
-            (self.height, self.width),
-            self.kernel,
-            dilation=self.dilation,
-            padding=self.padding,
-            stride=self.stride,
-        ) / F.fold(
-            torch.ones_like(data),
-            (self.height, self.width),
-            self.kernel,
-            dilation=self.dilation,
-            padding=self.padding,
-            stride=self.stride,
-        )
+        if torch.is_floating_point(data):
+            return F.fold(
+                data,
+                (self.height, self.width),
+                self.kernel,
+                dilation=self.dilation,
+                padding=self.padding,
+                stride=self.stride,
+            ) / F.fold(
+                torch.ones_like(data),
+                (self.height, self.width),
+                self.kernel,
+                dilation=self.dilation,
+                padding=self.padding,
+                stride=self.stride,
+            )
+        else:
+            return (
+                F.fold(
+                    data.to(dtype=self.weight.dtype),
+                    (self.height, self.width),
+                    self.kernel,
+                    dilation=self.dilation,
+                    padding=self.padding,
+                    stride=self.stride,
+                )
+                / F.fold(
+                    ones(data, dtype=self.weight.dtype),
+                    (self.height, self.width),
+                    self.kernel,
+                    dilation=self.dilation,
+                    padding=self.padding,
+                    stride=self.stride,
+                )
+            ).to(dtype=data.dtype)
 
     def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection input to synapse input.
@@ -358,14 +385,29 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`kW` is the kernel width.
                 * :math:`H_\text{out}` is the output height.
                 * :math:`W_\text{out}` is the output width.
+
+        Note:
+            PyTorch's :py:meth:`~torch.nn.functional.fold` and
+            :py:meth:`~torch.nn.functional.unfold` are only implemented for floating
+            point values. Intermediate casting to the same datatype as connection
+            weights will be performed if required.
         """
-        return F.unfold(
-            data,
-            self.kernel,
-            dilation=self.dilation,
-            padding=self.padding,
-            stride=self.stride,
-        )
+        if torch.is_floating_point(data):
+            return F.unfold(
+                data,
+                self.kernel,
+                dilation=self.dilation,
+                padding=self.padding,
+                stride=self.stride,
+            )
+        else:
+            return F.unfold(
+                data.to(dtype=self.weight.dtype),
+                self.kernel,
+                dilation=self.dilation,
+                padding=self.padding,
+                stride=self.stride,
+            ).to(dtype=data.dtype)
 
     def presyn_receptive(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like the synapse state for pre-post learning methods.
@@ -493,17 +535,16 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
             res = ein.rearrange(
                 ein.einsum(kernel, res, "f n, b f n l -> b f l"),
-                torch.matmul(kernel, res),
-                "b f 1 (oh ow) -> b f oh ow",
-                oh=self.outshape[0],
-                ow=self.outshape[1],
+                "b f (oh ow) -> b f oh ow",
+                oh=self.outheight,
+                ow=self.outwidth,
             )
         else:
             res = ein.rearrange(
                 torch.matmul(kernel, res),
                 "b f (oh ow) -> b f oh ow",
-                oh=self.outshape[0],
-                ow=self.outshape[1],
+                oh=self.outheight,
+                ow=self.outwidth,
             )
 
         if self.biased:

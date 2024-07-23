@@ -1,11 +1,12 @@
 import torch
+from collections.abc import Sequence
 from typing import Any, Callable
 
 
 def zeros(
     tensor: torch.Tensor,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -15,19 +16,19 @@ def zeros(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
-            ``tensor`` if specified. Defaults to None.
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
+            ``tensor`` if specified. Defaults to ``None``.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         layout (torch.layout | None, optional): overrides layout from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         device (torch.device | None, optional): overrides device from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         requires_grad (bool | None, optional): overrides gradient requirement from
-            ``tensor`` if specified. Defaults to None.
+            ``tensor`` if specified. Defaults to ``None``.
 
     Returns:
-        torch.Tensor: tensor like ``tensor``, modified by parameters, filled with 0.
+        torch.Tensor: tensor like ``tensor``, modified by parameters, filled with ``0``.
 
     Note:
         To construct a scalar, set ``shape`` to ``()``.
@@ -46,7 +47,7 @@ def zeros(
 def ones(
     tensor: torch.Tensor,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -56,19 +57,19 @@ def ones(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
-            ``tensor`` if specified. Defaults to None.
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
+            ``tensor`` if specified. Defaults to ``None``.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         layout (torch.layout | None, optional): overrides layout from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         device (torch.device | None, optional): overrides device from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         requires_grad (bool | None, optional): overrides gradient requirement from
-            ``tensor`` if specified. Defaults to None.
+            ``tensor`` if specified. Defaults to ``None``.
 
     Returns:
-        torch.Tensor: tensor like ``tensor``, modified by parameters, filled with 1.
+        torch.Tensor: tensor like ``tensor``, modified by parameters, filled with ``1``.
 
     Note:
         To construct a scalar, set ``shape`` to ``()``.
@@ -87,7 +88,7 @@ def ones(
 def empty(
     tensor: torch.Tensor,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -97,16 +98,16 @@ def empty(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
-            ``tensor`` if specified. Defaults to None.
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
+            ``tensor`` if specified. Defaults to ``None``.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         layout (torch.layout | None, optional): overrides layout from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         device (torch.device | None, optional): overrides device from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         requires_grad (bool | None, optional): overrides gradient requirement from
-            ``tensor`` if specified. Defaults to None.
+            ``tensor`` if specified. Defaults to ``None``.
 
     Returns:
         torch.Tensor: uninitialized tensor like ``tensor``, modified by parameters.
@@ -129,7 +130,7 @@ def full(
     tensor: torch.Tensor,
     value: bool | int | float | complex,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -140,16 +141,16 @@ def full(
     Args:
         tensor (torch.Tensor): determines default output properties.
         value (bool | int | float | complex): value with to fill the output.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
-            ``tensor`` if specified. Defaults to None.
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
+            ``tensor`` if specified. Defaults to ``None``.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         layout (torch.layout | None, optional): overrides layout from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         device (torch.device | None, optional): overrides device from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         requires_grad (bool | None, optional): overrides gradient requirement from
-            ``tensor`` if specified. Defaults to None.
+            ``tensor`` if specified. Defaults to ``None``.
 
     Returns:
         torch.Tensor: tensor like ``tensor``, modified by parameters, filled
@@ -178,7 +179,7 @@ def fullc(
     tensor: torch.Tensor,
     value: bool | int | float | complex,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -193,16 +194,16 @@ def fullc(
     Args:
         tensor (torch.Tensor): determines default output properties.
         value (bool | int | float | complex): value with to fill the output.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
-            ``tensor`` if specified. Defaults to None.
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
+            ``tensor`` if specified. Defaults to ``None``.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         layout (torch.layout | None, optional): overrides layout from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         device (torch.device | None, optional): overrides device from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         requires_grad (bool | None, optional): overrides gradient requirement from
-            ``tensor`` if specified. Defaults to None.
+            ``tensor`` if specified. Defaults to ``None``.
 
     Returns:
         torch.Tensor: tensor like ``tensor``, modified by parameters, filled
@@ -238,7 +239,7 @@ def fullc(
 def uniform(
     tensor: torch.Tensor,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -249,22 +250,22 @@ def uniform(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
-            ``tensor`` if specified. Defaults to None.
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
+            ``tensor`` if specified. Defaults to ``None``.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         layout (torch.layout | None, optional): overrides layout from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         device (torch.device | None, optional): overrides device from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         requires_grad (bool | None, optional): overrides gradient requirement from
-            ``tensor`` if specified. Defaults to None.
+            ``tensor`` if specified. Defaults to ``None``.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
 
     Returns:
-        torch.Tensor: tensor like ``tensor``, modified by parameters, filled
-        with ``value``.
+        torch.Tensor: tensor like ``tensor``, modified by parameters, with elements
+        sampled from :math:`\mathcal{U}(0, 1)`.
 
     Note:
         To construct a scalar, set ``shape`` to ``()``.
@@ -291,7 +292,7 @@ def uniform(
 def normal(
     tensor: torch.Tensor,
     *,
-    shape: tuple[int] | torch.Size | None = None,
+    shape: Sequence[int] | torch.Size | None = None,
     dtype: torch.dtype | None = None,
     layout: torch.layout | None = None,
     device: torch.device | None = None,
@@ -302,22 +303,22 @@ def normal(
 
     Args:
         tensor (torch.Tensor): determines default output properties.
-        shape (tuple[int] | torch.Size | None, optional): overrides shape from
-            ``tensor`` if specified. Defaults to None.
+        shape (Sequence[int] | torch.Size | None, optional): overrides shape from
+            ``tensor`` if specified. Defaults to ``None``.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         layout (torch.layout | None, optional): overrides layout from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         device (torch.device | None, optional): overrides device from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         requires_grad (bool | None, optional): overrides gradient requirement from
-            ``tensor`` if specified. Defaults to None.
+            ``tensor`` if specified. Defaults to ``None``.
         generator (torch.Generator | None, optional): pseudorandom number generator
-            for sampling. Defaults to None.
+            for sampling. Defaults to ``None``.
 
     Returns:
-        torch.Tensor: tensor like ``tensor``, modified by parameters, filled
-        with ``value``.
+        torch.Tensor: tensor like ``tensor``, modified by parameters, with elements
+        sampled from :math:`\mathcal{N}(0, 1)`.
 
     Note:
         To construct a scalar, set ``shape`` to ``()``.
@@ -358,13 +359,13 @@ def scalar(
         value (bool | int | float | complex): value with to fill the output.
         tensor (torch.Tensor): determines default output properties.
         dtype (torch.dtype | None, optional): overrides data type from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         layout (torch.layout | None, optional): overrides layout from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         device (torch.device | None, optional): overrides device from ``tensor``
-            if specified. Defaults to None.
+            if specified. Defaults to ``None``.
         requires_grad (bool | None, optional): overrides gradient requirement from
-            ``tensor`` if specified. Defaults to None.
+            ``tensor`` if specified. Defaults to ``None``.
 
     Returns:
         torch.Tensor: scalar tensor like ``tensor``, modified by parameters, filled
@@ -394,7 +395,7 @@ def astensors(
     Args:
         *values (Any): values to convert into tensors
         conversion (Callable[[Any], torch.Tensor] | None): method to convert values if
-            none are tensors, default if unspecified. Defaults to None.
+            none are tensors, the default if unspecified. Defaults to ``None``.
 
     Returns:
         tuple[torch.Tensor, ...] | torch.Tensor: converted values.
