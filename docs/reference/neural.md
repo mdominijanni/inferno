@@ -16,6 +16,7 @@
     Cell
     Updater
     Updatable
+    Accumulator
 ```
 
 ## Components
@@ -74,6 +75,7 @@
     :toctree: generated
 
     HomogeneousPoissonEncoder
+    HomogeneousPoissonApproxEncoder
     PoissonIntervalEncoder
 ```
 

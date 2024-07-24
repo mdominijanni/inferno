@@ -2,6 +2,16 @@
 
 Inspired by the PyTorch [example](https://pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html) of the same name, we go through a simple example of implementing a model and a training/testing loop.
 
+```{eval-rst}
+.. only:: builder_html
+
+    Download this example as a
+    :download:`Python script <./code/quickstart.py>`
+    or as a
+    :download:`Jupyter notebook <./code/quickstart.ipynb>`
+    .
+```
+
 ## Prerequisites
 
 This tutorial requires Inferno (and its dependencies, including PyTorch) and TorchVision for working with the dataset. We'll start with the necessary import statements.
@@ -73,7 +83,7 @@ In this example, we'll be classifying examples from the [MNIST](https://yann.lec
 
 Inferno divides the simulation of spiking neural networks into three basic types of components: neurons ({py:class}`~inferno.neural.Neuron`), synapses ({py:class}`~inferno.neural.Synapse`), and connections ({py:class}`~inferno.neural.Connection`). We'll start with neurons, which consume real-valued input representing electrical current and produce boolean output representing action potentials (also called spikes). In terms of artificial neural networks, these serve a role similar to that of activation functions, but neuron models are generally far more complex. They are also stateful and need to maintain their state for each sample in a batch.
 
-Here we are creating two groups of neurons, `exc` and `inh`, which respectively correspond to an excitatory and an inhibitory group of neurons. The output of the model will come from the former, but the latter will be used to regulate it. The inhibitory group is made up of leaky-integrate and fire (LIF) neurons and the excitatory group is made up of adaptive leaky-integrate and fire (ALIF) neurons.
+Here we are creating two groups of neurons, `exc` and `inh`, which respectively correspond to an excitatory and an inhibitory group of neurons. The output of the model will come from the former, but the latter will be used to regulate it. The inhibitory group is made up of leaky-integrate and fire ({py:class}`~inferno.neural.LIF`) neurons and the excitatory group is made up of adaptive leaky-integrate and fire ({py:class}`~inferno.neural.ALIF`) neurons.
 
 ```{code} python
 exc = neural.ALIF(
@@ -189,7 +199,7 @@ model = Model(exc, inh, enc2exc, inh2exc, exc2inh)
 model.to(device=device)
 ```
 
-While this model is being trained, we will want to keep the weights of `enc2exc` normalized such that the $\ell_1$-norm of the weight vector corresponding to each output has a fixed value. Inferno extends PyTorch's _forward hooks_. While custom hooks can still be set with {py:meth}`~torch.nn.Module.register_forward_hook` and {py:meth}`~torch.nn.Module.register_hook`, Inferno provides a {py:class}`~inferno.Hook` class along with multiple extensions for managing forward hooks. Hooks can be set to trigger conditionally based on if the module is in `training` mode, which is set with {py:meth}`~torch.nn.Module.train` and {py:meth}`~torch.nn.Module.eval`. Here, we'll normalize the weights when training only (since the weights won't change during inference).
+While this model is being trained, we will want to keep the weights of `enc2exc` normalized such that the $\ell_1$-norm of the weight vector corresponding to each output has a fixed value. Inferno extends PyTorch's _forward hooks_. While custom hooks can still be set with {py:meth}`~torch.nn.Module.register_forward_hook` and {py:meth}`~torch.nn.Module.register_forward_pre_hook`, Inferno provides a {py:class}`~inferno.Hook` class along with multiple extensions for managing forward hooks. Hooks can be set to trigger conditionally based on if the module is in `training` mode, which is set with {py:meth}`~torch.nn.Module.train` and {py:meth}`~torch.nn.Module.eval`. Here, we'll normalize the weights when training only (since the weights won't change during inference).
 
 ```{code} python
 norm_hook = neural.Normalization(
@@ -287,6 +297,7 @@ We can then write the functions for the training/testing loop. Note that the cla
 
 ```{code} python
 classify_interval = 10
+train_cutoff = None
 
 def train(data, encoder, model, trainer, classifier):
     size = len(data.dataset)
@@ -311,34 +322,33 @@ def train(data, encoder, model, trainer, classifier):
             print(f"acc: {(nc / rates.size(0)):.4f} [{current:>5d}/{size:>5d}]")
             rates, labels = [], []
 
-    print(f"Training Accuracy:\n    {(correct / size):.4f}")
+        if train_cutoff is not None and current >= train_cutoff:
+            break
+
+    print(f"Training Accuracy:\n    {(correct / current):.4f}")
 ```
 
 The function for testing is very similar, except it excludes the trainer as it won't be updated. The classifier is still passed in for computing the prediction accuracy. Unlike in the training function, the true labels aren't given to the classifier, and therefore it will only infer.
 
 ```{code} python
+test_cutoff = None
+
 def test(data, encoder, model, classifier):
-    size = len(data.dataset)
-    rates, labels = [], []
     correct, current = 0, 0
 
     for batch, (X, y) in enumerate(data, start=1):
         X, y = X.to(device=device), y.to(device=device)
 
-        rates.append(model(encoder(X), None).float().mean(dim=0))
-        labels.append(y)
+        rates = model(encoder(X), None).float().mean(dim=0)
+        pred = classifier(rates, None)
 
-        if batch % classify_interval == 0:
-            rates = torch.cat(rates, dim=0)
-            labels = torch.cat(labels, dim=0)
+        correct += (pred == y).sum().item()
+        current += rates.size(0)
 
-            pred = classifier(rates, None)
-            correct += (pred == labels).sum().item()
-            current += rates.size(0)
+        if test_cutoff is not None and current >= test_cutoff:
+            break
 
-            rates, labels = [], []
-
-    print(f"Testing Accuracy:\n    {(correct / size):.4f}\n")
+    print(f"Testing Accuracy:\n    {(correct / current):.4f}\n")
 ```
 
 For the main loop, we need to set both the model and the trainer into the correct `training` mode. This will manage the hook triggers. When the trainer is set into evaluation mode, it will also deregister any hooks it creates in order to avoid runtime tests of the `training` mode.
@@ -355,3 +365,4 @@ with torch.no_grad():
         test(test_data, encoder, model, classifier)
     print("Completed")
 ```
+
