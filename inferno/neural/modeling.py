@@ -11,7 +11,7 @@ import weakref
 
 
 class Accumulator(Module):
-    r"""Used by :py:class:`Updater`, accumulated updates for a parameter."""
+    r"""Used to accumulate updates for a parameter."""
 
     def __init__(self):
         # call superclass constructor
