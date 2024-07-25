@@ -333,6 +333,8 @@ class MSTDPET(IndependentCellTrainer):
             ),
             False,
             dt=state.step_time,
+            amp=abs(state.lr_pre),
+            tc=state.tc_post,
         )
 
         # postsynaptic spike monitor (triggers hebbian LTP)
@@ -372,6 +374,8 @@ class MSTDPET(IndependentCellTrainer):
             ),
             False,
             dt=state.step_time,
+            amp=abs(state.lr_post),
+            tc=state.tc_pre,
         )
 
         # presynaptic spike monitor (triggers hebbian LTD)
@@ -779,6 +783,7 @@ class MSTDP(IndependentCellTrainer):
             ),
             False,
             dt=state.step_time,
+            amp=abs(state.lr_pre),
             tc=state.tc_post,
             trace=state.tracemode,
         )
@@ -820,6 +825,7 @@ class MSTDP(IndependentCellTrainer):
             ),
             False,
             dt=state.step_time,
+            amp=abs(state.lr_post),
             tc=state.tc_pre,
             trace=state.tracemode,
             delayed=delayed,

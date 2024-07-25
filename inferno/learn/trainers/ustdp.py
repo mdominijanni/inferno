@@ -252,6 +252,7 @@ class STDP(IndependentCellTrainer):
             ),
             False,
             dt=state.step_time,
+            amp=abs(state.lr_pre),
             tc=state.tc_post,
             trace=state.tracemode,
         )
@@ -293,6 +294,7 @@ class STDP(IndependentCellTrainer):
             ),
             False,
             dt=state.step_time,
+            amp=abs(state.lr_post),
             tc=state.tc_pre,
             trace=state.tracemode,
             delayed=delayed,

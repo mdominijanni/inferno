@@ -1,18 +1,20 @@
+from collections.abc import Sequence
 from .. import zeros, ShapedTensor, VirtualTensor
 from .._internal import argtest
 from ..neural import InfernoNeuron
 import torch
 
 
-class PassthroughNeuron(InfernoNeuron):
+class ExactNeuron(InfernoNeuron):
     r"""Simple neuron class useful for getting predictable outputs for visualization.
 
-    An action potential will be generated in the input to :py:meth:`forward()` is
-    positive. Membrane voltages will be set to ``thresh_v`` if a spike was generated,
+    An action potential will be generated if the input to :py:meth:`forward()` is
+    positive, unless an ``override``boolean tensor is given, in which case that will be
+    used instead. Membrane voltages will be set to ``thresh_v`` if a spike was generated,
     and otherwise will be set to ``rest_v``.
 
     Args:
-        shape (tuple[int, ...] | int): shape of the group of neurons being simulated.
+        shape (Sequence[int]): shape of the group of neurons being simulated.
         step_time (float): length of a simulation time step,
             :math:`\Delta t`, in :math:`\text{ms}`.
         rest_v (float): membrane potential difference at equilibrium,
@@ -29,7 +31,7 @@ class PassthroughNeuron(InfernoNeuron):
 
     def __init__(
         self,
-        shape: tuple[int, ...] | int,
+        shape: Sequence[int],
         step_time: float,
         *,
         rest_v: float,
@@ -104,7 +106,7 @@ class PassthroughNeuron(InfernoNeuron):
             torch.Tensor: present membrane voltages.
 
         Note:
-            :py:class:`PassthroughNeuron` derives membrane voltage from action
+            :py:class:`ExactNeuron` derives membrane voltage from action
             potentials. Therefore the setter will do nothing.
         """
         return self.voltage_.value
@@ -134,7 +136,7 @@ class PassthroughNeuron(InfernoNeuron):
             torch.Tensor: present remaining refractory periods.
 
         Note:
-            :py:class:`PassthroughNeuron` doesn't support refractory periods. The
+            :py:class:`ExactNeuron` doesn't support refractory periods. The
             getter will always return a tensor of zeros and the setter will do
             nothing.
         """
@@ -148,20 +150,31 @@ class PassthroughNeuron(InfernoNeuron):
         r"""Resets neurons to their resting state."""
         self.spike_.value = torch.full_like(self.spike, False)
 
-    def forward(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
+    def forward(
+        self, inputs: torch.Tensor, override: torch.Tensor | None = None, **kwargs
+    ) -> torch.Tensor:
         r"""Runs a simulation step of the neuronal dynamics.
 
         Args:
-            inputs (torch.Tensor): presynaptic currents,
-                :math:`I(t)`, in :math:`\text{nA}`.
+            inputs (torch.Tensor): presynaptic currents, :math:`I(t)`,
+                in :math:`\text{nA}`.
+            override (optional, torch.Tensor | None): tensor of spikes to use for output
+                if spiking output should not be based on inputs. Defaults to ``None``.
 
         Returns:
             torch.Tensor: if the corresponding neuron generated an action potential.
         """
         # set spikes based on threshold
-        self.spike_.value = (inputs > 0).to(
-            device=self.spike_.value.device, dtype=self.spike_.value.dtype
-        )
+        if override is None:
+            self.spike_.value = (inputs > 0).to(
+                device=self.spike_.value.device, dtype=self.spike_.value.dtype
+            )
+
+        # manual override of spikes
+        else:
+            self.spike_.value = override.view(self.batchedshape).to(
+                device=self.spike_.value.device, dtype=self.spike_.value.dtype
+            )
 
         # return spiking output
         return self.spike_.value

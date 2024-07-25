@@ -1,7 +1,7 @@
 from .neural import (
-    PassthroughNeuron,
+    ExactNeuron,
 )
 
 __all__ = [
-    PassthroughNeuron,
+    ExactNeuron,
 ]
