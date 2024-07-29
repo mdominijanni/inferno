@@ -132,6 +132,7 @@ class Neuron(Module, ABC):
 
         Returns:
             torch.Tensor: present membrane voltages.
+
         Raises:
             NotImplementedError: ``voltage`` must be implemented by the subclass.
         """
@@ -291,6 +292,7 @@ class InfernoNeuron(BatchShapeMixin, Neuron):
 
         Returns:
             torch.Tensor: present membrane voltages.
+
         Raises:
             NotImplementedError: ``voltage`` must be implemented by the subclass.
         """
