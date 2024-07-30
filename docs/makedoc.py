@@ -10,7 +10,7 @@ with open("conf.gen.py", "r") as file:
 
 # write config file with autosummary generation
 with open("conf.py", "w") as file:
-    file.writelines(conf + ["", "autosummary_generate = True", ""])
+    file.writelines(conf + ["", "autosummary_generate = True", "nitpicky = True", ""])
 
 # run to generate .rst files
 os.system("make clean html")
