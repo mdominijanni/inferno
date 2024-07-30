@@ -10,6 +10,9 @@ with open("docs/conf.gen.py", "r") as file:
 with open("docs/conf.py", "w") as file:
     file.writelines(conf + ["", "autosummary_generate = True", ""])
 
+# change relative directory to docs
+os.chdir(os.path.join(".", "docs"))
+
 # run to generate .rst files
 os.system("make clean html")
 
@@ -30,6 +33,9 @@ for root, dirs, files in os.walk(os.path.join("..", "docs-override")):
                 os.path.join(".", *osrsplit(root, [])[2:], "generated", file),
             )
 
+# change relative directory to parent
+os.chdir(os.path.join(".."))
+
 # overwrite config file without autosummary generation
-with open("conf.py", "w") as file:
+with open("docs/conf.py", "w") as file:
     file.writelines(conf + ["", "autosummary_generate = False", ""])
