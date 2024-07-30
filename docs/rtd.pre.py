@@ -14,7 +14,7 @@ with open("docs/conf.py", "w") as file:
 os.chdir(os.path.join(".", "docs"))
 
 # run to generate .rst files
-os.system("make clean html")
+os.system("python -m sphinx -T -b html -d _build/doctrees -D language=en . $READTHEDOCS_OUTPUT/html")
 
 # replace generated files with overrides
 osrsplit = lambda S, L: (  # noqa:E731;
@@ -30,7 +30,7 @@ for root, dirs, files in os.walk(os.path.join("..", "docs-override")):
             print(f"overwriting with: {os.path.join(root, file)}")
             shutil.copyfile(
                 os.path.join(root, file),
-                os.path.join(".", *osrsplit(root, [])[2:], "generated", file),
+                os.path.join(*osrsplit(root, [])[2:], "generated", file),
             )
 
 # change relative directory to parent
