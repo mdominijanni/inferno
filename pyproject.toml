@@ -34,7 +34,7 @@ torch = [
 
 [project.urls]
 Homepage = "https://github.com/mdominijanni/inferno"
-Documentation = "https://inferno-ai.dev"
+Documentation = "https://docs.inferno-ai.dev"
 
 [tool.hatch.metadata]
 package = "inferno"

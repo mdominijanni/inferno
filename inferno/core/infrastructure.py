@@ -58,7 +58,7 @@ class Module(nn.Module):
             Python identifier.
 
         Note:
-            :py:class:`~torch.Tensor`, :py:class:`~torch.nn.Parameter`, and
+            :py:class:`~torch.Tensor`, :py:class:`~torch.nn.parameter.Parameter`, and
             :py:class:`~torch.nn.Module` objects cannot be registered as extras and
             should be registered using existing methods.
         """
@@ -257,8 +257,8 @@ class ShapedTensor:
     dimension (such as if created with ``torch.empty(0)``).
 
     When ``value`` is ``None``, a registered buffer is created, otherwise a parameter
-    will only be added if an :py:class:`~torch.nn.Parameter` is given. Assignment of
-    a parameter to ``None`` is unsupported.
+    will only be added if an :py:class:`~torch.nn.parameter.Parameter` is given.
+    Assignment of a parameter to ``None`` is unsupported.
 
     Args:
         owner (Module): module to which this attribute will belong.
@@ -590,10 +590,11 @@ class ShapedTensor:
         If ``live`` was set on initialization, every setter call will ensure the tensor
         being set is valid (constrained or ignored).
 
-        When created as a :py:class:`~torch.nn.Parameter`, assignment to ``None`` is
-        prevented. If the current ``value`` is a :py:class:`~torch.nn.Parameter` but
-        the assigned value is a :py:class:`~torch.Tensor`, it will automatically assign
-        to the ``data`` attribute of ``value``.
+        When created as a :py:class:`~torch.nn.parameter.Parameter`, assignment to
+        ``None`` is prevented. If the current ``value`` is a
+        :py:class:`~torch.nn.parameter.Parameter` but the assigned value is a
+        :py:class:`~torch.Tensor`, it will automatically assign to the ``data``
+        attribute of ``value``.
 
         Args:
             value (value: torch.Tensor | nn.Parameter | None): value to which the
@@ -1308,10 +1309,11 @@ class RecordTensor(ShapedTensor):
     def value(self) -> torch.Tensor | nn.Parameter | None:
         r"""Record storage tensor.
 
-        When created as a :py:class:`~torch.nn.Parameter`, assignment to ``None`` is
-        prevented. If the current ``value`` is a :py:class:`~torch.nn.Parameter` but
-        the assigned value is a :py:class:`~torch.Tensor`, it will automatically assign
-        to the ``data`` attribute of ``value``.
+        When created as a :py:class:`~torch.nn.parameter.Parameter`, assignment to
+        ``None`` is prevented. If the current ``value`` is a
+        :py:class:`~torch.nn.parameter.Parameter` but the assigned value is a
+        :py:class:`~torch.Tensor`, it will automatically assign to the ``data``
+        attribute of ``value``.
 
         When used as a deleter, this acts as an alias for
         ``self.deinitialize(use_uninitialized=False)``.

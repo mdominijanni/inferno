@@ -4,19 +4,28 @@
 .. automodule:: inferno.neural
 ```
 
-## Modeling
+## Modelling
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
     :toctree: generated
 
     Layer
-    Biclique
-    Serial
     Cell
     Updater
     Updatable
     Accumulator
+```
+
+## Layers
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    Biclique
+    Serial
+    RecurrentSerial
 ```
 
 ## Components

@@ -10,6 +10,7 @@ neural-functional
 learn
 observe
 stats
+extra
 ```
 
 ## Package Overview
@@ -41,3 +42,7 @@ The infrastructure and components for monitoring the internal states of componen
 <strong style="font-size: 1.5em;">[inferno.stats](reference/stats:inferno.stats)</strong>
 
 A work-in-progress module containing PyTorch-based implementations of various probability distributions.
+
+<strong style="font-size: 1.5em;">[inferno.extra](reference/extra:inferno.extra)</strong>
+
+A work-in-progress module containing assorted components which may be useful when attempting to generate visualizations or diagnose issues, or whenever a placeholder is needed.
