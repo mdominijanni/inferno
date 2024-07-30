@@ -26,7 +26,7 @@ class Module(nn.Module):
     another descriptor and will use the descriptor's ``__set__`` behavior instead.
 
     Note:
-        Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made
+        Like with :py:class:`torch.nn.Module`, an `__init__()` call must be made
         to the parent class before assignment on the child. This class's constructor
         will automatically call PyTorch's.
     """
@@ -116,9 +116,22 @@ class Module(nn.Module):
         return extra
 
     def get_extra_state(self) -> dict[str, Any]:
+        r"""Returns the extra state to include in the module's state_dict.
+
+        Returns:
+            dict[str, Any]: extra state to store in the module's state dictionary.
+        """
         return self._extras
 
     def set_extra_state(self, state: dict[str, Any]) -> None:
+        r"""Set extra state contained in the loaded state dictionary.
+
+        This function is called from :py:meth:`~torch.nn.Module.load_state_dict` to
+        handle any extra state found within the :py:meth:`~torch.nn.Module.state_dict`.
+
+        Args:
+            state (dict): extra state from the state dictionary.
+        """
         self._extras.update(state)
 
     def __setstate__(self, state) -> None:
@@ -2638,8 +2651,7 @@ class Hook:
     `Hook` provides functionality to register and deregister itself as
     forward hook with a :py:class:`~torch.nn.Module` object. This is performed using
     :py:meth:`~torch.nn.Module.register_forward_hook` to register itself as a forward
-    hook and it manages the returned :py:class:`~torch.utils.hooks.RemovableHandle`
-    to deregister itself.
+    hook and it manages the returned `RemovableHandle` to deregister itself.
 
     Args:
         prehook (Callable | None, optional): function to call before hooked module's

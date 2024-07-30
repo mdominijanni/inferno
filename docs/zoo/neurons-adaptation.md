@@ -67,7 +67,7 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 
 ### References
 1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
-2. [Allen Institute GLIF Whitepaper](http://web.archive.org/web/20230428012128/https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf)
+2. [Allen Institute GLIF Whitepaper](https://community.brain-map.org/uploads/short-url/8Q1u3ecpUDRHIuCXF05cAd6PEeE.pdf)
 
 ## Adaptive Threshold, Linear Voltage-Dependent
 ### Formulation

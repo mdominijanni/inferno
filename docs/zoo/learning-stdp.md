@@ -85,8 +85,6 @@ $$
 \end{align*}
 $$
 
-$[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
-
 *Where:*
 - $w$, connection weight
 - $\gamma$, common learning rate
@@ -102,6 +100,7 @@ $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true 
 - $\mathcal{F}_\text{pre}$, set of prior presynaptic spikes
 - $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
 
+$[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
 
 ### Description
 This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent reward term $r$. Note that $P^+$ is the presynaptic spike trace and $P^-$ is the postsynaptic spike trace (calculated as [cumulative trace](<guide/concepts:Cumulative Trace>)).
@@ -148,6 +147,8 @@ $$
 - $\mathcal{F}_\text{post}$, set of prior postsynaptic spikes
 - $\mathcal{F}_\text{pre}$, set of prior presynaptic spikes
 - $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
+
+$[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)

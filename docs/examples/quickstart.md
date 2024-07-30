@@ -259,7 +259,7 @@ clamp_hook = neural.Clamping(
 clamp_hook.register()
 ```
 
-Adding parameter dependence is done by accessing the {py:class}`~inferno.neural.Accumulator` for the associated parameter. To only bound the upper limit, {py:meth}`~inferno.neural.Updater.upperbound` is called and a function which follows the {py:class}`~inferno.functional.HalfBounding` protocol.
+Adding parameter dependence is done by accessing the {py:class}`~inferno.neural.Accumulator` for the associated parameter. To only bound the upper limit, {py:meth}`~inferno.neural.Accumulator.upperbound` is called and a function which follows the {py:class}`~inferno.functional.HalfBounding` protocol.
 
 ```{code} python
 updater.weight.upperbound(

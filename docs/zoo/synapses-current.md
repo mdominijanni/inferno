@@ -33,4 +33,4 @@ the current delivered for a given spike such that simulation time step does not 
 change the integration of current from action potentials into the neuron.
 
 ### References
-1. [ISBN:9780262548083](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)
+1. [ISBN:9780262548083](https://mitpress.ublish.com/ebook/modeling-neural-circuits-made-simple-with-python-preview/12788/Cover)

@@ -846,7 +846,7 @@ class Serial(Layer):
 
     Note:
         When ``transform`` is not specified, the identity function is used. Keyword
-        arguments passed into :py:meth:`call`, other than those captured in
+        arguments passed into `__call__`, other than those captured in
         :py:meth`forward` will be passed in.
 
     Note:
@@ -1031,161 +1031,162 @@ class Serial(Layer):
 
 
 class RecurrentSerial(Layer):
-    r"""Layer with a single feedforward connection and neuron group, and two feedback connections with a neuron group inbetween.
+    r"""Layer with a single feedforward connection and neuron group, and two backward connections with a neuron group inbetween.
 
     .. math::
         \begin{align*}
-            \texttt{inputs} &\rightarrow \texttt{feedfwd_connection} \\
-            \texttt{feedfwd_connection} + \texttt{feedback_connection} &\rightarrow \texttt{feedfwd_neuron} \\
-            \texttt{feedfwd_neuron} \rightarrow \texttt{lateral_connection} \rightarrow \texttt{feedback_neuron} \\
-
+            \texttt{inputs} &\rightarrow \texttt{forward_connection} \\
+            \texttt{forward_connection} + \texttt{backward_connection} &\rightarrow \texttt{forward_neuron} \\
+            \texttt{forward_neuron} &\rightarrow \texttt{lateral_connection} \\
+            \texttt{lateral_connection} &\rightarrow \texttt{backward_neuron} \\
+            \texttt{backward_neuron} &\rightarrow \texttt{backward_connection}
         \end{align*}
 
     This wraps :py:class:`Layer` to provide simplified accessors and a simplified
-    :py:meth:`forward` method for layers with one feedforward connection, two feedback
+    :py:meth:`forward` method for layers with one feedforward connection, two backward
     connections, and two neuron groups.
 
     Args:
-        feedfwd_connection (Connection): module which receives input to the layer.
+        forward_connection (Connection): module which receives input to the layer.
         lateral_connection (Connection): module which receives input from the
             feedforward neurons.
-        feedback_connection (Connection): module which receives input from the
-            feedback neurons and applies it to the feedforward neurons.
-        feedfwd_neuron (Neuron): module which generates output from the layer.
-        feedback_neuron (Neuron): module which generates feedback spikes.
-        feedfwd_transform (OneToOne[torch.Tensor] | None, optional): function
+        backward_connection (Connection): module which receives input from the
+            backward neurons and applies it to the feedforward neurons.
+        forward_neuron (Neuron): module which generates output from the layer.
+        backward_neuron (Neuron): module which generates backward spikes.
+        forward_transform (OneToOne[torch.Tensor] | None, optional): function
             to apply to feedforward connection output before passing into neurons.
             Defaults to ``None``.
         lateral_transform (OneToOne[torch.Tensor] | None, optional): function
             to apply to lateral connection output before passing into neurons.
             Defaults to ``None``.
-        feedback_transform (OneToOne[torch.Tensor] | None, optional): function
-            to apply to feedback connection output before passing into neurons.
+        backward_transform (OneToOne[torch.Tensor] | None, optional): function
+            to apply to backward connection output before passing into neurons.
             Defaults to ``None``.
         pre_lateral_transform (OneToMany[torch.Tensor] | None, optional): function
             to apply to feedforward neuron output before passing into the lateral
             connection. Defaults to ``None``.
-        pre_feedback_transform (OneToMany[torch.Tensor] | None, optional): function
-            to apply to feedback neuron output before passing into the feedback
+        pre_backward_transform (OneToMany[torch.Tensor] | None, optional): function
+            to apply to backward neuron output before passing into the backward
             connection. Defaults to ``None``.
-        feedfwd_connection_name (str, optional): name for the feedforward
-            connection in the layer. Defaults to ``"feedfwd"``.
+        forward_connection_name (str, optional): name for the feedforward
+            connection in the layer. Defaults to ``"forward"``.
         lateral_connection_name (str, optional): name for the lateral
             connection in the layer. Defaults to ``"lateral"``.
-        feedback_connection_name (str, optional): name for the feedback
-            connection in the layer. Defaults to ``"feedback"``.
-        feedfwd_neuron_name (str, optional): name for the neuron in the layer.
-            Defaults to ``"feedfwd"``.
-        feedback_neuron_name (str, optional): name for the neuron in the layer.
-            Defaults to ``"feedback"``.
-        trainable_feedback (bool, optional): if feedback connections should be
+        backward_connection_name (str, optional): name for the backward
+            connection in the layer. Defaults to ``"backward"``.
+        forward_neuron_name (str, optional): name for the neuron in the layer.
+            Defaults to ``"forward"``.
+        backward_neuron_name (str, optional): name for the neuron in the layer.
+            Defaults to ``"backward"``.
+        trainable_backward (bool, optional): if backward connections should be
             trainable. Defaults to ``False``.
 
     Note:
-        When any of ``feedfwd_transform``, ``lateral_transform``, ``feedback_transform``,
-        or ``pre_feedback_transform`` is not specified, the identity function is used.
-        Keyword arguments passed into :py:meth:`call`, other than those captured in
+        When any of ``forward_transform``, ``lateral_transform``, ``backward_transform``,
+        or ``pre_backward_transform`` is not specified, the identity function is used.
+        Keyword arguments passed into `__call__`, other than those captured in
         :py:meth`forward` will be passed in.
 
     Important:
-        When ``trainable_feedback`` is set to ``True``, the feedback connection and
+        When ``trainable_backward`` is set to ``True``, the backward connection and
         neuron shapes need to be compatible for creating :py:class:`~inferno.neural.Cell`
         objects.
 
     Note:
-        When any of ``feedfwd_transform``, ``lateral_transform``, ``feedback_transform``,
-        ``pre_lateral_transform``, or ``pre_feedback_transform`` is not specified, the
+        When any of ``forward_transform``, ``lateral_transform``, ``backward_transform``,
+        ``pre_lateral_transform``, or ``pre_backward_transform`` is not specified, the
         identity function is used (the latter two also wrapping the input in a tuple).
-        Keyword arguments passed into :py:meth:`call`, other than those captured in
+        Keyword arguments passed into `__call__`, other than those captured in
         :py:meth`forward` will be passed in. The ``pre_lateral_transform`` and
-        ``pre_feedback_transform`` functions are only applied to the spiking input from
-        the feedforward and feedback neurons respectively.
+        ``pre_backward_transform`` functions are only applied to the spiking input from
+        the feedforward and backward neurons respectively.
     """
 
     def __init__(
         self,
-        feedfwd_connection: Connection,
+        forward_connection: Connection,
         lateral_connection: Connection,
-        feedback_connection: Connection,
-        feedfwd_neuron: Neuron,
-        feedback_neuron: Neuron,
+        backward_connection: Connection,
+        forward_neuron: Neuron,
+        backward_neuron: Neuron,
         *,
-        feedfwd_transform: OneToOne[torch.Tensor] | None = None,
+        forward_transform: OneToOne[torch.Tensor] | None = None,
         lateral_transform: OneToOne[torch.Tensor] | None = None,
-        feedback_transform: OneToOne[torch.Tensor] | None = None,
+        backward_transform: OneToOne[torch.Tensor] | None = None,
         pre_lateral_transform: OneToMany[torch.Tensor] | None = None,
-        pre_feedback_transform: OneToMany[torch.Tensor] | None = None,
-        feedfwd_connection_name: str = "feedfwd",
+        pre_backward_transform: OneToMany[torch.Tensor] | None = None,
+        forward_connection_name: str = "forward",
         lateral_connection_name: str = "lateral",
-        feedback_connection_name: str = "feedback",
-        feedfwd_neuron_name: str = "feedfwd",
-        feedback_neuron_name: str = "feedback",
-        trainable_feedback: bool = False,
+        backward_connection_name: str = "backward",
+        forward_neuron_name: str = "forward",
+        backward_neuron_name: str = "backward",
+        trainable_backward: bool = False,
     ):
         # call superclass constructor
         Layer.__init__(self)
 
-        # register feedback tensor
-        self.register_buffer("feedfwd_spikes", None)
-        self.register_buffer("feedback_spikes", None)
+        # register backward tensor
+        self.register_buffer("forward_spikes", None)
+        self.register_buffer("backward_spikes", None)
 
         # set names
-        self.__feedfwd_connection_name = feedfwd_connection_name
+        self.__forward_connection_name = forward_connection_name
         self.__lateral_connection_name = lateral_connection_name
-        self.__feedback_connection_name = feedback_connection_name
-        self.__feedfwd_neuron_name = feedfwd_neuron_name
-        self.__feedback_neuron_name = feedback_neuron_name
+        self.__backward_connection_name = backward_connection_name
+        self.__forward_neuron_name = forward_neuron_name
+        self.__backward_neuron_name = backward_neuron_name
 
         # add connections and neurons
-        Layer.add_connection(self, self.__feedfwd_connection_name, feedfwd_connection)
+        Layer.add_connection(self, self.__forward_connection_name, forward_connection)
         Layer.add_connection(self, self.__lateral_connection_name, lateral_connection)
-        Layer.add_connection(self, self.__feedback_connection_name, feedback_connection)
+        Layer.add_connection(self, self.__backward_connection_name, backward_connection)
 
-        Layer.add_neuron(self, self.__feedfwd_neuron_name, feedfwd_neuron)
-        Layer.add_neuron(self, self.__feedback_neuron_name, feedback_neuron)
+        Layer.add_neuron(self, self.__forward_neuron_name, forward_neuron)
+        Layer.add_neuron(self, self.__backward_neuron_name, backward_neuron)
 
         _ = Layer.add_cell(
-            self, self.__feedfwd_connection_name, self.__feedfwd_neuron_name
+            self, self.__forward_connection_name, self.__forward_neuron_name
         )
-        if trainable_feedback:
+        if trainable_backward:
             _ = Layer.add_cell(
                 self,
                 self.__lateral_connection_name,
-                self.__feedback_neuron_name,
+                self.__backward_neuron_name,
             )
             _ = Layer.add_cell(
-                self, self.__feedback_connection_name, self.__feedfwd_neuron_name
+                self, self.__backward_connection_name, self.__forward_neuron_name
             )
 
         # set transformations used
-        self._feedfwd_transform = feedfwd_transform if feedfwd_transform else identity
+        self._forward_transform = forward_transform if forward_transform else identity
         self._lateral_transform = lateral_transform if lateral_transform else identity
-        self._feedback_transform = (
-            feedback_transform if feedback_transform else identity
+        self._backward_transform = (
+            backward_transform if backward_transform else identity
         )
         self._pre_lateral_transform = (
             pre_lateral_transform if pre_lateral_transform else tuplewrap
         )
-        self._pre_feedback_transform = (
-            pre_feedback_transform if pre_feedback_transform else tuplewrap
+        self._pre_backward_transform = (
+            pre_backward_transform if pre_backward_transform else tuplewrap
         )
 
     def clear(
-        self, clear_feedback: bool = True, submodules: bool = True, **kwargs
+        self, clear_backward: bool = True, submodules: bool = True, **kwargs
     ) -> None:
         r"""Clears the state of the layer.
 
         Args:
-            clear_feedback (bool, optional): if the feedback spikes should be cleared.
+            clear_backward (bool, optional): if the backward spikes should be cleared.
                 Defaults to ``True``.
             submodules (bool, optional): if the state of connections and neurons should
                 also be cleared. Defaults to ``True``.
             **kwargs (Any): keyword arguments passed to connection and neuron submodule
                 ``clear`` methods, if ``submodules`` is ``True``.
         """
-        if clear_feedback:
-            self.feedfwd_spikes = None
-            self.feedback_spikes = None
+        if clear_backward:
+            self.forward_spikes = None
+            self.backward_spikes = None
 
         if submodules:
             for connection in self.connections_:
@@ -1224,13 +1225,13 @@ class RecurrentSerial(Layer):
         )
 
     @property
-    def feedfwd_connection(self) -> Connection:
+    def forward_connection(self) -> Connection:
         r"""Registered feedforward connection.
 
         Returns:
             Connection: registered feedforward connection.
         """
-        return self.get_connection(self.__feedfwd_connection_name)
+        return self.get_connection(self.__forward_connection_name)
 
     @property
     def lateral_connection(self) -> Connection:
@@ -1242,40 +1243,40 @@ class RecurrentSerial(Layer):
         return self.get_connection(self.__lateral_connection_name)
 
     @property
-    def feedback_connection(self) -> Connection:
-        r"""Registered feedback connection.
+    def backward_connection(self) -> Connection:
+        r"""Registered backward connection.
 
         Returns:
-            Connection: registered feedback connection.
+            Connection: registered backward connection.
         """
-        return self.get_connection(self.__feedback_connection_name)
+        return self.get_connection(self.__backward_connection_name)
 
     @property
-    def feedfwd_neuron(self) -> Neuron:
+    def forward_neuron(self) -> Neuron:
         r"""Registered feedforward neuron.
 
         Returns:
             Neuron: registered feedforward neuron.
         """
-        return self.get_neuron(self.__feedfwd_neuron_name)
+        return self.get_neuron(self.__forward_neuron_name)
 
     @property
-    def feedback_neuron(self) -> Neuron:
-        r"""Registered feedback neuron.
+    def backward_neuron(self) -> Neuron:
+        r"""Registered backward neuron.
 
         Returns:
-            Neuron: registered feedback neuron.
+            Neuron: registered backward neuron.
         """
-        return self.get_neuron(self.__feedback_neuron_name)
+        return self.get_neuron(self.__backward_neuron_name)
 
     @property
-    def feedfwd_synapse(self) -> Synapse:
+    def forward_synapse(self) -> Synapse:
         r"""Registered feedforward synapse.
 
         Returns:
             Synapse: registered feedforward connection's synapse.
         """
-        return self.get_connection(self.__feedfwd_connection_name).synapse
+        return self.get_connection(self.__forward_connection_name).synapse
 
     @property
     def lateral_synapse(self) -> Synapse:
@@ -1287,22 +1288,22 @@ class RecurrentSerial(Layer):
         return self.get_connection(self.__lateral_connection_name).synapse
 
     @property
-    def feedback_synapse(self) -> Synapse:
-        r"""Registered feedback synapse.
+    def backward_synapse(self) -> Synapse:
+        r"""Registered backward synapse.
 
         Returns:
-            Synapse: registered feedback connection's synapse.
+            Synapse: registered backward connection's synapse.
         """
-        return self.get_connection(self.__feedback_connection_name).synapse
+        return self.get_connection(self.__backward_connection_name).synapse
 
     @property
-    def feedfwd_updater(self) -> Updater:
+    def forward_updater(self) -> Updater:
         r"""Registered feedforward updater.
 
         Returns:
             Updater: registered feedforward connection's updater.
         """
-        return self.get_connection(self.__feedfwd_connection_name).updater
+        return self.get_connection(self.__forward_connection_name).updater
 
     @property
     def lateral_updater(self) -> Updater | None:
@@ -1314,22 +1315,22 @@ class RecurrentSerial(Layer):
         return self.get_connection(self.__lateral_connection_name).updater
 
     @property
-    def feedback_updater(self) -> Updater | None:
-        r"""Registered feedback updater.
+    def backward_updater(self) -> Updater | None:
+        r"""Registered backward updater.
 
         Returns:
-            Updater: registered feedback connection's updater.
+            Updater: registered backward connection's updater.
         """
-        return self.get_connection(self.__feedback_connection_name).updater
+        return self.get_connection(self.__backward_connection_name).updater
 
     @property
-    def feedfwd_cell(self) -> Cell:
+    def forward_cell(self) -> Cell:
         r"""Registered feedforward cell.
 
         Returns:
             Cell: registered feedforward cell.
         """
-        return self.get_cell(self.__feedfwd_connection_name, self.__feedfwd_neuron_name)
+        return self.get_cell(self.__forward_connection_name, self.__forward_neuron_name)
 
     @property
     def lateral_cell(self) -> Cell | None:
@@ -1337,26 +1338,26 @@ class RecurrentSerial(Layer):
 
         Returns:
             Cell: registered lateral cell, if constructed with
-            ``trainable_feedback``, otherwise ``None``.
+            ``trainable_backward``, otherwise ``None``.
         """
         if self.__lateral_connection_name in self.cells_:
             return self.get_cell(
-                self.__lateral_connection_name, self.__feedback_neuron_name
+                self.__lateral_connection_name, self.__backward_neuron_name
             )
         else:
             return None
 
     @property
-    def feedback_cell(self) -> Cell | None:
-        r"""Registered feedback cell.
+    def backward_cell(self) -> Cell | None:
+        r"""Registered backward cell.
 
         Returns:
-            Cell: registered feedback cell, if constructed with
-            ``trainable_feedback``, otherwise ``None``.
+            Cell: registered backward cell, if constructed with
+            ``trainable_backward``, otherwise ``None``.
         """
-        if self.__feedback_connection_name in self.cells_:
+        if self.__backward_connection_name in self.cells_:
             return self.get_cell(
-                self.__feedback_connection_name, self.__feedfwd_neuron_name
+                self.__backward_connection_name, self.__forward_neuron_name
             )
         else:
             return None
@@ -1368,7 +1369,7 @@ class RecurrentSerial(Layer):
     ) -> dict[str, torch.Tensor]:
         r"""Connection logic between connection outputs and neuron inputs.
 
-        This implements the forward logic of the feedback serial topology. The
+        This implements the forward logic of the backward serial topology. The
         ``transform`` is applied to the result of the connection before being passed to the neuron. If
         not specified, it is assumed to be identity.
 
@@ -1380,11 +1381,11 @@ class RecurrentSerial(Layer):
         """
 
         return {
-            self.__feedfwd_neuron_name: self._feedfwd_transform(
-                inputs[self.__feedfwd_connection_name]
+            self.__forward_neuron_name: self._forward_transform(
+                inputs[self.__forward_connection_name]
             )
-            + self._feedback_transform(inputs[self.__feedback_connection_name]),
-            self.__feedback_neuron_name: self._lateral_transform(
+            + self._backward_transform(inputs[self.__backward_connection_name]),
+            self.__backward_neuron_name: self._lateral_transform(
                 inputs[self.__lateral_connection_name]
             ),
         }
@@ -1393,12 +1394,12 @@ class RecurrentSerial(Layer):
         self,
         *inputs: torch.Tensor,
         lateral_connection_args: Sequence[torch.Tensor] | None = None,
-        feedback_connection_args: Sequence[torch.Tensor] | None = None,
-        feedfwd_connection_kwargs: dict[str, Any] | None = None,
+        backward_connection_args: Sequence[torch.Tensor] | None = None,
+        forward_connection_kwargs: dict[str, Any] | None = None,
         lateral_connection_kwargs: dict[str, Any] | None = None,
-        feedback_connection_kwargs: dict[str, Any] | None = None,
-        feedfwd_neuron_kwargs: dict[str, Any] | None = None,
-        feedback_neuron_kwargs: dict[str, Any] | None = None,
+        backward_connection_kwargs: dict[str, Any] | None = None,
+        forward_neuron_kwargs: dict[str, Any] | None = None,
+        backward_neuron_kwargs: dict[str, Any] | None = None,
         capture_intermediate: bool = False,
         **kwargs,
     ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
@@ -1409,23 +1410,23 @@ class RecurrentSerial(Layer):
             lateral_connection_args (Sequence[torch.Tensor] | None, optional): additional
                 positional arguments for lateral connection's forward call.
                 Defaults to ``None``.
-            feedback_connection_args (Sequence[torch.Tensor] | None, optional): additional
-                positional arguments for feedback connection's forward call.
+            backward_connection_args (Sequence[torch.Tensor] | None, optional): additional
+                positional arguments for backward connection's forward call.
                 Defaults to ``None``.
-            feedfwd_connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+            forward_connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
                 arguments for the feedforward  connection's forward call.
                 Defaults to ``None``.
             lateral_connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
                 arguments for the lateral connection's forward call.
                 Defaults to ``None``.
-            feedback_connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
-                arguments for the feedback connection's forward call.
+            backward_connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments for the backward connection's forward call.
                 Defaults to ``None``.
-            feedfwd_neuron_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+            forward_neuron_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
                 arguments for the feedforward neuron's forward call.
                 Defaults to ``None``.
-            feedback_neuron_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
-                arguments for the feedback neuron's forward call.
+            backward_neuron_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments for the backward neuron's forward call.
                 Defaults to ``None``.
             capture_intermediate (bool, optional): if output from the connections should
                 also be returned. Defaults to ``False``.
@@ -1433,21 +1434,21 @@ class RecurrentSerial(Layer):
 
         Returns:
             tuple[torch.Tensor, torch.Tensor] | tuple[tuple[torch.Tensor, torch.Tensor], dict[str, torch.Tensor]]: tuple
-            of output from the feedforward and feedback neurons, in that order. If
+            of output from the feedforward and backward neurons, in that order. If
             ``capture_intermediate``, this is the first element of a tuple, the second
             being the outputs from the connections, as a dictionary of connection names
             to their corresponding outputs.
 
         Note:
             On the first input, zero-valued tensors are given as input for calculating
-            feedback.
+            backward.
         """
         # wrap non-empty dictionaries
         ckw = (
             {}
             | (
-                {self.__feedfwd_connection_name: feedfwd_connection_kwargs}
-                if feedfwd_connection_kwargs
+                {self.__forward_connection_name: forward_connection_kwargs}
+                if forward_connection_kwargs
                 else {}
             )
             | (
@@ -1456,48 +1457,48 @@ class RecurrentSerial(Layer):
                 else {}
             )
             | (
-                {self.__feedback_connection_name: feedback_connection_kwargs}
-                if feedback_connection_kwargs
+                {self.__backward_connection_name: backward_connection_kwargs}
+                if backward_connection_kwargs
                 else {}
             )
         )
         nkw = (
             {}
             | (
-                {self.__feedfwd_neuron_name: feedfwd_neuron_kwargs}
-                if feedfwd_neuron_kwargs
+                {self.__forward_neuron_name: forward_neuron_kwargs}
+                if forward_neuron_kwargs
                 else {}
             )
             | (
-                {self.__feedback_neuron_name: feedback_neuron_kwargs}
-                if feedback_neuron_kwargs
+                {self.__backward_neuron_name: backward_neuron_kwargs}
+                if backward_neuron_kwargs
                 else {}
             )
         )
 
         # set recurrent spikes
-        if self.feedfwd_spikes is None:
-            self.feedfwd_spikes = torch.zeros_like(
-                self.get_neuron(self.__feedfwd_neuron_name).spike
+        if self.forward_spikes is None:
+            self.forward_spikes = torch.zeros_like(
+                self.get_neuron(self.__forward_neuron_name).spike
             )
-        if self.feedback_spikes is None:
-            self.feedback_spikes = torch.zeros_like(
-                self.get_neuron(self.__feedback_neuron_name).spike
+        if self.backward_spikes is None:
+            self.backward_spikes = torch.zeros_like(
+                self.get_neuron(self.__backward_neuron_name).spike
             )
 
         # call parent forward
         res = Layer.forward(
             self,
             {
-                self.__feedfwd_connection_name: inputs,
+                self.__forward_connection_name: inputs,
                 self.__lateral_connection_name: self._pre_lateral_transform(
-                    self.feedfwd_spikes
+                    self.forward_spikes
                 )
                 + (tuple(lateral_connection_args) if lateral_connection_args else ()),
-                self.__feedback_connection_name: self._pre_feedback_transform(
-                    self.feedback_spikes
+                self.__backward_connection_name: self._pre_backward_transform(
+                    self.backward_spikes
                 )
-                + (tuple(feedback_connection_args) if feedback_connection_args else ()),
+                + (tuple(backward_connection_args) if backward_connection_args else ()),
             },
             connection_kwargs=ckw,
             neuron_kwargs=nkw,
@@ -1506,20 +1507,20 @@ class RecurrentSerial(Layer):
         )
 
         # update recurrent spikes
-        self.feedfwd_spikes = self.get_neuron(self.__feedfwd_neuron_name).spike
-        self.feedback_spikes = self.get_neuron(self.__feedback_neuron_name).spike
+        self.forward_spikes = self.get_neuron(self.__forward_neuron_name).spike
+        self.backward_spikes = self.get_neuron(self.__backward_neuron_name).spike
 
         # unpack to sensible output
         if capture_intermediate:
             return (
                 (
-                    res[0][self.__feedfwd_neuron_name],
-                    res[0][self.__feedback_neuron_name],
+                    res[0][self.__forward_neuron_name],
+                    res[0][self.__backward_neuron_name],
                 ),
                 res[1],
             )
         else:
             return (
-                res[0][self.__feedfwd_neuron_name],
-                res[0][self.__feedback_neuron_name],
+                res[0][self.__forward_neuron_name],
+                res[0][self.__backward_neuron_name],
             )

@@ -14,7 +14,7 @@ labelv = 0.625
 labelh = 0.03
 
 # light mode
-fn = "qif_slope_field_light.png"
+fn = "qif-slope-field-light.png"
 
 qif_slopefield = plot_slope_field(
     lambda t, v: (v - vrest) * (v - vcrit), (0, 1), (vmin, vmax), color="black"
@@ -44,7 +44,7 @@ P = qif_slopefield + vrest_line + vrest_label + vcrit_line + vcrit_label
 P.save(fn, dpi=saveres)
 
 # dark mode
-fn = "qif_slope_field_dark.png"
+fn = "qif-slope-field-dark.png"
 
 qif_slopefield = plot_slope_field(
     lambda t, v: (v - vrest) * (v - vcrit),
@@ -93,7 +93,7 @@ labelh = 0.03 * (hmax - hmin)
 labelv = 0.0
 
 # light mode
-fn = "lif_slope_field_light.png"
+fn = "lif-slope-field-light.png"
 
 lif_slopefield = plot_slope_field(
     lambda t, v: -(v - vrest), (hmin, hmax), (vmin, vmax), color="black"
@@ -113,7 +113,7 @@ P = lif_slopefield + vrest_line + vrest_label
 P.save(fn, dpi=saveres)
 
 # dark mode
-fn = "lif_slope_field_dark.png"
+fn = "lif-slope-field-dark.png"
 
 lif_slopefield = plot_slope_field(
     lambda t, v: -(v - vrest),
@@ -155,8 +155,8 @@ labelh = 0.03 * (hmax - hmin)
 labelv = 0.625 * ((vmax - vmin) / 20)
 
 # light mode
-fn1 = "eif_slope_field_d1_light.png"
-fn2 = "eif_slope_field_d2_light.png"
+fn1 = "eif-slope-field-d1-light.png"
+fn2 = "eif-slope-field-d2-light.png"
 
 eif_slopefield_d1 = plot_slope_field(
     lambda t, v: -(v - vrest) + D1 * exp((v - vt) / D1),
@@ -199,8 +199,8 @@ P1.save(fn1, dpi=saveres)
 P2.save(fn2, dpi=saveres)
 
 # dark mode
-fn1 = "eif_slope_field_d1_dark.png"
-fn2 = "eif_slope_field_d2_dark.png"
+fn1 = "eif-slope-field-d1-dark.png"
+fn2 = "eif-slope-field-d2-dark.png"
 
 eif_slopefield_d1 = plot_slope_field(
     lambda t, v: -(v - vrest) + D1 * exp((v - vt) / D1),

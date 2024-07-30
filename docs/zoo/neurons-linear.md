@@ -29,14 +29,14 @@ $$V_m(t) \leftarrow V_\text{reset}$$
 This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or "biologically defined reset rules". This is equivalent to the [GLIF{sub}`1`](https://www.nature.com/articles/s41467-017-02717-4) (generalized leaky integrate-and-fire) model. Without presynaptic current, the membrane
 voltage decays back towards the rest voltage with rate in inverse proportion to the membrane time constant.
 
-```{image} ../images/plots/lif_slope_field_light.png
+```{image} ../images/plots/lif-slope-field-light.png
 :alt: Linear Integrate-and-Fire Slope Field of Memrane Voltage
 :class: only-light
 :scale: 30 %
 :align: center
 ```
 
-```{image} ../images/plots/lif_slope_field_dark.png
+```{image} ../images/plots/lif-slope-field-dark.png
 :alt: Linear Integrate-and-Fire Slope Field of Memrane Voltage
 :class: only-dark
 :scale: 30 %
@@ -70,7 +70,7 @@ $$
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§1.3)](https://neuronaldynamics.epfl.ch/online/Ch1.S3.html)
-2. [ISBN:9780262548083](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)
+2. [ISBN:9780262548083](https://mitpress.ublish.com/ebook/modeling-neural-circuits-made-simple-with-python-preview/12788/Cover)
 3. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
 
 ## Adaptive Leaky Integrate-and-Fire (ALIF)
@@ -121,7 +121,7 @@ This model uses the underlying dynamics of the leaky integrate-and-fire neuron, 
 ### References
 1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
 2. [DOI:10.1038/s41467-020-17236-y](https://www.nature.com/articles/s41467-020-17236-y)
-3. [Allen Institute GLIF Whitepaper](http://web.archive.org/web/20230428012128/https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf)
+3. [Allen Institute GLIF Whitepaper](https://community.brain-map.org/uploads/short-url/8Q1u3ecpUDRHIuCXF05cAd6PEeE.pdf)
 
 
 ## Generalized Leaky Integrate-and-Fire 1 (GLIF{sub}`1`)
@@ -176,7 +176,7 @@ Also called "leaky integrate-and-fire with biologically defined reset rules (LIF
 
 ### References
 1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
-2. [Allen Institute GLIF Whitepaper](http://web.archive.org/web/20230428012128/https://help.brain-map.org/download/attachments/8323525/glifmodels.pdf)
+2. [Allen Institute GLIF Whitepaper](https://community.brain-map.org/uploads/short-url/8Q1u3ecpUDRHIuCXF05cAd6PEeE.pdf)
 
 ## Generalized Leaky Integrate-and-Fire 3 (GLIF{sub}`3`)
 ```{admonition} Work In Progress

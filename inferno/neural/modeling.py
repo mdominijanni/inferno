@@ -252,8 +252,8 @@ class Updater(Module):
     The added parameters are all set as properties which return an
     :py:class:`Accumulator` corresponding to that parameter. Care must be taken to
     avoid naming collisions, although the number of attributes in ``Updater`` not in
-    ``Module`` are small. See the methods :py:meth:`_get_`, :py:meth:`_set_`, and
-    :py:meth:`_del_` for more information.
+    ``Module`` are small. See the methods :py:meth:`_getacc_`, :py:meth:`_setacc_`, and
+    :py:meth:`_delacc_` for more information.
 
     When a ``reduction`` is not specified, the default from
     :py:attr:`Accumulator.reduction` is used.
