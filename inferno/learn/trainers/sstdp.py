@@ -124,19 +124,47 @@ class MSTDPET(IndependentCellTrainer):
         [z_\text{post}(t + \Delta t) + z_\text{pre}(t + \Delta t)]
         \Delta t
 
-    Where:
-
     .. math::
         \begin{align*}
             z_\text{post}(t + \Delta t) &= z_\text{post}(t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
             + \frac{x_\text{pre}(t)}{\tau_z}\left[t = t_\text{post}^f\right] \\
             z_\text{pre}(t + \Delta t) &= z_\text{pre}(t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
-            + \frac{x_\text{post}(t)}{\tau_z}\left[t = t_\text{pre}^f\right] \\
-            x_\text{pre}(t) &= x_\text{pre}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{pre}}\right)
-            + \eta_\text{post}\left[t = t_\text{pre}^f\right] \\
-            x_\text{post}(t) &= x_\text{post}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{post}}\right)
-            + \eta_\text{pre}\left[t = t_\text{post}^f\right]
+            + \frac{x_\text{post}(t)}{\tau_z}\left[t = t_\text{pre}^f\right]
         \end{align*}
+
+    When ``trace_mode = "cumulative"``:
+
+    .. math::
+        \begin{align*}
+            x_\text{pre}(t) = x_\text{pre}(t - \Delta t)
+            \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right) +
+            \eta_\text{post} \left[t = t_\text{pre}^f\right] \\
+            x_\text{post}(t) = x_\text{post}(t - \Delta t)
+            \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right) +
+            \eta_\text{pre} \left[t = t_\text{post}^f\right]
+        \end{align*}
+
+    When ``trace_mode = "nearest"``:
+
+    .. math::
+        \begin{align*}
+            x_\text{pre}(t) &=
+            \begin{cases}
+                \eta_\text{post} & t = t_\text{pre}^f \\
+                x_\text{pre}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right)
+                & t \neq t_\text{pre}^f
+            \end{cases} \\
+            x_\text{post}(t) &=
+            \begin{cases}
+                \eta_\text{pre} & t = t_\text{post}^f \\
+                x_\text{post}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right)
+                & t \neq t_\text{post}^f
+            \end{cases}
+        \end{align*}
+
+    Where:
 
     Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent
     spike from neuron :math:`n`, respectively.
@@ -218,6 +246,7 @@ class MSTDPET(IndependentCellTrainer):
         tc_pre: float,
         tc_eligibility: float,
         interp_tolerance: float = 0.0,
+        trace_mode: Literal["cumulative", "nearest"] = "cumulative",
         batch_reduction: (
             Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
         ) = None,
@@ -234,6 +263,9 @@ class MSTDPET(IndependentCellTrainer):
         self.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
         self.tc_eligibility = argtest.gt("tc_eligibility", tc_eligibility, 0, float)
         self.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
+        self.trace = argtest.oneof(
+            "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
+        )
         self.batchreduce = batch_reduction if batch_reduction else torch.sum
 
     def _build_cell_state(self, **kwargs) -> Module:
@@ -253,6 +285,7 @@ class MSTDPET(IndependentCellTrainer):
         tc_pre = kwargs.get("tc_pre", self.tc_pre)
         tc_eligibility = kwargs.get("tc_eligibility", self.tc_eligibility)
         interp_tolerance = kwargs.get("interp_tolerance", self.tolerance)
+        trace_mode = kwargs.get("trace_mode", self.trace)
         batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
 
         state.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -262,6 +295,19 @@ class MSTDPET(IndependentCellTrainer):
         state.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
         state.tc_eligibility = argtest.gt("tc_eligibility", tc_eligibility, 0, float)
         state.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
+        state.tracemode = argtest.oneof(
+            "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
+        )
+        match state.tracemode:
+            case "cumulative":
+                state.tracecls = CumulativeTraceReducer
+            case "nearest":
+                state.tracecls = NearestTraceReducer
+            case "_":
+                raise RuntimeError(
+                    f"an invalid trace mode of '{state.tracemode}' has been set, "
+                    "expected one of: 'cumulative', 'nearest'"
+                )
         state.batchreduce = (
             batch_reduction if (batch_reduction is not None) else torch.sum
         )
@@ -291,11 +337,10 @@ class MSTDPET(IndependentCellTrainer):
             scale (float): scaling term for both the postsynaptic and presynaptic updates.
             interp_tolerance (float): maximum difference in time from an observation
                 to treat as co-occurring.
+            trace_mode (Literal["cumulative", "nearest"]): method to use for
+                calculating spike traces.
             batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
                 function to reduce updates over the batch dimension.
-            field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-                function to reduce updates over the receptive field dimension,
-                :py:func:`torch.sum` when ``None``. Defaults to ``None``.
 
         Returns:
             IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
@@ -320,7 +365,7 @@ class MSTDPET(IndependentCellTrainer):
             "trace_post",
             "neuron.spike",
             StateMonitor.partialconstructor(
-                reducer=CumulativeTraceReducer(
+                reducer=state.tracecls(
                     state.step_time,
                     state.tc_post,
                     amplitude=abs(state.lr_pre),
@@ -361,7 +406,7 @@ class MSTDPET(IndependentCellTrainer):
             "trace_pre",
             "connection.synspike",
             StateMonitor.partialconstructor(
-                reducer=CumulativeTraceReducer(
+                reducer=state.tracecls(
                     state.step_time,
                     state.tc_pre,
                     amplitude=abs(state.lr_post),

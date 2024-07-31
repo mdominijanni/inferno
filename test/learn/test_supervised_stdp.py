@@ -227,6 +227,7 @@ class TestMSTDPET:
         base_tc_pre = random.uniform(15.0, 30.0)
         base_tc_eligibility = random.uniform(15.0, 30.0)
         base_interp_tolerance = random.uniform(1e-7, 1e-5)
+        base_trace_mode = "nearest"
         base_batch_reduction = torch.amax
 
         override_step_time = random.uniform(0.7, 1.4)
@@ -236,6 +237,7 @@ class TestMSTDPET:
         override_tc_pre = random.uniform(15.0, 30.0)
         override_tc_eligibility = random.uniform(15.0, 30.0)
         override_interp_tolerance = random.uniform(1e-7, 1e-5)
+        override_trace_mode = "cumulative"
         override_batch_reduction = torch.amin
 
         updater = MSTDPET(
@@ -246,6 +248,7 @@ class TestMSTDPET:
             tc_pre=base_tc_pre,
             tc_eligibility=base_tc_eligibility,
             interp_tolerance=base_interp_tolerance,
+            trace_mode=base_trace_mode,
             batch_reduction=base_batch_reduction,
         )
 
@@ -259,6 +262,7 @@ class TestMSTDPET:
             tc_pre=override_tc_pre,
             tc_eligibility=override_tc_eligibility,
             interp_tolerance=override_interp_tolerance,
+            trace_mode=override_trace_mode,
             batch_reduction=override_batch_reduction,
         )
 
@@ -269,6 +273,7 @@ class TestMSTDPET:
         assert override_tc_pre == unit.state.tc_pre
         assert override_tc_eligibility == unit.state.tc_eligibility
         assert override_interp_tolerance == unit.state.tolerance
+        assert override_trace_mode == unit.state.tracemode
         assert override_batch_reduction == unit.state.batchreduce
 
     def test_default_passthrough(self):
@@ -286,6 +291,7 @@ class TestMSTDPET:
         base_tc_pre = random.uniform(15.0, 30.0)
         base_tc_eligibility = random.uniform(15.0, 30.0)
         base_interp_tolerance = random.uniform(1e-7, 1e-5)
+        base_trace_mode = "nearest"
         base_batch_reduction = torch.amax
 
         updater = MSTDPET(
@@ -296,6 +302,7 @@ class TestMSTDPET:
             tc_pre=base_tc_pre,
             tc_eligibility=base_tc_eligibility,
             interp_tolerance=base_interp_tolerance,
+            trace_mode=base_trace_mode,
             batch_reduction=base_batch_reduction,
         )
 
@@ -308,6 +315,7 @@ class TestMSTDPET:
         assert base_tc_pre == unit.state.tc_pre
         assert base_tc_eligibility == unit.state.tc_eligibility
         assert base_interp_tolerance == unit.state.tolerance
+        assert base_batch_reduction == unit.state.batchreduce
         assert base_batch_reduction == unit.state.batchreduce
 
     @pytest.mark.parametrize(
@@ -559,7 +567,6 @@ class TestMSTDP:
         assert base_trace_mode == unit.state.tracemode
         assert base_batch_reduction == unit.state.batchreduce
 
-    #x@pytest.mark.skip(reason="work in progress")
     @pytest.mark.parametrize(
         "kind",
         ("hebb", "anti", "ltp", "ltp"),
@@ -571,8 +578,7 @@ class TestMSTDP:
     def test_partial_update(self, kind, mode):
         # shape = randshape(1, 3, 3, 5)
         shape = (2, 2)
-        #batchsz = random.randint(2, 9)
-        batchsz = 3
+        batchsz = random.randint(2, 9)
         dt = random.uniform(0.7, 1.4)
         delay = random.randint(0, 2) * dt
 
