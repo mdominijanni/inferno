@@ -1030,7 +1030,7 @@ class Serial(Layer):
 
 
 class RecurrentSerial(Layer):
-    r"""Layer with a single feedforward connection and neuron group, and two feedback connections with a neuron group inbetween.
+    r"""Layer with a single feedforward connection and neuron group, and two feedback connections with a neuron group in-between.
 
     .. math::
         \begin{align*}
@@ -1053,21 +1053,16 @@ class RecurrentSerial(Layer):
             feedback neurons and applies it to the feedforward neurons.
         feedfwd_neuron (Neuron): module which generates output from the layer.
         feedback_neuron (Neuron): module which generates feedback spikes.
-        feedfwd_transform (OneToOne[torch.Tensor] | None, optional): function
-            to apply to feedforward connection output before passing into neurons.
-            Defaults to ``None``.
-        lateral_transform (OneToOne[torch.Tensor] | None, optional): function
-            to apply to lateral connection output before passing into neurons.
-            Defaults to ``None``.
-        feedback_transform (OneToOne[torch.Tensor] | None, optional): function
-            to apply to feedback connection output before passing into neurons.
-            Defaults to ``None``.
-        pre_lateral_transform (OneToMany[torch.Tensor] | None, optional): function
-            to apply to feedforward neuron output before passing into the lateral
-            connection. Defaults to ``None``.
-        pre_feedback_transform (OneToMany[torch.Tensor] | None, optional): function
-            to apply to feedback neuron output before passing into the feedback
-            connection. Defaults to ``None``.
+        feedfwd_out_transform (OneToOne[torch.Tensor] | None, optional): function
+            to apply to feedforward connection output. Defaults to ``None``.
+        lateral_out_transform (OneToOne[torch.Tensor] | None, optional): function
+            to apply to lateral connection output. Defaults to ``None``.
+        feedback_out_transform (OneToOne[torch.Tensor] | None, optional): function
+            to apply to feedback connection output. Defaults to ``None``.
+        lateral_in_transform (OneToMany[torch.Tensor] | None, optional): function
+            to apply to lateral connection input. Defaults to ``None``.
+        feedback_in_transform (OneToMany[torch.Tensor] | None, optional): function
+            to apply to feedback connection input. Defaults to ``None``.
         feedfwd_connection_name (str, optional): name for the feedforward
             connection in the layer. Defaults to ``"feedfwd"``.
         lateral_connection_name (str, optional): name for the lateral
@@ -1082,8 +1077,8 @@ class RecurrentSerial(Layer):
             trainable. Defaults to ``False``.
 
     Note:
-        When any of ``feedfwd_transform``, ``lateral_transform``, ``feedback_transform``,
-        or ``pre_feedback_transform`` is not specified, the identity function is used.
+        When any of ``feedfwd_out_transform``, ``lateral_out_transform``, ``feedback_out_transform``,
+        or ``feedback_in_transform`` is not specified, the identity function is used.
         Keyword arguments passed into `__call__`, other than those captured in
         :py:meth`forward` will be passed in.
 
@@ -1093,13 +1088,14 @@ class RecurrentSerial(Layer):
         objects.
 
     Note:
-        When any of ``feedfwd_transform``, ``lateral_transform``, ``feedback_transform``,
-        ``pre_lateral_transform``, or ``pre_feedback_transform`` is not specified, the
-        identity function is used (the latter two also wrapping the input in a tuple).
-        Keyword arguments passed into `__call__`, other than those captured in
-        :py:meth`forward` will be passed in. The ``pre_lateral_transform`` and
-        ``pre_feedback_transform`` functions are only applied to the spiking input from
-        the feedforward and feedback neurons respectively.
+        When any of ``feedfwd_out_transform``, ``lateral_out_transform``,
+        ``feedback_out_transform``, ``lateral_in_transform``,
+        or ``feedback_in_transform`` is not specified, the identity function is used
+        (the latter two also wrapping the input in a tuple). Keyword arguments passed
+        into `__call__`, other than those captured in :py:meth`forward` will be passed
+        in. The ``lateral_in_transform`` and ``feedback_in_transform`` functions are
+        only applied to the spiking input from the feedforward and feedback neurons
+        respectively.
     """
 
     def __init__(
@@ -1110,11 +1106,11 @@ class RecurrentSerial(Layer):
         feedfwd_neuron: Neuron,
         feedback_neuron: Neuron,
         *,
-        feedfwd_transform: OneToOne[torch.Tensor] | None = None,
-        lateral_transform: OneToOne[torch.Tensor] | None = None,
-        feedback_transform: OneToOne[torch.Tensor] | None = None,
-        pre_lateral_transform: OneToMany[torch.Tensor] | None = None,
-        pre_feedback_transform: OneToMany[torch.Tensor] | None = None,
+        feedfwd_out_transform: OneToOne[torch.Tensor] | None = None,
+        lateral_out_transform: OneToOne[torch.Tensor] | None = None,
+        feedback_out_transform: OneToOne[torch.Tensor] | None = None,
+        lateral_in_transform: OneToMany[torch.Tensor] | None = None,
+        feedback_in_transform: OneToMany[torch.Tensor] | None = None,
         feedfwd_connection_name: str = "feedfwd",
         lateral_connection_name: str = "lateral",
         feedback_connection_name: str = "feedback",
@@ -1126,9 +1122,7 @@ class RecurrentSerial(Layer):
         Layer.__init__(self)
 
         # register feedback tensor
-        self.register_buffer("recurrent_spikes", None)
-        # self.register_buffer("feedfwd_spikes", None)
-        # self.register_buffer("feedback_spikes", None)
+        self.register_buffer("feedback_spikes", None)
 
         # set names
         self.__feedfwd_connection_name = feedfwd_connection_name
@@ -1159,16 +1153,16 @@ class RecurrentSerial(Layer):
             )
 
         # set transformations used
-        self._feedfwd_transform = feedfwd_transform if feedfwd_transform else identity
-        self._lateral_transform = lateral_transform if lateral_transform else identity
-        self._feedback_transform = (
-            feedback_transform if feedback_transform else identity
+        self._feedfwd_out_transform = feedfwd_out_transform if feedfwd_out_transform else identity
+        self._lateral_out_transform = lateral_out_transform if lateral_out_transform else identity
+        self._feedback_out_transform = (
+            feedback_out_transform if feedback_out_transform else identity
         )
-        self._pre_lateral_transform = (
-            pre_lateral_transform if pre_lateral_transform else tuplewrap
+        self._lateral_in_transform = (
+            lateral_in_transform if lateral_in_transform else tuplewrap
         )
-        self._pre_feedback_transform = (
-            pre_feedback_transform if pre_feedback_transform else tuplewrap
+        self._feedback_in_transform = (
+            feedback_in_transform if feedback_in_transform else tuplewrap
         )
 
     def clear(
@@ -1185,8 +1179,6 @@ class RecurrentSerial(Layer):
                 ``clear`` methods, if ``submodules`` is ``True``.
         """
         if clear_feedback:
-            self.recurrent_spikes = None
-            self.feedfwd_spikes = None
             self.feedback_spikes = None
 
         if submodules:
@@ -1384,14 +1376,14 @@ class RecurrentSerial(Layer):
         """
         if forward_pass:
             return {
-                self.__feedfwd_neuron_name: self._feedfwd_transform(
+                self.__feedfwd_neuron_name: self._feedfwd_out_transform(
                     inputs[self.__feedfwd_connection_name]
                 )
-                + self._feedback_transform(inputs[self.__feedback_connection_name])
+                + self._feedback_out_transform(inputs[self.__feedback_connection_name])
             }
         else:
             return {
-                self.__feedback_neuron_name: self._lateral_transform(
+                self.__feedback_neuron_name: self._lateral_out_transform(
                     inputs[self.__lateral_connection_name]
                 )
             }
@@ -1483,8 +1475,8 @@ class RecurrentSerial(Layer):
         )
 
         # set recurrent spikes
-        if self.recurrent_spikes is None:
-            self.recurrent_spikes = torch.zeros_like(
+        if self.feedback_spikes is None:
+            self.feedback_spikes = torch.zeros_like(
                 self.get_neuron(self.__feedback_neuron_name).spike
             )
 
@@ -1493,8 +1485,8 @@ class RecurrentSerial(Layer):
             self,
             {
                 self.__feedfwd_connection_name: inputs,
-                self.__feedback_connection_name: self._pre_feedback_transform(
-                    self.recurrent_spikes
+                self.__feedback_connection_name: self._feedback_in_transform(
+                    self.feedback_spikes
                 )
                 + (tuple(feedback_connection_args) if feedback_connection_args else ()),
             },
@@ -1509,7 +1501,7 @@ class RecurrentSerial(Layer):
         bres = Layer.forward(
             self,
             {
-                self.__lateral_connection_name: self._pre_lateral_transform(
+                self.__lateral_connection_name: self._lateral_in_transform(
                     self.get_neuron(self.__feedfwd_neuron_name).spike
                 )
                 + (tuple(lateral_connection_args) if lateral_connection_args else ()),
@@ -1522,7 +1514,7 @@ class RecurrentSerial(Layer):
         )
 
         # update recurrent spikes
-        self.recurrent_spikes = self.get_neuron(self.__feedback_neuron_name).spike
+        self.feedback_spikes = self.get_neuron(self.__feedback_neuron_name).spike
 
         # unpack to sensible output
         if capture_intermediate:
