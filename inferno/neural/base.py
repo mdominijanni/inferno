@@ -226,8 +226,8 @@ class InfernoNeuron(BatchShapeMixin, Neuron):
     r"""Base class for neurons included in the Inferno library.
 
     Unlike :py:class:`Neuron` which only defines an interface, this uses
-    :py:class:`BatchShapeMixin` to work with the included mixins to automatically
-    reshape batch-size dependent buffers and parameters.
+    :py:class:`~inferno.neural.mixins.BatchShapeMixin` to work with the included mixins
+    to automatically reshape batch-size dependent buffers and parameters.
 
     It also assumes :py:meth:`clear` will be implemented so it can be called without
     arguments and will, by default, not reset state which should persist, such as
@@ -591,7 +591,8 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
     r"""Base class for representing synapses included in the Inferno library.
 
     Unlike :py:class:`Neuron` which only defines an interface, this uses
-    :py:class:`BatchShapeMixin` and :py:class:`DelayedMixin` to work with the included
+    :py:class:`~inferno.neural.mixins.BatchShapeMixin` and
+    :py:class:`~inferno.neural.mixins.DelayedMixin` to work with the included
     mixins to automatically reshape batch-size dependent buffers and parameters, and to
     manage recorded history for delay-stored buffers and parameters.
 
@@ -601,8 +602,8 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         step_time (float): length of a simulation time step, in :math:`ms`.
         delay (float): maximum supported delay, in :math:`ms`.
         batch_size (int): size of the batch dimension.
-        inplace (bool): if write operations on :py:class:`RecordTensor` attributes
-            should be performed with in-place operations.
+        inplace (bool): if write operations on :py:class:`~inferno.RecordTensor`
+            attributes should be performed with in-place operations.
     """
 
     def __init__(
@@ -849,8 +850,9 @@ class Connection(Updatable, Module, ABC):
             int: current batch size.
 
         Note:
-            This calls the property :py:attr:`Synapse.batchsz` on :py:attr:`synapse`,
-            assuming the connection has no batch size dependent state.
+            This calls the property :py:attr:`~inferno.neural.Synapse.batchsz` on
+            :py:attr:`synapse`, assuming the connection has no batch size dependent
+            state.
         """
         return self.synapse.batchsz
 
@@ -869,8 +871,9 @@ class Connection(Updatable, Module, ABC):
             float: current length of the simulation time step.
 
         Note:
-            This calls the property :py:attr:`~synapse.dt` on :py:attr:`synapse`,
-            assuming the connection has no step time dependent state.
+            This calls the property :py:attr:`~inferno.neural.Synapse.dt` on
+            :py:attr:`synapse`, assuming the connection has no step time dependent
+            state.
         """
         return self.synapse.dt
 
@@ -1082,7 +1085,7 @@ class Connection(Updatable, Module, ABC):
             torch.Tensor: delay-offset synaptic currents.
 
         Note:
-            If :py:attr:`delayed` is None, this should return the most recent synaptic
+            If :py:attr:`delayedby` is None, this should return the most recent synaptic
             currents, otherwise it should return those indexed by :py:attr:`delay`.
         """
         if self.delayedby:

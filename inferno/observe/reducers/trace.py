@@ -268,7 +268,7 @@ class ScaledNearestTraceReducer(FoldReducer):
 
     Note:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
-        :py:data:`torch.bool`.
+        ``torch.bool``.
     """
 
     def __init__(
@@ -377,7 +377,7 @@ class ScaledCumulativeTraceReducer(FoldReducer):
 
     Note:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
-        :py:data:`torch.bool`.
+        ``torch.bool``.
     """
 
     def __init__(

@@ -8,7 +8,7 @@ with open("docs/conf.gen.py", "r") as file:
 
 # write config file with autosummary generation
 with open("docs/conf.py", "w") as file:
-    file.writelines(conf + ["", "autosummary_generate = True", ""])
+    file.writelines(conf + ["\nautosummary_generate = True"])
 
 # change relative directory to docs
 os.chdir(os.path.join(".", "docs"))
@@ -24,7 +24,7 @@ osrsplit = lambda S, L: (  # noqa:E731;
         *(sstr if not idx else [sstr] + L for idx, sstr in enumerate(os.path.split(S)))
     )
 )
-for root, dirs, files in os.walk(os.path.join("..", "docs-override")):
+for root, dirs, files in os.walk(os.path.join(".", "_override")):
     if files:
         for file in files:
             print(f"overwriting with: {os.path.join(root, file)}")
@@ -38,4 +38,4 @@ os.chdir(os.path.join(".."))
 
 # overwrite config file without autosummary generation
 with open("docs/conf.py", "w") as file:
-    file.writelines(conf + ["", "autosummary_generate = False", ""])
+    file.writelines(conf + ["\nautosummary_generate = False"])

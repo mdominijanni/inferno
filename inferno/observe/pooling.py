@@ -44,7 +44,7 @@ class Observable:
         r"""Access to monitors added to this observable.
 
         Monitors available via this property need not have been added to a pool, but
-        must have been added or retrieved through :py:meth:`monitor`.
+        must have been added or retrieved through :py:meth:`add_monitor`.
 
         Monitors are never explicitly removed, but if all references to them are
         destroyed, then they will no longer be accessible.

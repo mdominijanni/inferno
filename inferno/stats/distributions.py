@@ -43,7 +43,7 @@ class Poisson(DiscreteDistribution):
 
         Returns:
             dict[str, torch.Tensor | bool | None]: argument name and if it is valid,
-            returned as a tensor of dtype :py:data:`torch.bool` if a non-scalar tensor
+            returned as a tensor of dtype ``torch.bool`` if a non-scalar tensor
             is given, None if not given.
 
         Note:
@@ -221,7 +221,7 @@ class Normal(ContinuousDistribution):
 
         Returns:
             dict[str, torch.Tensor | bool | None]: argument name and if it is valid,
-            returned as a tensor of dtype :py:data:`torch.bool` if a non-scalar tensor
+            returned as a tensor of dtype ``torch.bool`` if a non-scalar tensor
             is given, ``None`` if not given.
         """
         return {
@@ -473,7 +473,7 @@ class LogNormal(ContinuousDistribution):
 
         Returns:
             dict[str, torch.Tensor | bool | None]: argument name and if it is valid,
-            returned as a tensor of dtype :py:data:`torch.bool` if a non-scalar tensor
+            returned as a tensor of dtype ``torch.bool`` if a non-scalar tensor
             is given, ``None`` if not given.
         """
         return {

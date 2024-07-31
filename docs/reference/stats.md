@@ -15,3 +15,14 @@
     Normal
     Poisson
 ```
+
+## Base Classes
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    Distribution
+    DiscreteDistribution
+    ContinuousDistribution
+```

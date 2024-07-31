@@ -265,8 +265,8 @@ class ShapedTensor:
     r"""Tensor attribute with constrained shape.
 
     Some states for ``value`` are ignored for convenience. If it is ``None``,
-    an instance of either :py:class:`~torch.nn.UninitializedBuffer` or
-    :py:class:`~torch.nn.UninitializedParameter`, or has no elements and only a single
+    an instance of either :py:class:`~torch.nn.parameter.UninitializedBuffer` or
+    :py:class:`~torch.nn.parameter.UninitializedParameter`, or has no elements and only a single
     dimension (such as if created with ``torch.empty(0)``).
 
     When ``value`` is ``None``, a registered buffer is created, otherwise a parameter
@@ -1146,7 +1146,7 @@ class RecordTensor(ShapedTensor):
     def dt(self) -> float:
         r"""Length of time between recorded observations.
 
-        In the same units as :py:attr:`self.duration`.
+        In the same units as :py:attr:`duration`.
 
         If the step time is changed such that the record size needs to change, a
         :py:meth:`reconstrain` operation will be performed automatically, preserving
@@ -1182,7 +1182,7 @@ class RecordTensor(ShapedTensor):
     def duration(self) -> float:
         r"""Length of time over which prior values are stored.
 
-        In the same units as :py:attr:`self.dt`.
+        In the same units as :py:attr:`dt`.
 
         If the step time is changed such that the record size needs to change, a
         :py:meth:`reconstrain` operation will be performed automatically, preserving
@@ -1357,8 +1357,9 @@ class RecordTensor(ShapedTensor):
             if possible.
 
         Note:
-            If after assigning the new value, :py:attr:`ignored` is ``True``, the
-            pointer will be moved to ``0``, otherwise it will not be changed.
+            If after assigning the new value, :py:attr:`~ShapedTensor.ignored` is
+            ``True``, the pointer will be moved to ``0``, otherwise it will not be
+            changed.
         """
         return ShapedTensor.value.fget(self)  # type: ignore
 
@@ -1480,8 +1481,8 @@ class RecordTensor(ShapedTensor):
         r"""Deinitializes the storage tensor.
 
         This either assigns an empty tensor with shape ``[0]`` as the value or either
-        :py:class:`~torch.nn.UninitializedBuffer` or
-        :py:class:`~torch.nn.UninitializedParameter`. The device, data type, and
+        :py:class:`~torch.nn.parameter.UninitializedBuffer` or
+        :py:class:`~torch.nn.parameter.UninitializedParameter`. The device, data type, and
         gradient requirement will be preserved.
 
         If the storage tensor is already not initialized, it will still be reassigned.
@@ -1635,7 +1636,7 @@ class RecordTensor(ShapedTensor):
         Args:
             obs (torch.Tensor): observation to write.
             inplace (bool, optional): if the operation should be performed in-place
-                with :py:func:`torch.no_grad`. Defaults to ``False``.
+                with :py:class:`torch.no_grad`. Defaults to ``False``.
         """
         if self._ignore(self.__data):
             self.initialize(obs.shape, device=obs.device, fill=0)
@@ -1691,7 +1692,7 @@ class RecordTensor(ShapedTensor):
             offset (int, optional): number of steps before the pointer.
                 Defaults to ``0``.
             inplace (bool, optional): if the operation should be performed in-place
-                with :py:func:`torch.no_grad`. Defaults to ``False``.
+                with :py:class:`torch.no_grad`. Defaults to ``False``.
 
         Raises:
             RuntimeError: cannot write to uninitialized (ignored) storage.
@@ -1869,7 +1870,7 @@ class RecordTensor(ShapedTensor):
             forward (bool, optional): if the offset pointer indicates the index of the
                 first observation. Defaults to ``False``.
             inplace (bool, optional): if the operation should be performed in-place
-                with :py:func:`torch.no_grad`. Defaults to ``False``.
+                with :py:class:`torch.no_grad`. Defaults to ``False``.
 
         Raises:
             RuntimeError: cannot write to uninitialized (ignored) storage.
@@ -2011,7 +2012,7 @@ class RecordTensor(ShapedTensor):
 
         If ``time`` is a tensor, interpolation will be called regardless, and the time
         passed into the interpolation call will be set to either ``0`` or
-        :py:attr:`self.dt`. Interpolation results are then overwritten with exact values
+        :py:attr:`dt`. Interpolation results are then overwritten with exact values
         before returning.
 
         Args:
@@ -2178,7 +2179,7 @@ class RecordTensor(ShapedTensor):
 
         If ``time`` is a tensor, interpolation will be called regardless, and the time
         passed into the extrapolation call will be set to either ``0`` or
-        :py:attr:`self.dt`. Extrapolation results are then overwritten with exact values
+        :py:attr:`dt`. Extrapolation results are then overwritten with exact values
         before writing.
 
         The :py:class:`~torch.dtype` of elements inserted into the underlying storage
@@ -2197,7 +2198,7 @@ class RecordTensor(ShapedTensor):
             offset (int, optional): number of steps before the pointer.
                 Defaults to ``0``.
             inplace (bool, optional): if the operation should be performed in-place
-                with :py:func:`torch.no_grad`. Defaults to ``False``.
+                with :py:class:`torch.no_grad`. Defaults to ``False``.
             extrap_kwargs (dict[str, Any] | None, optional): dictionary of keyword
                 arguments to pass to ``extrap``. Defaults to ``None``.
 
@@ -2375,7 +2376,7 @@ class RecordTensor(ShapedTensor):
     ) -> torch.Tensor | nn.Parameter | None:
         r"""Add, edit, or remove a constraint.
 
-        Like :py:meth:`ShapeTensor.reconstrain`, except ``dim`` is modified
+        Like :py:meth:`ShapedTensor.reconstrain`, except ``dim`` is modified
         to account for the record dimension. Negative values of ``dim`` will have
         ``1`` subtracted from them.
 

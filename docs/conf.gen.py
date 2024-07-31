@@ -35,7 +35,7 @@ extensions = [
     "sphinx_toolbox.more_autosummary.column_widths",
 ]
 
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "_override"]
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/", None),

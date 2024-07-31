@@ -51,7 +51,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
     Note:
         When ``delay`` is None, no ``delay_`` parameter is created and altering the
-        maximum delay of :py:attr:`synapse` will have no effect. Setting to 0 will
+        maximum delay of :py:attr:`~Connection.synapse` will have no effect. Setting to 0 will
         create and register a ``delay_`` parameter but not use delays unless it is
         later changed.
 
@@ -281,7 +281,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
         Outputs are determined as the learned linear transformation applied to synaptic
         currents, after new input is applied to the synapse, then reshaped to match
-        :py:attr:`batched_outshape`.
+        :py:attr:`~Connection.batched_outshape`.
 
         Args:
             *inputs (torch.Tensor): inputs to the connection.
@@ -307,7 +307,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
         Note:
             ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
-            py:meth:`Synapse.forward` of :py:attr:`synapse`. Keyword arguments are
+            py:meth:`~Synapse.forward` of :py:attr:`~Connection.synapse`. Keyword arguments are
             also passed through.
         """
         # reshape inputs and perform synapse simulation
@@ -365,7 +365,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
     Note:
         When ``delay`` is None, no ``delay_`` parameter is created and altering the
-        maximum delay of :py:attr:`synapse` will have no effect. Setting to 0 will
+        maximum delay of :py:attr:`~Connection.synapse` will have no effect. Setting to 0 will
         create and register a ``delay_`` parameter but not use delays unless it is
         later changed.
 
@@ -582,7 +582,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
         Outputs are determined as the learned linear transformation applied to synaptic
         currents, after new input is applied to the synapse, then reshaped to match
-        :py:attr:`batched_outshape`.
+        :py:attr:`~Connection.batched_outshape`.
 
         Args:
             inputs (torch.Tensor): inputs to the connection.
@@ -607,7 +607,7 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
         Note:
             ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
-            py:meth:`Synapse.forward` of :py:attr:`synapse`. Keyword arguments are
+            py:meth:`~Synapse.forward` of :py:attr:`~Connection.synapse`. Keyword arguments are
             also passed through.
         """
         # reshape inputs and perform synapse simulation
@@ -919,7 +919,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
         Outputs are determined as the learned linear transformation applied to synaptic
         currents, after new input is applied to the synapse, then reshaped to match
-        :py:attr:`batched_outshape`.
+        :py:attr:`~Connection.batched_outshape`.
 
         Args:
             *inputs (torch.Tensor): inputs to the connection.
@@ -944,7 +944,7 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
         Note:
             ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
-            py:meth:`Synapse.forward` of :py:attr:`synapse`. Keyword arguments are
-            also passed through.
+            :py:meth:`~Synapse.forward` of :py:attr:`~Connection.synapse`.
+            Keyword arguments are also passed through.
         """
         return LinearDense.forward(self, *inputs, **kwargs)

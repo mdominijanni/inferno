@@ -18,7 +18,7 @@ class EventReducer(FoldReducer):
 
     Important:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
-        :py:data:`torch.bool`. The datatype returned by :py:meth:`fold` will be the
+        ``torch.bool``. The datatype returned by :py:meth:`fold` will be the
         same as that of the reducer itself.
     """
 

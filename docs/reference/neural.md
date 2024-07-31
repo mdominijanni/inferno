@@ -141,4 +141,8 @@
     connections.mixins.WeightMixin
     connections.mixins.WeightBiasMixin
     connections.mixins.WeightBiasDelayMixin
+    encoders.mixins.StepTimeMixin
+    encoders.mixins.StepMixin
+    encoders.mixins.RefractoryStepMixin
+    encoders.mixins.GeneratorMixin
 ```

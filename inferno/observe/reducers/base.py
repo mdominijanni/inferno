@@ -125,7 +125,7 @@ class RecordReducer(Reducer, ABC):
             Altering this property will reset the reducer.
 
         Note:
-            In the same units as :py:attr:`self.duration`.
+            In the same units as :py:attr:`duration`.
         """
         return self.__step_time
 
@@ -151,7 +151,7 @@ class RecordReducer(Reducer, ABC):
             Altering this property will reset the reducer.
 
         Note:
-            In the same units as :py:attr:`self.dt`.
+            In the same units as :py:attr:`dt`.
         """
         return self.__duration
 
@@ -322,7 +322,7 @@ class FoldReducer(RecordReducer, ABC):
 
             Where:
                 * :math:`S_0, \ldots` are the dimensions of each observation, given
-                  by :py:attr:`shape`.
+                  by the shape of the data.
                 * :math:`D` are the number of distinct observations to select.
 
         """

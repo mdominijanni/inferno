@@ -57,7 +57,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
     Note:
         When ``delay`` is ``None``, no ``delay_`` parameter is created and altering the
-        maximum delay of :py:attr:`synapse` will have no effect. Setting to 0 will
+        maximum delay of :py:attr:`~Connection.synapse` will have no effect. Setting to 0 will
         create and register a ``delay_`` parameter but not use delays unless it is
         later changed.
 
@@ -314,8 +314,8 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`W` is the input width.
 
         Note:
-            PyTorch's :py:meth:`~torch.nn.functional.fold` and
-            :py:meth:`~torch.nn.functional.unfold` are only implemented for floating
+            PyTorch's :py:func:`~torch.nn.functional.fold` and
+            :py:func:`~torch.nn.functional.unfold` are only implemented for floating
             point values. Intermediate casting to the same datatype as connection
             weights will be performed if required.
         """
@@ -387,8 +387,8 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 * :math:`W_\text{out}` is the output width.
 
         Note:
-            PyTorch's :py:meth:`~torch.nn.functional.fold` and
-            :py:meth:`~torch.nn.functional.unfold` are only implemented for floating
+            PyTorch's :py:func:`~torch.nn.functional.fold` and
+            :py:func:`~torch.nn.functional.unfold` are only implemented for floating
             point values. Intermediate casting to the same datatype as connection
             weights will be performed if required.
         """
@@ -516,7 +516,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
         Note:
             ``*inputs`` are reshaped using :py:meth:`like_synaptic` then passed to
-            py:meth:`Synapse.forward` of :py:attr:`synapse`. Keyword arguments are
+            py:meth:`Synapse.forward` of :py:attr:`~Connection.synapse`. Keyword arguments are
             also passed through.
 
         See Also:

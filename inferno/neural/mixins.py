@@ -4,7 +4,7 @@ import math
 
 
 class BatchMixin:
-    """Mixin for modules with batch-size dependent parameters or buffers.
+    r"""Mixin for modules with batch-size dependent parameters or buffers.
 
     Attributes which have are registered as constrained this way will have a constraint
     on their 0th dimension equal to the batch size placed.
@@ -20,7 +20,7 @@ class BatchMixin:
     def add_batched(self, *attr: str) -> None:
         r"""Add batch-dependent attributes.
 
-        Each attribute must specify the name of a :py:class:`ShapedTensor`.
+        Each attribute must specify the name of a :py:class:`~inferno.ShapedTensor`.
 
         Args:
             *attr (str): names of the attributes to set as batched.
@@ -58,7 +58,7 @@ class BatchMixin:
 
 
 class ShapeMixin(BatchMixin):
-    """Mixin for modules with a concept of shape.
+    r"""Mixin for modules with a concept of shape.
 
     This mixin does not provide options for altering shape, only storing the given
     shape and offering related properties.
@@ -98,7 +98,7 @@ class ShapeMixin(BatchMixin):
 
 
 class BatchShapeMixin(ShapeMixin, BatchMixin):
-    """Mixin for modules with a concept of shape and with batch-size dependencies.
+    r"""Mixin for modules with a concept of shape and with batch-size dependencies.
 
     Args:
         shape (tuple[int, ...] | int): shape of the group being represented,
@@ -122,7 +122,7 @@ class BatchShapeMixin(ShapeMixin, BatchMixin):
 
 
 class DelayedMixin:
-    """Mixin for modules with delay-record tensors with shared step time and duration.
+    r"""Mixin for modules with delay-record tensors with shared step time and duration.
 
     Attributes which have are registered as constrained this way will have a constraint
     on their final dimension equal to the computed record size.
@@ -132,7 +132,7 @@ class DelayedMixin:
         delay (float): length of time over which prior values are stored.
 
     Caution:
-        :py:class:`RecordTensor` attributes must be added as attributes prior to
+        :py:class:`~inferno.RecordTensor` attributes must be added as attributes prior to
         initialization.
     """
 
@@ -144,7 +144,7 @@ class DelayedMixin:
     def add_delayed(self, *attr: str) -> None:
         r"""Add delay-dependent attributes.
 
-        Each attribute must specify the name of a :py:class:`RecordTensor`.
+        Each attribute must specify the name of a :py:class:`~inferno.RecordTensor`.
 
         Args:
             *attr (str): names of the attributes to set as batched.

@@ -122,7 +122,7 @@ class TestRecurrentSerial:
             capture_intermediate=True,
         )
 
-        assert torch.all(lateral_mon.peek() == 0)
+        assert torch.all(lateral_mon.peek() == feedfwd_neur.spike)
         assert torch.all(feedback_mon.peek() == 0)
 
     def test_forward(self):
@@ -158,7 +158,6 @@ class TestRecurrentSerial:
         feedback_mon = InputMonitor(PassthroughReducer(1.0), feedback_conn)
 
         feedfwd_in = None
-        lateral_in = inferno.zeros(feedfwd_neur.spike)
         feedback_in = inferno.zeros(feedback_neur.spike)
 
         for _ in range(random.randint(5, 12)):
@@ -175,7 +174,7 @@ class TestRecurrentSerial:
                 inferno.uniform(feedback_neur.spike, dtype=torch.float32) > 0.5
             )
 
-            _, res = layer(
+            L, res = layer(
                 feedfwd_in,
                 feedfwd_neuron_kwargs={"override": feedfwd_out},
                 feedback_neuron_kwargs={"override": feedback_out},
@@ -183,12 +182,11 @@ class TestRecurrentSerial:
             )
 
             assert torch.all(feedfwd_mon.peek() == feedfwd_in)
-            assert torch.all(lateral_mon.peek() == lateral_in)
+            assert torch.all(lateral_mon.peek() == feedfwd_out)
             assert torch.all(feedback_mon.peek() == feedback_in)
 
             assert torch.all(res["feedfwd"] == feedfwd_conn.forward(feedfwd_in))
-            assert torch.all(res["lateral"] == lateral_conn.forward(lateral_in))
+            assert torch.all(res["lateral"] == lateral_conn.forward(feedfwd_out))
             assert torch.all(res["feedback"] == feedback_conn.forward(feedback_in))
 
-            lateral_in = feedfwd_neur.spike
             feedback_in = feedback_neur.spike

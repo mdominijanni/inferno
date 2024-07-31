@@ -33,7 +33,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         spike_overbound (bool | None, optional): value to replace spikes out of bounds,
             uses values at observation limits if ``None``. Defaults to ``False``.
         batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
-        inplace (bool): if write operations on :py:class:`RecordTensor` attributes
+        inplace (bool): if write operations on :py:class:`~inferno.RecordTensor` attributes
             should be performed with in-place operations. Defaults to ``False``.
 
     See Also:
@@ -118,7 +118,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
                 bounds, uses values at observation limits if ``None``. Defaults to ``0.0``.
             spike_overbound (bool | None, optional): value to replace spikes out of
                 bounds, uses values at observation limits if ``None``. Defaults to ``False``.
-            inplace (bool): if write operations on :py:class:`RecordTensor` attributes
+            inplace (bool): if write operations on :py:class:`~inferno.RecordTensor` attributes
                 should be performed with in-place operations. Defaults to ``False``.
 
         Returns:
@@ -205,7 +205,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
         spike_overbound (bool | None, optional): value to replace spikes out of bounds,
             uses values at observation limits if ``None``. Defaults to ``False``.
         batch_size (int, optional): size of input batches for simulation. Defaults to ``1``.
-        inplace (bool): if write operations on :py:class:`RecordTensor` attributes
+        inplace (bool): if write operations on :py:class:`~inferno.RecordTensor` attributes
             should be performed with in-place operations. Defaults to ``False``.
 
     See Also:
@@ -281,7 +281,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
                 bounds, uses values at observation limits if ``None``. Defaults to ``0.0``.
             spike_overbound (bool | None, optional): value to replace spikes out of
                 bounds, uses values at observation limits if ``None``. Defaults to ``False``.
-            inplace (bool): if write operations on :py:class:`RecordTensor` attributes
+            inplace (bool): if write operations on :py:class:`~inferno.RecordTensor` attributes
                 should be performed with in-place operations. Defaults to ``False``.
 
         Returns:
@@ -326,7 +326,8 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
         Important:
             The first tensor of ``*inputs`` will represent the input spikes. Any
             subsequent tensors will be treated as injected current. These must be
-            broadcastable with :py:attr:`current`.
+            broadcastable with
+            :py:attr:`~inferno.neural.synapses.mixins.CurrentMixin.current`.
         """
         self.spike = inputs[0].bool()
         self.current = sum((inputs[0] * (self.spike_q / self.dt), *inputs[1:]))
