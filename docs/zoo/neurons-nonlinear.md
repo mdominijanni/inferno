@@ -112,8 +112,8 @@ incorporates a linear adaptive current depeendent upon output spikes and the mem
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
-2. [DOI:10.3390/brainsci12070863](https://www.mdpi.com/2076-3425/12/7/863/pdf)
-3. [DOI:10.7551/mitpress/2526.001.0001 (See §8.1.4)](https://www.izhikevich.org/publications/dsn.pdf)
+1. [DOI:10.3390/brainsci12070863](https://www.mdpi.com/2076-3425/12/7/863/pdf)
+1. [DOI:10.7551/mitpress/2526.001.0001 (See §8.1.4)](https://www.izhikevich.org/publications/dsn.pdf)
 
 ## Exponential Integrate-and-Fire (EIF)
 ### Formulation
@@ -211,7 +211,7 @@ $V_T = -50$, $\Delta_T = 2$, and $\tau_m=1 \text{ ms}$ over a time of $1 \text{ 
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
-2. [ISBN:9780262548083](https://mitpress.ublish.com/ebook/modeling-neural-circuits-made-simple-with-python-preview/12788/Cover)
+1. [ISBN:9780262548083](https://mitpress.ublish.com/ebook/modeling-neural-circuits-made-simple-with-python-preview/12788/Cover)
 
 ## Adaptive Exponential Integrate-and-Fire (AdEx)
 ### Formulation
@@ -266,6 +266,6 @@ incorporates a linear adaptive current dependent upon output spikes and the memb
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
-2. [ISBN:9780262548083](https://mitpress.ublish.com/ebook/modeling-neural-circuits-made-simple-with-python-preview/12788/Cover)
-3. [DOI:10.4249/scholarpedia.8427](http://www.scholarpedia.org/article/Adaptive_exponential_integrate-and-fire_model)
-4. [DOI:10.1523/JNEUROSCI.23-37-11628.2003](https://www.jneurosci.org/content/23/37/11628.long)
+1. [ISBN:9780262548083](https://mitpress.ublish.com/ebook/modeling-neural-circuits-made-simple-with-python-preview/12788/Cover)
+1. [DOI:10.4249/scholarpedia.8427](http://www.scholarpedia.org/article/Adaptive_exponential_integrate-and-fire_model)
+1. [DOI:10.1523/JNEUROSCI.23-37-11628.2003](https://www.jneurosci.org/content/23/37/11628.long)

@@ -35,7 +35,7 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
-2. [DOI:10.1152/jn.00686.2005](https://journals.physiology.org/doi/full/10.1152/jn.00686.2005)
+1. [DOI:10.1152/jn.00686.2005](https://journals.physiology.org/doi/full/10.1152/jn.00686.2005)
 
 ## Adaptive Current, Linear Spike-Dependent
 ```{admonition} Work In Progress
@@ -67,7 +67,7 @@ $$w_k(t) \leftarrow w_k(t) + b_k$$
 
 ### References
 1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
-2. [Allen Institute GLIF Whitepaper](https://community.brain-map.org/uploads/short-url/8Q1u3ecpUDRHIuCXF05cAd6PEeE.pdf)
+1. [Allen Institute GLIF Whitepaper](https://community.brain-map.org/uploads/short-url/8Q1u3ecpUDRHIuCXF05cAd6PEeE.pdf)
 
 ## Adaptive Threshold, Linear Voltage-Dependent
 ### Formulation
@@ -102,7 +102,7 @@ $$\theta_k(t) \leftarrow \max(\theta_k(t), \theta_\text{reset})$$
 
 ### References
 1. [DOI:10.1162/neco.2008.12-07-680](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2954058/)
-2. [DOI:10.1162/NECO_a_00196](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3513351/)
+1. [DOI:10.1162/NECO_a_00196](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3513351/)
 
 ## Adaptive Threshold, Linear Spike-Dependent
 ### Formulation
@@ -133,6 +133,6 @@ $$\theta_k(t) \leftarrow \theta_k(t) + d_k$$
 
 ### References
 1. [arXiv:1803.09574](https://arxiv.org/abs/1803.09574)
-2. [DOI:10.1038/s41467-021-24427-8](https://www.nature.com/articles/s41467-021-24427-8)
-3. [DOI:10.1152/jn.00234.2019](https://journals.physiology.org/doi/full/10.1152/jn.00234.2019)
-4. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
+1. [DOI:10.1038/s41467-021-24427-8](https://www.nature.com/articles/s41467-021-24427-8)
+1. [DOI:10.1152/jn.00234.2019](https://journals.physiology.org/doi/full/10.1152/jn.00234.2019)
+1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)

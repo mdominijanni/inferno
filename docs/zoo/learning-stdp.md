@@ -64,6 +64,25 @@ With STDP, each time a presynaptic spike is received or a postsynaptic spike is 
 Plot of the weight update curve using STDP. Values along the $x$-axis indicate how long
 after the most recent presynaptic spike did a postsynaptic spike occur, $t^f_\text{post} - t^f_\text{pre}$. Values along the $y$-axis indicate the direction and magnitude of the corresponding weight update. Plotted with $A_\text{post} = 1.0$, $A_\text{pre} = -0.5$, $\tau_\text{pre} = 20 \text{ms}$, and $\tau_\text{post} = 30 \text{ms}$.
 
+```{image} ../images/plots/stdp-mode-light.png
+:alt: Different Modes of Spike-Timing Dependent Plasticity
+:class: only-light
+:width: 30em
+:align: center
+```
+
+```{image} ../images/plots/stdp-mode-dark.png
+:alt: Different Modes of Spike-Timing Dependent Plasticity
+:class: only-dark
+:width: 30em
+:align: center
+```
+
+Plot of weight update curves using STDP with the different combinations of signs for learning rates. Note that LTP refers to long-term potentiation and LTD refers to long-term depression. Classical STDP follows the Hebbian curve. Dopaminergic STDP (DA-STDP) follows the "LTP-Only" curve.
+
+### References
+1. [DOI:10.1017/CBO9781107447615 (§19.2](https://neuronaldynamics.epfl.ch/online/Ch19.S2.html)
+
 ## Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)
 ```{admonition} Work In Progress
 This is not yet implemented and the documentation is incomplete. The information presented may be incorrect.
@@ -144,6 +163,7 @@ This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except sca
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
 
 ## Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)
+### Formulation
 $$
 \begin{align*}
     \frac{dw}{dt} &= \gamma \, r(t) \, z(t) \\
@@ -188,6 +208,9 @@ $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true 
 *Note:*
 
 Where $\gamma$ is positive, training is Hebbian when $A_+$ is positive and $A_-$ is negative. When the sign of $A_+$ or $A_-$ is positive, the weights are potentiated, and when negative, the weights are depressed. The former is applied on a postsynaptic spike and the latter on a presynaptic spike.
+
+### Description
+This is equivalent to [MSTDP](#modulated-spike-timing-dependent-plasticity-mstdp) except the trace of what would have been the update term, the eligibility, is used instead. This has an exponential smoothing effect on the value of the weights. See the [Florian STDP](<examples/florian-stdp:Florian STDP>) example for a visual comparison.
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)

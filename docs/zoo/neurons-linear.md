@@ -69,8 +69,8 @@ $$
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§1.3)](https://neuronaldynamics.epfl.ch/online/Ch1.S3.html)
-2. [ISBN:9780262548083](https://mitpress.ublish.com/ebook/modeling-neural-circuits-made-simple-with-python-preview/12788/Cover)
-3. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
+1. [ISBN:9780262548083](https://mitpress.ublish.com/ebook/modeling-neural-circuits-made-simple-with-python-preview/12788/Cover)
+1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
 
 ## Adaptive Leaky Integrate-and-Fire (ALIF)
 ### Formulation
@@ -119,8 +119,8 @@ This model uses the underlying dynamics of the leaky integrate-and-fire neuron, 
 
 ### References
 1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
-2. [DOI:10.1038/s41467-020-17236-y](https://www.nature.com/articles/s41467-020-17236-y)
-3. [Allen Institute GLIF Whitepaper](https://community.brain-map.org/uploads/short-url/8Q1u3ecpUDRHIuCXF05cAd6PEeE.pdf)
+1. [DOI:10.1038/s41467-020-17236-y](https://www.nature.com/articles/s41467-020-17236-y)
+1. [Allen Institute GLIF Whitepaper](https://community.brain-map.org/uploads/short-url/8Q1u3ecpUDRHIuCXF05cAd6PEeE.pdf)
 
 
 ## Generalized Leaky Integrate-and-Fire 1 (GLIF{sub}`1`)
@@ -175,7 +175,7 @@ Also called "leaky integrate-and-fire with biologically defined reset rules (LIF
 
 ### References
 1. [DOI:10.1038/s41467-017-02717-4](https://www.nature.com/articles/s41467-017-02717-4)
-2. [Allen Institute GLIF Whitepaper](https://community.brain-map.org/uploads/short-url/8Q1u3ecpUDRHIuCXF05cAd6PEeE.pdf)
+1. [Allen Institute GLIF Whitepaper](https://community.brain-map.org/uploads/short-url/8Q1u3ecpUDRHIuCXF05cAd6PEeE.pdf)
 
 ## Generalized Leaky Integrate-and-Fire 3 (GLIF{sub}`3`)
 ```{admonition} Work In Progress
