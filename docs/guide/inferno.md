@@ -1,34 +1,18 @@
 # About Inferno
 
 ## Architecture
-```{image} ../images/diagrams/inferno-ccarch-light.svg
-:alt: Composition of Inferno components.
-:class: only-light
-:scale: 50 %
-:align: center
-```
-
-```{image} ../images/diagrams/inferno-ccarch-dark.svg
-:alt: Composition of Inferno components.
-:class: only-dark
-:scale: 50 %
-:align: center
-```
-
-Composition of the different neural and modelling components as defined by the Inferno library.
-
 ### Neural Components
 ```{image} ../images/diagrams/inferno-nseq-light.svg
 :alt: Inputs and outputs for each type of neural component.
 :class: only-light
-:scale: 50 %
+:width: 30em
 :align: center
 ```
 
 ```{image} ../images/diagrams/inferno-nseq-dark.svg
 :alt: Inputs and outputs for each type of neural component.
 :class: only-dark
-:scale: 50 %
+:width: 30em
 :align: center
 ```
 Sequence of a forward pass and the data type of the tensors for the inputs and outputs for each neural component. Here, "inj" are optional injected values (which are only supported on some types of synapses) and "*mapping*" is the internal, trainable mapping for a given connection.
@@ -49,11 +33,11 @@ Connections are responsible for taking multiple inputs from one or more groups o
 
 Inferno's modelling components do not strictly represent any specific part of the biological neural networks that spiking neural networks seek to model, but instead are used to aid the modelling itself.
 
-### Layers
+#### Layers
 
 Layers manage the wiring between one or more connections that receive input from outside the layer, and one or more groups of neurons that take input from those connections. Each layer is represented by Inferno with the {py:class}`~inferno.neural.Layer` class. Inferno uses these to manage the triggers for monitors ({py:class}`~inferno.observe.Monitor`) that record the state varibles used for training connections.
 
-### Cells
+#### Cells
 
 Cells are a bundling of a connection and a group of neurons which takes its input from the connection output. Each cell is represented by Inferno with the {py:class}`~inferno.neural.Cell` class. Each `Cell` is tied to the `Layer` which created it and is used for training connections. Specifically, it is used to register a connection with training methods that presynaptic and postsynaptic spikes as the basis for parameter updates.
 
@@ -64,3 +48,20 @@ Updaters are used to update the trainable parameters of a component. Each update
 #### Accumulators
 
 Accumulators are used to store and apply the updates for a specific trainable parameter. Each accumulator is represented by Inferno with the {py:class}`~inferno.neural.Accumulator` class. They are created and managed by the `Updater` for a given object. Each `Accumulator` can not only apply multiple updates, but it can control how multiple updates are reduced together, and how potentiative and depressive updates are applied to keep the updatable parameter within a desired range.
+
+### Component Composition
+```{image} ../images/diagrams/inferno-ccarch-light.svg
+:alt: Composition of Inferno components.
+:class: only-light
+:width: 30em
+:align: center
+```
+
+```{image} ../images/diagrams/inferno-ccarch-dark.svg
+:alt: Composition of Inferno components.
+:class: only-dark
+:width: 30em
+:align: center
+```
+
+Composition of the different neural and modelling components as defined by the Inferno library.

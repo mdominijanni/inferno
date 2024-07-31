@@ -32,14 +32,14 @@ voltage decays back towards the rest voltage with rate in inverse proportion to 
 ```{image} ../images/plots/lif-slope-field-light.png
 :alt: Linear Integrate-and-Fire Slope Field of Memrane Voltage
 :class: only-light
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
 ```{image} ../images/plots/lif-slope-field-dark.png
 :alt: Linear Integrate-and-Fire Slope Field of Memrane Voltage
 :class: only-dark
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 

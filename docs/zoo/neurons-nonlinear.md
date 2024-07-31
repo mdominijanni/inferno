@@ -38,14 +38,14 @@ is controlled by $a$.
 ```{image} ../images/plots/qif-slope-field-light.png
 :alt: Quadratic Integrate-and-Fire Slope Field of Memrane Voltage
 :class: only-light
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
 ```{image} ../images/plots/qif-slope-field-dark.png
 :alt: Quadratic Integrate-and-Fire Slope Field of Memrane Voltage
 :class: only-dark
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
@@ -178,14 +178,14 @@ are used to illustrate its effect.
 ```{image} ../images/plots/eif-slope-field-d1-light.png
 :alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 1$)
 :class: only-light
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
 ```{image} ../images/plots/eif-slope-field-d1-dark.png
 :alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 1$)
 :class: only-dark
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
@@ -195,14 +195,14 @@ $V_T = -50$, $\Delta_T = 1$, and $\tau_m=1 \text{ ms}$ over a time of $1 \text{ 
 ```{image} ../images/plots/eif-slope-field-d2-light.png
 :alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 2$)
 :class: only-light
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
 ```{image} ../images/plots/eif-slope-field-d2-dark.png
 :alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 2$)
 :class: only-dark
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 

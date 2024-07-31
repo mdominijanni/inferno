@@ -9,7 +9,7 @@ At this time, installation is only supported via pip. Future support for install
 ```
 pip install inferno-ai[torch]
 ```
-Installation with the "torch" flag will install PyTorch 2.3.1 and the corresponding version of TorchVision.
+Installation with the "torch" flag will install PyTorch 2.4.0 and the corresponding version of TorchVision.
 
 ### Without PyTorch
 ```

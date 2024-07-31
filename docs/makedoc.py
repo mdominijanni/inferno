@@ -44,7 +44,7 @@ with open("conf.py", "w") as file:
         conf
         + [
             "\nautosummary_generate = False",
-            "\nnitpicky = True",
+            "\nnitpicky = False",
         ]
     )
 

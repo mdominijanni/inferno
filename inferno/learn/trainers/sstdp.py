@@ -541,23 +541,41 @@ class MSTDP(IndependentCellTrainer):
     r"""Modulated spike-timing dependent plasticity trainer.
 
     .. math::
-        w(t + \Delta t) - w(t) = \gamma  r(t + \Delta t) \left(\eta_\text{post} x_\text{pre}(t)
+        w(t + \Delta t) - w(t) = \gamma  r(t + \Delta t) \left(x_\text{pre}(t)
         \bigl[t = t^f_\text{post}\bigr] +
-        \eta_\text{pre} x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr] \right)
+        x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr] \right)
 
     When ``trace_mode = "cumulative"``:
 
     .. math::
-        x_n(t) = x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) + \left[t = t_n^f\right]
+        \begin{align*}
+            x_\text{pre}(t) = x_\text{pre}(t - \Delta t)
+            \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right) +
+            \eta_\text{post} \left[t = t_\text{pre}^f\right] \\
+            x_\text{post}(t) = x_\text{post}(t - \Delta t)
+            \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right) +
+            \eta_\text{pre} \left[t = t_\text{post}^f\right]
+        \end{align*}
 
     When ``trace_mode = "nearest"``:
 
     .. math::
-        x_n(t) =
-        \begin{cases}
-            1 & t = t_n^f \\
-            x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) & t \neq t_n^f
-        \end{cases}
+        \begin{align*}
+            x_\text{pre}(t) &=
+            \begin{cases}
+                \eta_\text{post} & t = t_\text{pre}^f \\
+                x_\text{pre}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right)
+                & t \neq t_\text{pre}^f
+            \end{cases} \\
+            x_\text{post}(t) &=
+            \begin{cases}
+                \eta_\text{pre} & t = t_\text{post}^f \\
+                x_\text{post}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right)
+                & t \neq t_\text{post}^f
+            \end{cases}
+        \end{align*}
 
     Where:
 

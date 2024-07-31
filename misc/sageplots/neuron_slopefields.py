@@ -4,6 +4,7 @@ from sage.all import plot_slope_field, line, text, exp
 # Global Setting
 dispres = 300
 saveres = 300
+hspace = 0.1  # amount of original single image by which to space
 
 # QIF Slope Field
 vrest = -60
@@ -155,6 +156,7 @@ labelh = 0.03 * (hmax - hmin)
 labelv = 0.625 * ((vmax - vmin) / 20)
 
 # light mode
+fn = "eif-slope-field-light.png"
 fn1 = "eif-slope-field-d1-light.png"
 fn2 = "eif-slope-field-d2-light.png"
 
@@ -198,7 +200,22 @@ P2 = eif_slopefield_d2 + vrest_line + vrest_label + vt_line + vt_label
 P1.save(fn1, dpi=saveres)
 P2.save(fn2, dpi=saveres)
 
+P1 = Image.open(fn1)
+P2 = Image.open(fn2)
+
+w = P1.size[0] + P2.size[0]
+h = max(P1.size[1], P2.size[1])
+s = int((w // 2) * hspace)
+w += s
+
+P = Image.new("RGBA", (w, h))
+P.paste(P1, (0, 0))
+P.paste(P2, (P1.size[0] + s, 0))
+
+P.save(fn)
+
 # dark mode
+fn = "eif-slope-field-dark.png"
 fn1 = "eif-slope-field-d1-dark.png"
 fn2 = "eif-slope-field-d2-dark.png"
 
@@ -255,3 +272,17 @@ Image.alpha_composite(Image.new("RGB", P1.size, "black").convert("RGBA"), P1).sa
 P2.save(fn2, dpi=saveres)
 P2 = Image.open(fn2)
 Image.alpha_composite(Image.new("RGB", P2.size, "black").convert("RGBA"), P2).save(fn2)
+
+P1 = Image.open(fn1)
+P2 = Image.open(fn2)
+
+w = P1.size[0] + P2.size[0]
+h = max(P1.size[1], P2.size[1])
+s = int((w // 2) * hspace)
+w += s
+
+P = Image.new("RGBA", (w, h))
+P.paste(P1, (0, 0))
+P.paste(P2, (P1.size[0] + s, 0))
+
+P.save(fn)

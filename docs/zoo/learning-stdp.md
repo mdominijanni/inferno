@@ -8,20 +8,27 @@ Although STDP methods are phrased as originally described, Inferno tries to intr
 ## Spike-Timing Dependent Plasticity (STDP)
 ### Formulation
 $$
-\frac{dw}{dt} = A_+ x_\text{pre}(t) \sum_{\mathcal{F}_\text{post}} \delta(t - t^f_\text{post}) - A_- x_\text{post}(t) \sum_{\mathcal{F}_\text{pre}} \delta(t - t^f_\text{pre})
+\begin{align*}
+    \frac{dw}{dt} &= x_\text{pre}(t) \sum_{\mathcal{F}_\text{post}} \delta(t - t^f_\text{post}) + x_\text{post}(t) \sum_{\mathcal{F}_\text{pre}} \delta(t - t^f_\text{pre}) \\
+    \tau_\text{pre} \frac{dx_\text{pre}}{dt} &= -x_\text{pre} + A_+ \sum_f \delta (t - t_\text{pre}^f) \\
+    \tau_\text{post} \frac{dx_\text{post}}{dt} &= -x_\text{post} + A_- \sum_f \delta (t - t_\text{post}^f)
+\end{align*}
 $$
 
-*With solution:*
+*With solutions:*
 
 $$
-w(t + \Delta t) - w(t) = A_+ x_\text{pre}(t) \left[ t = t^f_\text{post} \right]
-- A_- x_\text{post}(t) \left[ t = t^f_\text{pre} \right]
+\begin{align*}
+    w(t + \Delta t) - w(t) &= x_\text{pre}(t) \left[ t = t^f_\text{post} \right] + x_\text{post}(t) \left[ t = t^f_\text{pre} \right] \\
+    x_\text{pre}(t) &= x_\text{pre}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{pre}}\right) + A_+ \left[t = t^f_\text{pre}\right] \\
+    x_\text{post}(t) &= x_\text{post}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{post}}\right) + A_- \left[t = t^f_\text{post}\right]
+\end{align*}
 $$
 
 *Where:*
 - $w$, connection weight
-- $A_+$, update magnitude for Hebbian long-term potentiation (LTP)
-- $A_-$, update magnitude for Hebbian long-term depression (LTD)
+- $A_+$, learning rate for Hebbian long-term potentiation (LTP)
+- $A_-$, learning rate for Hebbian long-term depression (LTD)
 - $x_\text{post}$, [spike trace](<guide/concepts:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
 - $x_\text{pre}$, [spike trace](<guide/concepts:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
@@ -32,6 +39,10 @@ $$
 - $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
 
 $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
+
+*Note:*
+
+Training is Hebbian when $A_+$ is positive and $A_-$ is negative. When the sign of $A_+$ or $A_-$ is positive, the weights are potentiated, and when negative, the weights are depressed. The former is applied on a postsynaptic spike and the latter on a presynaptic spike.
 
 ## Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)
 ```{admonition} Work In Progress
@@ -89,8 +100,8 @@ $$
 - $w$, connection weight
 - $\gamma$, common learning rate
 - $r$, reward term
-- $A_+$, update magnitude for Hebbian long-term potentiation (LTP)
-- $A_-$, update magnitude for Hebbian long-term depression (LTD)
+- $A_+$, learning rate for Hebbian long-term potentiation (LTP)
+- $A_-$, learning rate for Hebbian long-term depression (LTD)
 - $P^-$, [spike trace](<guide/concepts:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
 - $P^+$, [spike trace](<guide/concepts:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
@@ -101,6 +112,10 @@ $$
 - $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
 
 $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
+
+*Note:*
+
+Where $\gamma$ is positive, training is Hebbian when $A_+$ is positive and $A_-$ is negative. When the sign of $A_+$ or $A_-$ is positive, the weights are potentiated, and when negative, the weights are depressed. The former is applied on a postsynaptic spike and the latter on a presynaptic spike.
 
 ### Description
 This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent reward term $r$. Note that $P^+$ is the presynaptic spike trace and $P^-$ is the postsynaptic spike trace (calculated as [cumulative trace](<guide/concepts:Cumulative Trace>)).
@@ -137,8 +152,8 @@ $$
 - $z$, eligibility trace
 - $\gamma$, common learning rate
 - $r$, reward term
-- $A_+$, update magnitude for Hebbian long-term potentiation (LTP)
-- $A_-$, update magnitude for Hebbian long-term depression (LTD)
+- $A_+$, learning rate for Hebbian long-term potentiation (LTP)
+- $A_-$, learning rate for Hebbian long-term depression (LTD)
 - $P^-$, [spike trace](<guide/concepts:Trace>) of postsynaptic (output) spikes, parameterized by time constant $\tau_\text{post}$
 - $P^+$, [spike trace](<guide/concepts:Trace>) of presynaptic (input) spikes, parameterized by time constant $\tau_\text{pre}$
 - $t$ is the current time step
@@ -149,6 +164,10 @@ $$
 - $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
 
 $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
+
+*Note:*
+
+Where $\gamma$ is positive, training is Hebbian when $A_+$ is positive and $A_-$ is negative. When the sign of $A_+$ or $A_-$ is positive, the weights are potentiated, and when negative, the weights are depressed. The former is applied on a postsynaptic spike and the latter on a presynaptic spike.
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
