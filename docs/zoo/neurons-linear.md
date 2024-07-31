@@ -26,18 +26,17 @@ $$V_m(t) \leftarrow V_\text{reset}$$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$
 
 ### Description
-This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or "biologically defined reset rules". This is equivalent to the [GLIF{sub}`1`](https://www.nature.com/articles/s41467-017-02717-4) (generalized leaky integrate-and-fire) model. Without presynaptic current, the membrane
-voltage decays back towards the rest voltage with rate in inverse proportion to the membrane time constant.
+This model defines the basic leaky integrate-and-fire neuron, without the incorporation of adaptive behavior or "biologically defined reset rules". This is equivalent to the [GLIF{sub}`1`](https://www.nature.com/articles/s41467-017-02717-4) (generalized leaky integrate-and-fire) model. Without presynaptic current, the membrane voltage decays back towards the rest voltage with rate in inverse proportion to the membrane time constant.
 
 ```{image} ../images/plots/lif-slope-field-light.png
-:alt: Linear Integrate-and-Fire Slope Field of Memrane Voltage
+:alt: Linear Integrate-and-Fire Slope Field of Membrane Voltage
 :class: only-light
 :width: 30em
 :align: center
 ```
 
 ```{image} ../images/plots/lif-slope-field-dark.png
-:alt: Linear Integrate-and-Fire Slope Field of Memrane Voltage
+:alt: Linear Integrate-and-Fire Slope Field of Membrane Voltage
 :class: only-dark
 :width: 30em
 :align: center

@@ -36,14 +36,14 @@ the membrane voltage is attracted towards $V_\text{rest}$ and repelled away from
 is controlled by $a$.
 
 ```{image} ../images/plots/qif-slope-field-light.png
-:alt: Quadratic Integrate-and-Fire Slope Field of Memrane Voltage
+:alt: Quadratic Integrate-and-Fire Slope Field of Membrane Voltage
 :class: only-light
 :width: 30em
 :align: center
 ```
 
 ```{image} ../images/plots/qif-slope-field-dark.png
-:alt: Quadratic Integrate-and-Fire Slope Field of Memrane Voltage
+:alt: Quadratic Integrate-and-Fire Slope Field of Membrane Voltage
 :class: only-dark
 :width: 30em
 :align: center
@@ -176,14 +176,14 @@ rest voltage $V_R$ in relation to the membrane voltage. Examples with two $\Delt
 are used to illustrate its effect.
 
 ```{image} ../images/plots/eif-slope-field-d1-light.png
-:alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 1$)
+:alt: Exponential Integrate-and-Fire Slope Field of Membrane Voltage ($\Delta_T = 1$)
 :class: only-light
 :width: 30em
 :align: center
 ```
 
 ```{image} ../images/plots/eif-slope-field-d1-dark.png
-:alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 1$)
+:alt: Exponential Integrate-and-Fire Slope Field of Membrane Voltage ($\Delta_T = 1$)
 :class: only-dark
 :width: 30em
 :align: center
@@ -193,14 +193,14 @@ Membrane voltage with no input current. Plotted with values $V_R = -60\text{ mV}
 $V_T = -50$, $\Delta_T = 1$, and $\tau_m=1 \text{ ms}$ over a time of $1 \text{ ms}$.
 
 ```{image} ../images/plots/eif-slope-field-d2-light.png
-:alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 2$)
+:alt: Exponential Integrate-and-Fire Slope Field of Membrane Voltage ($\Delta_T = 2$)
 :class: only-light
 :width: 30em
 :align: center
 ```
 
 ```{image} ../images/plots/eif-slope-field-d2-dark.png
-:alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 2$)
+:alt: Exponential Integrate-and-Fire Slope Field of Membrane Voltage ($\Delta_T = 2$)
 :class: only-dark
 :width: 30em
 :align: center

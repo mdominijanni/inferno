@@ -44,6 +44,26 @@ $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true 
 
 Training is Hebbian when $A_+$ is positive and $A_-$ is negative. When the sign of $A_+$ or $A_-$ is positive, the weights are potentiated, and when negative, the weights are depressed. The former is applied on a postsynaptic spike and the latter on a presynaptic spike.
 
+### Description
+With STDP, each time a presynaptic spike is received or a postsynaptic spike is generated, the connection weights are modified. The update on a postsynaptic spike is proportional to the presynaptic trace, an exponentially decaying value parameterized by a time constant $\tau_\text{pre}$, and the learning rate for the update, often denoted $A_+$, $A_\text{post}$, $\eta_+$, or $\eta_\text{post}$. The update on a presynaptic spike is proportional to the postsynaptic trace, an exponentially decaying value parameterized by a time constant $\tau_\text{post}$, and the learning rate for the update, often denoted $A_-$, $A_\text{pre}$, $\eta_-$, or $\eta_\text{pre}$.
+
+```{image} ../images/plots/stdp-hyperparam-light.png
+:alt: Effect of Hyperparameters on Spike-Timing Dependent Plasticity Updates
+:class: only-light
+:width: 30em
+:align: center
+```
+
+```{image} ../images/plots/stdp-hyperparam-dark.png
+:alt: Effect of Hyperparameters on Spike-Timing Dependent Plasticity Updates
+:class: only-dark
+:width: 30em
+:align: center
+```
+
+Plot of the weight update curve using STDP. Values along the $x$-axis indicate how long
+after the most recent presynaptic spike did a postsynaptic spike occur, $t^f_\text{post} - t^f_\text{pre}$. Values along the $y$-axis indicate the direction and magnitude of the corresponding weight update. Plotted with $A_\text{post} = 1.0$, $A_\text{pre} = -0.5$, $\tau_\text{pre} = 20 \text{ms}$, and $\tau_\text{post} = 30 \text{ms}$.
+
 ## Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)
 ```{admonition} Work In Progress
 This is not yet implemented and the documentation is incomplete. The information presented may be incorrect.
