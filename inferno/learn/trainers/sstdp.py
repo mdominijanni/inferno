@@ -120,15 +120,15 @@ class MSTDPET(IndependentCellTrainer):
     r"""Modulated spike-timing dependent plasticity with eligibility trace trainer.
 
     .. math::
-        w(t + \Delta t) - w(t) = \gamma  r(t + \Delta t)
-        [z_\text{post}(t + \Delta t) + z_\text{pre}(t + \Delta t)]
+        w(t + \Delta t) - w(t) = \gamma  r(t)
+        [z_\text{post}(t) + z_\text{pre}(t)]
         \Delta t
 
     .. math::
         \begin{align*}
-            z_\text{post}(t + \Delta t) &= z_\text{post}(t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
+            z_\text{post}(t) &= z_\text{post}(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
             + \frac{x_\text{pre}(t)}{\tau_z}\left[t = t_\text{post}^f\right] \\
-            z_\text{pre}(t + \Delta t) &= z_\text{pre}(t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
+            z_\text{pre}(t) &= z_\text{pre}(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
             + \frac{x_\text{post}(t)}{\tau_z}\left[t = t_\text{pre}^f\right]
         \end{align*}
 
@@ -586,7 +586,7 @@ class MSTDP(IndependentCellTrainer):
     r"""Modulated spike-timing dependent plasticity trainer.
 
     .. math::
-        w(t + \Delta t) - w(t) = \gamma  r(t + \Delta t) \left(x_\text{pre}(t)
+        w(t + \Delta t) - w(t) = \gamma  r(t) \left(x_\text{pre}(t)
         \bigl[t = t^f_\text{post}\bigr] +
         x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr] \right)
 

@@ -33,4 +33,4 @@ _Note: Inferno still requires PyTorch and a version of it must be installed. PyT
 
 ## Getting Started
 
-For an example of walking through building, training, and evaluating a spiking neural network, see the [quickstart example](examples/quickstart:Quickstart). A comprehensive documentation of the classes and functions provided by Inferno are available [here](<reference/index:API Reference>).
+For an example of walking through building, training, and evaluating a spiking neural network, see the [quickstart example](<examples/quickstart:Quickstart>). A comprehensive documentation of the classes and functions provided by Inferno are available [here](<reference/index:API Reference>).

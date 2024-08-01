@@ -192,6 +192,8 @@ class Model(inferno.Module):
 
         res = torch.stack([step(x) for x in inputs], dim=0)
         self.apply(clear)
+        if trainer:
+            trainer.clear()
 
         return res
 
