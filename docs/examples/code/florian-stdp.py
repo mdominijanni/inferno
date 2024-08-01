@@ -51,13 +51,13 @@ mstdpet_layer.connection.updater = mstdpet_layer.connection.defaultupdater()
 
 
 # construct the trainers
-stdp_trainer = STDP(1.0, lr_post, lr_pre, tc_spike, tc_spike)
+stdp_trainer = STDP(lr_post, lr_pre, tc_spike, tc_spike)
 _ = stdp_trainer.register_cell("only", stdp_layer.cell)
 
-mstdp_trainer = MSTDP(1.0, lr_post, lr_pre, tc_spike, tc_spike)
+mstdp_trainer = MSTDP(lr_post, lr_pre, tc_spike, tc_spike)
 _ = mstdp_trainer.register_cell("only", mstdp_layer.cell)
 
-mstdpet_trainer = MSTDPET(1.0, lr_post, lr_pre, tc_spike, tc_spike, tc_elig)
+mstdpet_trainer = MSTDPET(lr_post, lr_pre, tc_spike, tc_spike, tc_elig)
 _ = mstdpet_trainer.register_cell("only", mstdpet_layer.cell)
 
 

@@ -55,8 +55,9 @@ class STDP(IndependentCellTrainer):
 
     Where:
 
-    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent
-    spike from neuron :math:`n`, respectively.
+    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most
+    recent spike from neuron :math:`n`, respectively, and :math:`\Delta t` is the
+    duration of the simulation step.
 
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
     control which terms are potentiative and which terms are depressive. The terms can
@@ -75,8 +76,6 @@ class STDP(IndependentCellTrainer):
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
 
     Args:
-        step_time (float): length of a simulation time step, :math:`\Delta t`,
-            in :math:`\text{ms}`.
         lr_post (float): learning rate for updates on postsynaptic spikes,
             :math:`\eta_\text{post}`.
         lr_pre (float): learning rate for updates on presynaptic spikes,
@@ -125,7 +124,6 @@ class STDP(IndependentCellTrainer):
 
     def __init__(
         self,
-        step_time: float,
         lr_post: float,
         lr_pre: float,
         tc_post: float,
@@ -142,7 +140,6 @@ class STDP(IndependentCellTrainer):
         IndependentCellTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
-        self.step_time = argtest.gt("step_time", step_time, 0, float)
         self.lr_post = float(lr_post)
         self.lr_pre = float(lr_pre)
         self.tc_post = argtest.gt("tc_post", tc_post, 0, float)
@@ -164,7 +161,6 @@ class STDP(IndependentCellTrainer):
         """
         state = Module()
 
-        step_time = kwargs.get("step_time", self.step_time)
         lr_post = kwargs.get("lr_post", self.lr_post)
         lr_pre = kwargs.get("lr_pre", self.lr_pre)
         tc_post = kwargs.get("tc_post", self.tc_post)
@@ -174,7 +170,6 @@ class STDP(IndependentCellTrainer):
         trace_mode = kwargs.get("trace_mode", self.trace)
         batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
 
-        state.step_time = argtest.gt("step_time", step_time, 0, float)
         state.lr_post = float(lr_post)
         state.lr_pre = float(lr_pre)
         state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
@@ -214,7 +209,6 @@ class STDP(IndependentCellTrainer):
             cell (Cell): cell to add.
 
         Keyword Args:
-            step_time (float): length of a simulation time step.
             lr_post (float): learning rate for updates on postsynaptic spikes.
             lr_pre (float): learning rate for updates on presynaptic spikes.
             tc_post (float): time constant of exponential decay of postsynaptic trace.
@@ -259,7 +253,7 @@ class STDP(IndependentCellTrainer):
             "neuron.spike",
             StateMonitor.partialconstructor(
                 reducer=state.tracecls(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_post,
                     amplitude=abs(state.lr_pre),
                     target=True,
@@ -269,7 +263,7 @@ class STDP(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
             amp=abs(state.lr_pre),
             tc=state.tc_post,
             trace=state.tracemode,
@@ -282,14 +276,14 @@ class STDP(IndependentCellTrainer):
             "neuron.spike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     duration=0.0,
                     inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
         )
 
         # presynaptic trace monitor (weighs hebbian LTP)
@@ -301,7 +295,7 @@ class STDP(IndependentCellTrainer):
             "synapse.spike" if delayed else "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=state.tracecls(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_pre,
                     amplitude=abs(state.lr_post),
                     target=True,
@@ -311,7 +305,7 @@ class STDP(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
             amp=abs(state.lr_post),
             tc=state.tc_pre,
             trace=state.tracemode,
@@ -327,14 +321,14 @@ class STDP(IndependentCellTrainer):
             "synapse.spike" if delayed else "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     duration=cell.connection.delayedby if delayed else 0.0,
                     inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
             delayed=delayed,
         )
 
@@ -389,18 +383,22 @@ class TripletSTDP(IndependentCellTrainer):
 
     .. math::
         \begin{align*}
-            w(t + \Delta t) - w(t) &= x_a(t)\left(\alpha_\text{post} + y_b(t - \Delta t)\beta_\text{post} \right) \bigl[ t = t^f_\text{post} \bigr] \\
-            &+ y_a(t)\left(\alpha_\text{pre} + x_b(t - \Delta t)\beta_\text{pre} \right) \bigl[ t = t^f_\text{pre} \bigr]
+            w(t + \Delta t) - w(t) &= x_a(t)\left(1 + y_b(t - \Delta t) \right) \bigl[ t = t^f_\text{post} \bigr] \\
+            &+ y_a(t)\left(1 + x_b(t - \Delta t) \right) \bigl[ t = t^f_\text{pre} \bigr]
         \end{align*}
 
     When ``trace_mode = "cumulative"``:
 
     .. math::
         \begin{align*}
-            x_a(t) &= x_a(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + \bigl[t = t^f_\text{pre}\bigr] \\
-            x_b(t) &= x_b(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) + \bigl[t = t^f_\text{pre}\bigr] \\
-            y_a(t) &= y_a(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + \bigl[t = t^f_\text{post}\bigr] \\
-            y_b(t) &= y_b(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_y}\right) + \bigl[t = t^f_\text{post}\bigr]
+            x_a(t) &= x_a(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right)
+            + \alpha_\text{post} \bigl[t = t^f_\text{pre}\bigr] \\
+            x_b(t) &= x_b(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
+            + \frac{\beta_\text{pre}}{\alpha_\text{pre}} \bigl[t = t^f_\text{pre}\bigr] \\
+            y_a(t) &= y_a(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right)
+            + \alpha_\text{pre} \bigl[t = t^f_\text{post}\bigr] \\
+            y_b(t) &= y_b(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_y}\right)
+            + \frac{\beta_\text{post}}{\alpha_\text{post}} \bigl[t = t^f_\text{post}\bigr]
         \end{align*}
 
     When ``trace_mode = "nearest"``:
@@ -409,28 +407,28 @@ class TripletSTDP(IndependentCellTrainer):
         \begin{align*}
             x_\text{a}(t) &=
             \begin{cases}
-                1 & t = t_\text{pre}^f \\
+                \alpha_\text{post} & t = t_\text{pre}^f \\
                 x_\text{a}(t - \Delta t)
                 \exp\left(-\frac{\Delta t}{\tau_+}\right)
                 & t \neq t_\text{pre}^f
             \end{cases} \\
             x_\text{b}(t) &=
             \begin{cases}
-                1 & t = t_\text{pre}^f \\
+                \beta_\text{pre} / \alpha_\text{pre} & t = t_\text{pre}^f \\
                 x_\text{b}(t - \Delta t)
                 \exp\left(-\frac{\Delta t}{\tau_x}\right)
                 & t \neq t_\text{pre}^f
             \end{cases} \\
             y_\text{a}(t) &=
             \begin{cases}
-                1 & t = t_\text{post}^f \\
+                \alpha_\text{pre} & t = t_\text{post}^f \\
                 y_\text{a}(t - \Delta t)
                 \exp\left(-\frac{\Delta t}{\tau_-}\right)
                 & t \neq t_\text{post}^f
             \end{cases} \\
             y_\text{b}(t) &=
             \begin{cases}
-                1 & t = t_\text{post}^f \\
+                \beta_\text{post} / \alpha_\text{post} & t = t_\text{post}^f \\
                 y_\text{b}(t - \Delta t)
                 \exp\left(-\frac{\Delta t}{\tau_y}\right)
                 & t \neq t_\text{post}^f
@@ -440,37 +438,43 @@ class TripletSTDP(IndependentCellTrainer):
     Where:
 
     Times :math:`t` and :math:`t_n^f` are the current time and the time of the most
-    recent spike from neuron :math:`n`, respectively. The following constraints are
-    enforced.
+    recent spike from neuron :math:`n`, respectively, and :math:`\Delta t` is the
+    duration of the simulation step. The following constraints are enforced.
 
     .. math::
         \begin{align*}
             0 &< \tau_+ < \tau_x \\
             0 &< \tau_- < \tau_y \\
-            \text{sgn}(\alpha_\text{post}) &= \text{sgn}(\beta_\text{post}) \\
-            \text{sgn}(\alpha_\text{pre}) &= \text{sgn}(\beta_\text{pre})
+            0 &\neq \alpha_\text{post} \\
+            0 &\neq \alpha_\text{pre}
         \end{align*}
 
-    The signs of the learning rates :math:`\alpha_\text{post}`, :math:`\beta_\text{post}`,
-    :math:`\alpha_\text{pre}`, and :math:`\beta_\text{pre}` control which terms are
-    potentiative and which terms are depressive. The terms can be scaled for weight
-    dependence on updating.
+    The signs of the learning rates :math:`\alpha_\text{post}`and :math:`\alpha_\text{pre}`
+    control which terms are potentiative and which terms are depressive. The terms can
+    be scaled for weight dependence on updating.
 
-    +-------------------+-----------------------------------------------------------------------+---------------------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
-    | Mode              | :math:`\text{sgn}(\alpha_\text{post}), \text{sgn}(\beta_\text{post})` | :math:`\text{sgn}(\alpha_\text{pre}), \text{sgn}(\beta_\text{pre})` | LTP Term(s)                                                                        | LTD Term(s)                                                                        |
-    +===================+=======================================================================+=====================================================================+====================================================================================+====================================================================================+
-    | Hebbian           | :math:`+`                                                             | :math:`-`                                                           | :math:`\alpha_\text{post}, \beta_\text{post}`                                      | :math:`\alpha_\text{pre}, \beta_\text{pre}`                                        |
-    +-------------------+-----------------------------------------------------------------------+---------------------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
-    | Anti-Hebbian      | :math:`-`                                                             | :math:`+`                                                           | :math:`\alpha_\text{pre}, \beta_\text{pre}`                                        | :math:`\alpha_\text{post}, \beta_\text{post}`                                      |
-    +-------------------+-----------------------------------------------------------------------+---------------------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
-    | Potentiative Only | :math:`+`                                                             | :math:`+`                                                           | :math:`\alpha_\text{post}, \alpha_\text{pre}, \beta_\text{post}, \beta_\text{pre}` | None                                                                               |
-    +-------------------+-----------------------------------------------------------------------+---------------------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
-    | Depressive Only   | :math:`-`                                                             | :math:`-`                                                           | None                                                                               | :math:`\alpha_\text{post}, \alpha_\text{pre}, \beta_\text{post}, \beta_\text{pre}` |
-    +-------------------+-----------------------------------------------------------------------+---------------------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    +-------------------+----------------------------------------+---------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Mode              | :math:`\text{sgn}(\alpha_\text{post})` | :math:`\text{sgn}(\alpha_\text{pre})` | LTP Term(s)                                                                        | LTD Term(s)                                                                        |
+    +===================+========================================+=======================================+====================================================================================+====================================================================================+
+    | Hebbian           | :math:`+`                              | :math:`-`                             | :math:`\alpha_\text{post}, \beta_\text{post}`                                      | :math:`\alpha_\text{pre}, \beta_\text{pre}`                                        |
+    +-------------------+----------------------------------------+---------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Anti-Hebbian      | :math:`-`                              | :math:`+`                             | :math:`\alpha_\text{pre}, \beta_\text{pre}`                                        | :math:`\alpha_\text{post}, \beta_\text{post}`                                      |
+    +-------------------+----------------------------------------+---------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Potentiative Only | :math:`+`                              | :math:`+`                             | :math:`\alpha_\text{post}, \alpha_\text{pre}, \beta_\text{post}, \beta_\text{pre}` | None                                                                               |
+    +-------------------+----------------------------------------+---------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Depressive Only   | :math:`-`                              | :math:`-`                             | None                                                                               | :math:`\alpha_\text{post}, \alpha_\text{pre}, \beta_\text{post}, \beta_\text{pre}` |
+    +-------------------+----------------------------------------+---------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+
+    For clarity, if the traces were unscaled, the update would be written as follows.
+
+    .. math::
+        \begin{align*}
+            w(t + \Delta t) - w(t)
+            &= x_a(t)\left(\alpha_\text{post} + y_b(t - \Delta t) \beta_\text{post} \right) \bigl[ t = t^f_\text{post} \bigr] \\
+            &+ y_a(t)\left(\alpha_\text{pre} + x_b(t - \Delta t) \beta_\text{pre} \right) \bigl[ t = t^f_\text{pre} \bigr]
+        \end{align*}
 
     Args:
-        step_time (float): length of a simulation time step, :math:`\Delta t`,
-            in :math:`\text{ms}`.
         lr_post_pair (float): learning rate for spike pair updates on postsynaptic
             spikes, :math:`\alpha_\text{post}`.
         lr_post_triplet (float): learning rate for spike triplet updates on postsynaptic
@@ -515,6 +519,10 @@ class TripletSTDP(IndependentCellTrainer):
         cell-by-cell basis.
 
     Note:
+        The absolute values of ``lr_post_triplet`` and ``lr_pre_triplet`` are taken
+        to enfore they are positive values.
+
+    Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
         limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
         A custom function with similar behavior can also be passed in. Like with the
@@ -527,7 +535,6 @@ class TripletSTDP(IndependentCellTrainer):
 
     def __init__(
         self,
-        step_time: float,
         lr_post_pair: float,
         lr_post_triplet: float,
         lr_pre_pair: float,
@@ -548,15 +555,10 @@ class TripletSTDP(IndependentCellTrainer):
         IndependentCellTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
-        self.step_time = argtest.gt("step_time", step_time, 0, float)
-        self.lr_post_pair = argtest.likesign(
-            "lr_post_pair", lr_post_pair, lr_post_triplet, float, "lr_post_triplet"
-        )
-        self.lr_post_triplet = float(lr_post_triplet)
-        self.lr_pre_pair = argtest.likesign(
-            "lr_pre_pair", lr_pre_pair, lr_pre_triplet, float, "lr_pre_triplet"
-        )
-        self.lr_pre_triplet = float(lr_pre_triplet)
+        self.lr_post_pair = argtest.neq("lr_post_pair", lr_post_pair, 0, float)
+        self.lr_post_triplet = abs(float(lr_post_triplet))
+        self.lr_pre_pair = argtest.neq("lr_pre_pair", lr_pre_pair, 0, float)
+        self.lr_pre_triplet = abs(float(lr_pre_triplet))
         self.tc_post_fast = argtest.gt("tc_post_fast", tc_post_fast, 0, float)
         self.tc_post_slow = argtest.gt(
             "tc_post_slow", tc_post_slow, tc_post_fast, float, "tc_post_fast"
@@ -582,7 +584,6 @@ class TripletSTDP(IndependentCellTrainer):
         """
         state = Module()
 
-        step_time = kwargs.get("step_time", self.step_time)
         lr_post_pair = kwargs.get("lr_post_pair", self.lr_post_pair)
         lr_post_triplet = kwargs.get("lr_post_triplet", self.lr_post_triplet)
         lr_pre_pair = kwargs.get("lr_pre_pair", self.lr_pre_pair)
@@ -596,15 +597,10 @@ class TripletSTDP(IndependentCellTrainer):
         trace_mode = kwargs.get("trace_mode", self.trace)
         batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
 
-        state.step_time = argtest.gt("step_time", step_time, 0, float)
-        state.lr_post_pair = argtest.likesign(
-            "lr_post_pair", lr_post_pair, lr_post_triplet, float, "lr_post_triplet"
-        )
-        state.lr_post_triplet = float(lr_post_triplet)
-        state.lr_pre_pair = argtest.likesign(
-            "lr_pre_pair", lr_pre_pair, lr_pre_triplet, float, "lr_pre_triplet"
-        )
-        state.lr_pre_triplet = float(lr_pre_triplet)
+        state.lr_post_pair = argtest.neq("lr_post_pair", lr_post_pair, 0, float)
+        state.lr_post_triplet = abs(float(lr_post_triplet))
+        state.lr_pre_pair = argtest.neq("lr_pre_pair", lr_pre_pair, 0, float)
+        state.lr_pre_triplet = abs(float(lr_pre_triplet))
         state.tc_post_fast = argtest.gt("tc_post_fast", tc_post_fast, 0, float)
         state.tc_post_slow = argtest.gt(
             "tc_post_slow", tc_post_slow, tc_post_fast, float, "tc_post_fast"
@@ -648,8 +644,6 @@ class TripletSTDP(IndependentCellTrainer):
             cell (Cell): cell to add.
 
         Keyword Args:
-            step_time (float): length of a simulation time step.
-
             lr_post_pair (float): learning rate for spike pair updates on
                 postsynaptic spikes.
             lr_post_triplet (float): learning rate for spike triplet updates on
@@ -698,5 +692,154 @@ class TripletSTDP(IndependentCellTrainer):
             "eval_update": False,
             "prepend": True,
         }
+
+        # postsynaptic fast trace monitor (weighs hebbian LTD)
+        self.add_monitor(
+            name,
+            "trace_post_fast",
+            "neuron.spike",
+            StateMonitor.partialconstructor(
+                reducer=state.tracecls(
+                    cell.connection.dt,
+                    state.tc_post_fast,
+                    amplitude=abs(state.lr_pre_pair),
+                    target=True,
+                    duration=cell.connection.dt,
+                    inclusive=True,
+                ),
+                **monitor_kwargs,
+            ),
+            False,
+            dt=cell.connection.dt,
+            amp=abs(state.lr_pre_pair),
+            tc=state.tc_post_fast,
+            trace=state.tracemode,
+            timing="fast",
+        )
+
+        # postsynaptic slow trace monitor (weighs hebbian LTP)
+        self.add_monitor(
+            name,
+            "trace_post_slow",
+            "neuron.spike",
+            StateMonitor.partialconstructor(
+                reducer=state.tracecls(
+                    cell.connection.dt,
+                    state.tc_post_slow,
+                    amplitude=abs(state.lr_post_triplet / state.lr_post_pair),
+                    target=True,
+                    duration=2 * cell.connection.dt,
+                    inclusive=True,
+                ),
+                **monitor_kwargs,
+            ),
+            False,
+            dt=cell.connection.dt,
+            amp=abs(state.lr_post_triplet / state.lr_post_pair),
+            tc=state.tc_post_slow,
+            trace=state.tracemode,
+            timing="slow",
+        )
+
+        # postsynaptic spike monitor (triggers hebbian LTP)
+        self.add_monitor(
+            name,
+            "spike_post",
+            "neuron.spike",
+            StateMonitor.partialconstructor(
+                reducer=PassthroughReducer(
+                    cell.connection.dt,
+                    duration=0.0,
+                    inclusive=True,
+                ),
+                **monitor_kwargs,
+            ),
+            False,
+            dt=cell.connection.dt,
+        )
+
+        # presynaptic fast trace monitor (weighs hebbian LTP)
+        # when the delayed condition is true, using synapse.spike records the raw
+        # spike times rather than the delay adjusted times of synspike.
+        self.add_monitor(
+            name,
+            "trace_pre_fast",
+            "synapse.spike" if delayed else "connection.synspike",
+            StateMonitor.partialconstructor(
+                reducer=state.tracecls(
+                    cell.connection.dt,
+                    state.tc_pre_fast,
+                    amplitude=abs(state.lr_post_pair),
+                    target=True,
+                    duration=(
+                        cell.connection.delayedby if delayed else cell.connection.dt
+                    ),
+                    inclusive=True,
+                ),
+                **monitor_kwargs,
+            ),
+            False,
+            dt=cell.connection.dt,
+            amp=abs(state.lr_post_pair),
+            tc=state.tc_pre_fast,
+            trace=state.tracemode,
+            delayed=delayed,
+            timing="fast",
+        )
+
+        # presynaptic slow trace monitor (weighs hebbian LTD)
+        # when the delayed condition is true, using synapse.spike records the raw
+        # spike times rather than the delay adjusted times of synspike.
+        self.add_monitor(
+            name,
+            "trace_pre_slow",
+            "synapse.spike" if delayed else "connection.synspike",
+            StateMonitor.partialconstructor(
+                reducer=state.tracecls(
+                    cell.connection.dt,
+                    state.tc_pre_slow,
+                    amplitude=abs(state.lr_pre_triplet / state.lr_pre_pair),
+                    target=True,
+                    duration=(
+                        cell.connection.delayedby + cell.connection.dt
+                        if delayed
+                        else 2 * cell.connection.dt
+                    ),
+                    inclusive=True,
+                ),
+                **monitor_kwargs,
+            ),
+            False,
+            dt=cell.connection.dt,
+            amp=abs(state.lr_pre_triplet / state.lr_pre_pair),
+            tc=state.tc_pre_slow,
+            trace=state.tracemode,
+            delayed=delayed,
+            timing="slow",
+        )
+
+        # presynaptic spike monitor (triggers hebbian LTD)
+        # when the delayed condition is true, using synapse.spike records the raw
+        # spike times rather than the delay adjusted times of synspike.
+        self.add_monitor(
+            name,
+            "spike_pre",
+            "synapse.spike" if delayed else "connection.synspike",
+            StateMonitor.partialconstructor(
+                reducer=PassthroughReducer(
+                    cell.connection.dt,
+                    duration=(
+                        cell.connection.delayedby + cell.connection.dt
+                        if delayed
+                        else 0.0
+                    ),
+                    inclusive=True,
+                ),
+                **monitor_kwargs,
+            ),
+            False,
+            dt=cell.connection.dt,
+            delayed=delayed,
+        )
 
         return self.get_unit(name)

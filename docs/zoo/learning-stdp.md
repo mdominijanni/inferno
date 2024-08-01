@@ -254,9 +254,9 @@ $$
 - $\tau_-$, fast time constant of exponential decay for postsynaptic trace
 - $\tau_y$, time constant of exponential decay for slow postsynaptic trace
 - ${A_2}^+$, learning rate for postsynaptic pair events, Hebbian long-term potentiation (LTP) when positive
-- ${A_3}^+$, learning rate for postsynaptic triplet events, Hebbian long-term potentiation (LTP) when positive
+- ${A_3}^+$, learning rate for postsynaptic triplet events, unsigned
 - ${A_2}^-$, learning rate for presynaptic pair events, Hebbian long-term depression (LTD) when negative
-- ${A_3}^-$, learning rate for presynaptic triplet events, Hebbian long-term depression (LTD) when negative
+- ${A_3}^-$, learning rate for presynaptic triplet events, unsigned
 - $\epsilon$, small positive constant
 - $t$, current simulation time
 - $\Delta t$, duration of the simulation step
@@ -270,14 +270,14 @@ $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true 
 
 *And the following conditions hold:*
 
-- $\tau_+ < \tau_x$
-- $\tau_- < \tau_y$
-- $\text{sgn}({A_2}^+) = \text{sgn}({A_3}^+)$
-- $\text{sgn}({A_2}^-) = \text{sgn}({A_3}^-)$
+- $0 < \tau_+ < \tau_x$
+- $0 < \tau_- < \tau_y$
+- $\text{sgn}({A_3}^+) = 1$
+- $\text{sgn}({A_3}^-) = 1$
 
 *Note:*
 
-As a deviation from the original, in this formulation, it is expected that when ${A_2}^-$ and ${A_3}^-$ are both negatively signed, and when ${A_2}^+$ and ${A_3}^+$ are both positively signed, the updates will be Hebbian. Additionally, the original specifies $\epsilon$ as a "small positive constant" in both continuous and discrete formulations. The term $t - \epsilon$, is used to indicate the value at a time close to but before $t$. In the discrete version, $\Delta t$ is substituted in for $\epsilon$, as it is the smallest meaningful difference in time.
+As a deviation from the original, in this formulation, it is expected that when ${A_2}^-$ is negatively signed and ${A_2}^+$ is positively signed, the updates will be Hebbian. Additionally, the original specifies $\epsilon$ as a "small positive constant" in both continuous and discrete formulations. The term $t - \epsilon$, is used to indicate the value at a time close to but before $t$. In the discrete version, $\Delta t$ is substituted in for $\epsilon$, as it is the smallest meaningful difference in time.
 
 ### Description
 Unlike classical STDP which only triggers an update for spike pairs, triplet STDP extends this to spike triplets. ${A_2}^+$ scales updates when a postsynaptic spike follows a presynaptic spike $(f_\text{pre} \rightarrow f_\text{post})$. ${A_3}^+$ scales updates when a postsynaptic spike follows a presynaptic spike which itself follows another postsynaptic spike $(f_\text{post} \rightarrow f_\text{pre} \rightarrow f_\text{post})$. ${A_2}^-$ scales updates when a presynaptic spike follows a postsynaptic spike $(f_\text{post} \rightarrow f_\text{pre})$. ${A_3}^-$ scales updates when a presynaptic spike follows a postsynaptic spike which itself follows another presynaptic spike $(f_\text{pre} \rightarrow f_\text{post} \rightarrow f_\text{pre})$.

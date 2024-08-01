@@ -115,7 +115,6 @@ class TestSTDP:
         dt = random.uniform(0.7, 1.4)
         delay = random.randint(0, 2) * dt
 
-        base_step_time = random.uniform(0.7, 1.4)
         base_lr_post = random.uniform(-1.0, 1.0)
         base_lr_pre = random.uniform(-1.0, 1.0)
         base_tc_post = random.uniform(15.0, 30.0)
@@ -125,7 +124,6 @@ class TestSTDP:
         base_trace_mode = "nearest"
         base_batch_reduction = torch.amax
 
-        override_step_time = random.uniform(0.7, 1.4)
         override_lr_post = random.uniform(-1.0, 1.0)
         override_lr_pre = random.uniform(-1.0, 1.0)
         override_tc_post = random.uniform(15.0, 30.0)
@@ -137,7 +135,6 @@ class TestSTDP:
 
         layer = mocklayer(shape, batchsz, dt, delay)
         updater = STDP(
-            step_time=base_step_time,
             lr_post=base_lr_post,
             lr_pre=base_lr_pre,
             tc_post=base_tc_post,
@@ -151,7 +148,6 @@ class TestSTDP:
         unit = updater.register_cell(
             "onlyone",
             layer.cell,
-            step_time=override_step_time,
             lr_post=override_lr_post,
             lr_pre=override_lr_pre,
             tc_post=override_tc_post,
@@ -162,7 +158,6 @@ class TestSTDP:
             batch_reduction=override_batch_reduction,
         )
 
-        assert override_step_time == unit.state.step_time
         assert override_lr_post == unit.state.lr_post
         assert override_lr_pre == unit.state.lr_pre
         assert override_tc_post == unit.state.tc_post
@@ -178,7 +173,6 @@ class TestSTDP:
         dt = random.uniform(0.7, 1.4)
         delay = random.randint(0, 2) * dt
 
-        base_step_time = random.uniform(0.7, 1.4)
         base_lr_post = random.uniform(-1.0, 1.0)
         base_lr_pre = random.uniform(-1.0, 1.0)
         base_tc_post = random.uniform(15.0, 30.0)
@@ -190,7 +184,6 @@ class TestSTDP:
 
         layer = mocklayer(shape, batchsz, dt, delay)
         updater = STDP(
-            step_time=base_step_time,
             lr_post=base_lr_post,
             lr_pre=base_lr_pre,
             tc_post=base_tc_post,
@@ -203,7 +196,6 @@ class TestSTDP:
 
         unit = updater.register_cell("onlyone", layer.cell)
 
-        assert base_step_time == unit.state.step_time
         assert base_lr_post == unit.state.lr_post
         assert base_lr_pre == unit.state.lr_pre
         assert base_tc_post == unit.state.tc_post
@@ -240,7 +232,6 @@ class TestSTDP:
                 lr_post_dir = -1.0
                 lr_pre_dir = -1.0
 
-        step_time = dt
         lr_post = random.uniform(0.0, 1.0) * lr_post_dir
         lr_pre = random.uniform(0.0, 1.0) * lr_pre_dir
         tc_post = random.uniform(15.0, 30.0)
@@ -252,7 +243,6 @@ class TestSTDP:
         field_reduction = torch.sum
 
         updater = STDP(
-            step_time=step_time,
             lr_post=lr_post,
             lr_pre=lr_pre,
             tc_post=tc_post,
@@ -423,7 +413,6 @@ class TestSTDP:
         delaybase = torch.randint(0, delaysteps + 1, layer.connection.delay.shape)
         layer.connection.delay = delaybase.float() * dt
 
-        step_time = dt
         lr_post = random.uniform(0.0, 1.0)
         lr_pre = -random.uniform(0.0, 1.0)
         tc_post = random.uniform(15.0, 30.0)
@@ -434,7 +423,6 @@ class TestSTDP:
         batch_reduction = torch.sum
 
         updater = STDP(
-            step_time=step_time,
             lr_post=lr_post,
             lr_pre=lr_pre,
             tc_post=tc_post,
@@ -463,11 +451,10 @@ class TestTripletSTDP:
         dt = random.uniform(0.7, 1.4)
         delay = random.randint(0, 2) * dt
 
-        base_step_time = random.uniform(0.7, 1.4)
-        base_lr_post_pair = random.uniform(0.0, 1.0)
+        base_lr_post_pair = random.uniform(-1.0, 1.0)
         base_lr_post_triplet = random.uniform(0.0, 1.0)
-        base_lr_pre_pair = -random.uniform(0.0, 1.0)
-        base_lr_pre_triplet = -random.uniform(0.0, 1.0)
+        base_lr_pre_pair = random.uniform(-1.0, 1.0)
+        base_lr_pre_triplet = random.uniform(0.0, 1.0)
         base_tc_post_fast = random.uniform(15.0, 30.0)
         base_tc_post_slow = base_tc_post_fast + random.uniform(1.0, 3.0)
         base_tc_pre_fast = random.uniform(15.0, 30.0)
@@ -477,11 +464,10 @@ class TestTripletSTDP:
         base_trace_mode = "nearest"
         base_batch_reduction = torch.amax
 
-        override_step_time = random.uniform(0.7, 1.4)
-        override_lr_post_pair = random.uniform(0.0, 1.0)
+        override_lr_post_pair = random.uniform(-1.0, 1.0)
         override_lr_post_triplet = random.uniform(0.0, 1.0)
-        override_lr_pre_pair = -random.uniform(0.0, 1.0)
-        override_lr_pre_triplet = -random.uniform(0.0, 1.0)
+        override_lr_pre_pair = random.uniform(-1.0, 1.0)
+        override_lr_pre_triplet = random.uniform(0.0, 1.0)
         override_tc_post_fast = random.uniform(15.0, 30.0)
         override_tc_post_slow = override_tc_post_fast + random.uniform(1.0, 3.0)
         override_tc_pre_fast = random.uniform(15.0, 30.0)
@@ -493,7 +479,6 @@ class TestTripletSTDP:
 
         layer = mocklayer(shape, batchsz, dt, delay)
         updater = TripletSTDP(
-            step_time=base_step_time,
             lr_post_pair=base_lr_post_pair,
             lr_post_triplet=base_lr_post_triplet,
             lr_pre_pair=base_lr_pre_pair,
@@ -511,7 +496,6 @@ class TestTripletSTDP:
         unit = updater.register_cell(
             "onlyone",
             layer.cell,
-            step_time=override_step_time,
             lr_post_pair=override_lr_post_pair,
             lr_post_triplet=override_lr_post_triplet,
             lr_pre_pair=override_lr_pre_pair,
@@ -526,7 +510,6 @@ class TestTripletSTDP:
             batch_reduction=override_batch_reduction,
         )
 
-        assert override_step_time == unit.state.step_time
         assert override_lr_post_pair == unit.state.lr_post_pair
         assert override_lr_post_triplet == unit.state.lr_post_triplet
         assert override_lr_pre_pair == unit.state.lr_pre_pair
@@ -546,11 +529,10 @@ class TestTripletSTDP:
         dt = random.uniform(0.7, 1.4)
         delay = random.randint(0, 2) * dt
 
-        base_step_time = random.uniform(0.7, 1.4)
-        base_lr_post_pair = random.uniform(0.0, 1.0)
+        base_lr_post_pair = random.uniform(-1.0, 1.0)
         base_lr_post_triplet = random.uniform(0.0, 1.0)
-        base_lr_pre_pair = -random.uniform(0.0, 1.0)
-        base_lr_pre_triplet = -random.uniform(0.0, 1.0)
+        base_lr_pre_pair = random.uniform(-1.0, 1.0)
+        base_lr_pre_triplet = random.uniform(0.0, 1.0)
         base_tc_post_fast = random.uniform(15.0, 30.0)
         base_tc_post_slow = base_tc_post_fast + random.uniform(1.0, 3.0)
         base_tc_pre_fast = random.uniform(15.0, 30.0)
@@ -562,7 +544,6 @@ class TestTripletSTDP:
 
         layer = mocklayer(shape, batchsz, dt, delay)
         updater = TripletSTDP(
-            step_time=base_step_time,
             lr_post_pair=base_lr_post_pair,
             lr_post_triplet=base_lr_post_triplet,
             lr_pre_pair=base_lr_pre_pair,
@@ -579,7 +560,6 @@ class TestTripletSTDP:
 
         unit = updater.register_cell("onlyone", layer.cell)
 
-        assert base_step_time == unit.state.step_time
         assert base_lr_post_pair == unit.state.lr_post_pair
         assert base_lr_post_triplet == unit.state.lr_post_triplet
         assert base_lr_pre_pair == unit.state.lr_pre_pair

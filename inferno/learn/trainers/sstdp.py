@@ -166,8 +166,9 @@ class MSTDPET(IndependentCellTrainer):
 
     Where:
 
-    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent
-    spike from neuron :math:`n`, respectively.
+    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most
+    recent spike from neuron :math:`n`, respectively, and :math:`\Delta t` is the
+    duration of the simulation step.
 
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
     control which terms are potentiative and depressive updates (these are applied to
@@ -195,8 +196,6 @@ class MSTDPET(IndependentCellTrainer):
     :math:`\gamma` can be passed in along with the reward signal to account for this.
 
     Args:
-        step_time (float): length of a simulation time step, :math:`\Delta t`,
-            in :math:`\text{ms}`.
         lr_post (float): learning rate for updates on postsynaptic spikes,
             :math:`\eta_\text{post}`.
         lr_pre (float): learning rate for updates on presynaptic spikes,
@@ -239,7 +238,6 @@ class MSTDPET(IndependentCellTrainer):
 
     def __init__(
         self,
-        step_time: float,
         lr_post: float,
         lr_pre: float,
         tc_post: float,
@@ -256,7 +254,6 @@ class MSTDPET(IndependentCellTrainer):
         IndependentCellTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
-        self.step_time = argtest.gt("step_time", step_time, 0, float)
         self.lr_post = float(lr_post)
         self.lr_pre = float(lr_pre)
         self.tc_post = argtest.gt("tc_post", tc_post, 0, float)
@@ -278,7 +275,6 @@ class MSTDPET(IndependentCellTrainer):
         """
         state = Module()
 
-        step_time = kwargs.get("step_time", self.step_time)
         lr_post = kwargs.get("lr_post", self.lr_post)
         lr_pre = kwargs.get("lr_pre", self.lr_pre)
         tc_post = kwargs.get("tc_post", self.tc_post)
@@ -288,7 +284,6 @@ class MSTDPET(IndependentCellTrainer):
         trace_mode = kwargs.get("trace_mode", self.trace)
         batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
 
-        state.step_time = argtest.gt("step_time", step_time, 0, float)
         state.lr_post = float(lr_post)
         state.lr_pre = float(lr_pre)
         state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
@@ -328,7 +323,6 @@ class MSTDPET(IndependentCellTrainer):
             cell (Cell): cell to add.
 
         Keyword Args:
-            step_time (float): length of a simulation time step.
             lr_post (float): learning rate for updates on postsynaptic spikes.
             lr_pre (float): learning rate for updates on presynaptic spikes.
             tc_post (float): time constant of exponential decay of postsynaptic trace.
@@ -366,7 +360,7 @@ class MSTDPET(IndependentCellTrainer):
             "neuron.spike",
             StateMonitor.partialconstructor(
                 reducer=state.tracecls(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_post,
                     amplitude=abs(state.lr_pre),
                     target=True,
@@ -377,7 +371,7 @@ class MSTDPET(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
             amp=abs(state.lr_pre),
             tc=state.tc_post,
         )
@@ -389,7 +383,7 @@ class MSTDPET(IndependentCellTrainer):
             "neuron.spike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     duration=0.0,
                     inclusive=True,
                 ),
@@ -397,7 +391,7 @@ class MSTDPET(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
         )
 
         # presynaptic trace monitor (weighs hebbian LTP)
@@ -407,7 +401,7 @@ class MSTDPET(IndependentCellTrainer):
             "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=state.tracecls(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_pre,
                     amplitude=abs(state.lr_post),
                     target=True,
@@ -418,7 +412,7 @@ class MSTDPET(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
             amp=abs(state.lr_post),
             tc=state.tc_pre,
         )
@@ -430,7 +424,7 @@ class MSTDPET(IndependentCellTrainer):
             "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     duration=0.0,
                     inclusive=True,
                 ),
@@ -438,7 +432,7 @@ class MSTDPET(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
         )
 
         # presynaptic-scaled postsynaptic-triggered eligibility trace (hebbian LTP)
@@ -448,7 +442,7 @@ class MSTDPET(IndependentCellTrainer):
             "monitors",
             MultiStateMonitor.partialconstructor(
                 reducer=EligibilityTraceReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_eligibility,
                     obs_reshape=weakref.WeakMethod(cell.connection.presyn_receptive),
                     cond_reshape=weakref.WeakMethod(cell.connection.postsyn_receptive),
@@ -469,7 +463,7 @@ class MSTDPET(IndependentCellTrainer):
             "monitors",
             MultiStateMonitor.partialconstructor(
                 reducer=EligibilityTraceReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_eligibility,
                     obs_reshape=weakref.WeakMethod(cell.connection.postsyn_receptive),
                     cond_reshape=weakref.WeakMethod(cell.connection.presyn_receptive),
@@ -624,8 +618,9 @@ class MSTDP(IndependentCellTrainer):
 
     Where:
 
-    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent
-    spike from neuron :math:`n`, respectively.
+    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most
+    recent spike from neuron :math:`n`, respectively, and :math:`\Delta t` is the
+    duration of the simulation step.
 
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
     control which terms are potentiative and depressive updates (these are applied to
@@ -653,8 +648,6 @@ class MSTDP(IndependentCellTrainer):
     :math:`\gamma` can be passed in along with the reward signal to account for this.
 
     Args:
-        step_time (float): length of a simulation time step, :math:`\Delta t`,
-            in :math:`\text{ms}`.
         lr_post (float): learning rate for updates on postsynaptic spikes,
             :math:`\eta_\text{post}`.
         lr_pre (float): learning rate for updates on presynaptic spikes,
@@ -704,7 +697,6 @@ class MSTDP(IndependentCellTrainer):
 
     def __init__(
         self,
-        step_time: float,
         lr_post: float,
         lr_pre: float,
         tc_post: float,
@@ -721,7 +713,6 @@ class MSTDP(IndependentCellTrainer):
         IndependentCellTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
-        self.step_time = argtest.gt("step_time", step_time, 0, float)
         self.lr_post = float(lr_post)
         self.lr_pre = float(lr_pre)
         self.tc_post = argtest.gt("tc_post", tc_post, 0, float)
@@ -743,7 +734,6 @@ class MSTDP(IndependentCellTrainer):
         """
         state = Module()
 
-        step_time = kwargs.get("step_time", self.step_time)
         lr_post = kwargs.get("lr_post", self.lr_post)
         lr_pre = kwargs.get("lr_pre", self.lr_pre)
         tc_post = kwargs.get("tc_post", self.tc_post)
@@ -753,7 +743,6 @@ class MSTDP(IndependentCellTrainer):
         trace_mode = kwargs.get("trace_mode", self.trace)
         batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
 
-        state.step_time = argtest.gt("step_time", step_time, 0, float)
         state.lr_post = float(lr_post)
         state.lr_pre = float(lr_pre)
         state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
@@ -793,7 +782,6 @@ class MSTDP(IndependentCellTrainer):
             cell (Cell): cell to add.
 
         Keyword Args:
-            step_time (float): length of a simulation time step.
             lr_post (float): learning rate for updates on postsynaptic spikes.
             lr_pre (float): learning rate for updates on presynaptic spikes.
             tc_post (float): time constant of exponential decay of postsynaptic trace.
@@ -835,7 +823,7 @@ class MSTDP(IndependentCellTrainer):
             "neuron.spike",
             StateMonitor.partialconstructor(
                 reducer=state.tracecls(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_post,
                     amplitude=abs(state.lr_pre),
                     target=True,
@@ -845,7 +833,7 @@ class MSTDP(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
             amp=abs(state.lr_pre),
             tc=state.tc_post,
             trace=state.tracemode,
@@ -858,14 +846,14 @@ class MSTDP(IndependentCellTrainer):
             "neuron.spike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     duration=0.0,
                     inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
         )
 
         # presynaptic trace monitor (weighs hebbian LTP)
@@ -877,7 +865,7 @@ class MSTDP(IndependentCellTrainer):
             "synapse.spike" if delayed else "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=state.tracecls(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_pre,
                     amplitude=abs(state.lr_post),
                     target=True,
@@ -887,7 +875,7 @@ class MSTDP(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
             amp=abs(state.lr_post),
             tc=state.tc_pre,
             trace=state.tracemode,
@@ -903,14 +891,14 @@ class MSTDP(IndependentCellTrainer):
             "synapse.spike" if delayed else "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     duration=cell.connection.delayedby if delayed else 0.0,
                     inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
             delayed=delayed,
         )
 
