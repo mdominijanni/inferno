@@ -456,17 +456,17 @@ class TripletSTDP(IndependentCellTrainer):
     potentiative and which terms are depressive. The terms can be scaled for weight
     dependence on updating.
 
-    +-------------------+-----------------------------------------------------------+---------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
-    | Mode              | :math:`\text{sgn}(\alpha_\text{post}, \beta_\text{post})` | :math:`\text{sgn}(\alpha_\text{pre}, \beta_\text{pre})` | LTP Term(s)                                                                        | LTD Term(s)                                                                        |
-    +===================+===========================================================+=========================================================+====================================================================================+====================================================================================+
-    | Hebbian           | :math:`+`                                                 | :math:`-`                                               | :math:`\alpha_\text{post}, \beta_\text{post}`                                      | :math:`\alpha_\text{pre}, \beta_\text{pre}`                                        |
-    +-------------------+-----------------------------------------------------------+---------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
-    | Anti-Hebbian      | :math:`-`                                                 | :math:`+`                                               | :math:`\alpha_\text{pre}, \beta_\text{pre}`                                        | :math:`\alpha_\text{post}, \beta_\text{post}`                                      |
-    +-------------------+-----------------------------------------------------------+---------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
-    | Potentiative Only | :math:`+`                                                 | :math:`+`                                               | :math:`\alpha_\text{post}, \alpha_\text{pre}, \beta_\text{post}, \beta_\text{pre}` | None                                                                               |
-    +-------------------+-----------------------------------------------------------+---------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
-    | Depressive Only   | :math:`-`                                                 | :math:`-`                                               | None                                                                               | :math:`\alpha_\text{post}, \alpha_\text{pre}, \beta_\text{post}, \beta_\text{pre}` |
-    +-------------------+-----------------------------------------------------------+---------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    +-------------------+-----------------------------------------------------------------------+---------------------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Mode              | :math:`\text{sgn}(\alpha_\text{post}), \text{sgn}(\beta_\text{post})` | :math:`\text{sgn}(\alpha_\text{pre}), \text{sgn}(\beta_\text{pre})` | LTP Term(s)                                                                        | LTD Term(s)                                                                        |
+    +===================+=======================================================================+=====================================================================+====================================================================================+====================================================================================+
+    | Hebbian           | :math:`+`                                                             | :math:`-`                                                           | :math:`\alpha_\text{post}, \beta_\text{post}`                                      | :math:`\alpha_\text{pre}, \beta_\text{pre}`                                        |
+    +-------------------+-----------------------------------------------------------------------+---------------------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Anti-Hebbian      | :math:`-`                                                             | :math:`+`                                                           | :math:`\alpha_\text{pre}, \beta_\text{pre}`                                        | :math:`\alpha_\text{post}, \beta_\text{post}`                                      |
+    +-------------------+-----------------------------------------------------------------------+---------------------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Potentiative Only | :math:`+`                                                             | :math:`+`                                                           | :math:`\alpha_\text{post}, \alpha_\text{pre}, \beta_\text{post}, \beta_\text{pre}` | None                                                                               |
+    +-------------------+-----------------------------------------------------------------------+---------------------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Depressive Only   | :math:`-`                                                             | :math:`-`                                                           | None                                                                               | :math:`\alpha_\text{post}, \alpha_\text{pre}, \beta_\text{post}, \beta_\text{pre}` |
+    +-------------------+-----------------------------------------------------------------------+---------------------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
 
     Args:
         step_time (float): length of a simulation time step, :math:`\Delta t`,
@@ -571,3 +571,132 @@ class TripletSTDP(IndependentCellTrainer):
             "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
         )
         self.batchreduce = batch_reduction if batch_reduction else torch.mean
+
+    def _build_cell_state(self, **kwargs) -> Module:
+        r"""Builds auxiliary state for a cell.
+
+        Keyword arguments will override module-level hyperparameters.
+
+        Returns:
+            Module: state module.
+        """
+        state = Module()
+
+        step_time = kwargs.get("step_time", self.step_time)
+        lr_post_pair = kwargs.get("lr_post_pair", self.lr_post_pair)
+        lr_post_triplet = kwargs.get("lr_post_triplet", self.lr_post_triplet)
+        lr_pre_pair = kwargs.get("lr_pre_pair", self.lr_pre_pair)
+        lr_pre_triplet = kwargs.get("lr_pre_triplet", self.lr_pre_triplet)
+        tc_post_fast = kwargs.get("tc_post_fast", self.tc_post_fast)
+        tc_post_slow = kwargs.get("tc_post_slow", self.tc_post_slow)
+        tc_pre_fast = kwargs.get("tc_pre_fast", self.tc_pre_fast)
+        tc_pre_slow = kwargs.get("tc_pre_slow", self.tc_pre_slow)
+        delayed = kwargs.get("delayed", self.delayed)
+        interp_tolerance = kwargs.get("interp_tolerance", self.tolerance)
+        trace_mode = kwargs.get("trace_mode", self.trace)
+        batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
+
+        state.step_time = argtest.gt("step_time", step_time, 0, float)
+        state.lr_post_pair = argtest.likesign(
+            "lr_post_pair", lr_post_pair, lr_post_triplet, float, "lr_post_triplet"
+        )
+        state.lr_post_triplet = float(lr_post_triplet)
+        state.lr_pre_pair = argtest.likesign(
+            "lr_pre_pair", lr_pre_pair, lr_pre_triplet, float, "lr_pre_triplet"
+        )
+        state.lr_pre_triplet = float(lr_pre_triplet)
+        state.tc_post_fast = argtest.gt("tc_post_fast", tc_post_fast, 0, float)
+        state.tc_post_slow = argtest.gt(
+            "tc_post_slow", tc_post_slow, tc_post_fast, float, "tc_post_fast"
+        )
+        state.tc_pre_fast = argtest.gt("tc_pre_fast", tc_pre_fast, 0, float)
+        state.tc_pre_slow = argtest.gt(
+            "tc_pre_slow", tc_pre_slow, tc_pre_fast, float, "tc_pre_fast"
+        )
+        state.delayed = bool(delayed)
+        state.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
+        state.tracemode = argtest.oneof(
+            "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
+        )
+        match state.tracemode:
+            case "cumulative":
+                state.tracecls = CumulativeTraceReducer
+            case "nearest":
+                state.tracecls = NearestTraceReducer
+            case "_":
+                raise RuntimeError(
+                    f"an invalid trace mode of '{state.tracemode}' has been set, "
+                    "expected one of: 'cumulative', 'nearest'"
+                )
+        state.batchreduce = (
+            batch_reduction if (batch_reduction is not None) else torch.mean
+        )
+
+        return state
+
+    def register_cell(
+        self,
+        name: str,
+        cell: Cell,
+        /,
+        **kwargs: Any,
+    ) -> STDP.Unit:
+        r"""Adds a cell with required state.
+
+        Args:
+            name (str): name of the cell to add.
+            cell (Cell): cell to add.
+
+        Keyword Args:
+            step_time (float): length of a simulation time step.
+
+            lr_post_pair (float): learning rate for spike pair updates on
+                postsynaptic spikes.
+            lr_post_triplet (float): learning rate for spike triplet updates on
+                postsynaptic spikes.
+            lr_pre_pair (float): learning rate for spike pair updates on
+                presynaptic spikes.
+            lr_pre_triplet (float): learning rate for spike triplet updates on
+                presynaptic spikes.
+            tc_post_fast (float): time constant of exponential decay for postsynaptic
+                trace of pairs (fast).
+            tc_post_slow (float): time constant of exponential decay for postsynaptic
+                trace of triplets (slow).
+            tc_pre_fast (float): time constant of exponential decay for presynaptic
+                trace of pairs (fast).
+            tc_pre_slow (float): time constant of exponential decay for presynaptic
+                trace of triplets (slow).
+            delayed (bool): if the updater should assume that learned delays,
+                if present, may change.
+            interp_tolerance (float): maximum difference in time from an observation
+                to treat as co-occurring.
+            trace_mode (Literal["cumulative", "nearest"]): method to use for
+                calculating spike traces.
+            batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
+                function to reduce updates over the batch dimension.
+            field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+                function to reduce updates over the receptive field dimension,
+                :py:func:`torch.sum` when ``None``. Defaults to ``None``.
+
+        Returns:
+            IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
+
+        Important:
+            Any specified keyword arguments will override the default hyperparameters
+            set on initialization. See :py:class:`TripletSTDP` for details.
+        """
+        # add the cell with additional hyperparameters
+        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
+
+        # if delays should be accounted for
+        delayed = state.delayed and cell.connection.delayedby is not None
+
+        # common and derived arguments
+        monitor_kwargs = {
+            "as_prehook": False,
+            "train_update": True,
+            "eval_update": False,
+            "prepend": True,
+        }
+
+        return self.get_unit(name)

@@ -3,7 +3,7 @@ import math
 import random
 import torch
 
-from inferno.learn import STDP
+from inferno.learn import STDP, TripletSTDP
 from inferno.neural import DeltaCurrent, LinearDirect, Neuron, Serial
 
 
@@ -453,3 +453,142 @@ class TestSTDP:
             assert torch.all(layer.cell.updater.weight._pos[-1][delaybase > d] == 0)
             assert torch.all(layer.cell.updater.weight._neg[-1][delaybase <= d] > 0)
             assert torch.all(layer.cell.updater.weight._neg[-1][delaybase > d] == 0)
+
+
+class TestTripletSTDP:
+
+    def test_default_override(self):
+        shape = randshape(1, 3, 3, 5)
+        batchsz = random.randint(1, 5)
+        dt = random.uniform(0.7, 1.4)
+        delay = random.randint(0, 2) * dt
+
+        base_step_time = random.uniform(0.7, 1.4)
+        base_lr_post_pair = random.uniform(0.0, 1.0)
+        base_lr_post_triplet = random.uniform(0.0, 1.0)
+        base_lr_pre_pair = -random.uniform(0.0, 1.0)
+        base_lr_pre_triplet = -random.uniform(0.0, 1.0)
+        base_tc_post_fast = random.uniform(15.0, 30.0)
+        base_tc_post_slow = base_tc_post_fast + random.uniform(1.0, 3.0)
+        base_tc_pre_fast = random.uniform(15.0, 30.0)
+        base_tc_pre_slow = base_tc_pre_fast + random.uniform(1.0, 3.0)
+        base_delayed = delay == 0
+        base_interp_tolerance = random.uniform(1e-7, 1e-5)
+        base_trace_mode = "nearest"
+        base_batch_reduction = torch.amax
+
+        override_step_time = random.uniform(0.7, 1.4)
+        override_lr_post_pair = random.uniform(0.0, 1.0)
+        override_lr_post_triplet = random.uniform(0.0, 1.0)
+        override_lr_pre_pair = -random.uniform(0.0, 1.0)
+        override_lr_pre_triplet = -random.uniform(0.0, 1.0)
+        override_tc_post_fast = random.uniform(15.0, 30.0)
+        override_tc_post_slow = override_tc_post_fast + random.uniform(1.0, 3.0)
+        override_tc_pre_fast = random.uniform(15.0, 30.0)
+        override_tc_pre_slow = override_tc_pre_fast + random.uniform(1.0, 3.0)
+        override_delayed = delay != 0
+        override_interp_tolerance = random.uniform(1e-7, 1e-5)
+        override_trace_mode = "cumulative"
+        override_batch_reduction = torch.amin
+
+        layer = mocklayer(shape, batchsz, dt, delay)
+        updater = TripletSTDP(
+            step_time=base_step_time,
+            lr_post_pair=base_lr_post_pair,
+            lr_post_triplet=base_lr_post_triplet,
+            lr_pre_pair=base_lr_pre_pair,
+            lr_pre_triplet=base_lr_pre_triplet,
+            tc_post_fast=base_tc_post_fast,
+            tc_post_slow=base_tc_post_slow,
+            tc_pre_fast=base_tc_pre_fast,
+            tc_pre_slow=base_tc_pre_slow,
+            delayed=base_delayed,
+            interp_tolerance=base_interp_tolerance,
+            trace_mode=base_trace_mode,
+            batch_reduction=base_batch_reduction,
+        )
+
+        unit = updater.register_cell(
+            "onlyone",
+            layer.cell,
+            step_time=override_step_time,
+            lr_post_pair=override_lr_post_pair,
+            lr_post_triplet=override_lr_post_triplet,
+            lr_pre_pair=override_lr_pre_pair,
+            lr_pre_triplet=override_lr_pre_triplet,
+            tc_post_fast=override_tc_post_fast,
+            tc_post_slow=override_tc_post_slow,
+            tc_pre_fast=override_tc_pre_fast,
+            tc_pre_slow=override_tc_pre_slow,
+            delayed=override_delayed,
+            interp_tolerance=override_interp_tolerance,
+            trace_mode=override_trace_mode,
+            batch_reduction=override_batch_reduction,
+        )
+
+        assert override_step_time == unit.state.step_time
+        assert override_lr_post_pair == unit.state.lr_post_pair
+        assert override_lr_post_triplet == unit.state.lr_post_triplet
+        assert override_lr_pre_pair == unit.state.lr_pre_pair
+        assert override_lr_pre_triplet == unit.state.lr_pre_triplet
+        assert override_tc_post_fast == unit.state.tc_post_fast
+        assert override_tc_post_slow == unit.state.tc_post_slow
+        assert override_tc_pre_fast == unit.state.tc_pre_fast
+        assert override_tc_pre_slow == unit.state.tc_pre_slow
+        assert override_delayed == unit.state.delayed
+        assert override_interp_tolerance == unit.state.tolerance
+        assert override_trace_mode == unit.state.tracemode
+        assert override_batch_reduction == unit.state.batchreduce
+
+    def test_default_passthrough(self):
+        shape = randshape(1, 3, 3, 5)
+        batchsz = random.randint(1, 5)
+        dt = random.uniform(0.7, 1.4)
+        delay = random.randint(0, 2) * dt
+
+        base_step_time = random.uniform(0.7, 1.4)
+        base_lr_post_pair = random.uniform(0.0, 1.0)
+        base_lr_post_triplet = random.uniform(0.0, 1.0)
+        base_lr_pre_pair = -random.uniform(0.0, 1.0)
+        base_lr_pre_triplet = -random.uniform(0.0, 1.0)
+        base_tc_post_fast = random.uniform(15.0, 30.0)
+        base_tc_post_slow = base_tc_post_fast + random.uniform(1.0, 3.0)
+        base_tc_pre_fast = random.uniform(15.0, 30.0)
+        base_tc_pre_slow = base_tc_pre_fast + random.uniform(1.0, 3.0)
+        base_delayed = delay == 0
+        base_interp_tolerance = random.uniform(1e-7, 1e-5)
+        base_trace_mode = "nearest"
+        base_batch_reduction = torch.amax
+
+        layer = mocklayer(shape, batchsz, dt, delay)
+        updater = TripletSTDP(
+            step_time=base_step_time,
+            lr_post_pair=base_lr_post_pair,
+            lr_post_triplet=base_lr_post_triplet,
+            lr_pre_pair=base_lr_pre_pair,
+            lr_pre_triplet=base_lr_pre_triplet,
+            tc_post_fast=base_tc_post_fast,
+            tc_post_slow=base_tc_post_slow,
+            tc_pre_fast=base_tc_pre_fast,
+            tc_pre_slow=base_tc_pre_slow,
+            delayed=base_delayed,
+            interp_tolerance=base_interp_tolerance,
+            trace_mode=base_trace_mode,
+            batch_reduction=base_batch_reduction,
+        )
+
+        unit = updater.register_cell("onlyone", layer.cell)
+
+        assert base_step_time == unit.state.step_time
+        assert base_lr_post_pair == unit.state.lr_post_pair
+        assert base_lr_post_triplet == unit.state.lr_post_triplet
+        assert base_lr_pre_pair == unit.state.lr_pre_pair
+        assert base_lr_pre_triplet == unit.state.lr_pre_triplet
+        assert base_tc_post_fast == unit.state.tc_post_fast
+        assert base_tc_post_slow == unit.state.tc_post_slow
+        assert base_tc_pre_fast == unit.state.tc_pre_fast
+        assert base_tc_pre_slow == unit.state.tc_pre_slow
+        assert base_delayed == unit.state.delayed
+        assert base_interp_tolerance == unit.state.tolerance
+        assert base_trace_mode == unit.state.tracemode
+        assert base_batch_reduction == unit.state.batchreduce
