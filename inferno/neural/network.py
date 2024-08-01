@@ -558,7 +558,7 @@ class Layer(Module, ABC):
         The inputs are given as a dictionary where each key is a registered input name
         and the value is the tensor output from that connection. This is expected to
         return a dictionary where each key is the name of a registered output and the
-        value is the tensor to be passed to its `__call__` method.
+        value is the tensor to be passed to its ``__call__`` method.
 
         Args:
             inputs (dict[str, torch.Tensor]): dictionary of input names to tensors.
@@ -602,14 +602,14 @@ class Layer(Module, ABC):
         The keys for ``inputs`` and ``connection_kwargs`` are the names of registered
         :py:class:`Connection` objects.
 
-        The keys for ``neuron_kwargs`` are the names of the registered :py:class`Neuron`
+        The keys for ``neuron_kwargs`` are the names of the registered :py:class:`Neuron`
         objects.
 
         Underlying :py:class:`Connection` and :py:class:`Neuron` objects are called
-        using `__call__`, which in turn call :py:meth:`Connection.forward` and
+        using ``__call__``, which in turn call :py:meth:`Connection.forward` and
         :py:meth:`Neuron.forward` respectively. The keyword argument dictionaries will
         be unpacked for each call automatically, and the inputs will be unpacked as
-        positional arguments for each ``Connection``call.
+        positional arguments for each ``Connection`` call.
 
         Only input modules that have keys in ``inputs`` will be run and added to
         the positional argument of :py:meth:`wiring`.
@@ -684,7 +684,7 @@ class Biclique(Layer):
             Defaults to ``"sum"``.
 
     Note:
-        When ``combine`` is not a string, keyword arguments passed into `__call__`,
+        When ``combine`` is not a string, keyword arguments passed into ``__call__``,
         other than those captured in :py:meth`forward` will be passed in.
     """
 
@@ -845,7 +845,7 @@ class Serial(Layer):
 
     Note:
         When ``transform`` is not specified, the identity function is used. Keyword
-        arguments passed into `__call__`, other than those captured in
+        arguments passed into ``__call__``, other than those captured in
         :py:meth`forward` will be passed in.
 
     Note:
@@ -1079,7 +1079,7 @@ class RecurrentSerial(Layer):
     Note:
         When any of ``feedfwd_out_transform``, ``lateral_out_transform``, ``feedback_out_transform``,
         or ``feedback_in_transform`` is not specified, the identity function is used.
-        Keyword arguments passed into `__call__`, other than those captured in
+        Keyword arguments passed into ``__call__``, other than those captured in
         :py:meth`forward` will be passed in.
 
     Important:
@@ -1092,7 +1092,7 @@ class RecurrentSerial(Layer):
         ``feedback_out_transform``, ``lateral_in_transform``,
         or ``feedback_in_transform`` is not specified, the identity function is used
         (the latter two also wrapping the input in a tuple). Keyword arguments passed
-        into `__call__`, other than those captured in :py:meth`forward` will be passed
+        into ``__call__``, other than those captured in :py:meth`forward` will be passed
         in. The ``lateral_in_transform`` and ``feedback_in_transform`` functions are
         only applied to the spiking input from the feedforward and feedback neurons
         respectively.

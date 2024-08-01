@@ -10,8 +10,8 @@ Although STDP methods are phrased as originally described, Inferno tries to intr
 $$
 \begin{align*}
     \frac{dw}{dt} &= x_\text{pre}(t) \sum_{\mathcal{F}_\text{post}} \delta(t - t^f_\text{post}) + x_\text{post}(t) \sum_{\mathcal{F}_\text{pre}} \delta(t - t^f_\text{pre}) \\
-    \tau_\text{pre} \frac{dx_\text{pre}}{dt} &= -x_\text{pre} + A_+ \sum_f \delta (t - t_\text{pre}^f) \\
-    \tau_\text{post} \frac{dx_\text{post}}{dt} &= -x_\text{post} + A_- \sum_f \delta (t - t_\text{post}^f)
+    \frac{dx_\text{pre}}{dt} &= -\frac{x_\text{pre}}{\tau_\text{pre}} + A_+ \sum_f \delta (t - t_\text{pre}^f) \\
+    \frac{dx_\text{post}}{dt} &= -\frac{x_\text{post}}{\tau_\text{post}} + A_- \sum_f \delta (t - t_\text{post}^f)
 \end{align*}
 $$
 
@@ -118,8 +118,8 @@ $$
 \begin{align*}
     \frac{dw}{dt} &= \gamma \, r(t) \, \xi(t) \\
     \xi(t) &= P^+ \Phi_\text{post}(t) + P^- \Phi_\text{pre}(t) \\
-    \tau_+ \frac{dP^+}{dt} &= -P^+ + A_+ \Phi_\text{pre}(t) \\
-    \tau_- \frac{dP^-}{dt} &= -P^- + A_- \Phi_\text{post}(t) \\
+    \frac{dP^+}{dt} &= -\frac{P^+}{\tau_+} + A_+ \Phi_\text{pre}(t) \\
+    \frac{dP^-}{dt} &= -\frac{P^-}{\tau_-} + A_- \Phi_\text{post}(t) \\
     \Phi_n(t) &= \sum_{\mathcal{F}_n} \delta(t - t_n^f)
 \end{align*}
 $$
@@ -169,8 +169,8 @@ $$
     \frac{dw}{dt} &= \gamma \, r(t) \, z(t) \\
     \tau_z \frac{dz}{dt} &= -z(t) + \xi(t) \\
     \xi(t) &= P^+ \Phi_\text{post}(t) + P^- \Phi_\text{pre}(t) \\
-    \tau_+ \frac{dP^+}{dt} &= -P^+ + A_+ \Phi_\text{pre}(t) \\
-    \tau_- \frac{dP^-}{dt} &= -P^- + A_- \Phi_\text{post}(t) \\
+    \frac{dP^+}{dt} &= -\frac{P^+}{\tau_+} + A_+ \Phi_\text{pre}(t) \\
+    \frac{dP^-}{dt} &= -\frac{P^-}{\tau_-} + A_- \Phi_\text{post}(t) \\
     \Phi_n(t) &= \sum_{\mathcal{F}_n} \delta(t - t_n^f)
 \end{align*}
 $$

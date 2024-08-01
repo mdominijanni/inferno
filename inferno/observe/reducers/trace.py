@@ -22,7 +22,7 @@ class NearestTraceReducer(FoldReducer):
         \begin{cases}
             A & \lvert h(t) - h^* \rvert \leq \epsilon \\
             x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right)
-            & \left[\lvert h(t) - h^* \rvert > \epsilon\right]
+            & \lvert h(t) - h^* \rvert > \epsilon
         \end{cases}
 
     For the trace (state) :math:`x` and observation :math:`h`.

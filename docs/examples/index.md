@@ -3,6 +3,7 @@
 ```{toctree}
 :hidden:
 quickstart
+florian-stdp
 ```
 
 <strong style="font-size: 1.5em;">[Quickstart](<examples/quickstart:Quickstart>)</strong>
