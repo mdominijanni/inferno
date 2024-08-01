@@ -136,10 +136,10 @@ class MSTDPET(IndependentCellTrainer):
 
     .. math::
         \begin{align*}
-            x_\text{pre}(t) = x_\text{pre}(t - \Delta t)
+            x_\text{pre}(t) &= x_\text{pre}(t - \Delta t)
             \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right) +
             \eta_\text{post} \left[t = t_\text{pre}^f\right] \\
-            x_\text{post}(t) = x_\text{post}(t - \Delta t)
+            x_\text{post}(t) &= x_\text{post}(t - \Delta t)
             \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right) +
             \eta_\text{pre} \left[t = t_\text{post}^f\right]
         \end{align*}
@@ -170,7 +170,7 @@ class MSTDPET(IndependentCellTrainer):
     spike from neuron :math:`n`, respectively.
 
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
-    controls which terms are potentiative and depressive updates (these are applied to
+    control which terms are potentiative and depressive updates (these are applied to
     the opposite trace). The terms (when expanded) can be scaled for weight dependence
     on updating. :math:`r` is a reinforcement term given on each update. Note that
     this implementation splits the eligibility trace into two terms, so weight
@@ -183,9 +183,9 @@ class MSTDPET(IndependentCellTrainer):
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
     | Anti-Hebbian      | :math:`-`                            | :math:`+`                           | :math:`\eta_\text{pre}`                   | :math:`\eta_\text{post}`                  |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
-    | Depressive Only   | :math:`-`                            | :math:`-`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
+    | Potentiative Only | :math:`+`                            | :math:`+`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
-    | Potentiative Only | :math:`+`                            | :math:`+`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
+    | Depressive Only   | :math:`-`                            | :math:`-`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
 
     Because this logic is extended to the sign of the reward signal, the size of the
@@ -197,15 +197,15 @@ class MSTDPET(IndependentCellTrainer):
     Args:
         step_time (float): length of a simulation time step, :math:`\Delta t`,
             in :math:`\text{ms}`.
-        lr_post (float): learning rate for updates on postsynaptic spike updates,
+        lr_post (float): learning rate for updates on postsynaptic spikes,
             :math:`\eta_\text{post}`.
-        lr_pre (float): learning rate for updates on presynaptic spike updates,
+        lr_pre (float): learning rate for updates on presynaptic spikes,
             :math:`\eta_\text{pre}`.
-        tc_post (float): time constant for exponential decay of postsynaptic trace,
+        tc_post (float): time constant of exponential decay of postsynaptic trace,
             :math:`tau_\text{post}`, in :math:`ms`.
-        tc_pre (float): time constant for exponential decay of presynaptic trace,
+        tc_pre (float): time constant of exponential decay of presynaptic trace,
             :math:`tau_\text{pre}`, in :math:`ms`.
-        tc_eligibility (float): time constant for exponential decay of eligibility trace,
+        tc_eligibility (float): time constant of exponential decay of eligibility trace,
             :math:`tau_z`, in :math:`ms`.
         interp_tolerance (float): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
@@ -329,11 +329,11 @@ class MSTDPET(IndependentCellTrainer):
 
         Keyword Args:
             step_time (float): length of a simulation time step.
-            lr_post (float): learning rate for updates on postsynaptic spike updates.
-            lr_pre (float): learning rate for updates on presynaptic spike updates.
-            tc_post (float): time constant for exponential decay of postsynaptic trace.
-            tc_pre (float): time constant for exponential decay of presynaptic trace.
-            tc_eligibility (float): time constant for exponential decay of eligibility trace.
+            lr_post (float): learning rate for updates on postsynaptic spikes.
+            lr_pre (float): learning rate for updates on presynaptic spikes.
+            tc_post (float): time constant of exponential decay of postsynaptic trace.
+            tc_pre (float): time constant of exponential decay of presynaptic trace.
+            tc_eligibility (float): time constant of exponential decay of eligibility trace.
             scale (float): scaling term for both the postsynaptic and presynaptic updates.
             interp_tolerance (float): maximum difference in time from an observation
                 to treat as co-occurring.
@@ -594,10 +594,10 @@ class MSTDP(IndependentCellTrainer):
 
     .. math::
         \begin{align*}
-            x_\text{pre}(t) = x_\text{pre}(t - \Delta t)
+            x_\text{pre}(t) &= x_\text{pre}(t - \Delta t)
             \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right) +
             \eta_\text{post} \left[t = t_\text{pre}^f\right] \\
-            x_\text{post}(t) = x_\text{post}(t - \Delta t)
+            x_\text{post}(t) &= x_\text{post}(t - \Delta t)
             \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right) +
             \eta_\text{pre} \left[t = t_\text{post}^f\right]
         \end{align*}
@@ -628,7 +628,7 @@ class MSTDP(IndependentCellTrainer):
     spike from neuron :math:`n`, respectively.
 
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
-    controls which terms are potentiative and depressive updates (these are applied to
+    control which terms are potentiative and depressive updates (these are applied to
     the opposite trace). The terms (when expanded) can be scaled for weight dependence
     on updating. :math:`r` is a reinforcement term given on each update. Note that
     this implementation splits the eligibility trace into two terms, so weight
@@ -641,9 +641,9 @@ class MSTDP(IndependentCellTrainer):
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
     | Anti-Hebbian      | :math:`-`                            | :math:`+`                           | :math:`\eta_\text{pre}`                   | :math:`\eta_\text{post}`                  |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
-    | Depressive Only   | :math:`-`                            | :math:`-`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
+    | Potentiative Only | :math:`+`                            | :math:`+`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
-    | Potentiative Only | :math:`+`                            | :math:`+`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
+    | Depressive Only   | :math:`-`                            | :math:`-`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
 
     Because this logic is extended to the sign of the reward signal, the size of the
@@ -655,13 +655,13 @@ class MSTDP(IndependentCellTrainer):
     Args:
         step_time (float): length of a simulation time step, :math:`\Delta t`,
             in :math:`\text{ms}`.
-        lr_post (float): learning rate for updates on postsynaptic spike updates,
+        lr_post (float): learning rate for updates on postsynaptic spikes,
             :math:`\eta_\text{post}`.
-        lr_pre (float): learning rate for updates on presynaptic spike updates,
+        lr_pre (float): learning rate for updates on presynaptic spikes,
             :math:`\eta_\text{pre}`.
-        tc_post (float): time constant for exponential decay of postsynaptic trace,
+        tc_post (float): time constant of exponential decay of postsynaptic trace,
             :math:`tau_\text{post}`, in :math:`ms`.
-        tc_pre (float): time constant for exponential decay of presynaptic trace,
+        tc_pre (float): time constant of exponential decay of presynaptic trace,
             :math:`tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
@@ -794,10 +794,10 @@ class MSTDP(IndependentCellTrainer):
 
         Keyword Args:
             step_time (float): length of a simulation time step.
-            lr_post (float): learning rate for updates on postsynaptic spike updates.
-            lr_pre (float): learning rate for updates on presynaptic spike updates.
-            tc_post (float): time constant for exponential decay of postsynaptic trace.
-            tc_pre (float): time constant for exponential decay of presynaptic trace.
+            lr_post (float): learning rate for updates on postsynaptic spikes.
+            lr_pre (float): learning rate for updates on presynaptic spikes.
+            tc_post (float): time constant of exponential decay of postsynaptic trace.
+            tc_pre (float): time constant of exponential decay of presynaptic trace.
             delayed (bool): if the updater should assume that learned delays,
                 if present, may change.
             interp_tolerance (float): maximum difference in time from an observation

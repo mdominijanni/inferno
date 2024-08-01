@@ -15,7 +15,7 @@ from typing import Any, Callable, Literal
 
 
 class STDP(IndependentCellTrainer):
-    r"""Spike-timing dependent plasticity trainer.
+    r"""Pair-based spike-timing dependent plasticity trainer.
 
     .. math::
         w(t + \Delta t) - w(t) = x_\text{pre}(t) \bigl[t = t^f_\text{post}\bigr] +
@@ -25,10 +25,10 @@ class STDP(IndependentCellTrainer):
 
     .. math::
         \begin{align*}
-            x_\text{pre}(t) = x_\text{pre}(t - \Delta t)
+            x_\text{pre}(t) &= x_\text{pre}(t - \Delta t)
             \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right) +
             \eta_\text{post} \left[t = t_\text{pre}^f\right] \\
-            x_\text{post}(t) = x_\text{post}(t - \Delta t)
+            x_\text{post}(t) &= x_\text{post}(t - \Delta t)
             \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right) +
             \eta_\text{pre} \left[t = t_\text{post}^f\right]
         \end{align*}
@@ -59,7 +59,7 @@ class STDP(IndependentCellTrainer):
     spike from neuron :math:`n`, respectively.
 
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
-    controls which terms are potentiative and which terms are depressive. The terms can
+    control which terms are potentiative and which terms are depressive. The terms can
     be scaled for weight dependence on updating.
 
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
@@ -69,21 +69,21 @@ class STDP(IndependentCellTrainer):
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
     | Anti-Hebbian      | :math:`-`                            | :math:`+`                           | :math:`\eta_\text{pre}`                   | :math:`\eta_\text{post}`                  |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
-    | Depressive Only   | :math:`-`                            | :math:`-`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
+    | Potentiative Only | :math:`+`                            | :math:`+`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
-    | Potentiative Only | :math:`+`                            | :math:`+`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
+    | Depressive Only   | :math:`-`                            | :math:`-`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
 
     Args:
         step_time (float): length of a simulation time step, :math:`\Delta t`,
             in :math:`\text{ms}`.
-        lr_post (float): learning rate for updates on postsynaptic spike updates,
+        lr_post (float): learning rate for updates on postsynaptic spikes,
             :math:`\eta_\text{post}`.
-        lr_pre (float): learning rate for updates on presynaptic spike updates,
+        lr_pre (float): learning rate for updates on presynaptic spikes,
             :math:`\eta_\text{pre}`.
-        tc_post (float): time constant for exponential decay of postsynaptic trace,
+        tc_post (float): time constant of exponential decay of postsynaptic trace,
             :math:`tau_\text{post}`, in :math:`ms`.
-        tc_pre (float): time constant for exponential decay of presynaptic trace,
+        tc_pre (float): time constant of exponential decay of presynaptic trace,
             :math:`tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
@@ -215,10 +215,10 @@ class STDP(IndependentCellTrainer):
 
         Keyword Args:
             step_time (float): length of a simulation time step.
-            lr_post (float): learning rate for updates on postsynaptic spike updates.
-            lr_pre (float): learning rate for updates on presynaptic spike updates.
-            tc_post (float): time constant for exponential decay of postsynaptic trace.
-            tc_pre (float): time constant for exponential decay of presynaptic trace.
+            lr_post (float): learning rate for updates on postsynaptic spikes.
+            lr_pre (float): learning rate for updates on presynaptic spikes.
+            tc_post (float): time constant of exponential decay of postsynaptic trace.
+            tc_pre (float): time constant of exponential decay of presynaptic trace.
             delayed (bool): if the updater should assume that learned delays,
                 if present, may change.
             interp_tolerance (float): maximum difference in time from an observation
@@ -382,3 +382,192 @@ class STDP(IndependentCellTrainer):
                     cell.updater.weight = (dpost, dpre)
                 case (True, True):  # potentiative
                     cell.updater.weight = (dpost + dpre, None)
+
+
+class TripletSTDP(IndependentCellTrainer):
+    r"""Triplet-based spike-timing dependent plasticity trainer.
+
+    .. math::
+        \begin{align*}
+            w(t + \Delta t) - w(t) &= x_a(t)\left(\alpha_\text{post} + y_b(t - \Delta t)\beta_\text{post} \right) \bigl[ t = t^f_\text{post} \bigr] \\
+            &+ y_a(t)\left(\alpha_\text{pre} + x_b(t - \Delta t)\beta_\text{pre} \right) \bigl[ t = t^f_\text{pre} \bigr]
+        \end{align*}
+
+    When ``trace_mode = "cumulative"``:
+
+    .. math::
+        \begin{align*}
+            x_a(t) &= x_a(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + \bigl[t = t^f_\text{pre}\bigr] \\
+            x_b(t) &= x_b(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) + \bigl[t = t^f_\text{pre}\bigr] \\
+            y_a(t) &= y_a(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + \bigl[t = t^f_\text{post}\bigr] \\
+            y_b(t) &= y_b(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_y}\right) + \bigl[t = t^f_\text{post}\bigr]
+        \end{align*}
+
+    When ``trace_mode = "nearest"``:
+
+    .. math::
+        \begin{align*}
+            x_\text{a}(t) &=
+            \begin{cases}
+                1 & t = t_\text{pre}^f \\
+                x_\text{a}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_+}\right)
+                & t \neq t_\text{pre}^f
+            \end{cases} \\
+            x_\text{b}(t) &=
+            \begin{cases}
+                1 & t = t_\text{pre}^f \\
+                x_\text{b}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_x}\right)
+                & t \neq t_\text{pre}^f
+            \end{cases} \\
+            y_\text{a}(t) &=
+            \begin{cases}
+                1 & t = t_\text{post}^f \\
+                y_\text{a}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_-}\right)
+                & t \neq t_\text{post}^f
+            \end{cases} \\
+            y_\text{b}(t) &=
+            \begin{cases}
+                1 & t = t_\text{post}^f \\
+                y_\text{b}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_y}\right)
+                & t \neq t_\text{post}^f
+            \end{cases}
+        \end{align*}
+
+    Where:
+
+    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most
+    recent spike from neuron :math:`n`, respectively. The following constraints are
+    enforced.
+
+    .. math::
+        \begin{align*}
+            0 &< \tau_+ < \tau_x \\
+            0 &< \tau_- < \tau_y \\
+            \text{sgn}(\alpha_\text{post}) &= \text{sgn}(\beta_\text{post}) \\
+            \text{sgn}(\alpha_\text{pre}) &= \text{sgn}(\beta_\text{pre})
+        \end{align*}
+
+    The signs of the learning rates :math:`\alpha_\text{post}`, :math:`\beta_\text{post}`,
+    :math:`\alpha_\text{pre}`, and :math:`\beta_\text{pre}` control which terms are
+    potentiative and which terms are depressive. The terms can be scaled for weight
+    dependence on updating.
+
+    +-------------------+-----------------------------------------------------------+---------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Mode              | :math:`\text{sgn}(\alpha_\text{post}, \beta_\text{post})` | :math:`\text{sgn}(\alpha_\text{pre}, \beta_\text{pre})` | LTP Term(s)                                                                        | LTD Term(s)                                                                        |
+    +===================+===========================================================+=========================================================+====================================================================================+====================================================================================+
+    | Hebbian           | :math:`+`                                                 | :math:`-`                                               | :math:`\alpha_\text{post}, \beta_\text{post}`                                      | :math:`\alpha_\text{pre}, \beta_\text{pre}`                                        |
+    +-------------------+-----------------------------------------------------------+---------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Anti-Hebbian      | :math:`-`                                                 | :math:`+`                                               | :math:`\alpha_\text{pre}, \beta_\text{pre}`                                        | :math:`\alpha_\text{post}, \beta_\text{post}`                                      |
+    +-------------------+-----------------------------------------------------------+---------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Potentiative Only | :math:`+`                                                 | :math:`+`                                               | :math:`\alpha_\text{post}, \alpha_\text{pre}, \beta_\text{post}, \beta_\text{pre}` | None                                                                               |
+    +-------------------+-----------------------------------------------------------+---------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+    | Depressive Only   | :math:`-`                                                 | :math:`-`                                               | None                                                                               | :math:`\alpha_\text{post}, \alpha_\text{pre}, \beta_\text{post}, \beta_\text{pre}` |
+    +-------------------+-----------------------------------------------------------+---------------------------------------------------------+------------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+
+    Args:
+        step_time (float): length of a simulation time step, :math:`\Delta t`,
+            in :math:`\text{ms}`.
+        lr_post_pair (float): learning rate for spike pair updates on postsynaptic
+            spikes, :math:`\alpha_\text{post}`.
+        lr_post_triplet (float): learning rate for spike triplet updates on postsynaptic
+            spikes, :math:`\beta_\text{post}`.
+        lr_pre_pair (float): learning rate for spike pair updates on presynaptic
+            spikes, :math:`\alpha_\text{pre}`.
+        lr_pre_triplet (float): learning rate for spike triplet updates on presynaptic
+            spikes, :math:`\beta_\text{pre}`.
+        tc_post_fast (float): time constant of exponential decay for postsynaptic trace
+            of pairs (fast), :math:`tau_-`, in :math:`ms`.
+        tc_post_slow (float): time constant of exponential decay for postsynaptic trace
+            of triplets (slow), :math:`tau_y`, in :math:`ms`.
+        tc_pre_fast (float): time constant of exponential decay for presynaptic trace
+            of pairs (fast), :math:`tau_+`, in :math:`ms`.
+        tc_pre_slow (float): time constant of exponential decay for presynaptic trace
+            of triplets (slow), :math:`tau_x`, in :math:`ms`.
+        delayed (bool, optional): if the updater should assume that learned delays, if
+            present, may change. Defaults to ``False``.
+        interp_tolerance (float): maximum difference in time from an observation
+            to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
+        trace_mode (Literal["cumulative", "nearest"], optional): method to use for
+            calculating spike traces. Defaults to ``"cumulative"``.
+        batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
+            function to reduce updates over the batch dimension, :py:func:`torch.mean`
+            when ``None``. Defaults to ``None``.
+
+    Important:
+        When ``delayed`` is ``True``, the history for the presynaptic activity (spike
+        traces and spike activity) is preserved in its un-delayed form and is then
+        accessed using the connection's :py:attr:`~inferno.neural.Connection.selector`.
+
+        When ``delayed`` is ``False``, only the most recent delay-adjusted presynaptic
+        activity is preserved.
+
+    Important:
+        It is expected for this to be called after every trainable batch. Variables
+        used are not stored (or are invalidated) if multiple batches are given before
+        an update.
+
+    Note:
+        The constructor arguments are hyperparameters and can be overridden on a
+        cell-by-cell basis.
+
+    Note:
+        ``batch_reduction`` can be one of the functions in PyTorch including but not
+        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        A custom function with similar behavior can also be passed in. Like with the
+        included function, it should not keep the original dimensions by default.
+
+    See Also:
+        For more details and references, visit
+        :ref:`zoo/learning-stdp:Triplet Spike-Timing Dependent Plasticity (Triplet STDP)` in the zoo.
+    """
+
+    def __init__(
+        self,
+        step_time: float,
+        lr_post_pair: float,
+        lr_post_triplet: float,
+        lr_pre_pair: float,
+        lr_pre_triplet: float,
+        tc_post_fast: float,
+        tc_post_slow: float,
+        tc_pre_fast: float,
+        tc_pre_slow: float,
+        delayed: bool = False,
+        interp_tolerance: float = 0.0,
+        trace_mode: Literal["cumulative", "nearest"] = "cumulative",
+        batch_reduction: (
+            Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
+        ) = None,
+        **kwargs,
+    ):
+        # call superclass constructor
+        IndependentCellTrainer.__init__(self, **kwargs)
+
+        # default hyperparameters
+        self.step_time = argtest.gt("step_time", step_time, 0, float)
+        self.lr_post_pair = argtest.likesign(
+            "lr_post_pair", lr_post_pair, lr_post_triplet, float, "lr_post_triplet"
+        )
+        self.lr_post_triplet = float(lr_post_triplet)
+        self.lr_pre_pair = argtest.likesign(
+            "lr_pre_pair", lr_pre_pair, lr_pre_triplet, float, "lr_pre_triplet"
+        )
+        self.lr_pre_triplet = float(lr_pre_triplet)
+        self.tc_post_fast = argtest.gt("tc_post_fast", tc_post_fast, 0, float)
+        self.tc_post_slow = argtest.gt(
+            "tc_post_slow", tc_post_slow, tc_post_fast, float, "tc_post_fast"
+        )
+        self.tc_pre_fast = argtest.gt("tc_pre_fast", tc_pre_fast, 0, float)
+        self.tc_pre_slow = argtest.gt(
+            "tc_pre_slow", tc_pre_slow, tc_pre_fast, float, "tc_pre_fast"
+        )
+        self.delayed = bool(delayed)
+        self.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
+        self.trace = argtest.oneof(
+            "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
+        )
+        self.batchreduce = batch_reduction if batch_reduction else torch.mean

@@ -19,9 +19,9 @@ $$
 
 $$
 \begin{align*}
-    w(t + \Delta t) - w(t) &= x_\text{pre}(t) \left[ t = t^f_\text{post} \right] + x_\text{post}(t) \left[ t = t^f_\text{pre} \right] \\
-    x_\text{pre}(t) &= x_\text{pre}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{pre}}\right) + A_+ \left[t = t^f_\text{pre}\right] \\
-    x_\text{post}(t) &= x_\text{post}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{post}}\right) + A_- \left[t = t^f_\text{post}\right]
+    w(t + \Delta t) - w(t) &= x_\text{pre}(t) \bigl[ t = t^f_\text{post} \bigr] + x_\text{post}(t) \bigl[ t = t^f_\text{pre} \bigr] \\
+    x_\text{pre}(t) &= x_\text{pre}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{pre}}\right) + A_+ \bigl[t = t^f_\text{pre}\bigr] \\
+    x_\text{post}(t) &= x_\text{post}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{post}}\right) + A_- \bigl[t = t^f_\text{post}\bigr]
 \end{align*}
 $$
 
@@ -132,9 +132,9 @@ $$
 $$
 \begin{align*}
     w(t + \Delta t) - w(t) &= \gamma \, r(t) \, \zeta(t) \\
-    \zeta(t) &= P^+ \left[t = t_\text{post}^f\right] + P^- \left[t = t_\text{pre}^f\right] \\
-    P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\left[t = t_\text{pre}^f\right] \\
-    P^-(t) &= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \left[t = t_\text{post}^f\right]
+    \zeta(t) &= P^+ \bigl[t = t_\text{post}^f\bigr] + P^- \bigl[t = t_\text{pre}^f\bigr] \\
+    P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\bigl[t = t_\text{pre}^f\bigr] \\
+    P^-(t) &= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \bigl[t = t_\text{post}^f\bigr]
 \end{align*}
 $$
 
@@ -183,9 +183,9 @@ $$
 \begin{align*}
     w(t + \Delta t) - w(t) &= \gamma \Delta t \, r(t) \, z(t) \\
     z(t ) &= z(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right) + \frac{\zeta(t)}{\tau_z} \\
-    \zeta(t) &= P^+ \left[t = t_\text{post}^f\right] + P^- \left[t = t_\text{pre}^f\right] \\
-    P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\left[t = t_\text{pre}^f\right] \\
-    P^-(t) &= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \left[t = t_\text{post}^f\right]
+    \zeta(t) &= P^+ \bigl[t = t_\text{post}^f\bigr] + P^- \bigl[t = t_\text{pre}^f\bigr] \\
+    P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\bigl[t = t_\text{pre}^f\bigr] \\
+    P^-(t) &= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \bigl[t = t_\text{post}^f\bigr]
 \end{align*}
 $$
 
@@ -231,14 +231,15 @@ $$
 $$
 
 *With solutions:*
+
 $$
 \begin{align*}
-    w(t + \Delta t) - w(t) &= r_1(t)\left({A_2}^+ + o_2(t - \Delta t){A_3}^+\right) \left[ t = t^f_\text{post} \right] \\
-    &+ o_1(t)\left({A_2}^- + r_2(t - \Delta t){A_3}^-\right) \left[ t = t^f_\text{pre} \right] \\
-    r_1(t) &= r_1(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + \left[t = t^f_\text{pre}\right] \\
-    r_2(t) &= r_2(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) + \left[t = t^f_\text{pre}\right] \\
-    o_1(t) &= o_1(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + \left[t = t^f_\text{post}\right] \\
-    o_2(t) &= o_2(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_y}\right) + \left[t = t^f_\text{post}\right] \\
+    w(t + \Delta t) - w(t) &= r_1(t)\left({A_2}^+ + o_2(t - \Delta t){A_3}^+\right) \bigl[ t = t^f_\text{post} \bigr] \\
+    &+ o_1(t)\left({A_2}^- + r_2(t - \Delta t){A_3}^-\right) \bigl[ t = t^f_\text{pre} \bigr] \\
+    r_1(t) &= r_1(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + \bigl[t = t^f_\text{pre}\bigr] \\
+    r_2(t) &= r_2(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) + \bigl[t = t^f_\text{pre}\bigr] \\
+    o_1(t) &= o_1(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + \bigl[t = t^f_\text{post}\bigr] \\
+    o_2(t) &= o_2(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_y}\right) + \bigl[t = t^f_\text{post}\bigr]
 \end{align*}
 $$
 

@@ -1,5 +1,6 @@
 from .utils import rgetattr
 from collections.abc import Iterable, Sequence
+import math
 from types import UnionType
 from typing import Any, Callable
 
@@ -238,6 +239,57 @@ def dimensions(
             return (func(name, value, *args, **kwargs),)
         else:
             return func(name, value, *args, **kwargs)
+
+
+def likesign(
+    name: str,
+    value: Any,
+    signed: Any,
+    cast: type | None = None,
+    signed_name: str | None = None,
+    prefix: str | None = None,
+) -> Any:
+    r"""Casts a value and then tests it is has the same sign as another.
+
+    Args:
+        name (str): display name of the variable tested.
+        value (Any): variable being testing.
+        signed (Any): signed value to match.
+        cast (type | None, optional): type to which value should be cast.
+            Defaults to ``None``.
+        signed_name (str | None, optional): name defining the signed value,
+            if not a constant. Defaults to ``None``.
+        prefix (str | None, optional): error message prefix to display.
+            Defaults to ``None``.
+
+    Returns:
+        Any: value (and limit if given a name) after being cast.
+
+    Note:
+        When "signed_name" is not ``None``, it will be casted as well and will be
+        displayed in the error message. Use this if the signed value is not constant
+        but is dependent upon another value.
+    """
+    # casts given value to appropriate type
+    casted = _cast(name, value, cast, prefix)
+
+    # conditionally casts the limit
+    if signed_name:
+        casted_signed = _cast(signed_name, signed, cast, prefix)
+    else:
+        casted_signed = signed
+
+    # test condition, non-constant limit message
+    if math.copysign(1.0, casted) == math.copysign(1.0, casted_signed):
+        return casted
+    elif signed_name:
+        val, lim, pfx = _valuestr(value), _valuestr(signed), _prefixstr(prefix)
+        raise ValueError(
+            f"{pfx}'{name}' ({val}) have the same sign as '{signed_name}' ({lim})"
+        )
+    else:
+        val, pfx = _valuestr(value), _prefixstr(prefix)
+        raise ValueError(f"{pfx}'{name}' ({val}) have the same sign as {signed}")
 
 
 def lt(
