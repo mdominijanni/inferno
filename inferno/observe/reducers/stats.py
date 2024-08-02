@@ -28,7 +28,8 @@ class EMAReducer(FoldReducer):
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to ``0.0.``
         inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
-
+        inplace (bool, optional): if write operations should be performed
+            in-place. Defaults to ``False``.
     Note:
         ``alpha`` is decoupled from the step time, so if the step time changes, then the
             underlying time constant will change, ``alpha`` will remain the same.
@@ -40,9 +41,10 @@ class EMAReducer(FoldReducer):
         alpha: float,
         duration: float = 0.0,
         inclusive: bool = False,
+        inplace: bool = False,
     ):
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, inclusive, 0)
+        FoldReducer.__init__(self, step_time, duration, inclusive, inplace, 0)
 
         # set state
         self.alpha = argtest.minmax_incl("alpha", alpha, 0, 1, float)

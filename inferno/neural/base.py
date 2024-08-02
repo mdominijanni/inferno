@@ -675,7 +675,7 @@ class InfernoSynapse(DelayedMixin, BatchShapeMixin, Synapse):
         r"""If write operations should be performed in-place.
 
         Args:
-            value (bool): new simulation time step length.
+            value (bool): if write operations should be performed in-place.
 
         Returns:
             bool: if write operations should be performed in-place.

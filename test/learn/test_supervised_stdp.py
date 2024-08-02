@@ -220,7 +220,6 @@ class TestMSTDPET:
 
         layer = mocklayer(shape, batchsz, dt, delay)
 
-        base_step_time = random.uniform(0.7, 1.4)
         base_lr_post = random.uniform(-1.0, 1.0)
         base_lr_pre = random.uniform(-1.0, 1.0)
         base_tc_post = random.uniform(15.0, 30.0)
@@ -230,7 +229,6 @@ class TestMSTDPET:
         base_trace_mode = "nearest"
         base_batch_reduction = torch.amax
 
-        override_step_time = random.uniform(0.7, 1.4)
         override_lr_post = random.uniform(-1.0, 1.0)
         override_lr_pre = random.uniform(-1.0, 1.0)
         override_tc_post = random.uniform(15.0, 30.0)
@@ -241,7 +239,6 @@ class TestMSTDPET:
         override_batch_reduction = torch.amin
 
         updater = MSTDPET(
-            step_time=base_step_time,
             lr_post=base_lr_post,
             lr_pre=base_lr_pre,
             tc_post=base_tc_post,
@@ -255,7 +252,6 @@ class TestMSTDPET:
         unit = updater.register_cell(
             "onlyone",
             layer.cell,
-            step_time=override_step_time,
             lr_post=override_lr_post,
             lr_pre=override_lr_pre,
             tc_post=override_tc_post,
@@ -266,7 +262,6 @@ class TestMSTDPET:
             batch_reduction=override_batch_reduction,
         )
 
-        assert override_step_time == unit.state.step_time
         assert override_lr_post == unit.state.lr_post
         assert override_lr_pre == unit.state.lr_pre
         assert override_tc_post == unit.state.tc_post
@@ -284,7 +279,6 @@ class TestMSTDPET:
 
         layer = mocklayer(shape, batchsz, dt, delay)
 
-        base_step_time = random.uniform(0.7, 1.4)
         base_lr_post = random.uniform(-1.0, 1.0)
         base_lr_pre = random.uniform(-1.0, 1.0)
         base_tc_post = random.uniform(15.0, 30.0)
@@ -295,7 +289,6 @@ class TestMSTDPET:
         base_batch_reduction = torch.amax
 
         updater = MSTDPET(
-            step_time=base_step_time,
             lr_post=base_lr_post,
             lr_pre=base_lr_pre,
             tc_post=base_tc_post,
@@ -308,7 +301,6 @@ class TestMSTDPET:
 
         unit = updater.register_cell("onlyone", layer.cell)
 
-        assert base_step_time == unit.state.step_time
         assert base_lr_post == unit.state.lr_post
         assert base_lr_pre == unit.state.lr_pre
         assert base_tc_post == unit.state.tc_post
@@ -350,7 +342,6 @@ class TestMSTDPET:
                 lr_post_dir = -1.0
                 lr_pre_dir = -1.0
 
-        step_time = random.uniform(0.7, 1.4)
         lr_post = random.uniform(0.1, 1.0) * lr_post_dir
         lr_pre = random.uniform(0.1, 1.0) * lr_pre_dir
         tc_post = random.uniform(15.0, 30.0)
@@ -360,7 +351,6 @@ class TestMSTDPET:
         batch_reduction = torch.sum
 
         updater = MSTDPET(
-            step_time=step_time,
             lr_post=lr_post,
             lr_pre=lr_pre,
             tc_post=tc_post,
@@ -382,19 +372,19 @@ class TestMSTDPET:
             inputs = torch.rand(batchsz, *shape) < 0.2
             outputs = layer(inputs.float())
 
-            xpost = xpost * math.exp(-step_time / tc_post) + abs(lr_pre) * outputs
-            xpre = xpre * math.exp(-step_time / tc_pre) + abs(lr_post) * inputs
+            xpost = xpost * math.exp(-dt / tc_post) + abs(lr_pre) * outputs
+            xpre = xpre * math.exp(-dt / tc_pre) + abs(lr_post) * inputs
 
             epost = (
-                epost * math.exp(-step_time / tc_eligibility)
+                epost * math.exp(-dt / tc_eligibility)
                 + (xpre / tc_eligibility) * outputs
             )
             epre = (
-                epre * math.exp(-step_time / tc_eligibility)
+                epre * math.exp(-dt / tc_eligibility)
                 + (xpost / tc_eligibility) * inputs
             )
             ecomb = (
-                ecomb * math.exp(-step_time / tc_eligibility)
+                ecomb * math.exp(-dt / tc_eligibility)
                 + ((xpost * lr_pre_dir * inputs) + (xpre * lr_post_dir * outputs))
                 / tc_eligibility
             )
@@ -469,7 +459,6 @@ class TestMSTDP:
         dt = random.uniform(0.7, 1.4)
         delay = random.randint(0, 2) * dt
 
-        base_step_time = random.uniform(0.7, 1.4)
         base_lr_post = random.uniform(-1.0, 1.0)
         base_lr_pre = random.uniform(-1.0, 1.0)
         base_tc_post = random.uniform(15.0, 30.0)
@@ -479,7 +468,6 @@ class TestMSTDP:
         base_trace_mode = "nearest"
         base_batch_reduction = torch.amax
 
-        override_step_time = random.uniform(0.7, 1.4)
         override_lr_post = random.uniform(-1.0, 1.0)
         override_lr_pre = random.uniform(-1.0, 1.0)
         override_tc_post = random.uniform(15.0, 30.0)
@@ -491,7 +479,6 @@ class TestMSTDP:
 
         layer = mocklayer(shape, batchsz, dt, delay)
         updater = MSTDP(
-            step_time=base_step_time,
             lr_post=base_lr_post,
             lr_pre=base_lr_pre,
             tc_post=base_tc_post,
@@ -505,7 +492,6 @@ class TestMSTDP:
         unit = updater.register_cell(
             "onlyone",
             layer.cell,
-            step_time=override_step_time,
             lr_post=override_lr_post,
             lr_pre=override_lr_pre,
             tc_post=override_tc_post,
@@ -516,7 +502,6 @@ class TestMSTDP:
             batch_reduction=override_batch_reduction,
         )
 
-        assert override_step_time == unit.state.step_time
         assert override_lr_post == unit.state.lr_post
         assert override_lr_pre == unit.state.lr_pre
         assert override_tc_post == unit.state.tc_post
@@ -532,7 +517,6 @@ class TestMSTDP:
         dt = random.uniform(0.7, 1.4)
         delay = random.randint(0, 2) * dt
 
-        base_step_time = random.uniform(0.7, 1.4)
         base_lr_post = random.uniform(-1.0, 1.0)
         base_lr_pre = random.uniform(-1.0, 1.0)
         base_tc_post = random.uniform(15.0, 30.0)
@@ -544,7 +528,6 @@ class TestMSTDP:
 
         layer = mocklayer(shape, batchsz, dt, delay)
         updater = MSTDP(
-            step_time=base_step_time,
             lr_post=base_lr_post,
             lr_pre=base_lr_pre,
             tc_post=base_tc_post,
@@ -557,7 +540,6 @@ class TestMSTDP:
 
         unit = updater.register_cell("onlyone", layer.cell)
 
-        assert base_step_time == unit.state.step_time
         assert base_lr_post == unit.state.lr_post
         assert base_lr_pre == unit.state.lr_pre
         assert base_tc_post == unit.state.tc_post
@@ -599,7 +581,6 @@ class TestMSTDP:
                 lr_post_dir = -1.0
                 lr_pre_dir = -1.0
 
-        step_time = random.uniform(0.7, 1.4)
         lr_post = random.uniform(0.1, 1.0) * lr_post_dir
         lr_pre = random.uniform(0.1, 1.0) * lr_pre_dir
         tc_post = random.uniform(15.0, 30.0)
@@ -609,7 +590,6 @@ class TestMSTDP:
         batch_reduction = torch.sum
 
         updater = MSTDP(
-            step_time=step_time,
             lr_post=lr_post,
             lr_pre=lr_pre,
             tc_post=tc_post,
@@ -628,8 +608,8 @@ class TestMSTDP:
             inputs = torch.rand(batchsz, *shape) < 0.2
             outputs = layer(inputs.float())
 
-            xpost = xpost * math.exp(-step_time / tc_post) + abs(lr_pre) * outputs
-            xpre = xpre * math.exp(-step_time / tc_pre) + abs(lr_post) * inputs
+            xpost = xpost * math.exp(-dt / tc_post) + abs(lr_pre) * outputs
+            xpre = xpre * math.exp(-dt / tc_pre) + abs(lr_post) * inputs
 
             match mode:
                 case "tensor":

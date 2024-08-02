@@ -12,9 +12,11 @@ class EventReducer(FoldReducer):
         step_time (float): length of time between observation.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             matches for it to be considered an event.
-        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
         duration (float, optional): length of time over which results should be
             stored, in the same units as ``step_time``. Defaults to ``0.0``.
+        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
+        inplace (bool, optional): if write operations should be performed
+            in-place. Defaults to ``False``.
 
     Important:
         The output of ``criterion`` must have a datatype (:py:class:`torch.dtype`) of
@@ -28,9 +30,11 @@ class EventReducer(FoldReducer):
         criterion: OneToOne[torch.Tensor],
         duration: float = 0.0,
         inclusive: bool = False,
+        inplace: bool = False,
+
     ):
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, inclusive, float("inf"))
+        FoldReducer.__init__(self, step_time, duration, inclusive, inplace, float("inf"))
 
         # set non-persistent function
         self.criterion = criterion
@@ -85,6 +89,8 @@ class PassthroughReducer(FoldReducer):
         duration (float, optional): length of time over which results should be
             stored, in the same units as ``step_time``. Defaults to ``0.0``.
         inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
+        inplace (bool, optional): if write operations should be performed
+            in-place. Defaults to ``False``.
     """
 
     def __init__(
@@ -92,9 +98,10 @@ class PassthroughReducer(FoldReducer):
         step_time: float,
         duration: float = 0.0,
         inclusive: bool = False,
+        inplace: bool = False,
     ):
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, inclusive, 0)
+        FoldReducer.__init__(self, step_time, duration, inclusive, inplace, 0)
 
     def fold(self, obs: torch.Tensor, state: torch.Tensor | None) -> torch.Tensor:
         r"""Application of passthrough.

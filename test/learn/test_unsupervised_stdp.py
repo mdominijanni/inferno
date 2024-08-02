@@ -1,10 +1,23 @@
+import einops as ein
 import pytest
 import math
 import random
 import torch
 
+import inferno
+from inferno.extra import ExactNeuron
 from inferno.learn import STDP, TripletSTDP
-from inferno.neural import DeltaCurrent, LinearDirect, Neuron, Serial
+from inferno.neural import DeltaCurrent, LinearDirect, LinearDense, Neuron, Serial
+
+
+def aaeq(t0, t1, eps=5e-6) -> bool:
+    try:
+        return bool(t0 == t1)
+    except RuntimeError:
+        if torch.all(t0 == t1):
+            return True
+        else:
+            return torch.all((t0 - t1).abs() < eps)
 
 
 class MockNeuron(Neuron):
@@ -97,6 +110,20 @@ def randshape(mindims=1, maxdims=9, minsize=1, maxsize=9):
 def mocklayer(shape, batchsz, dt, delay):
     neuron = MockNeuron(shape, batchsz, dt, 0.5)
     connection = LinearDirect(
+        shape,
+        dt,
+        synapse=DeltaCurrent.partialconstructor(1.0),
+        delay=delay,
+        batch_size=batchsz,
+    )
+    connection.updater = connection.defaultupdater()
+    return Serial(connection, neuron)
+
+
+def mocklayer2(shape, batchsz, dt, delay):
+    neuron = ExactNeuron(shape, dt, rest_v=-60.0, thresh_v=-45.0, batch_size=batchsz)
+    connection = LinearDense(
+        shape,
         shape,
         dt,
         synapse=DeltaCurrent.partialconstructor(1.0),
@@ -463,6 +490,7 @@ class TestTripletSTDP:
         base_interp_tolerance = random.uniform(1e-7, 1e-5)
         base_trace_mode = "nearest"
         base_batch_reduction = torch.amax
+        base_inplace = True
 
         override_lr_post_pair = random.uniform(-1.0, 1.0)
         override_lr_post_triplet = random.uniform(0.0, 1.0)
@@ -476,6 +504,7 @@ class TestTripletSTDP:
         override_interp_tolerance = random.uniform(1e-7, 1e-5)
         override_trace_mode = "cumulative"
         override_batch_reduction = torch.amin
+        override_inplace = False
 
         layer = mocklayer(shape, batchsz, dt, delay)
         updater = TripletSTDP(
@@ -491,6 +520,7 @@ class TestTripletSTDP:
             interp_tolerance=base_interp_tolerance,
             trace_mode=base_trace_mode,
             batch_reduction=base_batch_reduction,
+            inplace=base_inplace,
         )
 
         unit = updater.register_cell(
@@ -508,6 +538,7 @@ class TestTripletSTDP:
             interp_tolerance=override_interp_tolerance,
             trace_mode=override_trace_mode,
             batch_reduction=override_batch_reduction,
+            inplace=override_inplace,
         )
 
         assert override_lr_post_pair == unit.state.lr_post_pair
@@ -522,6 +553,7 @@ class TestTripletSTDP:
         assert override_interp_tolerance == unit.state.tolerance
         assert override_trace_mode == unit.state.tracemode
         assert override_batch_reduction == unit.state.batchreduce
+        assert override_inplace == unit.state.inplace
 
     def test_default_passthrough(self):
         shape = randshape(1, 3, 3, 5)
@@ -541,6 +573,7 @@ class TestTripletSTDP:
         base_interp_tolerance = random.uniform(1e-7, 1e-5)
         base_trace_mode = "nearest"
         base_batch_reduction = torch.amax
+        base_inplace = True
 
         layer = mocklayer(shape, batchsz, dt, delay)
         updater = TripletSTDP(
@@ -556,6 +589,7 @@ class TestTripletSTDP:
             interp_tolerance=base_interp_tolerance,
             trace_mode=base_trace_mode,
             batch_reduction=base_batch_reduction,
+            inplace=base_inplace,
         )
 
         unit = updater.register_cell("onlyone", layer.cell)
@@ -572,3 +606,164 @@ class TestTripletSTDP:
         assert base_interp_tolerance == unit.state.tolerance
         assert base_trace_mode == unit.state.tracemode
         assert base_batch_reduction == unit.state.batchreduce
+        assert base_inplace == unit.state.inplace
+
+    @pytest.mark.parametrize(
+        "mode",
+        ("hebb", "anti", "ltp", "ltd"),
+    )
+    @pytest.mark.parametrize("trace", ("cumulative", "nearest"))
+    @pytest.mark.parametrize("inplace", (True, False), ids=("inplace", "normal"))
+    @torch.no_grad
+    def test_partial_update(self, mode, trace, inplace):
+        shape = randshape(1, 3, 3, 5)
+        batchsz = random.randint(1, 5)
+        dt = random.uniform(0.7, 1.4)
+        delay = 0
+
+        layer = mocklayer2(shape, batchsz, dt, delay)
+        layer.connection.weight.fill_(1)
+
+        match mode:
+            case "hebb":
+                lr_post_dir = 1.0
+                lr_pre_dir = -1.0
+            case "anti":
+                lr_post_dir = -1.0
+                lr_pre_dir = 1.0
+            case "ltp":
+                lr_post_dir = 1.0
+                lr_pre_dir = 1.0
+            case "ltd":
+                lr_post_dir = -1.0
+                lr_pre_dir = -1.0
+
+        lr_post_pair = random.uniform(0.0, 1.0)
+        lr_post_triplet = random.uniform(0.0, 1.0)
+        lr_pre_pair = random.uniform(0.0, 1.0)
+        lr_pre_triplet = random.uniform(0.0, 1.0)
+        tc_post_fast = random.uniform(15.0, 30.0)
+        tc_post_slow = tc_post_fast + random.uniform(1.0, 3.0)
+        tc_pre_fast = random.uniform(15.0, 30.0)
+        tc_pre_slow = tc_pre_fast + random.uniform(1.0, 3.0)
+        delayed = delay == 0
+        interp_tolerance = random.uniform(1e-7, 1e-5)
+        trace_mode = trace
+        batch_reduction = torch.sum
+
+        trainer = TripletSTDP(
+            lr_post_pair=lr_post_pair * lr_post_dir,
+            lr_post_triplet=lr_post_triplet,
+            lr_pre_pair=lr_pre_pair * lr_pre_dir,
+            lr_pre_triplet=lr_pre_triplet,
+            tc_post_fast=tc_post_fast,
+            tc_post_slow=tc_post_slow,
+            tc_pre_fast=tc_pre_fast,
+            tc_pre_slow=tc_pre_slow,
+            delayed=delayed,
+            interp_tolerance=interp_tolerance,
+            trace_mode=trace_mode,
+            batch_reduction=batch_reduction,
+            inplace=inplace,
+        )
+        _ = trainer.register_cell("onlyone", layer.cell)
+
+        match trace_mode.lower():
+            case "nearest":
+                tracef = inferno.exp_trace_nearest
+            case "cumulative":
+                tracef = inferno.exp_trace_cumulative
+            case _:
+                raise RuntimeError("test has invalid trace mode")
+
+        xa = torch.zeros(batchsz, *shape)
+        xb = torch.zeros(batchsz, *shape)
+        ya = torch.zeros(batchsz, *shape)
+        yb = torch.zeros(batchsz, *shape)
+
+        postsynr = layer.connection.postsyn_receptive
+        presynr = layer.connection.presyn_receptive
+
+        for _ in range(20):
+            # inputs and outputs
+            post, pre = (
+                torch.rand(batchsz, *shape) < 0.3,
+                torch.rand(batchsz, *shape) < 0.3,
+            )
+
+            # fast trace updates
+            xa = tracef(
+                pre,
+                xa,
+                step_time=dt,
+                time_constant=tc_pre_fast,
+                amplitude=1.0,
+                target=True,
+            )
+            ya = tracef(
+                post,
+                ya,
+                step_time=dt,
+                time_constant=tc_post_fast,
+                amplitude=1.0,
+                target=True,
+            )
+
+            # compute update terms
+            dpost = batch_reduction(
+                ein.einsum(
+                    postsynr(
+                        (lr_post_pair + yb * lr_post_triplet) * post.to(dtype=yb.dtype)
+                    ),
+                    presynr(layer.connection.like_synaptic(xa)),
+                    "b ... r, b ... r -> b ...",
+                ),
+                0,
+            )
+            dpre = batch_reduction(
+                ein.einsum(
+                    postsynr(ya),
+                    presynr(
+                        layer.connection.like_synaptic(
+                            (lr_pre_pair + xb * lr_pre_triplet) * pre.to(dtype=xb.dtype)
+                        )
+                    ),
+                    "b ... r, b ... r -> b ...",
+                ),
+                0,
+            )
+
+            # test on layer
+            del layer.updater.weight
+            _ = layer(pre, neuron_kwargs={"override": post})
+            trainer()
+
+            match mode:
+                case "hebb":
+                    assert aaeq(dpost, layer.updater.weight.pos, 2e-6)
+                    assert aaeq(dpre, layer.updater.weight.neg, 2e-6)
+                case "anti":
+                    assert aaeq(dpost, layer.updater.weight.neg, 2e-6)
+                    assert aaeq(dpre, layer.updater.weight.pos, 2e-6)
+                case "ltp":
+                    assert aaeq(dpost + dpre, layer.updater.weight.pos, 2e-6)
+                case "ltd":
+                    assert aaeq(dpost + dpre, layer.updater.weight.neg, 2e-6)
+
+            # slow trace updates
+            xb = tracef(
+                pre,
+                xb,
+                step_time=dt,
+                time_constant=tc_pre_slow,
+                amplitude=1.0,
+                target=True,
+            )
+            yb = tracef(
+                post,
+                yb,
+                step_time=dt,
+                time_constant=tc_post_slow,
+                amplitude=1.0,
+                target=True,
+            )
