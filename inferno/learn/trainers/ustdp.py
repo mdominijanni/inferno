@@ -381,7 +381,11 @@ class STDP(IndependentCellTrainer):
 class StableSTDP(IndependentCellTrainer):
     r"""Pair-based spike-timing dependent plasticity trainer.
 
-    This uses the same change as TripletSTDP for improved numerical stability.
+    Rather than recording trace values with amplitudes specified by the learning rates,
+    this uses an amplitude of 1. With some testing the difference appears to be minor.
+    With limited testing, the maximum difference between this and the "unstable"
+    implementation is around 2e-6 times the average weight. Not included with the
+    default exports.
 
     .. math::
         w(t + \Delta t) - w(t) = \eta_\text{post} x_\text{pre}(t) \bigl[t = t^f_\text{post}\bigr]
@@ -749,12 +753,8 @@ class StableSTDP(IndependentCellTrainer):
                     cell.updater.weight = (dpost + dpre, None)
 
 
-class UnstableTripletSTDP(IndependentCellTrainer):
+class TripletSTDP(IndependentCellTrainer):
     r"""Triplet-based spike-timing dependent plasticity trainer.
-
-    Currently not accessible in the library, this *should* offer better performance but
-    it appears to be less numerically stable. Reducing the compute by one scalar-tensor
-    product doesn't appear to be worth it.
 
     .. math::
         \begin{align*}
@@ -1287,8 +1287,14 @@ class UnstableTripletSTDP(IndependentCellTrainer):
                     cell.updater.weight = (dpost + dpre, None)
 
 
-class TripletSTDP(IndependentCellTrainer):
+class StableTripletSTDP(IndependentCellTrainer):
     r"""Triplet-based spike-timing dependent plasticity trainer.
+
+    Rather than recording trace values with amplitudes specified by the learning rates,
+    this uses an amplitude of 1. With some testing the difference appears to be minor.
+    With limited testing, the maximum difference between this and the "unstable"
+    implementation is around 3e-6 times the average weight. Not included with the
+    default exports.
 
     .. math::
         \begin{align*}

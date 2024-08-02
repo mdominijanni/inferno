@@ -740,15 +740,15 @@ class TestTripletSTDP:
 
             match mode:
                 case "hebb":
-                    assert aaeq(dpost, layer.updater.weight.pos, 2e-6)
-                    assert aaeq(dpre, layer.updater.weight.neg, 2e-6)
+                    assert aaeq(dpost, layer.updater.weight.pos, 5e-5)
+                    assert aaeq(dpre, layer.updater.weight.neg, 5e-5)
                 case "anti":
-                    assert aaeq(dpost, layer.updater.weight.neg, 2e-6)
-                    assert aaeq(dpre, layer.updater.weight.pos, 2e-6)
+                    assert aaeq(dpost, layer.updater.weight.neg, 5e-5)
+                    assert aaeq(dpre, layer.updater.weight.pos, 5e-5)
                 case "ltp":
-                    assert aaeq(dpost + dpre, layer.updater.weight.pos, 2e-6)
+                    assert aaeq(dpost + dpre, layer.updater.weight.pos, 5e-5)
                 case "ltd":
-                    assert aaeq(dpost + dpre, layer.updater.weight.neg, 2e-6)
+                    assert aaeq(dpost + dpre, layer.updater.weight.neg, 5e-5)
 
             # slow trace updates
             xb = tracef(
