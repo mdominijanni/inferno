@@ -148,6 +148,8 @@ class Model(inferno.Module):
 
         res = torch.stack([step(x) for x in inputs], dim=0)
         self.apply(clear)
+        if trainer:
+            trainer.clear()
 
         return res
 
@@ -171,7 +173,6 @@ norm_hook()
 
 # create the trainer and updater, then connect them
 trainer = learn.STDP(
-    step_time=step_time,
     lr_post=5e-4,
     lr_pre=-5e-6,
     tc_post=30.0,

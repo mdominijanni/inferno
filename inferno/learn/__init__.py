@@ -5,6 +5,7 @@ from .base import (
 
 from .trainers.ustdp import (
     STDP,
+    TripletSTDP,
 )
 
 from .trainers.sstdp import (
@@ -20,6 +21,7 @@ __all__ = [
     "CellTrainer",
     "IndependentCellTrainer",
     "STDP",
+    "TripletSTDP",
     "MSTDP",
     "MSTDPET",
     "MaxRateClassifier",

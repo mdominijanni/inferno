@@ -22,6 +22,7 @@ dependencies:
   - myst-parser
   - sphinx-design
   - sphinx-autoapi
+  - sphinx-notfound-page
   - sphinx-remove-toctrees
   - sphinx-toolbox=3.5.0
   - furo

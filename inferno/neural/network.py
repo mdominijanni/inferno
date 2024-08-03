@@ -3,10 +3,11 @@ from . import Connection, Neuron, Synapse
 from .modeling import Updater
 from .. import Module
 from .._internal import Proxy, argtest, rgetitem
-from ..types import OneToOne
+from ..types import OneToOne, OneToMany
 from ..observe import Observable
+from ..extra import identity, tuplewrap
 from abc import ABC, abstractmethod
-from collections.abc import Iterator, Iterable
+from collections.abc import Iterator, Iterable, Sequence
 import einops as ein
 from itertools import chain
 import torch
@@ -182,7 +183,7 @@ class Cell(Module, Observable):
         return self.neuron.spike
 
     def forward(self) -> None:
-        """Forward call.
+        r"""Forward call.
 
         Raises:
             RuntimeError: Cell cannot have its forward method called.
@@ -203,6 +204,21 @@ class Layer(Module, ABC):
         self.connections_ = nn.ModuleDict()
         self.neurons_ = nn.ModuleDict()
         self.cells_ = nn.ModuleDict()
+
+    def clear(self, submodules: bool = True, **kwargs) -> None:
+        r"""Clears the state of the layer.
+
+        Args:
+            submodules (bool, optional): if the state of connections and neurons should
+                also be cleared. Defaults to ``True``.
+            **kwargs (Any): keyword arguments passed to connection and neuron submodule
+                ``clear`` methods, if ``submodules`` is ``True``.
+        """
+        if submodules:
+            for connection in self.connections_:
+                connection.clear(**kwargs)
+            for neuron in self.neurons_:
+                neuron.clear(**kwargs)
 
     def add_cell(self, connection: str, neuron: str) -> Cell:
         r"""Creates and adds a cell if it doesn't exist.
@@ -542,7 +558,7 @@ class Layer(Module, ABC):
         The inputs are given as a dictionary where each key is a registered input name
         and the value is the tensor output from that connection. This is expected to
         return a dictionary where each key is the name of a registered output and the
-        value is the tensor to be passed to its :py:meth:`~torch.nn.Module.__call__`.
+        value is the tensor to be passed to its ``__call__`` method.
 
         Args:
             inputs (dict[str, torch.Tensor]): dictionary of input names to tensors.
@@ -586,17 +602,16 @@ class Layer(Module, ABC):
         The keys for ``inputs`` and ``connection_kwargs`` are the names of registered
         :py:class:`Connection` objects.
 
-        The keys for ``neuron_kwargs`` are the names of the registered :py:class`Neuron`
+        The keys for ``neuron_kwargs`` are the names of the registered :py:class:`Neuron`
         objects.
 
         Underlying :py:class:`Connection` and :py:class:`Neuron` objects are called
-        using :py:meth:`~torch.nn.Module.__call__`, which in turn call
-        :py:meth:`Connection.forward` and :py:meth:`Neuron.forward` respectively.
-        The keyword argument dictionaries will be unpacked for each call automatically,
-        and the inputs will be unpacked as positional arguments for each ``Connection``
-        call.
+        using ``__call__``, which in turn call :py:meth:`Connection.forward` and
+        :py:meth:`Neuron.forward` respectively. The keyword argument dictionaries will
+        be unpacked for each call automatically, and the inputs will be unpacked as
+        positional arguments for each ``Connection`` call.
 
-        Only input modules which have keys in ``inputs`` will be run and added to
+        Only input modules that have keys in ``inputs`` will be run and added to
         the positional argument of :py:meth:`wiring`.
 
         Args:
@@ -669,8 +684,8 @@ class Biclique(Layer):
             Defaults to ``"sum"``.
 
     Note:
-        When ``combine`` is not a string, keyword arguments passed into :py:meth:`__call__`,
-        other than those captured in :py:meth`forward` will be passed in.
+        When ``combine`` is not a string, keyword arguments passed into ``__call__``,
+        other than those captured in :py:meth:`forward` will be passed in.
     """
 
     def __init__(
@@ -824,14 +839,14 @@ class Serial(Layer):
         transform (OneToOne[torch.Tensor] | None, optional): function
             to apply to connection output before passing into neurons. Defaults to ``None``.
         connection_name (str, optional): name for the connection in the layer. Defaults
-            to ``"serial_c"``.
+            to ``"serial"``.
         neuron_name (str, optional): name for the neuron in the layer. Defaults to
-            ``"serial_n"``.
+            ``"serial"``.
 
     Note:
         When ``transform`` is not specified, the identity function is used. Keyword
-        arguments passed into :py:meth:`call`, other than those captured in
-        :py:meth`forward` will be passed in.
+        arguments passed into ``__call__``, other than those captured in
+        :py:meth:`forward` will be passed in.
 
     Note:
         The :py:class:`Layer` object underlying a ``Serial`` object has ``connection``
@@ -1012,3 +1027,506 @@ class Serial(Layer):
             )
         else:
             return res[self.__neuron_name]
+
+
+class RecurrentSerial(Layer):
+    r"""Layer with a single feedforward connection and neuron group, and two feedback connections with a neuron group in-between.
+
+    .. math::
+        \begin{align*}
+            \texttt{inputs} &\rightarrow \texttt{feedfwd_connection} \\
+            \texttt{feedfwd_connection} + \texttt{feedback_connection} &\rightarrow \texttt{feedfwd_neuron} \\
+            \texttt{feedfwd_neuron} &\rightarrow \texttt{lateral_connection} \\
+            \texttt{lateral_connection} &\rightarrow \texttt{feedback_neuron} \\
+            \texttt{feedback_neuron} &\rightarrow \texttt{feedback_connection}
+        \end{align*}
+
+    This wraps :py:class:`Layer` to provide simplified accessors and a simplified
+    :py:meth:`forward` method for layers with one feedforward connection, two feedback
+    connections, and two neuron groups.
+
+    Args:
+        feedfwd_connection (Connection): module which receives input to the layer.
+        lateral_connection (Connection): module which receives input from the
+            feedforward neurons.
+        feedback_connection (Connection): module which receives input from the
+            feedback neurons and applies it to the feedforward neurons.
+        feedfwd_neuron (Neuron): module which generates output from the layer.
+        feedback_neuron (Neuron): module which generates feedback spikes.
+        feedfwd_out_transform (OneToOne[torch.Tensor] | None, optional): function
+            to apply to feedforward connection output. Defaults to ``None``.
+        lateral_out_transform (OneToOne[torch.Tensor] | None, optional): function
+            to apply to lateral connection output. Defaults to ``None``.
+        feedback_out_transform (OneToOne[torch.Tensor] | None, optional): function
+            to apply to feedback connection output. Defaults to ``None``.
+        lateral_in_transform (OneToMany[torch.Tensor] | None, optional): function
+            to apply to lateral connection input. Defaults to ``None``.
+        feedback_in_transform (OneToMany[torch.Tensor] | None, optional): function
+            to apply to feedback connection input. Defaults to ``None``.
+        feedfwd_connection_name (str, optional): name for the feedforward
+            connection in the layer. Defaults to ``"feedfwd"``.
+        lateral_connection_name (str, optional): name for the lateral
+            connection in the layer. Defaults to ``"lateral"``.
+        feedback_connection_name (str, optional): name for the feedback
+            connection in the layer. Defaults to ``"feedback"``.
+        feedfwd_neuron_name (str, optional): name for the neuron in the layer.
+            Defaults to ``"feedfwd"``.
+        feedback_neuron_name (str, optional): name for the neuron in the layer.
+            Defaults to ``"feedback"``.
+        trainable_feedback (bool, optional): if feedback connections should be
+            trainable. Defaults to ``False``.
+
+    Note:
+        When any of ``feedfwd_out_transform``, ``lateral_out_transform``, ``feedback_out_transform``,
+        or ``feedback_in_transform`` is not specified, the identity function is used.
+        Keyword arguments passed into ``__call__``, other than those captured in
+        :py:meth:`forward` will be passed in.
+
+    Important:
+        When ``trainable_feedback`` is set to ``True``, the feedback connection and
+        neuron shapes need to be compatible for creating :py:class:`~inferno.neural.Cell`
+        objects.
+
+    Note:
+        When any of ``feedfwd_out_transform``, ``lateral_out_transform``,
+        ``feedback_out_transform``, ``lateral_in_transform``,
+        or ``feedback_in_transform`` is not specified, the identity function is used
+        (the latter two also wrapping the input in a tuple). Keyword arguments passed
+        into ``__call__``, other than those captured in :py:meth:`forward` will be passed
+        in. The ``lateral_in_transform`` and ``feedback_in_transform`` functions are
+        only applied to the spiking input from the feedforward and feedback neurons
+        respectively.
+    """
+
+    def __init__(
+        self,
+        feedfwd_connection: Connection,
+        lateral_connection: Connection,
+        feedback_connection: Connection,
+        feedfwd_neuron: Neuron,
+        feedback_neuron: Neuron,
+        *,
+        feedfwd_out_transform: OneToOne[torch.Tensor] | None = None,
+        lateral_out_transform: OneToOne[torch.Tensor] | None = None,
+        feedback_out_transform: OneToOne[torch.Tensor] | None = None,
+        lateral_in_transform: OneToMany[torch.Tensor] | None = None,
+        feedback_in_transform: OneToMany[torch.Tensor] | None = None,
+        feedfwd_connection_name: str = "feedfwd",
+        lateral_connection_name: str = "lateral",
+        feedback_connection_name: str = "feedback",
+        feedfwd_neuron_name: str = "feedfwd",
+        feedback_neuron_name: str = "feedback",
+        trainable_feedback: bool = False,
+    ):
+        # call superclass constructor
+        Layer.__init__(self)
+
+        # register feedback tensor
+        self.register_buffer("feedback_spikes", None)
+
+        # set names
+        self.__feedfwd_connection_name = feedfwd_connection_name
+        self.__lateral_connection_name = lateral_connection_name
+        self.__feedback_connection_name = feedback_connection_name
+        self.__feedfwd_neuron_name = feedfwd_neuron_name
+        self.__feedback_neuron_name = feedback_neuron_name
+
+        # add connections and neurons
+        Layer.add_connection(self, self.__feedfwd_connection_name, feedfwd_connection)
+        Layer.add_connection(self, self.__lateral_connection_name, lateral_connection)
+        Layer.add_connection(self, self.__feedback_connection_name, feedback_connection)
+
+        Layer.add_neuron(self, self.__feedfwd_neuron_name, feedfwd_neuron)
+        Layer.add_neuron(self, self.__feedback_neuron_name, feedback_neuron)
+
+        _ = Layer.add_cell(
+            self, self.__feedfwd_connection_name, self.__feedfwd_neuron_name
+        )
+        if trainable_feedback:
+            _ = Layer.add_cell(
+                self,
+                self.__lateral_connection_name,
+                self.__feedback_neuron_name,
+            )
+            _ = Layer.add_cell(
+                self, self.__feedback_connection_name, self.__feedfwd_neuron_name
+            )
+
+        # set transformations used
+        self._feedfwd_out_transform = feedfwd_out_transform if feedfwd_out_transform else identity
+        self._lateral_out_transform = lateral_out_transform if lateral_out_transform else identity
+        self._feedback_out_transform = (
+            feedback_out_transform if feedback_out_transform else identity
+        )
+        self._lateral_in_transform = (
+            lateral_in_transform if lateral_in_transform else tuplewrap
+        )
+        self._feedback_in_transform = (
+            feedback_in_transform if feedback_in_transform else tuplewrap
+        )
+
+    def clear(
+        self, clear_feedback: bool = True, submodules: bool = True, **kwargs
+    ) -> None:
+        r"""Clears the state of the layer.
+
+        Args:
+            clear_feedback (bool, optional): if the feedback spikes should be cleared.
+                Defaults to ``True``.
+            submodules (bool, optional): if the state of connections and neurons should
+                also be cleared. Defaults to ``True``.
+            **kwargs (Any): keyword arguments passed to connection and neuron submodule
+                ``clear`` methods, if ``submodules`` is ``True``.
+        """
+        if clear_feedback:
+            self.feedback_spikes = None
+
+        if submodules:
+            for connection in self.connections_:
+                connection.clear(**kwargs)
+            for neuron in self.neurons_:
+                neuron.clear(**kwargs)
+
+    def add_cell(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(FeedbackSerial) does not support adding cells"
+        )
+
+    def del_cell(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(FeedbackSerial) does not support removing cells"
+        )
+
+    def add_connection(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(FeedbackSerial) does not support adding connections"
+        )
+
+    def del_connection(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(FeedbackSerial) does not support removing connections"
+        )
+
+    def add_neuron(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(FeedbackSerial) does not support adding neurons"
+        )
+
+    def del_neuron(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            f"{type(self).__name__}(FeedbackSerial) does not support removing neurons"
+        )
+
+    @property
+    def feedfwd_connection(self) -> Connection:
+        r"""Registered feedforward connection.
+
+        Returns:
+            Connection: registered feedforward connection.
+        """
+        return self.get_connection(self.__feedfwd_connection_name)
+
+    @property
+    def lateral_connection(self) -> Connection:
+        r"""Registered lateral connection.
+
+        Returns:
+            Connection: registered lateral connection.
+        """
+        return self.get_connection(self.__lateral_connection_name)
+
+    @property
+    def feedback_connection(self) -> Connection:
+        r"""Registered feedback connection.
+
+        Returns:
+            Connection: registered feedback connection.
+        """
+        return self.get_connection(self.__feedback_connection_name)
+
+    @property
+    def feedfwd_neuron(self) -> Neuron:
+        r"""Registered feedforward neuron.
+
+        Returns:
+            Neuron: registered feedforward neuron.
+        """
+        return self.get_neuron(self.__feedfwd_neuron_name)
+
+    @property
+    def feedback_neuron(self) -> Neuron:
+        r"""Registered feedback neuron.
+
+        Returns:
+            Neuron: registered feedback neuron.
+        """
+        return self.get_neuron(self.__feedback_neuron_name)
+
+    @property
+    def feedfwd_synapse(self) -> Synapse:
+        r"""Registered feedforward synapse.
+
+        Returns:
+            Synapse: registered feedforward connection's synapse.
+        """
+        return self.get_connection(self.__feedfwd_connection_name).synapse
+
+    @property
+    def lateral_synapse(self) -> Synapse:
+        r"""Registered lateral synapse.
+
+        Returns:
+            Synapse: registered lateral connection's synapse.
+        """
+        return self.get_connection(self.__lateral_connection_name).synapse
+
+    @property
+    def feedback_synapse(self) -> Synapse:
+        r"""Registered feedback synapse.
+
+        Returns:
+            Synapse: registered feedback connection's synapse.
+        """
+        return self.get_connection(self.__feedback_connection_name).synapse
+
+    @property
+    def feedfwd_updater(self) -> Updater:
+        r"""Registered feedforward updater.
+
+        Returns:
+            Updater: registered feedforward connection's updater.
+        """
+        return self.get_connection(self.__feedfwd_connection_name).updater
+
+    @property
+    def lateral_updater(self) -> Updater | None:
+        r"""Registered lateral updater.
+
+        Returns:
+            Updater: registered lateral connection's updater.
+        """
+        return self.get_connection(self.__lateral_connection_name).updater
+
+    @property
+    def feedback_updater(self) -> Updater | None:
+        r"""Registered feedback updater.
+
+        Returns:
+            Updater: registered feedback connection's updater.
+        """
+        return self.get_connection(self.__feedback_connection_name).updater
+
+    @property
+    def feedfwd_cell(self) -> Cell:
+        r"""Registered feedforward cell.
+
+        Returns:
+            Cell: registered feedforward cell.
+        """
+        return self.get_cell(self.__feedfwd_connection_name, self.__feedfwd_neuron_name)
+
+    @property
+    def lateral_cell(self) -> Cell | None:
+        r"""Registered lateral cell.
+
+        Returns:
+            Cell: registered lateral cell, if constructed with
+            ``trainable_feedback``, otherwise ``None``.
+        """
+        if self.__lateral_connection_name in self.cells_:
+            return self.get_cell(
+                self.__lateral_connection_name, self.__feedback_neuron_name
+            )
+        else:
+            return None
+
+    @property
+    def feedback_cell(self) -> Cell | None:
+        r"""Registered feedback cell.
+
+        Returns:
+            Cell: registered feedback cell, if constructed with
+            ``trainable_feedback``, otherwise ``None``.
+        """
+        if self.__feedback_connection_name in self.cells_:
+            return self.get_cell(
+                self.__feedback_connection_name, self.__feedfwd_neuron_name
+            )
+        else:
+            return None
+
+    def wiring(
+        self,
+        inputs: dict[str, torch.Tensor],
+        forward_pass: bool,
+        **kwargs,
+    ) -> dict[str, torch.Tensor]:
+        r"""Connection logic between connection outputs and neuron inputs.
+
+        This implements the forward logic of the feedback serial topology. The
+        ``transform`` is applied to the result of the connection before being passed to the neuron. If
+        not specified, it is assumed to be identity.
+
+        Args:
+            inputs (dict[str, torch.Tensor]): dictionary of input names to tensors.
+            forward_pass (bool) if this is a forward-pass step.
+
+        Returns:
+            dict[str, torch.Tensor]: dictionary of output names to tensors.
+        """
+        if forward_pass:
+            return {
+                self.__feedfwd_neuron_name: self._feedfwd_out_transform(
+                    inputs[self.__feedfwd_connection_name]
+                )
+                + self._feedback_out_transform(inputs[self.__feedback_connection_name])
+            }
+        else:
+            return {
+                self.__feedback_neuron_name: self._lateral_out_transform(
+                    inputs[self.__lateral_connection_name]
+                )
+            }
+
+    def forward(
+        self,
+        *inputs: torch.Tensor,
+        lateral_connection_args: Sequence[torch.Tensor] | None = None,
+        feedback_connection_args: Sequence[torch.Tensor] | None = None,
+        feedfwd_connection_kwargs: dict[str, Any] | None = None,
+        lateral_connection_kwargs: dict[str, Any] | None = None,
+        feedback_connection_kwargs: dict[str, Any] | None = None,
+        feedfwd_neuron_kwargs: dict[str, Any] | None = None,
+        feedback_neuron_kwargs: dict[str, Any] | None = None,
+        capture_intermediate: bool = False,
+        **kwargs,
+    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+        r"""Computes a forward pass.
+
+        Args:
+            *inputs (torch.Tensor): values passed to the connection.
+            lateral_connection_args (Sequence[torch.Tensor] | None, optional): additional
+                positional arguments for lateral connection's forward call.
+                Defaults to ``None``.
+            feedback_connection_args (Sequence[torch.Tensor] | None, optional): additional
+                positional arguments for feedback connection's forward call.
+                Defaults to ``None``.
+            feedfwd_connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments for the feedforward  connection's forward call.
+                Defaults to ``None``.
+            lateral_connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments for the lateral connection's forward call.
+                Defaults to ``None``.
+            feedback_connection_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments for the feedback connection's forward call.
+                Defaults to ``None``.
+            feedfwd_neuron_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments for the feedforward neuron's forward call.
+                Defaults to ``None``.
+            feedback_neuron_kwargs (dict[str, dict[str, Any]] | None, optional): keyword
+                arguments for the feedback neuron's forward call.
+                Defaults to ``None``.
+            capture_intermediate (bool, optional): if output from the connections should
+                also be returned. Defaults to ``False``.
+            **kwargs (Any): keyword arguments passed to :py:meth:`wiring`.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor] | tuple[tuple[torch.Tensor, torch.Tensor], dict[str, torch.Tensor]]: tuple
+            of output from the feedforward and feedback neurons, in that order. If
+            ``capture_intermediate``, this is the first element of a tuple, the second
+            being the outputs from the connections, as a dictionary of connection names
+            to their corresponding outputs.
+
+        Note:
+            On the first input, zero-valued tensors are given as input for calculating
+            feedback.
+        """
+        # wrap non-empty dictionaries
+        ckw = (
+            {}
+            | (
+                {self.__feedfwd_connection_name: feedfwd_connection_kwargs}
+                if feedfwd_connection_kwargs
+                else {}
+            )
+            | (
+                {self.__lateral_connection_name: lateral_connection_kwargs}
+                if lateral_connection_kwargs
+                else {}
+            )
+            | (
+                {self.__feedback_connection_name: feedback_connection_kwargs}
+                if feedback_connection_kwargs
+                else {}
+            )
+        )
+        nkw = (
+            {}
+            | (
+                {self.__feedfwd_neuron_name: feedfwd_neuron_kwargs}
+                if feedfwd_neuron_kwargs
+                else {}
+            )
+            | (
+                {self.__feedback_neuron_name: feedback_neuron_kwargs}
+                if feedback_neuron_kwargs
+                else {}
+            )
+        )
+
+        # set recurrent spikes
+        if self.feedback_spikes is None:
+            self.feedback_spikes = torch.zeros_like(
+                self.get_neuron(self.__feedback_neuron_name).spike
+            )
+
+        # call parent forward (forward-pass)
+        fres = Layer.forward(
+            self,
+            {
+                self.__feedfwd_connection_name: inputs,
+                self.__feedback_connection_name: self._feedback_in_transform(
+                    self.feedback_spikes
+                )
+                + (tuple(feedback_connection_args) if feedback_connection_args else ()),
+            },
+            connection_kwargs=ckw,
+            neuron_kwargs=nkw,
+            capture_intermediate=True,
+            forward_pass=True,
+            **kwargs,
+        )
+
+        # call parent forward (feedback-pass)
+        bres = Layer.forward(
+            self,
+            {
+                self.__lateral_connection_name: self._lateral_in_transform(
+                    self.get_neuron(self.__feedfwd_neuron_name).spike
+                )
+                + (tuple(lateral_connection_args) if lateral_connection_args else ()),
+            },
+            connection_kwargs=ckw,
+            neuron_kwargs=nkw,
+            capture_intermediate=True,
+            forward_pass=False,
+            **kwargs,
+        )
+
+        # update recurrent spikes
+        self.feedback_spikes = self.get_neuron(self.__feedback_neuron_name).spike
+
+        # unpack to sensible output
+        if capture_intermediate:
+            return (
+                (
+                    fres[0][self.__feedfwd_neuron_name],
+                    bres[0][self.__feedback_neuron_name],
+                ),
+                fres[1] | bres[1],
+            )
+        else:
+            return (
+                fres[0][self.__feedfwd_neuron_name],
+                bres[0][self.__feedback_neuron_name],
+            )

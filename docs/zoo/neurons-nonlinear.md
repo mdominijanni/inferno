@@ -35,17 +35,17 @@ two fixed points: the stable $V_\text{rest}$ and unstable $V_\text{crit}$. The r
 the membrane voltage is attracted towards $V_\text{rest}$ and repelled away from $V_\text{crit}$
 is controlled by $a$.
 
-```{image} ../images/plots/qif_slope_field_light.png
-:alt: Quadratic Integrate-and-Fire Slope Field of Memrane Voltage
+```{image} ../images/plots/qif-slope-field-light.png
+:alt: Quadratic Integrate-and-Fire Slope Field of Membrane Voltage
 :class: only-light
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
-```{image} ../images/plots/qif_slope_field_dark.png
-:alt: Quadratic Integrate-and-Fire Slope Field of Memrane Voltage
+```{image} ../images/plots/qif-slope-field-dark.png
+:alt: Quadratic Integrate-and-Fire Slope Field of Membrane Voltage
 :class: only-dark
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
@@ -112,8 +112,8 @@ incorporates a linear adaptive current depeendent upon output spikes and the mem
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
-2. [DOI:10.3390/brainsci12070863](https://www.mdpi.com/2076-3425/12/7/863/pdf)
-3. [DOI:10.7551/mitpress/2526.001.0001 (See §8.1.4)](https://www.izhikevich.org/publications/dsn.pdf)
+1. [DOI:10.3390/brainsci12070863](https://www.mdpi.com/2076-3425/12/7/863/pdf)
+1. [DOI:10.7551/mitpress/2526.001.0001 (See §8.1.4)](https://www.izhikevich.org/publications/dsn.pdf)
 
 ## Exponential Integrate-and-Fire (EIF)
 ### Formulation
@@ -175,34 +175,34 @@ Below are two slope fields showing the relation between the threshold voltage $V
 rest voltage $V_R$ in relation to the membrane voltage. Examples with two $\Delta_T$ settings
 are used to illustrate its effect.
 
-```{image} ../images/plots/eif_slope_field_d1_light.png
-:alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 1$)
+```{image} ../images/plots/eif-slope-field-d1-light.png
+:alt: Exponential Integrate-and-Fire Slope Field of Membrane Voltage ($\Delta_T = 1$)
 :class: only-light
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
-```{image} ../images/plots/eif_slope_field_d1_dark.png
-:alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 1$)
+```{image} ../images/plots/eif-slope-field-d1-dark.png
+:alt: Exponential Integrate-and-Fire Slope Field of Membrane Voltage ($\Delta_T = 1$)
 :class: only-dark
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
 Membrane voltage with no input current. Plotted with values $V_R = -60\text{ mV}$,
 $V_T = -50$, $\Delta_T = 1$, and $\tau_m=1 \text{ ms}$ over a time of $1 \text{ ms}$.
 
-```{image} ../images/plots/eif_slope_field_d2_light.png
-:alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 2$)
+```{image} ../images/plots/eif-slope-field-d2-light.png
+:alt: Exponential Integrate-and-Fire Slope Field of Membrane Voltage ($\Delta_T = 2$)
 :class: only-light
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
-```{image} ../images/plots/eif_slope_field_d2_dark.png
-:alt: Exponential Integrate-and-Fire Slope Field of Memrane Voltage ($\Delta_T = 2$)
+```{image} ../images/plots/eif-slope-field-d2-dark.png
+:alt: Exponential Integrate-and-Fire Slope Field of Membrane Voltage ($\Delta_T = 2$)
 :class: only-dark
-:scale: 30 %
+:width: 30em
 :align: center
 ```
 
@@ -211,7 +211,7 @@ $V_T = -50$, $\Delta_T = 2$, and $\tau_m=1 \text{ ms}$ over a time of $1 \text{ 
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
-2. [ISBN:9780262548083](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)
+1. [ISBN:9780262548083](https://mitpress.ublish.com/ebook/modeling-neural-circuits-made-simple-with-python-preview/12788/Cover)
 
 ## Adaptive Exponential Integrate-and-Fire (AdEx)
 ### Formulation
@@ -266,6 +266,6 @@ incorporates a linear adaptive current dependent upon output spikes and the memb
 
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§6.1)](https://neuronaldynamics.epfl.ch/online/Ch6.S1.html)
-2. [ISBN:9780262548083](https://github.com/RobertRosenbaum/ModelingNeuralCircuits/blob/main/ModelingNeuralCircuits.pdf)
-3. [DOI:10.4249/scholarpedia.8427](http://www.scholarpedia.org/article/Adaptive_exponential_integrate-and-fire_model)
-4. [DOI:10.1523/JNEUROSCI.23-37-11628.2003](https://www.jneurosci.org/content/23/37/11628.long)
+1. [ISBN:9780262548083](https://mitpress.ublish.com/ebook/modeling-neural-circuits-made-simple-with-python-preview/12788/Cover)
+1. [DOI:10.4249/scholarpedia.8427](http://www.scholarpedia.org/article/Adaptive_exponential_integrate-and-fire_model)
+1. [DOI:10.1523/JNEUROSCI.23-37-11628.2003](https://www.jneurosci.org/content/23/37/11628.long)

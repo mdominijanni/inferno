@@ -14,15 +14,18 @@ class CellTrainer(Module):
     r"""Base trainer for updating cell parameters.
 
     Important:
-        The :py:class:`Layer` object "owns" the :py:class:`Cell` objects whereas
-        the :py:class:`CellTrainer` owns the :py:class:`Monitor` objects.
+        The :py:class:`~inferno.neural.Layer` object "owns" the
+        py:class:`~inferno.neural.Cell` objects whereas the ``CellTrainer`` owns the
+        :py:class:`~inferno.observe.Monitor` objects.
 
-        If applying a function to :py:class:`Module` objects, e.g.
-        via :py:meth:`CellTrainer.to` ``Cell`` objects will not be altered but
-        ``Monitor`` objects will be.
+        If applying a function to :py:class:`~inferno.Module` objects, e.g.
+        via calling :py:meth:`~torch.nn.Module.to` on the ``CellTrainer``,
+        ``~inferno.neural.Cell`` objects will not be altered but
+        ``~inferno.observe.Monitor`` and auxiliary state objects will be.
 
-        Likewise, :py:meth:`Layer.to` will alter ``Cell`` objects but not
-        ``Monitor`` objects.
+        Likewise, calling :py:meth:`~torch.nn.Module.to` on the
+        :py:class:`~inferno.neural.Layer` will alter ``~inferno.neural.Cell`` objects
+        but not ``~inferno.observe.Monitor`` and auxiliary state objects.
     """
 
     def __init__(self, **kwargs):
@@ -38,7 +41,7 @@ class CellTrainer(Module):
     def monitors(self) -> Iterator[Monitor]:
         r"""Added monitors.
 
-        Because monitors for each ``CellTrainer`` are pooled together for each trainer,
+        Because monitors for each ``~inferno.neural.CellTrainer`` are pooled together for each trainer,
         duplicate monitors are not created where possible. The number of monitors here
         may be less than the number of added monitors.
 
@@ -154,7 +157,7 @@ class CellTrainer(Module):
 
         Important:
             This does not strictly delete the cell, it is still owned by its
-            :py:class:`Layer` and can be added again. It is only removed from the
+            :py:class:`~inferno.neural.Layer` and can be added again. It is only removed from the
             trainer. However its associated state and monitors are deleted.
         """
         # check that the trainable exists
@@ -245,7 +248,7 @@ class CellTrainer(Module):
     def train(self, mode: bool = True) -> CellTrainer:
         r"""Override of module's train method.
 
-        Automatically registers and deregisters monitors. Does not put :py:class:`Cell`
+        Automatically registers and deregisters monitors. Does not put :py:class:`~inferno.neural.Cell`
         objects into training mode. Does not clear monitor state (call :py:meth:`clear`
         to do so).
 
@@ -273,7 +276,7 @@ class CellTrainer(Module):
         r"""Clears all of the monitors for the trainer.
 
         Note:
-            Keyword arguments are passed to :py:meth:`Monitor.clear` call.
+            Keyword arguments are passed to :py:meth:`~inferno.observe.Monitor.clear` call.
 
         Note:
             If a subclassed trainer has additional state, this should be overridden
@@ -312,15 +315,17 @@ class IndependentCellTrainer(CellTrainer, ABC):
     r"""Trainer for update methods without inter-cell dependencies.
 
     Important:
-        The :py:class:`Layer` object "owns" the :py:class:`Cell` objects but not
-        the :py:class:`Monitor` objects.
+        The :py:class:`~inferno.neural.Layer` object "owns" the :py:class:`~inferno.neural.Cell` objects but not
+        the :py:class:`~inferno.observe.Monitor` objects.
 
-        If applying a function to :py:class:`Module` objects, e.g.
-        via :py:meth:`CellTrainer.to` ``Cell`` objects will not be altered but
-        ``Monitor`` objects will be.
+        If applying a function to :py:class:`~inferno.Module` objects, e.g.
+        via calling :py:meth:`~torch.nn.Module.to` on the ``CellTrainer``,
+        ``~inferno.neural.Cell`` objects will not be altered but
+        ``~inferno.observe.Monitor`` and auxiliary state objects will be.
 
-        Likewise, :py:meth:`Layer.to` will alter ``Cell`` objects but not
-        ``Monitor`` objects.
+        Likewise, calling :py:meth:`~torch.nn.Module.to` on the
+        :py:class:`~inferno.neural.Layer` will alter ``~inferno.neural.Cell`` objects
+        but not ``~inferno.observe.Monitor`` and auxiliary state objects.
     """
 
     class Unit(Module):
@@ -367,11 +372,11 @@ class IndependentCellTrainer(CellTrainer, ABC):
 
         This can be used if a single trainer should handle training on different
         devices. The returned module dictionary can then be altered in-place with
-        :py:meth:`~nn.Module.to` in order to move a cell (``cell``), its auxiliary
+        :py:meth:`~torch.nn.Module.to` in order to move a cell (``cell``), its auxiliary
         state (``state``), and monitors (``monitors``) used by the trainer to a
         different device, or change the used data type.
 
-        Calling :py:meth:`~nn.Module.to` on the trainer itself will apply to all
+        Calling :py:meth:`~torch.nn.Module.to` on the trainer itself will apply to all
         monitors and auxiliary states, but not to any cells.
 
         Args:
@@ -396,7 +401,7 @@ class IndependentCellTrainer(CellTrainer, ABC):
 
         Returns:
             IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors,
-            as returned by :py:meth:`unit`.
+            as returned by :py:meth:`get_unit`.
 
         Raises:
             NotImplementedError: ``register_cell`` must be implemented by the subclass.

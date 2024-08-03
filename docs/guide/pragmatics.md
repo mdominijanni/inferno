@@ -14,8 +14,12 @@ Detailed information on minibatch processing with SNNs can be found at [arXiv:19
 ## Discrete Time Simulations
 Because Inferno performs simulations over discrete units of time, there are relevant considerations for how the computations match with the theoretical continuous-time descriptions.
 
-### Refractory Periods
+### Neurons
+#### Refractory Periods
 The refractory period for a neuron is specified using some length of time, given in milliseconds. On each simulation step, the amount of time that has elapsed is subtracted from the remaining time in their refractory period (inclusive minimum bound of zero). When equal to zero, a neuron is considered to be out of its refractory period. Therefore, if the refractory period is not evenly divisible by the length of the simulated step time, the practical length of the refractory period is "rounded up" to the next integer multiple of the step time.
+
+#### Membrane Voltages
+When the membrane voltage of a neuron exceeds the threshold voltage, it will generate an action potential (spike). In biological neurons, this involves a brief period of depolarization where the membrane voltage briefly but sharply increases before repolarizing. This repolarization often "overshoots" the equilibrium of the membrane potential, with the neuron ending up in a hyperpolarized state. The hyperpolarized state is modelled by the reset voltage. Depending on the model, this may be constant or may be a function of the membrane voltage at the time of firing. In either case, Inferno will set the membrane voltage to its reset value in the same simulation step as the neuron spiked. This is because it is assumed that over the course of the simulation step, the neuron fully depolarized and repolarized into its hyperpolarized state.
 
 ## Model Saving and Restoring
 Because batch size affects not only the data passed through a model, but the model itself, special consideration must be given when saving and loading models. The batch size of a model saved must match the batch size of the model loaded. This same principle extends to modules which record state over time (e.g. reducers and synapses). While a step time and duration are specified, this changes the underlying structure of the data and therefore should match on load and restore. Note that the included property setters can be used to modify this state after loading.

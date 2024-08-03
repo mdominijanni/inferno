@@ -26,7 +26,7 @@ class Module(nn.Module):
     another descriptor and will use the descriptor's ``__set__`` behavior instead.
 
     Note:
-        Like with :py:class:`torch.nn.Module`, an :py:meth:`__init__` call must be made
+        Like with :py:class:`torch.nn.Module`, an `__init__()` call must be made
         to the parent class before assignment on the child. This class's constructor
         will automatically call PyTorch's.
     """
@@ -58,7 +58,7 @@ class Module(nn.Module):
             Python identifier.
 
         Note:
-            :py:class:`~torch.Tensor`, :py:class:`~torch.nn.Parameter`, and
+            :py:class:`~torch.Tensor`, :py:class:`~torch.nn.parameter.Parameter`, and
             :py:class:`~torch.nn.Module` objects cannot be registered as extras and
             should be registered using existing methods.
         """
@@ -116,9 +116,22 @@ class Module(nn.Module):
         return extra
 
     def get_extra_state(self) -> dict[str, Any]:
+        r"""Returns the extra state to include in the module's state_dict.
+
+        Returns:
+            dict[str, Any]: extra state to store in the module's state dictionary.
+        """
         return self._extras
 
     def set_extra_state(self, state: dict[str, Any]) -> None:
+        r"""Set extra state contained in the loaded state dictionary.
+
+        This function is called from :py:meth:`~torch.nn.Module.load_state_dict` to
+        handle any extra state found within the :py:meth:`~torch.nn.Module.state_dict`.
+
+        Args:
+            state (dict): extra state from the state dictionary.
+        """
         self._extras.update(state)
 
     def __setstate__(self, state) -> None:
@@ -252,13 +265,13 @@ class ShapedTensor:
     r"""Tensor attribute with constrained shape.
 
     Some states for ``value`` are ignored for convenience. If it is ``None``,
-    an instance of either :py:class:`~torch.nn.UninitializedBuffer` or
-    :py:class:`~torch.nn.UninitializedParameter`, or has no elements and only a single
+    an instance of either :py:class:`~torch.nn.parameter.UninitializedBuffer` or
+    :py:class:`~torch.nn.parameter.UninitializedParameter`, or has no elements and only a single
     dimension (such as if created with ``torch.empty(0)``).
 
     When ``value`` is ``None``, a registered buffer is created, otherwise a parameter
-    will only be added if an :py:class:`~torch.nn.Parameter` is given. Assignment of
-    a parameter to ``None`` is unsupported.
+    will only be added if an :py:class:`~torch.nn.parameter.Parameter` is given.
+    Assignment of a parameter to ``None`` is unsupported.
 
     Args:
         owner (Module): module to which this attribute will belong.
@@ -590,10 +603,11 @@ class ShapedTensor:
         If ``live`` was set on initialization, every setter call will ensure the tensor
         being set is valid (constrained or ignored).
 
-        When created as a :py:class:`~torch.nn.Parameter`, assignment to ``None`` is
-        prevented. If the current ``value`` is a :py:class:`~torch.nn.Parameter` but
-        the assigned value is a :py:class:`~torch.Tensor`, it will automatically assign
-        to the ``data`` attribute of ``value``.
+        When created as a :py:class:`~torch.nn.parameter.Parameter`, assignment to
+        ``None`` is prevented. If the current ``value`` is a
+        :py:class:`~torch.nn.parameter.Parameter` but the assigned value is a
+        :py:class:`~torch.Tensor`, it will automatically assign to the ``data``
+        attribute of ``value``.
 
         Args:
             value (value: torch.Tensor | nn.Parameter | None): value to which the
@@ -1132,7 +1146,7 @@ class RecordTensor(ShapedTensor):
     def dt(self) -> float:
         r"""Length of time between recorded observations.
 
-        In the same units as :py:attr:`self.duration`.
+        In the same units as :py:attr:`duration`.
 
         If the step time is changed such that the record size needs to change, a
         :py:meth:`reconstrain` operation will be performed automatically, preserving
@@ -1168,7 +1182,7 @@ class RecordTensor(ShapedTensor):
     def duration(self) -> float:
         r"""Length of time over which prior values are stored.
 
-        In the same units as :py:attr:`self.dt`.
+        In the same units as :py:attr:`dt`.
 
         If the step time is changed such that the record size needs to change, a
         :py:meth:`reconstrain` operation will be performed automatically, preserving
@@ -1308,10 +1322,11 @@ class RecordTensor(ShapedTensor):
     def value(self) -> torch.Tensor | nn.Parameter | None:
         r"""Record storage tensor.
 
-        When created as a :py:class:`~torch.nn.Parameter`, assignment to ``None`` is
-        prevented. If the current ``value`` is a :py:class:`~torch.nn.Parameter` but
-        the assigned value is a :py:class:`~torch.Tensor`, it will automatically assign
-        to the ``data`` attribute of ``value``.
+        When created as a :py:class:`~torch.nn.parameter.Parameter`, assignment to
+        ``None`` is prevented. If the current ``value`` is a
+        :py:class:`~torch.nn.parameter.Parameter` but the assigned value is a
+        :py:class:`~torch.Tensor`, it will automatically assign to the ``data``
+        attribute of ``value``.
 
         When used as a deleter, this acts as an alias for
         ``self.deinitialize(use_uninitialized=False)``.
@@ -1342,8 +1357,9 @@ class RecordTensor(ShapedTensor):
             if possible.
 
         Note:
-            If after assigning the new value, :py:attr:`ignored` is ``True``, the
-            pointer will be moved to ``0``, otherwise it will not be changed.
+            If after assigning the new value, :py:attr:`~ShapedTensor.ignored` is
+            ``True``, the pointer will be moved to ``0``, otherwise it will not be
+            changed.
         """
         return ShapedTensor.value.fget(self)  # type: ignore
 
@@ -1465,8 +1481,8 @@ class RecordTensor(ShapedTensor):
         r"""Deinitializes the storage tensor.
 
         This either assigns an empty tensor with shape ``[0]`` as the value or either
-        :py:class:`~torch.nn.UninitializedBuffer` or
-        :py:class:`~torch.nn.UninitializedParameter`. The device, data type, and
+        :py:class:`~torch.nn.parameter.UninitializedBuffer` or
+        :py:class:`~torch.nn.parameter.UninitializedParameter`. The device, data type, and
         gradient requirement will be preserved.
 
         If the storage tensor is already not initialized, it will still be reassigned.
@@ -1620,7 +1636,7 @@ class RecordTensor(ShapedTensor):
         Args:
             obs (torch.Tensor): observation to write.
             inplace (bool, optional): if the operation should be performed in-place
-                with :py:func:`torch.no_grad`. Defaults to ``False``.
+                with :py:class:`torch.no_grad`. Defaults to ``False``.
         """
         if self._ignore(self.__data):
             self.initialize(obs.shape, device=obs.device, fill=0)
@@ -1676,7 +1692,7 @@ class RecordTensor(ShapedTensor):
             offset (int, optional): number of steps before the pointer.
                 Defaults to ``0``.
             inplace (bool, optional): if the operation should be performed in-place
-                with :py:func:`torch.no_grad`. Defaults to ``False``.
+                with :py:class:`torch.no_grad`. Defaults to ``False``.
 
         Raises:
             RuntimeError: cannot write to uninitialized (ignored) storage.
@@ -1854,7 +1870,7 @@ class RecordTensor(ShapedTensor):
             forward (bool, optional): if the offset pointer indicates the index of the
                 first observation. Defaults to ``False``.
             inplace (bool, optional): if the operation should be performed in-place
-                with :py:func:`torch.no_grad`. Defaults to ``False``.
+                with :py:class:`torch.no_grad`. Defaults to ``False``.
 
         Raises:
             RuntimeError: cannot write to uninitialized (ignored) storage.
@@ -1996,7 +2012,7 @@ class RecordTensor(ShapedTensor):
 
         If ``time`` is a tensor, interpolation will be called regardless, and the time
         passed into the interpolation call will be set to either ``0`` or
-        :py:attr:`self.dt`. Interpolation results are then overwritten with exact values
+        :py:attr:`dt`. Interpolation results are then overwritten with exact values
         before returning.
 
         Args:
@@ -2163,7 +2179,7 @@ class RecordTensor(ShapedTensor):
 
         If ``time`` is a tensor, interpolation will be called regardless, and the time
         passed into the extrapolation call will be set to either ``0`` or
-        :py:attr:`self.dt`. Extrapolation results are then overwritten with exact values
+        :py:attr:`dt`. Extrapolation results are then overwritten with exact values
         before writing.
 
         The :py:class:`~torch.dtype` of elements inserted into the underlying storage
@@ -2182,7 +2198,7 @@ class RecordTensor(ShapedTensor):
             offset (int, optional): number of steps before the pointer.
                 Defaults to ``0``.
             inplace (bool, optional): if the operation should be performed in-place
-                with :py:func:`torch.no_grad`. Defaults to ``False``.
+                with :py:class:`torch.no_grad`. Defaults to ``False``.
             extrap_kwargs (dict[str, Any] | None, optional): dictionary of keyword
                 arguments to pass to ``extrap``. Defaults to ``None``.
 
@@ -2360,7 +2376,7 @@ class RecordTensor(ShapedTensor):
     ) -> torch.Tensor | nn.Parameter | None:
         r"""Add, edit, or remove a constraint.
 
-        Like :py:meth:`ShapeTensor.reconstrain`, except ``dim`` is modified
+        Like :py:meth:`ShapedTensor.reconstrain`, except ``dim`` is modified
         to account for the record dimension. Negative values of ``dim`` will have
         ``1`` subtracted from them.
 
@@ -2636,8 +2652,7 @@ class Hook:
     `Hook` provides functionality to register and deregister itself as
     forward hook with a :py:class:`~torch.nn.Module` object. This is performed using
     :py:meth:`~torch.nn.Module.register_forward_hook` to register itself as a forward
-    hook and it manages the returned :py:class:`~torch.utils.hooks.RemovableHandle`
-    to deregister itself.
+    hook and it manages the returned `RemovableHandle` to deregister itself.
 
     Args:
         prehook (Callable | None, optional): function to call before hooked module's

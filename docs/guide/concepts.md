@@ -6,29 +6,27 @@ In the context of spiking neural networks, the notion of "trace" frequently aris
 In the interest of biological plausibility, and to the benefit of computational feasibility, rather than considering every prior spike, it is instead modeled as each prior spike leaving behind a *trace*. A trace is typically represented by the differential equation
 
 $$
-\tau_x \frac{dx}{dt} = -x + A \sum_f \delta (t - t^f),
+\frac{dx}{dt} = -\frac{x(t)}{\tau_x} + A \sum_f \delta (t - t^f),
 $$
 
-where $x$ is the trace, $A$ is the amplitude of the trace, $\tau_x$ is the time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>), $t$ is the simulation time, $t^f$ are the times at which spikes occurred (over the set of spikes $f$), and $\delta$ is the Dirac delta function. The construction $\delta (t - t^f)$, when in the solution of the differential equation, evaluates to $1$ if the current time $t$ is a time at which an action potential was generated and $0$ otherwise.
-
-This equation can be interpreted as follows: whenever a spike occurs, add some value $A$ to the trace $x$, and let this trace decay exponentially with some time constant $\tau_x$. Instead of only considering spikes, $j$ is the set of true events, occurring at times $t^j$.
+where $x$ is the trace, $A$ is the amplitude of the trace, $\tau_x$ is the time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>), $t$ is the simulation time, $t^f$ are the times at which spikes occurred (over the set of spikes $f$), and $\delta$ is the Dirac delta function. The construction $\delta (t - t^f)$, when in the solution of the differential equation, evaluates to $1$ if the current time $t$ is a time at which an action potential was generated and $0$ otherwise. While $f$ typically corresponds to a set of spikes, it can refer to any binary event.
 
 ### Cumulative Trace
 $$
-x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) + A \left[t = t^j\right]
+x(t) = x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) + A \left[t = t^f\right]
 $$
 
 *From:*
 
 $$
-\tau_x \frac{dx}{dt} = -x(t) + A \sum_j \delta(t - t^j)
+\frac{dx}{dt} = -\frac{x(t)}{\tau_x} + A \sum_f \delta(t - t^f)
 $$
 
 *Where:*
-- $x$, spike trace
+- $x$, trace
 - $A$, amplitude of the trace
 - $\tau_x$, time constant of exponential decay $(\text{ms})$
-- $t^j$, time of (the most recent) prior event $(\text{ms})$
+- $t^f$, time of (the most recent) prior event $(\text{ms})$
 - $t$, current runtime of the simulation $(\text{ms})$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$
 
@@ -38,18 +36,30 @@ $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true 
 $$
 x(t) =
 \begin{cases}
-    A & t=t^j \\
-    x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) & t \neq t^j \\
+    A & t=t^f \\
+    x(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) & t \neq t^f \\
 \end{cases}
 $$
 
+*From:*
+
+$$
+\frac{dx}{dt} = -\frac{x(t)}{\tau_x} + \left(A - x(t) + \frac{x(t)}{\tau_x}\right) \sum_f \delta(t - t^f)
+$$
+
 *Where:*
-- $x$, spike trace
+- $x$, trace
 - $A$, amplitude of the trace
 - $\tau_x$, time constant of exponential decay $(\text{ms})$
-- $t^j$, time of (the most recent) prior event $(\text{ms})$
+- $t^f$, time of (the most recent) prior event $(\text{ms})$
 - $t$, current runtime of the simulation $(\text{ms})$
 - $\Delta t$, length of time over which each simulation step occurs $(\text{ms})$
+
+### Comparison and Interpretation
+The "cumulative trace" is used to model these all-to-all interactions whereas "nearest trace" is used to model nearest-neighbor interactions.
+
+### References
+1. [DOI:10.1007/s00422-008-0233-1](https://link.springer.com/article/10.1007/s00422-008-0233-1)
 
 ## Parameter Dependence
 Traditionally applied to connection weights, especially with learning methods which contain a potentiative and depressive component, parameter dependence is a technique which limits the range of values for a parameter.

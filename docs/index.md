@@ -21,7 +21,7 @@ At this time, installation is only supported via pip. Future support for install
 pip install inferno-ai[torch]
 ```
 
-Installation with the "torch" flag will install PyTorch 2.3.1 and the corresponding version of TorchVision.
+Installation with the "torch" flag will install PyTorch 2.4.0 and the corresponding version of TorchVision.
 
 ### Without PyTorch
 
@@ -33,4 +33,4 @@ _Note: Inferno still requires PyTorch and a version of it must be installed. PyT
 
 ## Getting Started
 
-For an example of walking through building, training, and evaluating a spiking neural network, see the [quickstart example](examples/quickstart:Quickstart). A comprehensive documentation of the classes and functions provided by Inferno are available [here](<reference/index:API Reference>).
+For an example of walking through building, training, and evaluating a spiking neural network, see the [quickstart example](<examples/quickstart:Quickstart>). A comprehensive documentation of the classes and functions provided by Inferno are available [here](<reference/index:API Reference>).

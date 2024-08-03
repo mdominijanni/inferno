@@ -120,29 +120,58 @@ class MSTDPET(IndependentCellTrainer):
     r"""Modulated spike-timing dependent plasticity with eligibility trace trainer.
 
     .. math::
-        w(t + \Delta t) - w(t) = \gamma  r(t + \Delta t)
-        [z_\text{post}(t + \Delta t) + z_\text{pre}(t + \Delta t)]
+        w(t + \Delta t) - w(t) = \gamma  r(t)
+        [z_\text{post}(t) + z_\text{pre}(t)]
         \Delta t
-
-    Where:
 
     .. math::
         \begin{align*}
-            z_\text{post}(t + \Delta t) &= z_\text{post}(t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
+            z_\text{post}(t) &= z_\text{post}(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
             + \frac{x_\text{pre}(t)}{\tau_z}\left[t = t_\text{post}^f\right] \\
-            z_\text{pre}(t + \Delta t) &= z_\text{pre}(t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
-            + \frac{x_\text{post}(t)}{\tau_z}\left[t = t_\text{pre}^f\right] \\
-            x_\text{pre}(t) &= x_\text{pre}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{pre}}\right)
-            + \eta_\text{post}\left[t = t_\text{pre}^f\right] \\
-            x_\text{post}(t) &= x_\text{post}(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_\text{post}}\right)
-            + \eta_\text{pre}\left[t = t_\text{post}^f\right]
+            z_\text{pre}(t) &= z_\text{pre}(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right)
+            + \frac{x_\text{post}(t)}{\tau_z}\left[t = t_\text{pre}^f\right]
         \end{align*}
 
-    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent
-    spike from neuron :math:`n`, respectively.
+    When ``trace_mode = "cumulative"``:
+
+    .. math::
+        \begin{align*}
+            x_\text{pre}(t) &= x_\text{pre}(t - \Delta t)
+            \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right) +
+            \eta_\text{post} \left[t = t_\text{pre}^f\right] \\
+            x_\text{post}(t) &= x_\text{post}(t - \Delta t)
+            \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right) +
+            \eta_\text{pre} \left[t = t_\text{post}^f\right]
+        \end{align*}
+
+    When ``trace_mode = "nearest"``:
+
+    .. math::
+        \begin{align*}
+            x_\text{pre}(t) &=
+            \begin{cases}
+                \eta_\text{post} & t = t_\text{pre}^f \\
+                x_\text{pre}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right)
+                & t \neq t_\text{pre}^f
+            \end{cases} \\
+            x_\text{post}(t) &=
+            \begin{cases}
+                \eta_\text{pre} & t = t_\text{post}^f \\
+                x_\text{post}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right)
+                & t \neq t_\text{post}^f
+            \end{cases}
+        \end{align*}
+
+    Where:
+
+    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most
+    recent spike from neuron :math:`n`, respectively, and :math:`\Delta t` is the
+    duration of the simulation step.
 
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
-    controls which terms are potentiative and depressive updates (these are applied to
+    control which terms are potentiative and depressive updates (these are applied to
     the opposite trace). The terms (when expanded) can be scaled for weight dependence
     on updating. :math:`r` is a reinforcement term given on each update. Note that
     this implementation splits the eligibility trace into two terms, so weight
@@ -155,9 +184,9 @@ class MSTDPET(IndependentCellTrainer):
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
     | Anti-Hebbian      | :math:`-`                            | :math:`+`                           | :math:`\eta_\text{pre}`                   | :math:`\eta_\text{post}`                  |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
-    | Depressive Only   | :math:`-`                            | :math:`-`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
+    | Potentiative Only | :math:`+`                            | :math:`+`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
-    | Potentiative Only | :math:`+`                            | :math:`+`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
+    | Depressive Only   | :math:`-`                            | :math:`-`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
 
     Because this logic is extended to the sign of the reward signal, the size of the
@@ -167,17 +196,15 @@ class MSTDPET(IndependentCellTrainer):
     :math:`\gamma` can be passed in along with the reward signal to account for this.
 
     Args:
-        step_time (float): length of a simulation time step, :math:`\Delta t`,
-            in :math:`\text{ms}`.
-        lr_post (float): learning rate for updates on postsynaptic spike updates,
+        lr_post (float): learning rate for updates on postsynaptic spikes,
             :math:`\eta_\text{post}`.
-        lr_pre (float): learning rate for updates on presynaptic spike updates,
+        lr_pre (float): learning rate for updates on presynaptic spikes,
             :math:`\eta_\text{pre}`.
-        tc_post (float): time constant for exponential decay of postsynaptic trace,
+        tc_post (float): time constant of exponential decay of postsynaptic trace,
             :math:`tau_\text{post}`, in :math:`ms`.
-        tc_pre (float): time constant for exponential decay of presynaptic trace,
+        tc_pre (float): time constant of exponential decay of presynaptic trace,
             :math:`tau_\text{pre}`, in :math:`ms`.
-        tc_eligibility (float): time constant for exponential decay of eligibility trace,
+        tc_eligibility (float): time constant of exponential decay of eligibility trace,
             :math:`tau_z`, in :math:`ms`.
         interp_tolerance (float): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
@@ -211,13 +238,13 @@ class MSTDPET(IndependentCellTrainer):
 
     def __init__(
         self,
-        step_time: float,
         lr_post: float,
         lr_pre: float,
         tc_post: float,
         tc_pre: float,
         tc_eligibility: float,
         interp_tolerance: float = 0.0,
+        trace_mode: Literal["cumulative", "nearest"] = "cumulative",
         batch_reduction: (
             Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None
         ) = None,
@@ -227,13 +254,15 @@ class MSTDPET(IndependentCellTrainer):
         IndependentCellTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
-        self.step_time = argtest.gt("step_time", step_time, 0, float)
         self.lr_post = float(lr_post)
         self.lr_pre = float(lr_pre)
         self.tc_post = argtest.gt("tc_post", tc_post, 0, float)
         self.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
         self.tc_eligibility = argtest.gt("tc_eligibility", tc_eligibility, 0, float)
         self.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
+        self.trace = argtest.oneof(
+            "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
+        )
         self.batchreduce = batch_reduction if batch_reduction else torch.sum
 
     def _build_cell_state(self, **kwargs) -> Module:
@@ -246,22 +275,34 @@ class MSTDPET(IndependentCellTrainer):
         """
         state = Module()
 
-        step_time = kwargs.get("step_time", self.step_time)
         lr_post = kwargs.get("lr_post", self.lr_post)
         lr_pre = kwargs.get("lr_pre", self.lr_pre)
         tc_post = kwargs.get("tc_post", self.tc_post)
         tc_pre = kwargs.get("tc_pre", self.tc_pre)
         tc_eligibility = kwargs.get("tc_eligibility", self.tc_eligibility)
         interp_tolerance = kwargs.get("interp_tolerance", self.tolerance)
+        trace_mode = kwargs.get("trace_mode", self.trace)
         batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
 
-        state.step_time = argtest.gt("step_time", step_time, 0, float)
         state.lr_post = float(lr_post)
         state.lr_pre = float(lr_pre)
         state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
         state.tc_pre = argtest.gt("tc_pre", tc_pre, 0, float)
         state.tc_eligibility = argtest.gt("tc_eligibility", tc_eligibility, 0, float)
         state.tolerance = argtest.gte("interp_tolerance", interp_tolerance, 0, float)
+        state.tracemode = argtest.oneof(
+            "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
+        )
+        match state.tracemode:
+            case "cumulative":
+                state.tracecls = CumulativeTraceReducer
+            case "nearest":
+                state.tracecls = NearestTraceReducer
+            case "_":
+                raise RuntimeError(
+                    f"an invalid trace mode of '{state.tracemode}' has been set, "
+                    "expected one of: 'cumulative', 'nearest'"
+                )
         state.batchreduce = (
             batch_reduction if (batch_reduction is not None) else torch.sum
         )
@@ -274,7 +315,7 @@ class MSTDPET(IndependentCellTrainer):
         cell: Cell,
         /,
         **kwargs: Any,
-    ) -> MSTDPET.Unit:
+    ) -> IndependentCellTrainer.Unit:
         r"""Adds a cell with required state.
 
         Args:
@@ -282,20 +323,18 @@ class MSTDPET(IndependentCellTrainer):
             cell (Cell): cell to add.
 
         Keyword Args:
-            step_time (float): length of a simulation time step.
-            lr_post (float): learning rate for updates on postsynaptic spike updates.
-            lr_pre (float): learning rate for updates on presynaptic spike updates.
-            tc_post (float): time constant for exponential decay of postsynaptic trace.
-            tc_pre (float): time constant for exponential decay of presynaptic trace.
-            tc_eligibility (float): time constant for exponential decay of eligibility trace.
+            lr_post (float): learning rate for updates on postsynaptic spikes.
+            lr_pre (float): learning rate for updates on presynaptic spikes.
+            tc_post (float): time constant of exponential decay of postsynaptic trace.
+            tc_pre (float): time constant of exponential decay of presynaptic trace.
+            tc_eligibility (float): time constant of exponential decay of eligibility trace.
             scale (float): scaling term for both the postsynaptic and presynaptic updates.
             interp_tolerance (float): maximum difference in time from an observation
                 to treat as co-occurring.
+            trace_mode (Literal["cumulative", "nearest"]): method to use for
+                calculating spike traces.
             batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
                 function to reduce updates over the batch dimension.
-            field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-                function to reduce updates over the receptive field dimension,
-                :py:func:`torch.sum` when ``None``. Defaults to ``None``.
 
         Returns:
             IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
@@ -320,8 +359,8 @@ class MSTDPET(IndependentCellTrainer):
             "trace_post",
             "neuron.spike",
             StateMonitor.partialconstructor(
-                reducer=CumulativeTraceReducer(
-                    state.step_time,
+                reducer=state.tracecls(
+                    cell.connection.dt,
                     state.tc_post,
                     amplitude=abs(state.lr_pre),
                     target=True,
@@ -332,7 +371,9 @@ class MSTDPET(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
+            amp=abs(state.lr_pre),
+            tc=state.tc_post,
         )
 
         # postsynaptic spike monitor (triggers hebbian LTP)
@@ -342,7 +383,7 @@ class MSTDPET(IndependentCellTrainer):
             "neuron.spike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     duration=0.0,
                     inclusive=True,
                 ),
@@ -350,7 +391,7 @@ class MSTDPET(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
         )
 
         # presynaptic trace monitor (weighs hebbian LTP)
@@ -359,8 +400,8 @@ class MSTDPET(IndependentCellTrainer):
             "trace_pre",
             "connection.synspike",
             StateMonitor.partialconstructor(
-                reducer=CumulativeTraceReducer(
-                    state.step_time,
+                reducer=state.tracecls(
+                    cell.connection.dt,
                     state.tc_pre,
                     amplitude=abs(state.lr_post),
                     target=True,
@@ -371,7 +412,9 @@ class MSTDPET(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
+            amp=abs(state.lr_post),
+            tc=state.tc_pre,
         )
 
         # presynaptic spike monitor (triggers hebbian LTD)
@@ -381,7 +424,7 @@ class MSTDPET(IndependentCellTrainer):
             "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     duration=0.0,
                     inclusive=True,
                 ),
@@ -389,7 +432,7 @@ class MSTDPET(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
         )
 
         # presynaptic-scaled postsynaptic-triggered eligibility trace (hebbian LTP)
@@ -399,7 +442,7 @@ class MSTDPET(IndependentCellTrainer):
             "monitors",
             MultiStateMonitor.partialconstructor(
                 reducer=EligibilityTraceReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_eligibility,
                     obs_reshape=weakref.WeakMethod(cell.connection.presyn_receptive),
                     cond_reshape=weakref.WeakMethod(cell.connection.postsyn_receptive),
@@ -420,7 +463,7 @@ class MSTDPET(IndependentCellTrainer):
             "monitors",
             MultiStateMonitor.partialconstructor(
                 reducer=EligibilityTraceReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_eligibility,
                     obs_reshape=weakref.WeakMethod(cell.connection.postsyn_receptive),
                     cond_reshape=weakref.WeakMethod(cell.connection.presyn_receptive),
@@ -537,31 +580,50 @@ class MSTDP(IndependentCellTrainer):
     r"""Modulated spike-timing dependent plasticity trainer.
 
     .. math::
-        w(t + \Delta t) - w(t) = \gamma  r(t + \Delta t) \left(\eta_\text{post} x_\text{pre}(t)
+        w(t + \Delta t) - w(t) = \gamma  r(t) \left(x_\text{pre}(t)
         \bigl[t = t^f_\text{post}\bigr] +
-        \eta_\text{pre} x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr] \right)
+        x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr] \right)
 
     When ``trace_mode = "cumulative"``:
 
     .. math::
-        x_n(t) = x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) + \left[t = t_n^f\right]
+        \begin{align*}
+            x_\text{pre}(t) &= x_\text{pre}(t - \Delta t)
+            \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right) +
+            \eta_\text{post} \left[t = t_\text{pre}^f\right] \\
+            x_\text{post}(t) &= x_\text{post}(t - \Delta t)
+            \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right) +
+            \eta_\text{pre} \left[t = t_\text{post}^f\right]
+        \end{align*}
 
     When ``trace_mode = "nearest"``:
 
     .. math::
-        x_n(t) =
-        \begin{cases}
-            1 & t = t_n^f \\
-            x_n(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_n}\right) & t \neq t_n^f
-        \end{cases}
+        \begin{align*}
+            x_\text{pre}(t) &=
+            \begin{cases}
+                \eta_\text{post} & t = t_\text{pre}^f \\
+                x_\text{pre}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_\text{pre}}\right)
+                & t \neq t_\text{pre}^f
+            \end{cases} \\
+            x_\text{post}(t) &=
+            \begin{cases}
+                \eta_\text{pre} & t = t_\text{post}^f \\
+                x_\text{post}(t - \Delta t)
+                \exp\left(-\frac{\Delta t}{\tau_\text{post}}\right)
+                & t \neq t_\text{post}^f
+            \end{cases}
+        \end{align*}
 
     Where:
 
-    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most recent
-    spike from neuron :math:`n`, respectively.
+    Times :math:`t` and :math:`t_n^f` are the current time and the time of the most
+    recent spike from neuron :math:`n`, respectively, and :math:`\Delta t` is the
+    duration of the simulation step.
 
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
-    controls which terms are potentiative and depressive updates (these are applied to
+    control which terms are potentiative and depressive updates (these are applied to
     the opposite trace). The terms (when expanded) can be scaled for weight dependence
     on updating. :math:`r` is a reinforcement term given on each update. Note that
     this implementation splits the eligibility trace into two terms, so weight
@@ -574,9 +636,9 @@ class MSTDP(IndependentCellTrainer):
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
     | Anti-Hebbian      | :math:`-`                            | :math:`+`                           | :math:`\eta_\text{pre}`                   | :math:`\eta_\text{post}`                  |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
-    | Depressive Only   | :math:`-`                            | :math:`-`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
+    | Potentiative Only | :math:`+`                            | :math:`+`                           | :math:`\eta_\text{post}, \eta_\text{pre}` | None                                      |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
-    | Potentiative Only | :math:`+`                            | :math:`+`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
+    | Depressive Only   | :math:`-`                            | :math:`-`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
 
     Because this logic is extended to the sign of the reward signal, the size of the
@@ -586,15 +648,13 @@ class MSTDP(IndependentCellTrainer):
     :math:`\gamma` can be passed in along with the reward signal to account for this.
 
     Args:
-        step_time (float): length of a simulation time step, :math:`\Delta t`,
-            in :math:`\text{ms}`.
-        lr_post (float): learning rate for updates on postsynaptic spike updates,
+        lr_post (float): learning rate for updates on postsynaptic spikes,
             :math:`\eta_\text{post}`.
-        lr_pre (float): learning rate for updates on presynaptic spike updates,
+        lr_pre (float): learning rate for updates on presynaptic spikes,
             :math:`\eta_\text{pre}`.
-        tc_post (float): time constant for exponential decay of postsynaptic trace,
+        tc_post (float): time constant of exponential decay of postsynaptic trace,
             :math:`tau_\text{post}`, in :math:`ms`.
-        tc_pre (float): time constant for exponential decay of presynaptic trace,
+        tc_pre (float): time constant of exponential decay of presynaptic trace,
             :math:`tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
@@ -637,7 +697,6 @@ class MSTDP(IndependentCellTrainer):
 
     def __init__(
         self,
-        step_time: float,
         lr_post: float,
         lr_pre: float,
         tc_post: float,
@@ -654,7 +713,6 @@ class MSTDP(IndependentCellTrainer):
         IndependentCellTrainer.__init__(self, **kwargs)
 
         # default hyperparameters
-        self.step_time = argtest.gt("step_time", step_time, 0, float)
         self.lr_post = float(lr_post)
         self.lr_pre = float(lr_pre)
         self.tc_post = argtest.gt("tc_post", tc_post, 0, float)
@@ -676,7 +734,6 @@ class MSTDP(IndependentCellTrainer):
         """
         state = Module()
 
-        step_time = kwargs.get("step_time", self.step_time)
         lr_post = kwargs.get("lr_post", self.lr_post)
         lr_pre = kwargs.get("lr_pre", self.lr_pre)
         tc_post = kwargs.get("tc_post", self.tc_post)
@@ -686,7 +743,6 @@ class MSTDP(IndependentCellTrainer):
         trace_mode = kwargs.get("trace_mode", self.trace)
         batch_reduction = kwargs.get("batch_reduction", self.batchreduce)
 
-        state.step_time = argtest.gt("step_time", step_time, 0, float)
         state.lr_post = float(lr_post)
         state.lr_pre = float(lr_pre)
         state.tc_post = argtest.gt("tc_post", tc_post, 0, float)
@@ -718,7 +774,7 @@ class MSTDP(IndependentCellTrainer):
         cell: Cell,
         /,
         **kwargs: Any,
-    ) -> MSTDP.Unit:
+    ) -> IndependentCellTrainer.Unit:
         r"""Adds a cell with required state.
 
         Args:
@@ -726,11 +782,10 @@ class MSTDP(IndependentCellTrainer):
             cell (Cell): cell to add.
 
         Keyword Args:
-            step_time (float): length of a simulation time step.
-            lr_post (float): learning rate for updates on postsynaptic spike updates.
-            lr_pre (float): learning rate for updates on presynaptic spike updates.
-            tc_post (float): time constant for exponential decay of postsynaptic trace.
-            tc_pre (float): time constant for exponential decay of presynaptic trace.
+            lr_post (float): learning rate for updates on postsynaptic spikes.
+            lr_pre (float): learning rate for updates on presynaptic spikes.
+            tc_post (float): time constant of exponential decay of postsynaptic trace.
+            tc_pre (float): time constant of exponential decay of presynaptic trace.
             delayed (bool): if the updater should assume that learned delays,
                 if present, may change.
             interp_tolerance (float): maximum difference in time from an observation
@@ -768,7 +823,7 @@ class MSTDP(IndependentCellTrainer):
             "neuron.spike",
             StateMonitor.partialconstructor(
                 reducer=state.tracecls(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_post,
                     amplitude=abs(state.lr_pre),
                     target=True,
@@ -778,7 +833,8 @@ class MSTDP(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
+            amp=abs(state.lr_pre),
             tc=state.tc_post,
             trace=state.tracemode,
         )
@@ -790,14 +846,14 @@ class MSTDP(IndependentCellTrainer):
             "neuron.spike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     duration=0.0,
                     inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
         )
 
         # presynaptic trace monitor (weighs hebbian LTP)
@@ -809,7 +865,7 @@ class MSTDP(IndependentCellTrainer):
             "synapse.spike" if delayed else "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=state.tracecls(
-                    state.step_time,
+                    cell.connection.dt,
                     state.tc_pre,
                     amplitude=abs(state.lr_post),
                     target=True,
@@ -819,7 +875,8 @@ class MSTDP(IndependentCellTrainer):
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
+            amp=abs(state.lr_post),
             tc=state.tc_pre,
             trace=state.tracemode,
             delayed=delayed,
@@ -834,14 +891,14 @@ class MSTDP(IndependentCellTrainer):
             "synapse.spike" if delayed else "connection.synspike",
             StateMonitor.partialconstructor(
                 reducer=PassthroughReducer(
-                    state.step_time,
+                    cell.connection.dt,
                     duration=cell.connection.delayedby if delayed else 0.0,
                     inclusive=True,
                 ),
                 **monitor_kwargs,
             ),
             False,
-            dt=state.step_time,
+            dt=cell.connection.dt,
             delayed=delayed,
         )
 

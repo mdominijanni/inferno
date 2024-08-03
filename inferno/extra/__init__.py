@@ -1,7 +1,16 @@
+from .functional import (
+    identity,
+    varidentity,
+    tuplewrap,
+)
+
 from .neural import (
-    PassthroughNeuron,
+    ExactNeuron,
 )
 
 __all__ = [
-    PassthroughNeuron,
+    "identity",
+    "varidentity",
+    "tuplewrap",
+    "ExactNeuron",
 ]

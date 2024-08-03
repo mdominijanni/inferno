@@ -23,6 +23,7 @@
     STDP
     MSTDP
     MSTDPET
+    TripletSTDP
 ```
 
 ## Classifiers

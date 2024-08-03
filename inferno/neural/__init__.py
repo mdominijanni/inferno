@@ -56,6 +56,7 @@ from .network import (
     Layer,
     Biclique,
     Serial,
+    RecurrentSerial,
 )
 
 from .hooks import (
@@ -94,6 +95,7 @@ __all__ = [
     "Layer",
     "Biclique",
     "Serial",
+    "RecurrentSerial",
     "Normalization",
     "Clamping",
 ]

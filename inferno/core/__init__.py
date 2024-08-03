@@ -36,6 +36,10 @@ from .trace import (
     trace_nearest_scaled,
     trace_cumulative_scaled,
     trace_cumulative_value,
+    exp_trace_nearest,
+    exprate_trace_nearest,
+    exp_trace_cumulative,
+    exprate_trace_cumulative,
 )
 
 __all__ = [
@@ -75,4 +79,8 @@ __all__ = [
     "trace_nearest_scaled",
     "trace_cumulative_scaled",
     "trace_cumulative_value",
+    "exp_trace_nearest",
+    "exprate_trace_nearest",
+    "exp_trace_cumulative",
+    "exprate_trace_cumulative",
 ]

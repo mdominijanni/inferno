@@ -3,6 +3,7 @@ import torch
 
 
 class Distribution(ABC):
+    r"""Base class for representing probability distributions."""
 
     @classmethod
     @abstractmethod
@@ -11,7 +12,7 @@ class Distribution(ABC):
 
         Returns:
             dict[str, torch.Tensor | bool | None]: argument name and if it is valid,
-            returned as a tensor of dtype :py:data:`torch.bool` if a non-scalar tensor
+            returned as a tensor of dtype ``torch.bool`` if a non-scalar tensor
             is given, ``None`` if not given.
 
         Raises:
@@ -68,6 +69,7 @@ class Distribution(ABC):
 
 
 class DiscreteDistribution(Distribution):
+    r"""Base class for representing discrete probability distributions."""
 
     @classmethod
     @abstractmethod
@@ -131,6 +133,7 @@ class DiscreteDistribution(Distribution):
 
 
 class ContinuousDistribution(Distribution):
+    r"""Base class for representing continuous probability distributions."""
 
     @classmethod
     @abstractmethod

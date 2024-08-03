@@ -73,13 +73,22 @@ class Reducer(Module, ABC):
 
 
 class RecordReducer(Reducer, ABC):
-    r"""Abstract base class for the reducers utilizing multiple RecordTensors."""
+    r"""Abstract base class for the reducers utilizing multiple RecordTensors.
+
+    Args:
+        step_time (float): length of time between observations.
+        duration (float): length of time for which observations should be stored.
+        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
+        inplace (bool, optional): if write operations should be performed
+            in-place. Defaults to ``False``.
+    """
 
     def __init__(
         self,
         step_time: float,
         duration: float,
         inclusive: bool = False,
+        inplace: bool = False,
     ):
         # call superclass constructor
         Reducer.__init__(self)
@@ -88,6 +97,7 @@ class RecordReducer(Reducer, ABC):
         self.__step_time = argtest.gt("step_time", step_time, 0, float)
         self.__duration = argtest.gte("duration", duration, 0, float)
         self.__inclusive = bool(inclusive)
+        self.__inplace = bool(inplace)
 
         # collection of record names
         self.__records = set()
@@ -125,7 +135,7 @@ class RecordReducer(Reducer, ABC):
             Altering this property will reset the reducer.
 
         Note:
-            In the same units as :py:attr:`self.duration`.
+            In the same units as :py:attr:`duration`.
         """
         return self.__step_time
 
@@ -151,7 +161,7 @@ class RecordReducer(Reducer, ABC):
             Altering this property will reset the reducer.
 
         Note:
-            In the same units as :py:attr:`self.dt`.
+            In the same units as :py:attr:`dt`.
         """
         return self.__duration
 
@@ -163,6 +173,26 @@ class RecordReducer(Reducer, ABC):
                 getattr(self, rec).duration = value
             self.__step_time = value
 
+    @property
+    def inplace(self) -> bool:
+        r"""If write operations should be performed in-place.
+
+        Args:
+            value (bool): if write operations should be performed in-place.
+
+        Returns:
+            bool: if write operations should be performed in-place.
+
+        Note:
+            Generally if gradient computation is required, this should be set to
+            ``False``.
+        """
+        return self.__inplace
+
+    @inplace.setter
+    def inplace(self, value: bool) -> None:
+        self.__inplace = bool(value)
+
 
 class FoldReducer(RecordReducer, ABC):
     r"""Subclassable reducer performing a fold operation between previous state and an observation.
@@ -171,15 +201,22 @@ class FoldReducer(RecordReducer, ABC):
         step_time (float): length of time between observations.
         duration (float): length of time for which observations should be stored.
         inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
+        inplace (bool, optional): if write operations should be performed
+            in-place. Defaults to ``False``.
         fill (Any, optional): value with which to fill the stored record on clearing and
             initialization. Defaults to ``0``.
     """
 
     def __init__(
-        self, step_time: float, duration: float, inclusive: bool = False, fill: Any = 0
+        self,
+        step_time: float,
+        duration: float,
+        inclusive: bool = False,
+        inplace: bool = False,
+        fill: Any = 0,
     ):
         # call superclass constructor
-        RecordReducer.__init__(self, step_time, duration, inclusive)
+        RecordReducer.__init__(self, step_time, duration, inclusive, inplace)
 
         # register data buffer and helpers
         RecordTensor.create(
@@ -322,7 +359,7 @@ class FoldReducer(RecordReducer, ABC):
 
             Where:
                 * :math:`S_0, \ldots` are the dimensions of each observation, given
-                  by :py:attr:`shape`.
+                  by the shape of the data.
                 * :math:`D` are the number of distinct observations to select.
 
         """
@@ -365,7 +402,7 @@ class FoldReducer(RecordReducer, ABC):
         Args:
             inputs (torch.Tensor): new observation to incorporate into state.
         """
-        self.data_.push(inputs)
+        self.data_.push(inputs, inplace=self.inplace)
 
     def forward(self, *inputs: torch.Tensor, **kwargs) -> None:
         r"""Initializes state and incorporates inputs into the reducer's state.

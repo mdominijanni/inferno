@@ -13,7 +13,7 @@ pragmatics
 
 <strong style="font-size: 1.5em;">[About Inferno](<guide/inferno:About Inferno>)</strong>
 
-*(Work in Progress)* Overview of Inferno's architecture and how to extend its functionality.
+Overview of Inferno's architecture and how to extend its functionality.
 
 <strong style="font-size: 1.5em;">[About SNNs](<guide/snn:About SNNs>)</strong>
 

@@ -28,13 +28,14 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.intersphinx",
     "myst_parser",
+    "notfound.extension",
     "sphinx_design",
     "sphinx.ext.graphviz",
     "sphinx_remove_toctrees",
     "sphinx_toolbox.more_autosummary.column_widths",
 ]
 
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "_override"]
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/", None),
@@ -95,6 +96,8 @@ html_theme_options = {
         },
     ],
 }
+
+# notfound_template = "404.rst"
 
 # pygments_style = "sphinx"
 # pygments_dark_style = "dracula"

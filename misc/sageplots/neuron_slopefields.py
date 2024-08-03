@@ -4,6 +4,7 @@ from sage.all import plot_slope_field, line, text, exp
 # Global Setting
 dispres = 300
 saveres = 300
+hspace = 0.1  # amount of original single image by which to space
 
 # QIF Slope Field
 vrest = -60
@@ -14,7 +15,7 @@ labelv = 0.625
 labelh = 0.03
 
 # light mode
-fn = "qif_slope_field_light.png"
+fn = "qif-slope-field-light.png"
 
 qif_slopefield = plot_slope_field(
     lambda t, v: (v - vrest) * (v - vcrit), (0, 1), (vmin, vmax), color="black"
@@ -44,7 +45,7 @@ P = qif_slopefield + vrest_line + vrest_label + vcrit_line + vcrit_label
 P.save(fn, dpi=saveres)
 
 # dark mode
-fn = "qif_slope_field_dark.png"
+fn = "qif-slope-field-dark.png"
 
 qif_slopefield = plot_slope_field(
     lambda t, v: (v - vrest) * (v - vcrit),
@@ -93,7 +94,7 @@ labelh = 0.03 * (hmax - hmin)
 labelv = 0.0
 
 # light mode
-fn = "lif_slope_field_light.png"
+fn = "lif-slope-field-light.png"
 
 lif_slopefield = plot_slope_field(
     lambda t, v: -(v - vrest), (hmin, hmax), (vmin, vmax), color="black"
@@ -113,7 +114,7 @@ P = lif_slopefield + vrest_line + vrest_label
 P.save(fn, dpi=saveres)
 
 # dark mode
-fn = "lif_slope_field_dark.png"
+fn = "lif-slope-field-dark.png"
 
 lif_slopefield = plot_slope_field(
     lambda t, v: -(v - vrest),
@@ -155,8 +156,9 @@ labelh = 0.03 * (hmax - hmin)
 labelv = 0.625 * ((vmax - vmin) / 20)
 
 # light mode
-fn1 = "eif_slope_field_d1_light.png"
-fn2 = "eif_slope_field_d2_light.png"
+fn = "eif-slope-field-light.png"
+fn1 = "eif-slope-field-d1-light.png"
+fn2 = "eif-slope-field-d2-light.png"
 
 eif_slopefield_d1 = plot_slope_field(
     lambda t, v: -(v - vrest) + D1 * exp((v - vt) / D1),
@@ -198,9 +200,24 @@ P2 = eif_slopefield_d2 + vrest_line + vrest_label + vt_line + vt_label
 P1.save(fn1, dpi=saveres)
 P2.save(fn2, dpi=saveres)
 
+P1 = Image.open(fn1)
+P2 = Image.open(fn2)
+
+w = P1.size[0] + P2.size[0]
+h = max(P1.size[1], P2.size[1])
+s = int((w // 2) * hspace)
+w += s
+
+P = Image.new("RGBA", (w, h))
+P.paste(P1, (0, 0))
+P.paste(P2, (P1.size[0] + s, 0))
+
+P.save(fn)
+
 # dark mode
-fn1 = "eif_slope_field_d1_dark.png"
-fn2 = "eif_slope_field_d2_dark.png"
+fn = "eif-slope-field-dark.png"
+fn1 = "eif-slope-field-d1-dark.png"
+fn2 = "eif-slope-field-d2-dark.png"
 
 eif_slopefield_d1 = plot_slope_field(
     lambda t, v: -(v - vrest) + D1 * exp((v - vt) / D1),
@@ -255,3 +272,17 @@ Image.alpha_composite(Image.new("RGB", P1.size, "black").convert("RGBA"), P1).sa
 P2.save(fn2, dpi=saveres)
 P2 = Image.open(fn2)
 Image.alpha_composite(Image.new("RGB", P2.size, "black").convert("RGBA"), P2).save(fn2)
+
+P1 = Image.open(fn1)
+P2 = Image.open(fn2)
+
+w = P1.size[0] + P2.size[0]
+h = max(P1.size[1], P2.size[1])
+s = int((w // 2) * hspace)
+w += s
+
+P = Image.new("RGBA", (w, h))
+P.paste(P1, (0, 0))
+P.paste(P2, (P1.size[0] + s, 0))
+
+P.save(fn)
