@@ -81,9 +81,9 @@ class STDP(IndependentCellTrainer):
         lr_pre (float): learning rate for updates on presynaptic spikes,
             :math:`\eta_\text{pre}`.
         tc_post (float): time constant of exponential decay of postsynaptic trace,
-            :math:`tau_\text{post}`, in :math:`ms`.
+            :math:`\tau_\text{post}`, in :math:`ms`.
         tc_pre (float): time constant of exponential decay of presynaptic trace,
-            :math:`tau_\text{pre}`, in :math:`ms`.
+            :math:`\tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
         interp_tolerance (float): maximum difference in time from an observation
@@ -451,9 +451,9 @@ class StableSTDP(IndependentCellTrainer):
         lr_pre (float): learning rate for updates on presynaptic spikes,
             :math:`\eta_\text{pre}`.
         tc_post (float): time constant of exponential decay of postsynaptic trace,
-            :math:`tau_\text{post}`, in :math:`ms`.
+            :math:`\tau_\text{post}`, in :math:`ms`.
         tc_pre (float): time constant of exponential decay of presynaptic trace,
-            :math:`tau_\text{pre}`, in :math:`ms`.
+            :math:`\tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
         interp_tolerance (float): maximum difference in time from an observation
@@ -859,13 +859,13 @@ class TripletSTDP(IndependentCellTrainer):
         lr_pre_triplet (float): learning rate for spike triplet updates on presynaptic
             spikes, :math:`\beta_\text{pre}`.
         tc_post_fast (float): time constant of exponential decay for postsynaptic trace
-            of pairs (fast), :math:`tau_-`, in :math:`ms`.
+            of pairs (fast), :math:`\tau_-`, in :math:`ms`.
         tc_post_slow (float): time constant of exponential decay for postsynaptic trace
-            of triplets (slow), :math:`tau_y`, in :math:`ms`.
+            of triplets (slow), :math:`\tau_y`, in :math:`ms`.
         tc_pre_fast (float): time constant of exponential decay for presynaptic trace
-            of pairs (fast), :math:`tau_+`, in :math:`ms`.
+            of pairs (fast), :math:`\tau_+`, in :math:`ms`.
         tc_pre_slow (float): time constant of exponential decay for presynaptic trace
-            of triplets (slow), :math:`tau_x`, in :math:`ms`.
+            of triplets (slow), :math:`\tau_x`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
         interp_tolerance (float): maximum difference in time from an observation
@@ -897,7 +897,7 @@ class TripletSTDP(IndependentCellTrainer):
 
     Note:
         The absolute values of ``lr_post_triplet`` and ``lr_pre_triplet`` are taken
-        to enfore they are positive values.
+        to enforce they are positive values.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
@@ -1389,13 +1389,13 @@ class StableTripletSTDP(IndependentCellTrainer):
         lr_pre_triplet (float): learning rate for spike triplet updates on presynaptic
             spikes, :math:`\beta_\text{pre}`.
         tc_post_fast (float): time constant of exponential decay for postsynaptic trace
-            of pairs (fast), :math:`tau_-`, in :math:`ms`.
+            of pairs (fast), :math:`\tau_-`, in :math:`ms`.
         tc_post_slow (float): time constant of exponential decay for postsynaptic trace
-            of triplets (slow), :math:`tau_y`, in :math:`ms`.
+            of triplets (slow), :math:`\tau_y`, in :math:`ms`.
         tc_pre_fast (float): time constant of exponential decay for presynaptic trace
-            of pairs (fast), :math:`tau_+`, in :math:`ms`.
+            of pairs (fast), :math:`\tau_+`, in :math:`ms`.
         tc_pre_slow (float): time constant of exponential decay for presynaptic trace
-            of triplets (slow), :math:`tau_x`, in :math:`ms`.
+            of triplets (slow), :math:`\tau_x`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
         interp_tolerance (float): maximum difference in time from an observation
@@ -1427,7 +1427,7 @@ class StableTripletSTDP(IndependentCellTrainer):
 
     Note:
         The absolute values of ``lr_post_triplet`` and ``lr_pre_triplet`` are taken
-        to enfore they are positive values.
+        to enforce they are positive values.
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not

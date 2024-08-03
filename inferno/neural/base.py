@@ -1289,7 +1289,7 @@ class Connection(Updatable, Module, ABC):
 
         Args:
             *inputs (torch.Tensor): inputs which will be reshaped like the composed
-                synapse and passed to its :py:meth`Synapse.forward` call.
+                synapse and passed to its :py:meth:`Synapse.forward` call.
 
         Returns:
             torch.Tensor: resulting postsynaptic currents.

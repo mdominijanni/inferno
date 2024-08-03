@@ -685,7 +685,7 @@ class Biclique(Layer):
 
     Note:
         When ``combine`` is not a string, keyword arguments passed into ``__call__``,
-        other than those captured in :py:meth`forward` will be passed in.
+        other than those captured in :py:meth:`forward` will be passed in.
     """
 
     def __init__(
@@ -846,7 +846,7 @@ class Serial(Layer):
     Note:
         When ``transform`` is not specified, the identity function is used. Keyword
         arguments passed into ``__call__``, other than those captured in
-        :py:meth`forward` will be passed in.
+        :py:meth:`forward` will be passed in.
 
     Note:
         The :py:class:`Layer` object underlying a ``Serial`` object has ``connection``
@@ -1080,7 +1080,7 @@ class RecurrentSerial(Layer):
         When any of ``feedfwd_out_transform``, ``lateral_out_transform``, ``feedback_out_transform``,
         or ``feedback_in_transform`` is not specified, the identity function is used.
         Keyword arguments passed into ``__call__``, other than those captured in
-        :py:meth`forward` will be passed in.
+        :py:meth:`forward` will be passed in.
 
     Important:
         When ``trainable_feedback`` is set to ``True``, the feedback connection and
@@ -1092,7 +1092,7 @@ class RecurrentSerial(Layer):
         ``feedback_out_transform``, ``lateral_in_transform``,
         or ``feedback_in_transform`` is not specified, the identity function is used
         (the latter two also wrapping the input in a tuple). Keyword arguments passed
-        into ``__call__``, other than those captured in :py:meth`forward` will be passed
+        into ``__call__``, other than those captured in :py:meth:`forward` will be passed
         in. The ``lateral_in_transform`` and ``feedback_in_transform`` functions are
         only applied to the spiking input from the feedforward and feedback neurons
         respectively.

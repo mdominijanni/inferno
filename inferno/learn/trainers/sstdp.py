@@ -315,7 +315,7 @@ class MSTDPET(IndependentCellTrainer):
         cell: Cell,
         /,
         **kwargs: Any,
-    ) -> MSTDPET.Unit:
+    ) -> IndependentCellTrainer.Unit:
         r"""Adds a cell with required state.
 
         Args:
@@ -774,7 +774,7 @@ class MSTDP(IndependentCellTrainer):
         cell: Cell,
         /,
         **kwargs: Any,
-    ) -> MSTDP.Unit:
+    ) -> IndependentCellTrainer.Unit:
         r"""Adds a cell with required state.
 
         Args:
