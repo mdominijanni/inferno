@@ -14,7 +14,7 @@
     IndependentCellTrainer
 ```
 
-## Updaters, Spike-Timing Dependent Plasticity
+## Trainers, Spike-Timing Dependent Plasticity
 ```{eval-rst}
 .. autosummary::
     :nosignatures:
