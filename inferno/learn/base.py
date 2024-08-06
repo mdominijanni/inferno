@@ -4,7 +4,7 @@ from .._internal import getitem, unique
 from ..neural import Cell
 from ..observe import Monitor, MonitorConstructor, MonitorPool
 from abc import ABC, abstractmethod
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 import torch.nn as nn
 from typing import Any
 import weakref
@@ -92,7 +92,11 @@ class CellTrainer(Module):
         )
 
     def add_cell(
-        self, name: str, cell: Cell, state: nn.Module | None = None
+        self,
+        name: str,
+        cell: Cell,
+        state: nn.Module | None = None,
+        params: Sequence[str] | None = None,
     ) -> tuple[Cell, nn.Module | None]:
         r"""Adds a cell and any auxiliary state.
 
@@ -101,6 +105,9 @@ class CellTrainer(Module):
             cell (Cell): cell to add.
             state (nn.Module | None, optional): any extra state to add.
                 Defaults to ``None``.
+            params (Sequence[str] | None, optional): trainable parameters the cell
+                updater must have. Defaults to ``None``.
+
 
         Raises:
             ValueError: a cell with the specified name already exists.
@@ -118,6 +125,14 @@ class CellTrainer(Module):
             raise RuntimeError(
                 "'cell' is not updatable, add an updater to 'cell.connection'"
             )
+
+        # ensure the cell has required trainable parameters
+        if params:
+            for p in params:
+                if not hasattr(cell.updater, p):
+                    raise RuntimeError(
+                        f"'cell' does not contain required parameter '{p}'"
+                    )
 
         # delete any existing monitors (should only occur if a cell died w/o removal)
         self.monitor_pool_.del_observed(name)
@@ -341,6 +356,7 @@ class IndependentCellTrainer(CellTrainer, ABC):
             state (nn.Module): auxiliary state.
             monitors (dict[str, Monitor]): associated monitors.
         """
+
         def __init__(self, cell: Cell, state: nn.Module, monitors: dict[str, Monitor]):
             Module.__init__(self)
             self.cell = cell
@@ -392,7 +408,9 @@ class IndependentCellTrainer(CellTrainer, ABC):
         )
 
     @abstractmethod
-    def register_cell(self, name: str, cell: Cell, **kwargs) -> IndependentCellTrainer.Unit:
+    def register_cell(
+        self, name: str, cell: Cell, **kwargs
+    ) -> IndependentCellTrainer.Unit:
         r"""Adds a cell with any required state.
 
         Args:

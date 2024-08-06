@@ -344,7 +344,9 @@ class MSTDPET(IndependentCellTrainer):
             set on initialization. See :py:class:`MSTDPET` for details.
         """
         # add the cell with additional hyperparameters
-        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
+        cell, state = self.add_cell(
+            name, cell, self._build_cell_state(**kwargs), ["weight"]
+        )
 
         # common arguments
         monitor_kwargs = {
@@ -803,7 +805,9 @@ class MSTDP(IndependentCellTrainer):
             set on initialization. See :py:class:`MSTDP` for details.
         """
         # add the cell with additional hyperparameters
-        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
+        cell, state = self.add_cell(
+            name, cell, self._build_cell_state(**kwargs), ["weight"]
+        )
 
         # if delays should be accounted for
         delayed = state.delayed and cell.connection.delayedby is not None
