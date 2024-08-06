@@ -221,9 +221,6 @@ class STDP(IndependentCellTrainer):
                 calculating spike traces.
             batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
                 function to reduce updates over the batch dimension.
-            field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-                function to reduce updates over the receptive field dimension,
-                :py:func:`torch.sum` when ``None``. Defaults to ``None``.
 
         Returns:
             IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
@@ -593,9 +590,6 @@ class StableSTDP(IndependentCellTrainer):
                 calculating spike traces.
             batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
                 function to reduce updates over the batch dimension.
-            field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-                function to reduce updates over the receptive field dimension,
-                :py:func:`torch.sum` when ``None``. Defaults to ``None``.
 
         Returns:
             IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.

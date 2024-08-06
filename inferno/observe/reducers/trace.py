@@ -492,7 +492,7 @@ class ConditionalNearestTraceReducer(FoldReducer):
             :math:`s`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
-        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
+        inclusive (bool, optional): if the duration should be inclusive. Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
 

@@ -1,8 +1,10 @@
 from __future__ import annotations
 from .base import FoldReducer
+from ..._internal import argtest
 from ...functional import interp_previous
 from ...types import OneToOne
 import torch
+from typing import Literal
 
 
 class EventReducer(FoldReducer):
@@ -12,9 +14,11 @@ class EventReducer(FoldReducer):
         step_time (float): length of time between observation.
         criterion (OneToOne[torch.Tensor]): function to test if the input is considered
             matches for it to be considered an event.
+        initial (Literal["inf", "zero", "nan"], optional): initial value to which the
+            tensor should be set. Defaults to ``"inf"``.
         duration (float, optional): length of time over which results should be
             stored, in the same units as ``step_time``. Defaults to ``0.0``.
-        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
+        inclusive (bool, optional): if the duration should be inclusive. Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
 
@@ -28,13 +32,25 @@ class EventReducer(FoldReducer):
         self,
         step_time: float,
         criterion: OneToOne[torch.Tensor],
+        initial: Literal["inf", "zero", "nan"] = "inf",
         duration: float = 0.0,
         inclusive: bool = False,
         inplace: bool = False,
-
     ):
+        # test and set initial value
+        initial = argtest.oneof(
+            "initial", initial, "inf", "zero", "nan", op=lambda x: x.lower()
+        )
+        if initial == "zero":
+            initial = 0.0
+        else:
+            initial = float(initial)
+
         # call superclass constructor
-        FoldReducer.__init__(self, step_time, duration, inclusive, inplace, float("inf"))
+        FoldReducer.__init__(self, step_time, duration, inclusive, inplace, initial)
+
+        # store initial value for return
+        self.__initial_value = initial
 
         # set non-persistent function
         self.criterion = criterion
@@ -51,7 +67,7 @@ class EventReducer(FoldReducer):
             torch.Tensor: state for the current time step.
         """
         if state is None:
-            return torch.where(self.criterion(obs), 0, float("inf")).to(
+            return torch.where(self.criterion(obs), 0, self.__initial_value).to(
                 dtype=self.data.dtype
             )
         else:
@@ -88,7 +104,7 @@ class PassthroughReducer(FoldReducer):
         step_time (float): length of time between observation.
         duration (float, optional): length of time over which results should be
             stored, in the same units as ``step_time``. Defaults to ``0.0``.
-        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
+        inclusive (bool, optional): if the duration should be inclusive. Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
     """

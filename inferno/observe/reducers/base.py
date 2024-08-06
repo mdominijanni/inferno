@@ -78,7 +78,7 @@ class RecordReducer(Reducer, ABC):
     Args:
         step_time (float): length of time between observations.
         duration (float): length of time for which observations should be stored.
-        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
+        inclusive (bool, optional): if the duration should be inclusive. Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
     """
@@ -200,7 +200,7 @@ class FoldReducer(RecordReducer, ABC):
     Args:
         step_time (float): length of time between observations.
         duration (float): length of time for which observations should be stored.
-        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
+        inclusive (bool, optional): if the duration should be inclusive. Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
         fill (Any, optional): value with which to fill the stored record on clearing and
