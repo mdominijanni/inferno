@@ -82,7 +82,7 @@ class Normalization(StateHook):
 
 
 class Clamping(StateHook):
-    """Clamps attribute of registered module on call.
+    r"""Clamps attribute of registered module on call.
 
     Args:
         module (nn.Module): module to which the hook should be registered.
