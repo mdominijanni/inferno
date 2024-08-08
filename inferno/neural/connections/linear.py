@@ -43,7 +43,7 @@ class LinearDense(WeightBiasDelayMixin, Connection):
 
         ``LinearDense.bias``:
 
-        :math:`(N_0 \cdot \cdots)`
+        :math:`\prod(N_0 \cdot \cdots)`
 
         Where:
             * :math:`N_0, \ldots` are the unbatched output dimensions.
@@ -163,6 +163,31 @@ class LinearDense(WeightBiasDelayMixin, Connection):
         else:
             delays = torch.zeros_like(self.weight)
         return ein.rearrange(delays, "o i -> 1 i o").expand(self.batchsz, -1, -1)
+
+    def like_bias(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like reduced postsynaptic receptive spikes to connection bias.
+
+        Args:
+            data (torch.Tensor): data shaped like reduced postsynaptic receptive spikes.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`M \times 1`
+
+            ``return``:
+
+            :math:`M`
+
+            Where:
+                * :math:`M` is the number of elements across output dimensions.
+        """
+        return ein.rearrange(data, "m 1 -> m")
 
     def like_input(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like synapse input to connection input.
@@ -497,6 +522,31 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
         """
         return data.view(-1, *self.inshape)
 
+    def like_bias(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like reduced postsynaptic receptive spikes to connection bias.
+
+        Args:
+            data (torch.Tensor): data shaped like reduced postsynaptic receptive spikes.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`N`
+
+            ``return``:
+
+            :math:`N`
+
+            Where:
+                * :math:`N` is the number of elements across input/output dimensions.
+        """
+        return ein.rearrange(data, "n -> n")
+
     def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection input to synapse input.
 
@@ -572,8 +622,8 @@ class LinearDirect(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`N_0, \ldots` are the unbatched input\output dimensions.
-                * :math:`N` is the number of elements across input\output dimensions.
+                * :math:`N_0, \ldots` are the unbatched input/output dimensions.
+                * :math:`N` is the number of elements across input/output dimensions.
         """
         return ein.rearrange(data, "b ... -> b (...) 1")
 
@@ -830,6 +880,31 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
         """
         return LinearDense.like_input(self, data)
 
+    def like_bias(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like reduced postsynaptic receptive spikes to connection bias.
+
+        Args:
+            data (torch.Tensor): data shaped like reduced postsynaptic receptive spikes.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`N \times 1`
+
+            ``return``:
+
+            :math:`N`
+
+            Where:
+                * :math:`N` is the number of elements across input/output dimensions.
+        """
+        return ein.rearrange(data, "n 1 -> n")
+
     def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection input to synapse input.
 
@@ -909,8 +984,8 @@ class LinearLateral(WeightBiasDelayMixin, Connection):
 
             Where:
                 * :math:`B` is the batch size.
-                * :math:`N_0, \ldots` are the unbatched input\output dimensions.
-                * :math:`N` is the number of elements across input\output dimensions.
+                * :math:`N_0, \ldots` are the unbatched input/output dimensions.
+                * :math:`N` is the number of elements across input/output dimensions.
         """
         return LinearDense.postsyn_receptive(self, data)
 

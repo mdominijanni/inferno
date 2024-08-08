@@ -136,6 +136,26 @@ class TestLinearDense:
 
         assert tuple(conn.like_input(conn.synapse.spike).shape) == (batchsz, *inshape)
 
+    def test_like_bias(self):
+        inshape = randshape(1, 3, 2, 5)
+        outshape = randshape(1, 3, 2, 5)
+        batchsz = random.randint(1, 9)
+        conn = self.makeconn(
+            inshape,
+            outshape,
+            1.0,
+            batchsz,
+            bias=True,
+            weight_init=(lambda x: torch.rand_like(x)),
+        )
+
+        assert (
+            conn.like_bias(
+                conn.postsyn_receptive(torch.rand(batchsz, *outshape)).sum(-1).sum(0)
+            ).shape
+            == conn.bias.shape
+        )
+
     def test_like_synaptic(self):
         inshape = randshape(1, 3, 2, 5)
         outshape = randshape(1, 3, 2, 5)
@@ -302,6 +322,24 @@ class TestLinearDirect:
 
         assert tuple(conn.like_input(conn.synapse.spike).shape) == (batchsz, *shape)
 
+    def test_like_bias(self):
+        shape = randshape(1, 3, 2, 5)
+        batchsz = random.randint(1, 9)
+        conn = self.makeconn(
+            shape,
+            1.0,
+            batchsz,
+            bias=True,
+            weight_init=(lambda x: torch.rand_like(x)),
+        )
+
+        assert (
+            conn.like_bias(
+                conn.postsyn_receptive(torch.rand(batchsz, *shape)).sum(-1).sum(0)
+            ).shape
+            == conn.bias.shape
+        )
+
     def test_like_synaptic(self):
         shape = randshape(1, 3, 2, 5)
         batchsz = random.randint(1, 9)
@@ -392,6 +430,24 @@ class TestLinearLateral:
     @staticmethod
     def mask(shape) -> torch.Tensor:
         return 1 - torch.eye(math.prod(shape))
+
+    def test_like_bias(self):
+        shape = randshape(1, 3, 2, 5)
+        batchsz = random.randint(1, 9)
+        conn = self.makeconn(
+            shape,
+            1.0,
+            batchsz,
+            bias=True,
+            weight_init=(lambda x: torch.rand_like(x)),
+        )
+
+        assert (
+            conn.like_bias(
+                conn.postsyn_receptive(torch.rand(batchsz, *shape)).sum(-1).sum(0)
+            ).shape
+            == conn.bias.shape
+        )
 
     @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
     def test_forward_undelayed(self, biased):
@@ -545,6 +601,33 @@ class TestConv2D:
         img = torch.rand(batchsz, channels, length, length)
 
         assert aaeq(img, conn.like_input(conn.like_synaptic(img)), 1e-6)
+
+    def test_like_bias(self):
+        length = random.randint(28, 64)
+        channels = random.randint(3, 7)
+        filters = random.randint(8, 18)
+        kernel = random.randint(2, 5)
+        batchsz = random.randint(1, 9)
+        conn = self.makeconn(
+            length,
+            length,
+            channels,
+            filters,
+            1.0,
+            kernel,
+            bias=True,
+            weight_init=(lambda x: torch.rand_like(x)),
+            batch_size=batchsz,
+        )
+
+        assert (
+            conn.like_bias(
+                conn.postsyn_receptive(torch.rand(batchsz, *conn.outshape))
+                .sum(-1)
+                .sum(0)
+            ).shape
+            == conn.bias.shape
+        )
 
     @pytest.mark.parametrize("biased", (True, False), ids=("biased", "unbiased"))
     def test_forward_undelayed(self, biased):

@@ -355,6 +355,31 @@ class Conv2D(WeightBiasDelayMixin, Connection):
                 )
             ).to(dtype=data.dtype)
 
+    def like_bias(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like reduced postsynaptic receptive spikes to connection bias.
+
+        Args:
+            data (torch.Tensor): data shaped like reduced postsynaptic receptive spikes.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            :math:`F \times 1 \times 1 \times 1
+
+            ``return``:
+
+            :math:`F`
+
+            Where:
+                * :math:`F` is the number of filters (output channels).
+        """
+        return ein.rearrange(data, "f 1 1 1 -> f")
+
     def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection input to synapse input.
 
