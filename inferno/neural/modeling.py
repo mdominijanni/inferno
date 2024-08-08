@@ -43,7 +43,7 @@ class Accumulator(Module):
 
     @property
     def pos(self) -> torch.Tensor | None:
-        """Positive update component.
+        r"""Positive update component.
 
         Args:
             value (torch.Tensor | None): appends to update component.
@@ -66,7 +66,7 @@ class Accumulator(Module):
 
     @property
     def neg(self) -> torch.Tensor | None:
-        """Negative update component.
+        r"""Negative update component.
 
         Args:
             value (torch.Tensor | None): appends to update component.
