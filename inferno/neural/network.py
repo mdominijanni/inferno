@@ -129,7 +129,7 @@ class Cell(Module, Observable):
 
     @property
     def updater(self) -> Updater | None:
-        """Updater submodule.
+        r"""Updater submodule.
 
         Alias for ``connection.updater``.
 

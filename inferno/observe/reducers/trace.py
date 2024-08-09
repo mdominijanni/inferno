@@ -38,6 +38,8 @@ class NearestTraceReducer(FoldReducer):
             still count as a match, :math:`\epsilon`. Defaults to ``None``.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
+        inclusive (bool, optional): if the duration should be inclusive.
+            Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
 
@@ -151,6 +153,8 @@ class CumulativeTraceReducer(FoldReducer):
             still count as a match, :math:`\epsilon`. Defaults to ``None``.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to ` 0.0``.
+        inclusive (bool, optional): if the duration should be inclusive.
+            Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
 
@@ -268,6 +272,8 @@ class ScaledNearestTraceReducer(FoldReducer):
             a match for the purpose of tracing, :math:`J`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
+        inclusive (bool, optional): if the duration should be inclusive.
+            Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
 
@@ -379,6 +385,8 @@ class ScaledCumulativeTraceReducer(FoldReducer):
             a match for the purpose of tracing, :math:`J`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
+        inclusive (bool, optional): if the duration should be inclusive.
+            Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
 
@@ -492,7 +500,9 @@ class ConditionalNearestTraceReducer(FoldReducer):
             :math:`s`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
-        inclusive (bool): if the duration should be inclusive. Defaults to ``False``.
+        inclusive (bool, optional): if the duration should be inclusive. Defaults to ``False``.
+        inclusive (bool, optional): if the duration should be inclusive.
+            Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
 
@@ -604,6 +614,8 @@ class ConditionalCumulativeTraceReducer(FoldReducer):
             :math:`s`.
         duration (float, optional): length of time over which results should be
             stored, in the same units as :math:`\Delta t`. Defaults to ``0.0``.
+        inclusive (bool, optional): if the duration should be inclusive.
+            Defaults to ``False``.
         inplace (bool, optional): if write operations should be performed
             in-place. Defaults to ``False``.
 

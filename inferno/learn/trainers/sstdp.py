@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections.abc import Sequence
 from .. import IndependentCellTrainer
 from ... import Module, trace_cumulative_value
 from ..._internal import argtest
@@ -344,7 +345,9 @@ class MSTDPET(IndependentCellTrainer):
             set on initialization. See :py:class:`MSTDPET` for details.
         """
         # add the cell with additional hyperparameters
-        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
+        cell, state = self.add_cell(
+            name, cell, self._build_cell_state(**kwargs), ["weight"]
+        )
 
         # common arguments
         monitor_kwargs = {
@@ -479,7 +482,12 @@ class MSTDPET(IndependentCellTrainer):
 
         return self.get_unit(name)
 
-    def forward(self, reward: float | torch.Tensor, scale: float = 1.0) -> None:
+    def forward(
+        self,
+        reward: float | torch.Tensor,
+        scale: float = 1.0,
+        cells: Sequence[str] | None = None,
+    ) -> None:
         r"""Processes update for given layers based on current monitor stored data.
 
         A reward term (``reward``) is used as an additional scaling term applied to
@@ -493,6 +501,8 @@ class MSTDPET(IndependentCellTrainer):
             scale (float, optional): scaling factor used for the updates, this value
                 is expected to be nonnegative, and its absolute value will be used,
                 :math:`\gamma`. Defaults to ``1.0``.
+            cells (Sequence[str] | None): names of the cells to update, all cells if
+                ``None``. Defaults to ``None``.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -512,7 +522,11 @@ class MSTDPET(IndependentCellTrainer):
             scalar multiplication, i.e. :math:`a f(X) = f(aX)`.
         """
         # iterate through self
-        for cell, state, monitors in self:
+        for name, (cell, state, monitors) in zip(self.cells_, self):
+
+            # skip if cell is not in a non-none training list
+            if cells is not None and name not in cells:
+                continue
 
             # skip if self or cell is not in training mode or has no updater
             if not cell.training or not self.training or not cell.updater:
@@ -803,7 +817,9 @@ class MSTDP(IndependentCellTrainer):
             set on initialization. See :py:class:`MSTDP` for details.
         """
         # add the cell with additional hyperparameters
-        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
+        cell, state = self.add_cell(
+            name, cell, self._build_cell_state(**kwargs), ["weight"]
+        )
 
         # if delays should be accounted for
         delayed = state.delayed and cell.connection.delayedby is not None
@@ -904,7 +920,12 @@ class MSTDP(IndependentCellTrainer):
 
         return self.get_unit(name)
 
-    def forward(self, reward: float | torch.Tensor, scale: float = 1.0) -> None:
+    def forward(
+        self,
+        reward: float | torch.Tensor,
+        scale: float = 1.0,
+        cells: Sequence[str] | None = None,
+    ) -> None:
         r"""Processes update for given layers based on current monitor stored data.
 
         A reward term (``reward``) is used as an additional scaling term applied to
@@ -918,6 +939,8 @@ class MSTDP(IndependentCellTrainer):
             scale (float, optional): scaling factor used for the updates, this value
                 is expected to be nonnegative, and its absolute value will be used,
                 :math:`\gamma`. Defaults to ``1.0``.
+            cells (Sequence[str] | None): names of the cells to update, all cells if
+                ``None``. Defaults to ``None``.
 
         .. admonition:: Shape
             :class: tensorshape
@@ -937,7 +960,12 @@ class MSTDP(IndependentCellTrainer):
             scalar multiplication, i.e. :math:`a f(X) = f(aX)`.
         """
         # iterate through self
-        for cell, state, monitors in self:
+        for name, (cell, state, monitors) in zip(self.cells_, self):
+
+            # skip if cell is not in a non-none training list
+            if cells is not None and name not in cells:
+                continue
+
             # skip if self or cell is not in training mode or has no updater
             if not cell.training or not self.training or not cell.updater:
                 continue

@@ -1146,6 +1146,36 @@ class Connection(Updatable, Module, ABC):
         )
 
     @abstractmethod
+    def like_bias(self, data: torch.Tensor) -> torch.Tensor:
+        r"""Reshapes data like reduced postsynaptic receptive spikes to connection bias.
+
+        Args:
+            data (torch.Tensor): data shaped like reduced postsynaptic receptive spikes.
+
+        Raises:
+            NotImplementedError: ``like_bias`` must be implemented by the subclass.
+
+        Returns:
+            torch.Tensor: reshaped data.
+
+        .. admonition:: Shape
+            :class: tensorshape
+
+            ``data``:
+
+            like :py:meth:`postsyn_receptive`, excluding the first (batch) and
+            last (receptive field) dimension.
+
+            ``return``:
+
+            like :py:attr:`bias`
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__}(Connection) must implement "
+            "the method `like_bias`."
+        )
+
+    @abstractmethod
     def like_synaptic(self, data: torch.Tensor) -> torch.Tensor:
         r"""Reshapes data like connection input to synapse input.
 
@@ -1198,7 +1228,7 @@ class Connection(Updatable, Module, ABC):
             ``return``:
 
             :math:`B \times` `broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_
-            with :py:attr:`weight` :math:`\times L\cdot`
+            with :py:attr:`weight` \times :math:`\times L\cdot`
 
             Where:
                 * :math:`B` is the batch size.

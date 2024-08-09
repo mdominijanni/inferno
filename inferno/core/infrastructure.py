@@ -891,7 +891,7 @@ class RecordTensor(ShapedTensor):
             for the tensor. Defaults to ``True``.
         live (bool, optional): if constraint validity should be tested on
             assignment. Defaults to ``False``.
-        inclusive (bool): if the duration should represent the maximum time which can
+        inclusive (bool, optional): if the duration should represent the maximum time which can
             be sampled. Defaults to ``False``.
 
     Note:
@@ -1042,7 +1042,7 @@ class RecordTensor(ShapedTensor):
                 for the tensor. Defaults to ``True``.
             live (bool, optional): if constraint validity should be tested on
                 assignment. Defaults to ``False``.
-            inclusive (bool): if the duration should represent the maximum time which
+            inclusive (bool, optional): if the duration should represent the maximum time which
                 can be sampled. Defaults to ``False``.
         """
         constrained = cls(

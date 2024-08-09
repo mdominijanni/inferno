@@ -221,9 +221,6 @@ class STDP(IndependentCellTrainer):
                 calculating spike traces.
             batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
                 function to reduce updates over the batch dimension.
-            field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-                function to reduce updates over the receptive field dimension,
-                :py:func:`torch.sum` when ``None``. Defaults to ``None``.
 
         Returns:
             IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
@@ -233,7 +230,9 @@ class STDP(IndependentCellTrainer):
             set on initialization. See :py:class:`STDP` for details.
         """
         # add the cell with additional hyperparameters
-        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
+        cell, state = self.add_cell(
+            name, cell, self._build_cell_state(**kwargs), ["weight"]
+        )
 
         # if delays should be accounted for
         delayed = state.delayed and cell.connection.delayedby is not None
@@ -591,9 +590,6 @@ class StableSTDP(IndependentCellTrainer):
                 calculating spike traces.
             batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor]):
                 function to reduce updates over the batch dimension.
-            field_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-                function to reduce updates over the receptive field dimension,
-                :py:func:`torch.sum` when ``None``. Defaults to ``None``.
 
         Returns:
             IndependentCellTrainer.Unit: specified cell, auxiliary state, and monitors.
@@ -603,7 +599,9 @@ class StableSTDP(IndependentCellTrainer):
             set on initialization. See :py:class:`STDP` for details.
         """
         # add the cell with additional hyperparameters
-        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
+        cell, state = self.add_cell(
+            name, cell, self._build_cell_state(**kwargs), ["weight"]
+        )
 
         # if delays should be accounted for
         delayed = state.delayed and cell.connection.delayedby is not None
@@ -1060,7 +1058,9 @@ class TripletSTDP(IndependentCellTrainer):
             set on initialization. See :py:class:`TripletSTDP` for details.
         """
         # add the cell with additional hyperparameters
-        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
+        cell, state = self.add_cell(
+            name, cell, self._build_cell_state(**kwargs), ["weight"]
+        )
 
         # if delays should be accounted for
         delayed = state.delayed and cell.connection.delayedby is not None
@@ -1590,7 +1590,9 @@ class StableTripletSTDP(IndependentCellTrainer):
             set on initialization. See :py:class:`TripletSTDP` for details.
         """
         # add the cell with additional hyperparameters
-        cell, state = self.add_cell(name, cell, self._build_cell_state(**kwargs))
+        cell, state = self.add_cell(
+            name, cell, self._build_cell_state(**kwargs), ["weight"]
+        )
 
         # if delays should be accounted for
         delayed = state.delayed and cell.connection.delayedby is not None
