@@ -1303,8 +1303,9 @@ class Connection(Updatable, Module, ABC):
             Updater: newly set updater.
         """
         # determine updatable parameters
+        params = []
         if not exclude_weight:
-            params = ["weight"]
+            params.append("weight")
         if self.biased and not exclude_bias:
             params.append("bias")
         if self.delayedby is not None and not exclude_delay:
