@@ -253,7 +253,7 @@ def holt_linear_smoothing(
 
 
 def isi(
-    spikes: torch.Tensor, step_time: float | None = None, time_first: bool = True
+    spikes: torch.Tensor, step_time: float, time_first: bool = True
 ) -> torch.Tensor:
     r"""Transforms spike trains into interspike intervals.
 
@@ -266,8 +266,7 @@ def isi(
     Args:
         spikes (torch.Tensor): spike trains for which to calculate intervals.
         step_time (float | None, optional): length of the simulation step,
-            in :math:`\text{ms}`, if ``None`` the returned intervals will be as a
-            multiple of simulation steps. Defaults to ``None``.
+            in :math:`\text{ms}`.
         time_first (bool, optional): if the time dimension is given first rather than
             last. Defaults to ``True``.
 
@@ -294,8 +293,8 @@ def isi(
     if time_first:
         spikes = ein.rearrange(spikes, "t ... -> ... t")
 
-    # set dummy step time if required
-    step_time = 1.0 if step_time is None else float(step_time)
+    # ensure step time is a float
+    step_time = float(step_time)
 
     # pad spikes with true to ensure at least one (req. for split)
     padded = F.pad(spikes, (1, 0), mode="constant", value=True)
