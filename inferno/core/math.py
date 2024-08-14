@@ -265,7 +265,7 @@ def isi(
 
     Args:
         spikes (torch.Tensor): spike trains for which to calculate intervals.
-        step_time (float | None, optional): length of the simulation step,
+        step_time (float): length of the simulation step,
             in :math:`\text{ms}`.
         time_first (bool, optional): if the time dimension is given first rather than
             last. Defaults to ``True``.
