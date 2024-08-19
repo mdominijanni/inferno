@@ -190,11 +190,11 @@ class MSTDPET(IndependentCellTrainer):
     | Depressive Only   | :math:`-`                            | :math:`-`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
 
-    Because this logic is extended to the sign of the reward signal, the size of the
+    Because this logic is extended to the sign of the modulation signal, the size of the
     batch for the potentiative and depressive update components may not be the same as
     the input batch size. Keep this in mind when selecting a ``batch_reduction``. For
     this reason, the default is :py:func:`torch.sum`. Additionally, the scale
-    :math:`\gamma` can be passed in along with the reward signal to account for this.
+    :math:`\gamma` can be passed in along with the modulation signal to account for this.
 
     Args:
         lr_post (float): learning rate for updates on postsynaptic spikes,
@@ -484,20 +484,20 @@ class MSTDPET(IndependentCellTrainer):
 
     def forward(
         self,
-        reward: float | torch.Tensor,
+        signal: float | torch.Tensor,
         scale: float = 1.0,
         cells: Sequence[str] | None = None,
     ) -> None:
         r"""Processes update for given layers based on current monitor stored data.
 
-        A reward term (``reward``) is used as an additional scaling term applied to
+        A signal (``signal``) is used as an additional scaling term applied to
         the update. When a :py:class:`float`, it is applied to all batch samples.
 
-        The sign of ``reward`` for a given element will affect if the update is considered
+        The sign of ``signal`` for a given element will affect if the update is considered
         potentiative or depressive for the purposes of weight dependence.
 
         Args:
-            reward (float | torch.Tensor): reward for the trained batch, :math:`M(t)`.
+            signal (float | torch.Tensor): signal for the trained batch, :math:`M(t)`.
             scale (float, optional): scaling factor used for the updates, this value
                 is expected to be nonnegative, and its absolute value will be used,
                 :math:`\gamma`. Defaults to ``1.0``.
@@ -507,7 +507,7 @@ class MSTDPET(IndependentCellTrainer):
         .. admonition:: Shape
             :class: tensorshape
 
-            ``reward``:
+            ``signal``:
 
             :math:`B`
 
@@ -515,7 +515,7 @@ class MSTDPET(IndependentCellTrainer):
                 * :math:`B` is the batch size.
 
         Warning:
-            For performance reasons, when ``reward`` is a scalar, it and ``scale``
+            For performance reasons, when ``signal`` is a scalar, it and ``scale``
             are applied after the ``batch_reduction`` function is called. Therefore,
             if ``batch_reduction`` is not homogeneous of degree 1, the result will be
             incorrect. A function :math:`f` is homogeneous degree 1 if it preserves
@@ -544,20 +544,20 @@ class MSTDPET(IndependentCellTrainer):
             z_pre = monitors["elig_pre"].peek()
 
             # process update
-            if isinstance(reward, torch.Tensor):
-                # reward subterms
-                scaledreward = (
-                    (reward * scale).abs().view(-1, *repeat(1, z_post.ndim - 1))
+            if isinstance(signal, torch.Tensor):
+                # signal subterms
+                scaledsignal = (
+                    (signal * scale).abs().view(-1, *repeat(1, z_post.ndim - 1))
                 )
-                reward_pos = torch.argwhere(reward >= 0).view(-1)
-                reward_neg = torch.argwhere(reward < 0).view(-1)
+                signal_pos = torch.argwhere(signal >= 0).view(-1)
+                signal_neg = torch.argwhere(signal < 0).view(-1)
 
                 # partial updates
-                dpost = z_post * scaledreward
-                dpre = z_pre * scaledreward
+                dpost = z_post * scaledsignal
+                dpre = z_pre * scaledsignal
 
-                dpost_reg, dpost_inv = dpost[reward_pos], dpost[reward_neg]
-                dpre_reg, dpre_inv = dpre[reward_pos], dpre[reward_neg]
+                dpost_reg, dpost_inv = dpost[signal_pos], dpost[signal_neg]
+                dpre_reg, dpre_inv = dpre[signal_pos], dpre[signal_neg]
 
                 # join partials
                 match (state.lr_post >= 0, state.lr_pre >= 0):
@@ -582,11 +582,11 @@ class MSTDPET(IndependentCellTrainer):
 
             else:
                 # partial updates
-                dpost = state.batchreduce(z_post, 0) * abs(reward * scale)
-                dpre = state.batchreduce(z_pre, 0) * abs(reward * scale)
+                dpost = state.batchreduce(z_post, 0) * abs(signal * scale)
+                dpre = state.batchreduce(z_pre, 0) * abs(signal * scale)
 
                 # accumulate partials with mode condition
-                match (state.lr_post * reward >= 0, state.lr_pre * reward >= 0):
+                match (state.lr_post * signal >= 0, state.lr_pre * signal >= 0):
                     case (False, False):  # depressive
                         cell.updater.weight = (None, dpost + dpre)
                     case (False, True):  # anti-hebbian
@@ -662,11 +662,11 @@ class MSTDP(IndependentCellTrainer):
     | Depressive Only   | :math:`-`                            | :math:`-`                           | None                                      | :math:`\eta_\text{post}, \eta_\text{pre}` |
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
 
-    Because this logic is extended to the sign of the reward signal, the size of the
+    Because this logic is extended to the sign of the modulation signal, the size of the
     batch for the potentiative and depressive update components may not be the same as
     the input batch size. Keep this in mind when selecting a ``batch_reduction``. For
     this reason, the default is :py:func:`torch.sum`. Additionally, the scale
-    :math:`\gamma` can be passed in along with the reward signal to account for this.
+    :math:`\gamma` can be passed in along with the modulation signal to account for this.
 
     Args:
         lr_post (float): learning rate for updates on postsynaptic spikes,
@@ -929,20 +929,20 @@ class MSTDP(IndependentCellTrainer):
 
     def forward(
         self,
-        reward: float | torch.Tensor,
+        signal: float | torch.Tensor,
         scale: float = 1.0,
         cells: Sequence[str] | None = None,
     ) -> None:
         r"""Processes update for given layers based on current monitor stored data.
 
-        A reward term (``reward``) is used as an additional scaling term applied to
+        A signal (``signal``) is used as an additional scaling term applied to
         the update. When a :py:class:`float`, it is applied to all batch samples.
 
-        The sign of ``reward`` for a given element will affect if the update is considered
+        The sign of ``signal`` for a given element will affect if the update is considered
         potentiative or depressive for the purposes of weight dependence.
 
         Args:
-            reward (float | torch.Tensor): reward for the trained batch, :math:`M(t)`.
+            signal (float | torch.Tensor): signal for the trained batch, :math:`M(t)`.
             scale (float, optional): scaling factor used for the updates, this value
                 is expected to be nonnegative, and its absolute value will be used,
                 :math:`\gamma`. Defaults to ``1.0``.
@@ -952,7 +952,7 @@ class MSTDP(IndependentCellTrainer):
         .. admonition:: Shape
             :class: tensorshape
 
-            ``reward``:
+            ``signal``:
 
             :math:`B`
 
@@ -960,7 +960,7 @@ class MSTDP(IndependentCellTrainer):
                 * :math:`B` is the batch size.
 
         Warning:
-            For performance reasons, when ``reward`` is a scalar, it and ``scale``
+            For performance reasons, when ``signal`` is a scalar, it and ``scale``
             are applied after the ``batch_reduction`` function is called. Therefore,
             if ``batch_reduction`` is not homogeneous of degree 1, the result will be
             incorrect. A function :math:`f` is homogeneous degree 1 if it preserves
@@ -1005,21 +1005,21 @@ class MSTDP(IndependentCellTrainer):
             dpre = ein.einsum(i_pre, x_post, "b ... r, b ... r -> b ...")
 
             # process update
-            if isinstance(reward, torch.Tensor):
-                # reward subterms
-                scaledreward = (
-                    (reward * scale).abs().view(-1, *repeat(1, dpost.ndim - 1))
+            if isinstance(signal, torch.Tensor):
+                # signal subterms
+                scaledsignal = (
+                    (signal * scale).abs().view(-1, *repeat(1, dpost.ndim - 1))
                 )
-                reward_pos = torch.argwhere(reward >= 0).view(-1)
-                reward_neg = torch.argwhere(reward < 0).view(-1)
+                signal_pos = torch.argwhere(signal >= 0).view(-1)
+                signal_neg = torch.argwhere(signal < 0).view(-1)
 
                 # scale partial updates
-                dpost = dpost * scaledreward
-                dpre = dpre * scaledreward
+                dpost = dpost * scaledsignal
+                dpre = dpre * scaledsignal
 
                 # select partials by mode
-                dpost_reg, dpost_inv = dpost[reward_pos], dpost[reward_neg]
-                dpre_reg, dpre_inv = dpre[reward_pos], dpre[reward_neg]
+                dpost_reg, dpost_inv = dpost[signal_pos], dpost[signal_neg]
+                dpre_reg, dpre_inv = dpre[signal_pos], dpre[signal_neg]
 
                 # join partials
                 match (state.lr_post >= 0, state.lr_pre >= 0):
@@ -1044,11 +1044,11 @@ class MSTDP(IndependentCellTrainer):
 
             else:
                 # scale and reduce partial updates
-                dpost = state.batchreduce(dpost, 0) * abs(reward * scale)
-                dpre = state.batchreduce(dpre, 0) * abs(reward * scale)
+                dpost = state.batchreduce(dpost, 0) * abs(signal * scale)
+                dpre = state.batchreduce(dpre, 0) * abs(signal * scale)
 
                 # accumulate partials with mode condition
-                match (state.lr_post * reward >= 0, state.lr_pre * reward >= 0):
+                match (state.lr_post * signal >= 0, state.lr_pre * signal >= 0):
                     case (False, False):  # depressive
                         cell.updater.weight = (None, dpost + dpre)
                     case (False, True):  # anti-hebbian

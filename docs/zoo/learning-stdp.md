@@ -209,7 +209,7 @@ $$
 
 *Where:*
 - $w$, connection weight
-- $\gamma$, common learning rate
+- $\gamma$, scaling factor
 - $M$, modulation term
 - $A_+$, learning rate for postsynaptic events, Hebbian long-term potentiation (LTP) when positive
 - $A_-$, learning rate for presynaptic events, Hebbian long-term depression (LTD) when negative
@@ -262,7 +262,7 @@ $$
 - $w$, connection weight
 - $z$, eligibility [trace](<guide/concepts:Trace>)
 - $\tau_z$ time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for eligibility trace
-- $\gamma$, common learning rate
+- $\gamma$, scaling factor
 - $M$, modulation term
 - $A_+$, learning rate for postsynaptic events, Hebbian long-term potentiation (LTP) when positive
 - $A_-$, learning rate for presynaptic events, Hebbian long-term depression (LTD) when negative
@@ -292,6 +292,8 @@ $$\tau_z \frac{dz}{dt} = -z(t) + \xi(t)$$
 With the following solution.
 
 $$z(t) = z(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right) + \zeta(t)$$
+
+This comes from some notational changes made to the online learning in partially observable Markov decision process (OLPOMDP) algorithm, where the original uses a scaling factor $\gamma^0 = = \gamma \Delta t / \tau_z$ rather than $\gamma$.
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
