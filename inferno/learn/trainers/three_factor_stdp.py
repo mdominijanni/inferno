@@ -121,7 +121,7 @@ class MSTDPET(IndependentCellTrainer):
     r"""Modulated spike-timing dependent plasticity with eligibility trace trainer.
 
     .. math::
-        w(t + \Delta t) - w(t) = \gamma  r(t)
+        w(t + \Delta t) - w(t) = \gamma  M(t)
         [z_\text{post}(t) + z_\text{pre}(t)]
         \Delta t
 
@@ -226,7 +226,7 @@ class MSTDPET(IndependentCellTrainer):
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
-        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.max`.
         A custom function with similar behavior can also be passed in. Like with the
         included function, it should not keep the original dimensions by default.
 
@@ -497,7 +497,7 @@ class MSTDPET(IndependentCellTrainer):
         potentiative or depressive for the purposes of weight dependence.
 
         Args:
-            reward (float | torch.Tensor): reward for the trained batch.
+            reward (float | torch.Tensor): reward for the trained batch, :math:`M(t)`.
             scale (float, optional): scaling factor used for the updates, this value
                 is expected to be nonnegative, and its absolute value will be used,
                 :math:`\gamma`. Defaults to ``1.0``.
@@ -520,6 +520,13 @@ class MSTDPET(IndependentCellTrainer):
             if ``batch_reduction`` is not homogeneous of degree 1, the result will be
             incorrect. A function :math:`f` is homogeneous degree 1 if it preserves
             scalar multiplication, i.e. :math:`a f(X) = f(aX)`.
+
+        Important:
+            By default, the sum of results along the batch axis is taken rather than the
+            more conventional choice of the mean. This is because potentiative and
+            depressive components are split before the batch reduction is performed. To
+            take the mean over all samples in the batch, the ``scale`` term should be
+            set to :math:`(\text{batch size})^{-1}`.
         """
         # iterate through self
         for name, (cell, state, monitors) in zip(self.cells_, self):
@@ -594,7 +601,7 @@ class MSTDP(IndependentCellTrainer):
     r"""Modulated spike-timing dependent plasticity trainer.
 
     .. math::
-        w(t + \Delta t) - w(t) = \gamma  r(t) \left(x_\text{pre}(t)
+        w(t + \Delta t) - w(t) = \gamma  M(t) \left(x_\text{pre}(t)
         \bigl[t = t^f_\text{post}\bigr] +
         x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr] \right)
 
@@ -677,7 +684,7 @@ class MSTDP(IndependentCellTrainer):
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.
         batch_reduction (Callable[[torch.Tensor, tuple[int, ...]], torch.Tensor] | None):
-            function to reduce updates over the batch dimension, :py:func:`torch.mean`
+            function to reduce updates over the batch dimension, :py:func:`torch.sum`
             when ``None``. Defaults to ``None``.
 
     Important:
@@ -699,7 +706,7 @@ class MSTDP(IndependentCellTrainer):
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
-        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.max`.
         A custom function with similar behavior can also be passed in. Like with the
         included function, it should not keep the original dimensions by default.
 
@@ -736,7 +743,7 @@ class MSTDP(IndependentCellTrainer):
         self.trace = argtest.oneof(
             "trace_mode", trace_mode, "cumulative", "nearest", op=(lambda x: x.lower())
         )
-        self.batchreduce = batch_reduction if batch_reduction else torch.mean
+        self.batchreduce = batch_reduction if batch_reduction else torch.sum
 
     def _build_cell_state(self, **kwargs) -> Module:
         r"""Builds auxiliary state for a cell.
@@ -777,7 +784,7 @@ class MSTDP(IndependentCellTrainer):
                     "expected one of: 'cumulative', 'nearest'"
                 )
         state.batchreduce = (
-            batch_reduction if (batch_reduction is not None) else torch.mean
+            batch_reduction if (batch_reduction is not None) else torch.sum
         )
 
         return state
@@ -935,7 +942,7 @@ class MSTDP(IndependentCellTrainer):
         potentiative or depressive for the purposes of weight dependence.
 
         Args:
-            reward (float | torch.Tensor): reward for the trained batch.
+            reward (float | torch.Tensor): reward for the trained batch, :math:`M(t)`.
             scale (float, optional): scaling factor used for the updates, this value
                 is expected to be nonnegative, and its absolute value will be used,
                 :math:`\gamma`. Defaults to ``1.0``.
@@ -958,6 +965,13 @@ class MSTDP(IndependentCellTrainer):
             if ``batch_reduction`` is not homogeneous of degree 1, the result will be
             incorrect. A function :math:`f` is homogeneous degree 1 if it preserves
             scalar multiplication, i.e. :math:`a f(X) = f(aX)`.
+
+        Important:
+            By default, the sum of results along the batch axis is taken rather than the
+            more conventional choice of the mean. This is because potentiative and
+            depressive components are split before the batch reduction is performed. To
+            take the mean over all samples in the batch, the ``scale`` term should be
+            set to :math:`(\text{batch size})^{-1}`.
         """
         # iterate through self
         for name, (cell, state, monitors) in zip(self.cells_, self):

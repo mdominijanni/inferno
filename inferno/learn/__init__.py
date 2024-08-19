@@ -3,12 +3,12 @@ from .base import (
     IndependentCellTrainer,
 )
 
-from .trainers.ustdp import (
+from .trainers.two_factor_stdp import (
     STDP,
     TripletSTDP,
 )
 
-from .trainers.sstdp import (
+from .trainers.three_factor_stdp import (
     MSTDPET,
     MSTDP,
 )

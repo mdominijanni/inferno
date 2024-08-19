@@ -119,7 +119,7 @@ $$
 ### Formulation
 $$
 \begin{align*}
-    \frac{dw}{dt} &= \gamma \, r(t) \, \xi(t) \\
+    \frac{dw}{dt} &= \gamma \, M(t) \, \xi(t) \\
     \xi(t) &= P^+ \Phi_\text{post}(t) + P^- \Phi_\text{pre}(t) \\
     \frac{dP^+}{dt} &= -\frac{P^+}{\tau_+} + A_+ \Phi_\text{pre}(t) \\
     \frac{dP^-}{dt} &= -\frac{P^-}{\tau_-} + A_- \Phi_\text{post}(t) \\
@@ -131,7 +131,7 @@ $$
 
 $$
 \begin{align*}
-    w(t + \Delta t) - w(t) &= \gamma \, r(t) \, \zeta(t) \\
+    w(t + \Delta t) - w(t) &= \gamma \, M(t) \, \zeta(t) \\
     \zeta(t) &= P^+ \bigl[t = t_\text{post}^f\bigr] + P^- \bigl[t = t_\text{pre}^f\bigr] \\
     P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\bigl[t = t_\text{pre}^f\bigr] \\
     P^-(t) &= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \bigl[t = t_\text{post}^f\bigr]
@@ -141,7 +141,7 @@ $$
 *Where:*
 - $w$, connection weight
 - $\gamma$, common learning rate
-- $r$, reward term
+- $M$, modulation term
 - $A_+$, learning rate for postsynaptic events, Hebbian long-term potentiation (LTP) when positive
 - $A_-$, learning rate for presynaptic events, Hebbian long-term depression (LTD) when negative
 - $P^-$, [trace](<guide/concepts:Trace>) of postsynaptic spikes
@@ -159,16 +159,20 @@ $$
 $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
 
 ### Description
-This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent reward term $r$. Note that $P^+$ is the presynaptic spike trace and $P^-$ is the postsynaptic spike trace (calculated as [cumulative trace](<guide/concepts:Cumulative Trace>)).
+This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent modulation term $M$. Note that $P^+$ is the presynaptic spike trace and $P^-$ is the postsynaptic spike trace (calculated as [cumulative trace](<guide/concepts:Cumulative Trace>)). Note that within Inferno, this modulation signal $M$ is simply referred to as the `reward`.
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
+1. [10.3389/fncir.2015.00085](https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2015.00085/full)
+
+## Reward-Modulated Spike-Timing Dependent Plasticity (R-STDP)
+See: [Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)](#modulated-spike-timing-dependent-plasticity-with-eligibility-trace-mstdpet).
 
 ## Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)
 ### Formulation
 $$
 \begin{align*}
-    \frac{dw}{dt} &= \gamma \, r(t) \, z(t) \\
+    \frac{dw}{dt} &= \gamma \, M(t) \, z(t) \\
     \tau_z \frac{dz}{dt} &= -z(t) + \xi(t) \\
     \xi(t) &= P^+ \Phi_\text{post}(t) + P^- \Phi_\text{pre}(t) \\
     \frac{dP^+}{dt} &= -\frac{P^+}{\tau_+} + A_+ \Phi_\text{pre}(t) \\
@@ -181,8 +185,8 @@ $$
 
 $$
 \begin{align*}
-    w(t + \Delta t) - w(t) &= \gamma \Delta t \, r(t) \, z(t) \\
-    z(t ) &= z(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right) + \frac{\zeta(t)}{\tau_z} \\
+    w(t + \Delta t) - w(t) &= \gamma \Delta t \, M(t) \, z(t) \\
+    z(t) &= z(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right) + \frac{\zeta(t)}{\tau_z} \\
     \zeta(t) &= P^+ \bigl[t = t_\text{post}^f\bigr] + P^- \bigl[t = t_\text{pre}^f\bigr] \\
     P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\bigl[t = t_\text{pre}^f\bigr] \\
     P^-(t) &= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \bigl[t = t_\text{post}^f\bigr]
@@ -194,7 +198,7 @@ $$
 - $z$, eligibility [trace](<guide/concepts:Trace>)
 - $\tau_z$ time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for eligibility trace
 - $\gamma$, common learning rate
-- $r$, reward term
+- $M$, modulation term
 - $A_+$, learning rate for postsynaptic events, Hebbian long-term potentiation (LTP) when positive
 - $A_-$, learning rate for presynaptic events, Hebbian long-term depression (LTD) when negative
 - $P^-$, trace of postsynaptic spikes
@@ -212,10 +216,11 @@ $$
 $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
 
 ### Description
-This is equivalent to [MSTDP](#modulated-spike-timing-dependent-plasticity-mstdp) except the trace of what would have been the update term, the eligibility, is used instead. This has an exponential smoothing effect on the value of the weights. See the [Florian STDP](<examples/florian-stdp:Florian STDP>) example for a visual comparison.
+This is equivalent to [MSTDP](#modulated-spike-timing-dependent-plasticity-mstdp) except the trace of what would have been the update term, the eligibility, is used instead. This has an exponential smoothing effect on the value of the weights. See the [Florian STDP](<examples/florian-stdp:Florian STDP>) example for a visual comparison. This is sometimes also referred to as "reward-modulated STDP (R-STDP)". Typically, the modulation term is defined as $M(t) = R(t)$ where $R(t)$ is the reward signal at time $t$. Note that within Inferno, this modulation signal $M$ is simply referred to as the `reward`.
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
+1. [10.3389/fncir.2015.00085](https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2015.00085/full)
 
 ## Triplet Spike-Timing Dependent Plasticity (Triplet STDP)
 ### Formulation

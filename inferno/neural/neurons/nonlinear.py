@@ -202,7 +202,7 @@ class Izhikevich(
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
-        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.max`.
         A custom function with similar behavior can also be passed in. Like with the
         included function, it should not keep the original dimensions by default.
 
@@ -596,7 +596,7 @@ class AdEx(AdaptiveCurrentMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNeur
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
-        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.max`.
         A custom function with similar behavior can also be passed in. Like with the
         included function, it should not keep the original dimensions by default.
 
