@@ -86,7 +86,7 @@ class STDP(IndependentCellTrainer):
             :math:`\tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
-        interp_tolerance (float): maximum difference in time from an observation
+        interp_tolerance (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.
@@ -455,7 +455,7 @@ class StableSTDP(IndependentCellTrainer):
             :math:`\tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
-        interp_tolerance (float): maximum difference in time from an observation
+        interp_tolerance (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.
@@ -866,7 +866,7 @@ class TripletSTDP(IndependentCellTrainer):
             of triplets (slow), :math:`\tau_x`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
-        interp_tolerance (float): maximum difference in time from an observation
+        interp_tolerance (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.
@@ -1398,7 +1398,7 @@ class StableTripletSTDP(IndependentCellTrainer):
             of triplets (slow), :math:`\tau_x`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
-        interp_tolerance (float): maximum difference in time from an observation
+        interp_tolerance (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.

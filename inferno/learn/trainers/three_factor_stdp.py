@@ -207,7 +207,7 @@ class MSTDPET(IndependentCellTrainer):
             :math:`tau_\text{pre}`, in :math:`ms`.
         tc_eligibility (float): time constant of exponential decay of eligibility trace,
             :math:`tau_z`, in :math:`ms`.
-        interp_tolerance (float): maximum difference in time from an observation
+        interp_tolerance (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.
@@ -679,7 +679,7 @@ class MSTDP(IndependentCellTrainer):
             :math:`tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
-        interp_tolerance (float): maximum difference in time from an observation
+        interp_tolerance (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.

@@ -86,6 +86,75 @@ Plot of weight update curves using STDP with the different combinations of signs
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§19.2](https://neuronaldynamics.epfl.ch/online/Ch19.S2.html)
 
+## Triplet Spike-Timing Dependent Plasticity (Triplet STDP)
+### Formulation
+$$
+\begin{align*}
+    \frac{dw}{dt} &= r_1(t)\left({A_2}^+ + o_2(t - \epsilon){A_3}^+\right) \sum_{\mathcal{F}_\text{post}} \delta(t - t^f_\text{post}) \\
+    &+ o_1(t)\left({A_2}^- + r_2(t - \epsilon){A_3}^-\right) \sum_{\mathcal{F}_\text{pre}} \delta(t - t^f_\text{pre}) \\
+    \frac{dr_1}{dt} &= -\frac{r_1(t)}{\tau_+} + \sum_{\mathcal{F}_\text{pre}} \delta (t - t_\text{pre}^f) \\
+    \frac{dr_2}{dt} &= -\frac{r_2(t)}{\tau_x} + \sum_{\mathcal{F}_\text{pre}} \delta (t - t_\text{pre}^f) \\
+    \frac{do_1}{dt} &= -\frac{o_1(t)}{\tau_-} + \sum_{\mathcal{F}_\text{post}} \delta (t - t_\text{post}^f) \\
+    \frac{do_2}{dt} &= -\frac{o_2(t)}{\tau_y} + \sum_{\mathcal{F}_\text{post}} \delta (t - t_\text{post}^f)
+\end{align*}
+$$
+
+*With solutions:*
+
+$$
+\begin{align*}
+    w(t + \Delta t) - w(t) &= r_1(t)\left({A_2}^+ + o_2(t - \Delta t){A_3}^+\right) \bigl[ t = t^f_\text{post} \bigr] \\
+    &+ o_1(t)\left({A_2}^- + r_2(t - \Delta t){A_3}^-\right) \bigl[ t = t^f_\text{pre} \bigr] \\
+    r_1(t) &= r_1(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + \bigl[t = t^f_\text{pre}\bigr] \\
+    r_2(t) &= r_2(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) + \bigl[t = t^f_\text{pre}\bigr] \\
+    o_1(t) &= o_1(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + \bigl[t = t^f_\text{post}\bigr] \\
+    o_2(t) &= o_2(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_y}\right) + \bigl[t = t^f_\text{post}\bigr]
+\end{align*}
+$$
+
+*Where:*
+- $w$, connection weight
+- $r_1$, fast [trace](<guide/concepts:Trace>) of presynaptic spikes
+- $r_2$, slow trace of presynaptic spikes
+- $o_1$, fast trace of postsynaptic spikes
+- $o_2$, slow trace of postsynaptic spikes
+- $\tau_+$, time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for fast presynaptic trace
+- $\tau_x$, time constant of exponential decay for slow presynaptic trace
+- $\tau_-$, fast time constant of exponential decay for postsynaptic trace
+- $\tau_y$, time constant of exponential decay for slow postsynaptic trace
+- ${A_2}^+$, learning rate for postsynaptic pair events, Hebbian long-term potentiation (LTP) when positive
+- ${A_3}^+$, learning rate for postsynaptic triplet events, unsigned
+- ${A_2}^-$, learning rate for presynaptic pair events, Hebbian long-term depression (LTD) when negative
+- ${A_3}^-$, learning rate for presynaptic triplet events, unsigned
+- $\epsilon$, small positive constant
+- $t$, current simulation time
+- $\Delta t$, duration of the simulation step
+- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
+- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
+- $\mathcal{F}_\text{post}$, set of prior postsynaptic spikes
+- $\mathcal{F}_\text{pre}$, set of prior presynaptic spikes
+- $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
+
+$[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
+
+*And the following conditions hold:*
+
+- $0 < \tau_+ < \tau_x$
+- $0 < \tau_- < \tau_y$
+- $\text{sgn}({A_3}^+) = 1$
+- $\text{sgn}({A_3}^-) = 1$
+
+*Note:*
+
+As a deviation from the original, in this formulation, it is expected that when ${A_2}^-$ is negatively signed and ${A_2}^+$ is positively signed, the updates will be Hebbian. Additionally, the original specifies $\epsilon$ as a "small positive constant" in both continuous and discrete formulations. The term $t - \epsilon$, is used to indicate the value at a time close to but before $t$. In the discrete version, $\Delta t$ is substituted in for $\epsilon$, as it is the smallest meaningful difference in time.
+
+### Description
+Unlike classical STDP which only triggers an update for spike pairs, triplet STDP extends this to spike triplets. ${A_2}^+$ scales updates when a postsynaptic spike follows a presynaptic spike $(f_\text{pre} \rightarrow f_\text{post})$. ${A_3}^+$ scales updates when a postsynaptic spike follows a presynaptic spike which itself follows another postsynaptic spike $(f_\text{post} \rightarrow f_\text{pre} \rightarrow f_\text{post})$. ${A_2}^-$ scales updates when a presynaptic spike follows a postsynaptic spike $(f_\text{post} \rightarrow f_\text{pre})$. ${A_3}^-$ scales updates when a presynaptic spike follows a postsynaptic spike which itself follows another presynaptic spike $(f_\text{pre} \rightarrow f_\text{post} \rightarrow f_\text{pre})$.
+
+### References
+1. [DOI:10.1523/JNEUROSCI.1425-06.2006](https://www.jneurosci.org/content/26/38/9673)
+1. [DOI:10.1007/s00422-008-0233-1](https://link.springer.com/article/10.1007/s00422-008-0233-1)
+
 ## Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)
 ```{admonition} Work In Progress
 This is not yet implemented and the documentation is incomplete. The information presented may be incorrect.
@@ -159,14 +228,10 @@ $$
 $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
 
 ### Description
-This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent modulation term $M$. Note that $P^+$ is the presynaptic spike trace and $P^-$ is the postsynaptic spike trace (calculated as [cumulative trace](<guide/concepts:Cumulative Trace>)). Note that within Inferno, this modulation signal $M$ is simply referred to as the `reward`.
+This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent modulation term $M$. The spike traces $P^-$ and $P^+$ are, in the original formulation, calculated as [cumulative trace](<guide/concepts:Cumulative Trace>).
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
-1. [10.3389/fncir.2015.00085](https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2015.00085/full)
-
-## Reward-Modulated Spike-Timing Dependent Plasticity (R-STDP)
-See: [Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)](#modulated-spike-timing-dependent-plasticity-with-eligibility-trace-mstdpet).
 
 ## Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)
 ### Formulation
@@ -216,77 +281,18 @@ $$
 $[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
 
 ### Description
-This is equivalent to [MSTDP](#modulated-spike-timing-dependent-plasticity-mstdp) except the trace of what would have been the update term, the eligibility, is used instead. This has an exponential smoothing effect on the value of the weights. See the [Florian STDP](<examples/florian-stdp:Florian STDP>) example for a visual comparison. This is sometimes also referred to as "reward-modulated STDP (R-STDP)". Typically, the modulation term is defined as $M(t) = R(t)$ where $R(t)$ is the reward signal at time $t$. Note that within Inferno, this modulation signal $M$ is simply referred to as the `reward`.
+This is equivalent to [MSTDP](#modulated-spike-timing-dependent-plasticity-mstdp) except the trace of what would have been the update term, the eligibility, is used instead. This has an exponential smoothing effect on the value of the \text{pre}. See the [Florian STDP](<examples/florian-stdp:Florian STDP>) example for a visual comparison.
+
+The form of the modulation can vary. For example, in the case of reward-modulated spike-timing dependent plasticity (R-STDP), the modulation term is defined as $M(t) = R(t) - b$ where $R(t)$ is the reward signal at time $t$ and $b$ is some baseline (often the running average of $R$).
+
+Some sources have the formulation of the eligibility trace $z$ differ slightly. The above formulation is sourced from [[1]](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf) whereas the below is given in [[2]](https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2015.00085/full).
+
+$$\tau_z \frac{dz}{dt} = -z(t) + \xi(t)$$
+
+With the following solution.
+
+$$z(t) = z(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right) + \zeta(t)$$
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
 1. [10.3389/fncir.2015.00085](https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2015.00085/full)
-
-## Triplet Spike-Timing Dependent Plasticity (Triplet STDP)
-### Formulation
-$$
-\begin{align*}
-    \frac{dw}{dt} &= r_1(t)\left({A_2}^+ + o_2(t - \epsilon){A_3}^+\right) \sum_{\mathcal{F}_\text{post}} \delta(t - t^f_\text{post}) \\
-    &+ o_1(t)\left({A_2}^- + r_2(t - \epsilon){A_3}^-\right) \sum_{\mathcal{F}_\text{pre}} \delta(t - t^f_\text{pre}) \\
-    \frac{dr_1}{dt} &= -\frac{r_1(t)}{\tau_+} + \sum_{\mathcal{F}_\text{pre}} \delta (t - t_\text{pre}^f) \\
-    \frac{dr_2}{dt} &= -\frac{r_2(t)}{\tau_x} + \sum_{\mathcal{F}_\text{pre}} \delta (t - t_\text{pre}^f) \\
-    \frac{do_1}{dt} &= -\frac{o_1(t)}{\tau_-} + \sum_{\mathcal{F}_\text{post}} \delta (t - t_\text{post}^f) \\
-    \frac{do_2}{dt} &= -\frac{o_2(t)}{\tau_y} + \sum_{\mathcal{F}_\text{post}} \delta (t - t_\text{post}^f)
-\end{align*}
-$$
-
-*With solutions:*
-
-$$
-\begin{align*}
-    w(t + \Delta t) - w(t) &= r_1(t)\left({A_2}^+ + o_2(t - \Delta t){A_3}^+\right) \bigl[ t = t^f_\text{post} \bigr] \\
-    &+ o_1(t)\left({A_2}^- + r_2(t - \Delta t){A_3}^-\right) \bigl[ t = t^f_\text{pre} \bigr] \\
-    r_1(t) &= r_1(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + \bigl[t = t^f_\text{pre}\bigr] \\
-    r_2(t) &= r_2(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_x}\right) + \bigl[t = t^f_\text{pre}\bigr] \\
-    o_1(t) &= o_1(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + \bigl[t = t^f_\text{post}\bigr] \\
-    o_2(t) &= o_2(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_y}\right) + \bigl[t = t^f_\text{post}\bigr]
-\end{align*}
-$$
-
-*Where:*
-- $w$, connection weight
-- $r_1$, fast [trace](<guide/concepts:Trace>) of presynaptic spikes
-- $r_2$, slow trace of presynaptic spikes
-- $o_1$, fast trace of postsynaptic spikes
-- $o_2$, slow trace of postsynaptic spikes
-- $\tau_+$, time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for fast presynaptic trace
-- $\tau_x$, time constant of exponential decay for slow presynaptic trace
-- $\tau_-$, fast time constant of exponential decay for postsynaptic trace
-- $\tau_y$, time constant of exponential decay for slow postsynaptic trace
-- ${A_2}^+$, learning rate for postsynaptic pair events, Hebbian long-term potentiation (LTP) when positive
-- ${A_3}^+$, learning rate for postsynaptic triplet events, unsigned
-- ${A_2}^-$, learning rate for presynaptic pair events, Hebbian long-term depression (LTD) when negative
-- ${A_3}^-$, learning rate for presynaptic triplet events, unsigned
-- $\epsilon$, small positive constant
-- $t$, current simulation time
-- $\Delta t$, duration of the simulation step
-- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
-- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
-- $\mathcal{F}_\text{post}$, set of prior postsynaptic spikes
-- $\mathcal{F}_\text{pre}$, set of prior presynaptic spikes
-- $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
-
-$[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
-
-*And the following conditions hold:*
-
-- $0 < \tau_+ < \tau_x$
-- $0 < \tau_- < \tau_y$
-- $\text{sgn}({A_3}^+) = 1$
-- $\text{sgn}({A_3}^-) = 1$
-
-*Note:*
-
-As a deviation from the original, in this formulation, it is expected that when ${A_2}^-$ is negatively signed and ${A_2}^+$ is positively signed, the updates will be Hebbian. Additionally, the original specifies $\epsilon$ as a "small positive constant" in both continuous and discrete formulations. The term $t - \epsilon$, is used to indicate the value at a time close to but before $t$. In the discrete version, $\Delta t$ is substituted in for $\epsilon$, as it is the smallest meaningful difference in time.
-
-### Description
-Unlike classical STDP which only triggers an update for spike pairs, triplet STDP extends this to spike triplets. ${A_2}^+$ scales updates when a postsynaptic spike follows a presynaptic spike $(f_\text{pre} \rightarrow f_\text{post})$. ${A_3}^+$ scales updates when a postsynaptic spike follows a presynaptic spike which itself follows another postsynaptic spike $(f_\text{post} \rightarrow f_\text{pre} \rightarrow f_\text{post})$. ${A_2}^-$ scales updates when a presynaptic spike follows a postsynaptic spike $(f_\text{post} \rightarrow f_\text{pre})$. ${A_3}^-$ scales updates when a presynaptic spike follows a postsynaptic spike which itself follows another presynaptic spike $(f_\text{pre} \rightarrow f_\text{post} \rightarrow f_\text{pre})$.
-
-### References
-1. [DOI:10.1523/JNEUROSCI.1425-06.2006](https://www.jneurosci.org/content/26/38/9673)
-1. [DOI:10.1007/s00422-008-0233-1](https://link.springer.com/article/10.1007/s00422-008-0233-1)
