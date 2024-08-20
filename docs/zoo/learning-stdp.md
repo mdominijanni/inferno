@@ -232,6 +232,7 @@ This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except sca
 
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
+1. [10.3389/fncir.2015.00085](https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2015.00085/full)
 
 ## Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)
 ### Formulation
@@ -250,7 +251,7 @@ $$
 
 $$
 \begin{align*}
-    w(t + \Delta t) - w(t) &= \gamma \Delta t \, M(t) \, z(t) \\
+    w(t + \Delta t) - w(t) &= \gamma \, \Delta t \, M(t) \, z(t) \\
     z(t) &= z(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right) + \frac{\zeta(t)}{\tau_z} \\
     \zeta(t) &= P^+ \bigl[t = t_\text{post}^f\bigr] + P^- \bigl[t = t_\text{pre}^f\bigr] \\
     P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\bigl[t = t_\text{pre}^f\bigr] \\

@@ -174,7 +174,7 @@ class MSTDPET(IndependentCellTrainer):
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
     control which terms are potentiative and depressive updates (these are applied to
     the opposite trace). The terms (when expanded) can be scaled for weight dependence
-    on updating. :math:`r` is a reinforcement term given on each update. Note that
+    on updating. :math:`M` is a reinforcement term given on each update. Note that
     this implementation splits the eligibility trace into two terms, so weight
     dependence can scale the magnitude of each.
 
@@ -601,7 +601,7 @@ class MSTDP(IndependentCellTrainer):
     r"""Modulated spike-timing dependent plasticity trainer.
 
     .. math::
-        w(t + \Delta t) - w(t) = \gamma  M(t) \left(x_\text{pre}(t)
+        w(t + \Delta t) - w(t) = \gamma M(t) \left(x_\text{pre}(t)
         \bigl[t = t^f_\text{post}\bigr] +
         x_\text{post}(t) \bigl[t = t^f_\text{pre}\bigr] \right)
 
@@ -646,9 +646,7 @@ class MSTDP(IndependentCellTrainer):
     The signs of the learning rates :math:`\eta_\text{post}` and :math:`\eta_\text{pre}`
     control which terms are potentiative and depressive updates (these are applied to
     the opposite trace). The terms (when expanded) can be scaled for weight dependence
-    on updating. :math:`r` is a reinforcement term given on each update. Note that
-    this implementation splits the eligibility trace into two terms, so weight
-    dependence can scale the magnitude of each.
+    on updating. :math:`M` is a reinforcement term given on each update.
 
     +-------------------+--------------------------------------+-------------------------------------+-------------------------------------------+-------------------------------------------+
     | Mode              | :math:`\text{sgn}(\eta_\text{post})` | :math:`\text{sgn}(\eta_\text{pre})` | LTP Term(s)                               | LTD Term(s)                               |

@@ -312,15 +312,14 @@ class TestMSTDPET:
 
     @pytest.mark.parametrize(
         "kind",
-        ("hebb", "anti", "ltp", "ltp"),
+        ("hebb", "anti", "ltp", "ltd"),
     )
     @pytest.mark.parametrize(
         "mode",
         ("tensor", "negscalar", "posscalar"),
     )
     def test_partial_update(self, kind, mode):
-        # shape = randshape(1, 3, 3, 5)
-        shape = (2, 2)
+        shape = randshape(1, 3, 3, 5)
         batchsz = random.randint(2, 9)
         dt = random.uniform(0.7, 1.4)
         delay = random.randint(0, 2) * dt
@@ -551,15 +550,14 @@ class TestMSTDP:
 
     @pytest.mark.parametrize(
         "kind",
-        ("hebb", "anti", "ltp", "ltp"),
+        ("hebb", "anti", "ltp", "ltd"),
     )
     @pytest.mark.parametrize(
         "mode",
         ("tensor", "negscalar", "posscalar"),
     )
     def test_partial_update(self, kind, mode):
-        # shape = randshape(1, 3, 3, 5)
-        shape = (2, 2)
+        shape = randshape(1, 3, 3, 5)
         batchsz = random.randint(2, 9)
         dt = random.uniform(0.7, 1.4)
         delay = random.randint(0, 2) * dt
@@ -630,8 +628,8 @@ class TestMSTDP:
 
             updater(remreward)
 
-            dpost = xpre * outputs * reward.unsqueeze(-1).unsqueeze(-1)
-            dpre = xpost * inputs * reward.unsqueeze(-1).unsqueeze(-1)
+            dpost = (xpre * outputs).view(batchsz, -1) * reward.view(-1, 1)
+            dpre = (xpost * inputs).view(batchsz, -1) * reward.view(-1, 1)
 
             dpost_reg, dpost_inv = dpost.abs()[reward_pos], dpost.abs()[reward_neg]
             dpre_reg, dpre_inv = dpre.abs()[reward_pos], dpre.abs()[reward_neg]
@@ -651,11 +649,11 @@ class TestMSTDP:
                     dneg = torch.cat((dpost_inv, dpre_inv), 0)
 
             assert aaeq(
-                batch_reduction(dpos, 0).view(-1) if dpos.numel() else None,
+                batch_reduction(dpos, 0) if dpos.numel() else None,
                 layer.updater.weight.pos,
             )
             assert aaeq(
-                batch_reduction(dneg, 0).view(-1) if dneg.numel() else None,
+                batch_reduction(dneg, 0) if dneg.numel() else None,
                 layer.updater.weight.neg,
             )
 
