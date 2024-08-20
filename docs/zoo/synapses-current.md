@@ -1,6 +1,6 @@
 # Synapses, Current Models
 
-## Delta (CUBA Variant)
+## Delta
 ### Formulation
 $$
 I(t) = Q \delta(t - t_f) + I_x

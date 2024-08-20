@@ -38,7 +38,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
 
     See Also:
         For more details and references, visit
-        :ref:`zoo/synapses-current:Delta (CUBA Variant)` in the zoo.
+        :ref:`zoo/synapses-current:Delta` in the zoo.
     """
 
     def __init__(
@@ -210,7 +210,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
 
     See Also:
         For more details and references, visit
-        :ref:`zoo/synapses-current:Delta (CUBA Variant)` in the zoo.
+        :ref:`zoo/synapses-current:Delta` in the zoo.
     """
 
     def __init__(
