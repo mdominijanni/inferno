@@ -183,7 +183,7 @@ class ALIF(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNe
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
-        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.max`.
+        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.amax`.
         A custom function with similar behavior can also be passed in. Like with the
         included function, it should not keep the original dimensions by default.
 
@@ -482,7 +482,7 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
-        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.max`.
+        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.amax`.
         A custom function with similar behavior can also be passed in. Like with the
         included function, it should not keep the original dimensions by default.
 
