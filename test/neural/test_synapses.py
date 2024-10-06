@@ -41,7 +41,7 @@ class TestDeltaCurrent:
     def random_hyper(delayed=False, inplace=False):
         hyper = {}
         hyper["step_time"] = random.uniform(0.6, 1.8)
-        hyper["spike_q"] = random.uniform(20, 30)
+        hyper["spike_charge"] = random.uniform(20, 30)
         hyper["delay"] = random.uniform(hyper["step_time"], 3) if delayed else 0.0
         hyper["interp_mode"] = ("nearest", "previous")[random.randint(0, 1)]
         hyper["interp_tol"] = 0.0
@@ -104,10 +104,10 @@ class TestDeltaCurrent:
 
         res = synapse(spikes)
         assert torch.all(
-            (res - spikes * (hyper["spike_q"] / hyper["step_time"])).abs() <= 1e-7
+            (res - spikes * (hyper["spike_charge"] / hyper["step_time"])).abs() <= 1e-7
         )
         assert torch.all(
-            (synapse.current - spikes * (hyper["spike_q"] / hyper["step_time"])).abs()
+            (synapse.current - spikes * (hyper["spike_charge"] / hyper["step_time"])).abs()
             <= 1e-7
         )
 
@@ -135,7 +135,7 @@ class TestDeltaCurrent:
         assert torch.all(
             torch.abs(
                 synapse.current_at(selector)
-                - spikes * (hyper["spike_q"] / hyper["step_time"])
+                - spikes * (hyper["spike_charge"] / hyper["step_time"])
             )[selector == 0]
             <= 1e-7
         )
@@ -153,7 +153,7 @@ class TestDeltaPlusCurrent:
     def random_hyper(delayed=False, inplace=False):
         hyper = {}
         hyper["step_time"] = random.uniform(0.6, 1.8)
-        hyper["spike_q"] = random.uniform(20, 30)
+        hyper["spike_charge"] = random.uniform(20, 30)
         hyper["delay"] = random.uniform(hyper["step_time"], 3) if delayed else 0.0
         hyper["interp_mode"] = ("nearest", "previous")[random.randint(0, 1)]
         hyper["interp_tol"] = 0.0
@@ -225,14 +225,14 @@ class TestDeltaPlusCurrent:
         res = synapse(spikes, *injects)
         assert torch.all(
             torch.abs(
-                res - sum((spikes * (hyper["spike_q"] / hyper["step_time"]), *injects))
+                res - sum((spikes * (hyper["spike_charge"] / hyper["step_time"]), *injects))
             )
             <= 5e-6
         )
         assert torch.all(
             torch.abs(
                 synapse.current
-                - sum((spikes * (hyper["spike_q"] / hyper["step_time"]), *injects))
+                - sum((spikes * (hyper["spike_charge"] / hyper["step_time"]), *injects))
             )
             <= 5e-6
         )
@@ -269,7 +269,7 @@ class TestDeltaPlusCurrent:
         assert torch.all(
             torch.abs(
                 synapse.current_at(selector)
-                - sum((spikes * (hyper["spike_q"] / hyper["step_time"]), *injects))
+                - sum((spikes * (hyper["spike_charge"] / hyper["step_time"]), *injects))
             )[selector == 0]
             <= 5e-6
         )
