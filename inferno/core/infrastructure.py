@@ -2117,7 +2117,7 @@ class RecordTensor(ShapedTensor):
             res = interp(
                 prev_data,
                 next_data,
-                dt * (shift % 1),
+                dt - dt * (shift % 1),
                 dt,
                 **(interp_kwargs if interp_kwargs else {}),
             )
@@ -2156,7 +2156,7 @@ class RecordTensor(ShapedTensor):
                 return interp(
                     data[_unwind_ptr(ptr, math.ceil(offset), recordsz), ...],
                     data[_unwind_ptr(ptr, math.floor(offset), recordsz), ...],
-                    fullc(data, dt * (shift % 1), shape=data.shape[1:]),
+                    fullc(data, dt - dt * (shift % 1), shape=data.shape[1:]),
                     dt,
                     **(interp_kwargs if interp_kwargs else {}),
                 )
@@ -2290,7 +2290,7 @@ class RecordTensor(ShapedTensor):
             # extrapolate data to write
             prev_exobs, next_exobs = extrap(
                 obs,
-                dt * (shift % 1),
+                dt - dt * (shift % 1),
                 prev_data,
                 next_data,
                 dt,
@@ -2349,7 +2349,7 @@ class RecordTensor(ShapedTensor):
                 # extrapolate data to write
                 prev_exobs, next_exobs = extrap(
                     obs,
-                    fullc(data, dt * (shift % 1), shape=data.shape[1:]),
+                    fullc(data, dt - dt * (shift % 1), shape=data.shape[1:]),
                     data[prev_idx, ...],
                     data[next_idx, ...],
                     dt,

@@ -1707,27 +1707,31 @@ class TestRecordTensor:
         ptr = random.randint(0, rt.recordsz - 1)
         setattr(infmodule, rt.attributes.pointer, ptr)
 
-        indices = torch.randint(0, rt.recordsz - 1, (*shape, nselects)) + 0.5
-        times = indices * rt.dt
+        base_indices = torch.randint(0, rt.recordsz - 1, (*shape, nselects))
 
-        res = rt.select(times.squeeze(-1), interp_linear, tolerance=1e-4, offset=offset)
-        indices = ein.rearrange(indices, "... t -> t ...")
-        cmp = ein.rearrange(
-            interp_linear(
-                data.gather(
-                    0,
-                    (ptr - (indices.ceil().long() + offset)) % rt.recordsz,
+        # test future, centered, and past biased times
+        for idxset in [0.1, 0.5, 0.9]:
+            indices = base_indices + idxset
+            times = indices * rt.dt
+
+            res = rt.select(times.squeeze(-1), interp_linear, tolerance=1e-4, offset=offset)
+            indices = ein.rearrange(indices, "... t -> t ...")
+            cmp = ein.rearrange(
+                interp_linear(
+                    data.gather(
+                        0,
+                        (ptr - (indices.ceil().long() + offset)) % rt.recordsz,
+                    ),
+                    data.gather(
+                        0,
+                        (ptr - (indices.floor().long() + offset)) % rt.recordsz,
+                    ),
+                    rt.dt - (ein.rearrange(times, "... t -> t ...") % rt.dt),
+                    rt.dt,
                 ),
-                data.gather(
-                    0,
-                    (ptr - (indices.floor().long() + offset)) % rt.recordsz,
-                ),
-                ein.rearrange(times, "... t -> t ...") % rt.dt,
-                rt.dt,
-            ),
-            "t ... -> ... t",
-        ).squeeze(-1)
-        assert torch.all((res - cmp).abs() < 1e-6)
+                "t ... -> ... t",
+            ).squeeze(-1)
+            assert torch.all((res - cmp).abs() < 1e-6)
 
     @pytest.mark.parametrize(
         "offset",
@@ -1953,42 +1957,48 @@ class TestRecordTensor:
         setattr(infmodule, rt.attributes.pointer, ptr)
 
         tolerance = 1e-4
-        indices = torch.randint(0, rt.recordsz - 1, shape) + 0.5
-        times = indices * rt.dt
-        obs = torch.rand(shape)
+        base_indices = torch.randint(0, rt.recordsz - 1, shape)
 
-        rt.insert(
-            obs,
-            times,
-            extrap_expdecay,
-            tolerance=tolerance,
-            offset=offset,
-            inplace=inplace,
-            extrap_kwargs={"tc": 20.0},
-        )
-        pred, postd = extrap_expdecay(
-            obs.unsqueeze(0),
-            times.unsqueeze(0) % rt.dt,
-            data.gather(
-                0, (ptr - (indices.unsqueeze(0).ceil().long() + offset)) % rt.recordsz
-            ),
-            data.gather(
+        # test future, centered, and past biased times
+        for idxset in [0.1, 0.5, 0.9]:
+            recovery = rt.value.clone()
+            indices = base_indices + idxset
+            times = indices * rt.dt
+            obs = torch.rand(shape)
+
+            rt.insert(
+                obs,
+                times,
+                extrap_expdecay,
+                tolerance=tolerance,
+                offset=offset,
+                inplace=inplace,
+                extrap_kwargs={"tc": 20.0},
+            )
+            pred, postd = extrap_expdecay(
+                obs.unsqueeze(0),
+                rt.dt - (times.unsqueeze(0) % rt.dt),
+                data.gather(
+                    0, (ptr - (indices.unsqueeze(0).ceil().long() + offset)) % rt.recordsz
+                ),
+                data.gather(
+                    0,
+                    (ptr - (indices.unsqueeze(0).floor().long() + offset)) % rt.recordsz,
+                ),
+                rt.dt,
+                20.0,
+            )
+            cmp = data.scatter(
+                0,
+                (ptr - (indices.unsqueeze(0).ceil().long() + offset)) % rt.recordsz,
+                pred,
+            ).scatter(
                 0,
                 (ptr - (indices.unsqueeze(0).floor().long() + offset)) % rt.recordsz,
-            ),
-            rt.dt,
-            20.0,
-        )
-        cmp = data.scatter(
-            0,
-            (ptr - (indices.unsqueeze(0).ceil().long() + offset)) % rt.recordsz,
-            pred,
-        ).scatter(
-            0,
-            (ptr - (indices.unsqueeze(0).floor().long() + offset)) % rt.recordsz,
-            postd,
-        )
-        assert torch.all((rt.value - cmp).abs() < 1e-6)
+                postd,
+            )
+            assert torch.all((rt.value - cmp).abs() < 1e-6)
+            rt.value = recovery
 
     @pytest.mark.parametrize(
         "offset",

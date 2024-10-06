@@ -90,7 +90,7 @@ class Extrapolation(Protocol):
 
     Here, ``sample`` should be the tensor which was "sampled" at a time between two
     discrete observations, ``prev_data`` and ``next_data``. ``sample_at`` should be
-    the length of time between the nearest discrete observation and this sample.
+    the length of time between the prior observation and this sample.
     ``step_time`` is the total length of time between the nearest two observations.
 
     The result is a 2-tuple of tensors, both shaped like ``data``, the first being the
