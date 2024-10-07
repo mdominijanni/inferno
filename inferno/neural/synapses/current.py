@@ -21,11 +21,14 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of synapses being simulated.
-        step_time (float): length of a simulation time step, in :math:`\text{ms}`.
-        spike_q (float): charge carried by each presynaptic spike, in :math:`\text{pC}`.
+        step_time (float): length of a simulation time step, :math:`\Delta t`,
+            in :math:`\text{ms}`.
+        spike_charge (float): charge carried by each presynaptic spike, :math:`Q`,
+            in :math:`\text{pC}`.
         delay (float, optional): maximum supported delay, in :math:`\text{ms}`.
+            Defaults to ``0.0``.
         interp_mode (Literal["nearest", "previous"], optional): interpolation mode
-            for selectors between observations. Defaults to ``"nearest"``.
+            for selectors between observations. Defaults to ``"previous"``.
         interp_tol (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         current_overbound (float | None, optional): value to replace currents out of
@@ -38,7 +41,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
 
     See Also:
         For more details and references, visit
-        :ref:`zoo/synapses-current:Delta (CUBA Variant)` in the zoo.
+        :ref:`zoo/synapses-current:Delta` in the zoo.
     """
 
     def __init__(
@@ -46,7 +49,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         shape: tuple[int, ...] | int,
         step_time: float,
         *,
-        spike_q: float,
+        spike_charge: float,
         delay: float = 0.0,
         interp_mode: Literal["nearest", "previous"] = "previous",
         interp_tol: float = 0.0,
@@ -59,7 +62,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         InfernoSynapse.__init__(self, shape, step_time, delay, batch_size, inplace)
 
         # synapse attributes
-        self.spike_q = argtest.neq("spike_q", spike_q, 0, float)
+        self.spike_charge = argtest.neq("spike_charge", spike_charge, 0, float)
 
         match interp_mode.lower():
             case "nearest":
@@ -80,7 +83,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
             spikes: torch.Tensor,
         ) -> torch.Tensor:
             return spikes.to(dtype=dtype, device=device) * (
-                synapse.spike_q / synapse.dt
+                synapse.spike_charge / synapse.dt
             )
 
         # call mixin constructor
@@ -98,7 +101,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
     @classmethod
     def partialconstructor(
         cls,
-        spike_q: float,
+        spike_charge: float,
         interp_mode: Literal["nearest", "previous"] = "previous",
         interp_tol: float = 0.0,
         current_overbound: float | None = 0.0,
@@ -108,10 +111,10 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         r"""Returns a function with a common signature for synapse construction.
 
         Args:
-            spike_q (float): charge carried by each presynaptic spike,
+            spike_charge (float): charge carried by each presynaptic spike,
                 in :math:`\text{pC}`.
             interp_mode (Literal["nearest", "previous"], optional): interpolation mode
-                for selectors between observations. Defaults to ``"nearest"``.
+                for selectors between observations. Defaults to ``"previous"``.
             interp_tol (float, optional): maximum difference in time from an observation
                 to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
             current_overbound (float | None, optional): value to replace currents out of
@@ -134,7 +137,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
             return cls(
                 shape=shape,
                 step_time=step_time,
-                spike_q=spike_q,
+                spike_charge=spike_charge,
                 delay=delay,
                 interp_mode=interp_mode,
                 interp_tol=interp_tol,
@@ -155,7 +158,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         Returns:
             torch.Tensor: synaptic current at the time of the provided input spikes.
         """
-        return spikes * (self.spike_q / self.dt)
+        return spikes * (self.spike_charge / self.dt)
 
     def clear(self, **kwargs) -> None:
         r"""Resets synapses to their resting state."""
@@ -173,7 +176,7 @@ class DeltaCurrent(SpikeDerivedCurrentMixin, InfernoSynapse):
         Important:
             Only the first tensor of ``*inputs`` will be used.
         """
-        self.spike = inputs[0]
+        self.spike = inputs[0].bool()
         return self.current
 
 
@@ -193,11 +196,14 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
 
     Args:
         shape (tuple[int, ...] | int): shape of the group of synapses being simulated.
-        step_time (float): length of a simulation time step, in :math:`\text{ms}`.
-        spike_q (float): charge carried by each presynaptic spike, in :math:`\text{pC}`.
+        step_time (float): length of a simulation time step, :math:`\Delta t`,
+            in :math:`\text{ms}`.
+        spike_charge (float): charge carried by each presynaptic spike, :math:`Q`,
+            in :math:`\text{pC}`.
         delay (float, optional): maximum supported delay, in :math:`\text{ms}`.
+            Defaults to ``0.0``.
         interp_mode (Literal["nearest", "previous"], optional): interpolation mode
-            for selectors between observations. Defaults to ``"nearest"``.
+            for selectors between observations. Defaults to ``"previous"``.
         interp_tol (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         current_overbound (float | None, optional): value to replace currents out of
@@ -210,7 +216,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
 
     See Also:
         For more details and references, visit
-        :ref:`zoo/synapses-current:Delta (CUBA Variant)` in the zoo.
+        :ref:`zoo/synapses-current:Delta` in the zoo.
     """
 
     def __init__(
@@ -218,7 +224,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
         shape: tuple[int, ...] | int,
         step_time: float,
         *,
-        spike_q: float,
+        spike_charge: float,
         delay: float = 0.0,
         interp_mode: Literal["nearest", "previous"] = "previous",
         interp_tol: float = 0.0,
@@ -231,7 +237,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
         InfernoSynapse.__init__(self, shape, step_time, delay, batch_size, inplace)
 
         # synapse attributes
-        self.spike_q = argtest.neq("spike_q", spike_q, 0, float)
+        self.spike_charge = argtest.neq("spike_charge", spike_charge, 0, float)
 
         match interp_mode.lower():
             case "nearest":
@@ -261,7 +267,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
     @classmethod
     def partialconstructor(
         cls,
-        spike_q: float,
+        spike_charge: float,
         interp_mode: Literal["nearest", "previous"] = "previous",
         interp_tol: float = 0.0,
         current_overbound: float | None = 0.0,
@@ -271,10 +277,10 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
         r"""Returns a function with a common signature for synapse construction.
 
         Args:
-            spike_q (float): charge carried by each presynaptic spike,
+            spike_charge (float): charge carried by each presynaptic spike,
                 in :math:`\text{pC}`.
             interp_mode (Literal["nearest", "previous"], optional): interpolation mode
-                for selectors between observations. Defaults to ``"nearest"``.
+                for selectors between observations. Defaults to ``"previous"``.
             interp_tol (float, optional): maximum difference in time from an observation
                 to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
             current_overbound (float | None, optional): value to replace currents out of
@@ -297,7 +303,7 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
             return cls(
                 shape=shape,
                 step_time=step_time,
-                spike_q=spike_q,
+                spike_charge=spike_charge,
                 delay=delay,
                 interp_mode=interp_mode,
                 interp_tol=interp_tol,
@@ -330,5 +336,5 @@ class DeltaPlusCurrent(SpikeCurrentMixin, InfernoSynapse):
             :py:attr:`~inferno.neural.synapses.mixins.CurrentMixin.current`.
         """
         self.spike = inputs[0].bool()
-        self.current = sum((inputs[0] * (self.spike_q / self.dt), *inputs[1:]))
+        self.current = sum((inputs[0] * (self.spike_charge / self.dt), *inputs[1:]))
         return self.current

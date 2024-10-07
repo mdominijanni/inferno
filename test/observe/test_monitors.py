@@ -416,9 +416,7 @@ class TestMultiStateMonitor:
         module.nested.data = torch.rand(3, 3)
         module.nested.nested.data = torch.rand(3, 3)
 
-        _ = MultiStateMonitor(
-            reducer, "nested", ("data", "nested.data"), module
-        )
+        _ = MultiStateMonitor(reducer, "nested", ("data", "nested.data"), module)
 
         data = torch.rand(shape)
 

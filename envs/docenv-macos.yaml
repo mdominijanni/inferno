@@ -6,14 +6,14 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.11
+  - python=3.12
   # pytorch
   - pytorch
   - torchvision
   - torchaudio
   # math-sci
   - einops
-  - numpy >=1.26, <2
+  - numpy
   # sphinx
   - sphinx>=7.2.6
   - antlr4-python3-runtime

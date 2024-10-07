@@ -90,7 +90,7 @@ class Extrapolation(Protocol):
 
     Here, ``sample`` should be the tensor which was "sampled" at a time between two
     discrete observations, ``prev_data`` and ``next_data``. ``sample_at`` should be
-    the length of time between the nearest discrete observation and this sample.
+    the length of time between the prior observation and this sample.
     ``step_time`` is the total length of time between the nearest two observations.
 
     The result is a 2-tuple of tensors, both shaped like ``data``, the first being the
@@ -151,5 +151,62 @@ class DimensionReduction(Protocol):
         keepdim: bool = False,
         **kwargs,
     ) -> torch.Tensor:
+        r"""Callback protocol function."""
+        ...
+
+
+class SpikeTimeHalfKernel(Protocol):
+    r"""Callable used for computing the presynaptic or postsynaptic update of pre-post training methods with spike time difference.
+
+    The function here should represent the result of :math:`K(t_\Delta(t))`.
+
+    Without delay adjustment:
+
+    .. math::
+        t_\Delta(t) = t_\text{post} - t_\text{pre}
+
+    With delay adjustment:
+
+    .. math::
+        t_\Delta(t) = t_\text{post} - t_\text{pre} - d(t)
+
+    Where :math:`t_\text{post}` is the time of the last postsynaptic spike,
+    :math:`t_\text{pre}` is the time of the last presynaptic spike, and :math:`d(t)`
+    are the learned delays.
+
+    Args:
+        diff (torch.Tensor): duration of time, possibly adjusted, between presynaptic
+            and postsynaptic spikes, :math:`t_\Delta(t)`,
+            in :math:`\text{ms}`.
+
+    Returns:
+        torch.Tensor: update component.
+
+    .. admonition:: Shape
+        :class: tensorshape
+
+        ``diff``, ``return``:
+
+        :math:`B \times N_0 \times \cdots \times M_0 \times \cdots times L`
+
+        Where:
+            * :math:`B` is the batch size.
+            * :math:`N_0, \ldots` are the unbatched output parameter dimensions
+              (e.g. the number of filters in a convolutional connection).
+            * :math:`M_0, \ldots` are the unbatched input parameter dimensions
+              (e.g. the number of channels and kernel dimensions in a convolutional
+              connection).
+            * :math:`L` is a connection-specific dimension corresponding to the number
+              of outputs affected by each parameter (e.g. the length of an ``im2col``
+              column in convolutional connections).
+
+    Note:
+        Spike times are generally internally recorded as the time since the last spike,
+        with an initial value of :math:`\infty`. Inputs under normal conditions may
+        therefore include ``inf``, ``-inf``, and ``nan``. Outputs shoud generally
+        avoid ``inf``, ``-inf``, and ``nan``.
+    """
+
+    def __call__(self, diff: torch.Tensor, **kwargs) -> torch.Tensor:
         r"""Callback protocol function."""
         ...

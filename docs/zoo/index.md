@@ -22,4 +22,5 @@ synapses-current
 :maxdepth: 2
 
 learning-stdp
+learning-other
 ```

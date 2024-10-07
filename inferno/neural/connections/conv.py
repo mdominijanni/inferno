@@ -369,7 +369,7 @@ class Conv2D(WeightBiasDelayMixin, Connection):
 
             ``data``:
 
-            :math:`F \times 1 \times 1 \times 1
+            :math:`F \times 1 \times 1 \times 1`
 
             ``return``:
 

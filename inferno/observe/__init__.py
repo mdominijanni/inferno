@@ -20,6 +20,7 @@ from .reducers.trace import (
 
 from .reducers.stats import (
     EMAReducer,
+    CAReducer,
 )
 
 from .monitors import (
@@ -48,6 +49,7 @@ __all__ = [
     "ConditionalNearestTraceReducer",
     "ConditionalCumulativeTraceReducer",
     "EMAReducer",
+    "CAReducer",
     "EventReducer",
     "PassthroughReducer",
     "Monitor",

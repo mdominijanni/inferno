@@ -4,6 +4,7 @@ from .protocols import (
     Interpolation,
     Extrapolation,
     DimensionReduction,
+    SpikeTimeHalfKernel,
 )
 
 from .bounding import (
@@ -71,6 +72,11 @@ from .dimreductiion import (
     nangeomean,
 )
 
+from .stdkernels import (
+    exp_stdp_post_kernel,
+    exp_stdp_pre_kernel,
+)
+
 __all__ = [
     # types
     "HalfBounding",
@@ -78,6 +84,7 @@ __all__ = [
     "Interpolation",
     "Extrapolation",
     "DimensionReduction",
+    "SpikeTimeHalfKernel",
     # bounding
     "bound_upper_power",
     "bound_lower_power",
@@ -127,4 +134,7 @@ __all__ = [
     "nanmedian",
     "geomean",
     "nangeomean",
+    # spike time difference kernels
+    "exp_stdp_post_kernel",
+    "exp_stdp_pre_kernel",
 ]

@@ -49,6 +49,7 @@
     exponential_smoothing
     holt_linear_smoothing
     isi
+    victor_purpura_pair_dist
 ```
 
 ## Spike Trace

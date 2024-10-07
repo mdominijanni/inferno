@@ -16,6 +16,7 @@ from .math import (
     exponential_smoothing,
     holt_linear_smoothing,
     isi,
+    victor_purpura_pair_dist,
 )
 
 from .tensor import (
@@ -63,6 +64,7 @@ __all__ = [
     "exponential_smoothing",
     "holt_linear_smoothing",
     "isi",
+    "victor_purpura_pair_dist",
     # tensor creation
     "zeros",
     "ones",

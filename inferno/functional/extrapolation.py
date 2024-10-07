@@ -128,7 +128,7 @@ def extrap_nearest(
             \begin{cases}
                 X(t_s) & t_s > \Delta t / 2\\
                 D(\Delta t) &\text{otherwise}
-            \end{cases} \\
+            \end{cases}
         \end{align*}
 
     Args:
@@ -250,7 +250,7 @@ def extrap_expdecay(
     .. math::
         \begin{align*}
             X(0) &= X(t_s) \exp \left( \frac{t_s}{\tau} \right) \\
-            X(\Delta t) &= X(t_s) \exp \left( -\frac{\Delta t - t_s}{\tau} \right) \\
+            X(\Delta t) &= X(t_s) \exp \left( -\frac{\Delta t - t_s}{\tau} \right)
         \end{align*}
 
     Args:
@@ -291,7 +291,7 @@ def extrap_expratedecay(
     .. math::
         \begin{align*}
             X(0) &= X(t_s) \exp \left( \lambda t_s \right) \\
-            X(\Delta t) &= X(t_s) \exp \left( -\lambda (\Delta t - t_s) \right) \\
+            X(\Delta t) &= X(t_s) \exp \left( -\lambda (\Delta t - t_s) \right)
         \end{align*}
 
     Args:

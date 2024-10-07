@@ -21,9 +21,26 @@
     :toctree: generated
 
     STDP
-    MSTDP
-    MSTDPET
+    DelayAdjustedSTDP
+    DelayAdjustedSTDPD
+    KernelSTDP
+    DelayAdjustedKernelSTDP
+    DelayAdjustedKernelSTDPD
     TripletSTDP
+    MSTDP
+    DelayAdjustedMSTDP
+    DelayAdjustedMSTDPD
+    MSTDPET
+
+```
+
+## Trainers, Other
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    LinearHomeostasis
 ```
 
 ## Classifiers

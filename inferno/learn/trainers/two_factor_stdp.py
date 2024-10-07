@@ -86,7 +86,7 @@ class STDP(IndependentCellTrainer):
             :math:`\tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
-        interp_tolerance (float): maximum difference in time from an observation
+        interp_tolerance (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.
@@ -113,7 +113,7 @@ class STDP(IndependentCellTrainer):
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
-        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.amax`.
         A custom function with similar behavior can also be passed in. Like with the
         included function, it should not keep the original dimensions by default.
 
@@ -455,7 +455,7 @@ class StableSTDP(IndependentCellTrainer):
             :math:`\tau_\text{pre}`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
-        interp_tolerance (float): maximum difference in time from an observation
+        interp_tolerance (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.
@@ -482,7 +482,7 @@ class StableSTDP(IndependentCellTrainer):
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
-        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.amax`.
         A custom function with similar behavior can also be passed in. Like with the
         included function, it should not keep the original dimensions by default.
 
@@ -866,7 +866,7 @@ class TripletSTDP(IndependentCellTrainer):
             of triplets (slow), :math:`\tau_x`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
-        interp_tolerance (float): maximum difference in time from an observation
+        interp_tolerance (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.
@@ -899,7 +899,7 @@ class TripletSTDP(IndependentCellTrainer):
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
-        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.amax`.
         A custom function with similar behavior can also be passed in. Like with the
         included function, it should not keep the original dimensions by default.
 
@@ -1398,7 +1398,7 @@ class StableTripletSTDP(IndependentCellTrainer):
             of triplets (slow), :math:`\tau_x`, in :math:`ms`.
         delayed (bool, optional): if the updater should assume that learned delays, if
             present, may change. Defaults to ``False``.
-        interp_tolerance (float): maximum difference in time from an observation
+        interp_tolerance (float, optional): maximum difference in time from an observation
             to treat as co-occurring, in :math:`\text{ms}`. Defaults to ``0.0``.
         trace_mode (Literal["cumulative", "nearest"], optional): method to use for
             calculating spike traces. Defaults to ``"cumulative"``.
@@ -1431,7 +1431,7 @@ class StableTripletSTDP(IndependentCellTrainer):
 
     Note:
         ``batch_reduction`` can be one of the functions in PyTorch including but not
-        limited to :py:func:`torch.sum`, :py:func:`torch.max` and :py:func:`torch.max`.
+        limited to :py:func:`torch.sum`, :py:func:`torch.mean`, and :py:func:`torch.amax`.
         A custom function with similar behavior can also be passed in. Like with the
         included function, it should not keep the original dimensions by default.
 

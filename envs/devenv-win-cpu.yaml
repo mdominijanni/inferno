@@ -1,7 +1,6 @@
-name: infernodoc
+name: infernodev
 channels:
   - pytorch
-  - plotly
   - domdfcoding
   - conda-forge
   - defaults
@@ -15,6 +14,23 @@ dependencies:
   # math-sci
   - einops
   - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  # plotting
+  - matplotlib
+  - seaborn
+  # ui
+  - tqdm
+  # mlops
+  - tensorboard
+  - wandb
+  # devtools
+  - black
+  - flake8
+  - mypy
+  - pytest
+  - pytest-cov
   # sphinx
   - sphinx>=7.2.6
   - antlr4-python3-runtime
@@ -29,3 +45,10 @@ dependencies:
   - furo
   - pydata-sphinx-theme
   - sphinx-book-theme
+  # jupyter and spyder
+  - ipykernel
+  - ipympl
+  - ipywidgets
+  - spyder-kernels
+  # other
+  - tomli-w

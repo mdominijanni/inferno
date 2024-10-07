@@ -1153,8 +1153,12 @@ class RecurrentSerial(Layer):
             )
 
         # set transformations used
-        self._feedfwd_out_transform = feedfwd_out_transform if feedfwd_out_transform else identity
-        self._lateral_out_transform = lateral_out_transform if lateral_out_transform else identity
+        self._feedfwd_out_transform = (
+            feedfwd_out_transform if feedfwd_out_transform else identity
+        )
+        self._lateral_out_transform = (
+            lateral_out_transform if lateral_out_transform else identity
+        )
         self._feedback_out_transform = (
             feedback_out_transform if feedback_out_transform else identity
         )

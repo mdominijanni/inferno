@@ -14,7 +14,9 @@ with open("docs/conf.py", "w") as file:
 os.chdir(os.path.join(".", "docs"))
 
 # run to generate .rst files
-os.system("python -m sphinx -T -b html -d _build/doctrees -D language=en . $READTHEDOCS_OUTPUT/html")
+os.system(
+    "python -m sphinx -T -b html -d _build/doctrees -D language=en . $READTHEDOCS_OUTPUT/html"
+)
 
 # replace generated files with overrides
 osrsplit = lambda S, L: (  # noqa:E731;

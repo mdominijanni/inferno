@@ -86,137 +86,6 @@ Plot of weight update curves using STDP with the different combinations of signs
 ### References
 1. [DOI:10.1017/CBO9781107447615 (§19.2](https://neuronaldynamics.epfl.ch/online/Ch19.S2.html)
 
-## Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)
-```{admonition} Work In Progress
-This is not yet implemented and the documentation is incomplete. The information presented may be incorrect.
-```
-### Formulation
-$$
-\Delta w_t =
-\begin{cases}
-    A_+ \exp \left(-\frac{\Delta t_{pp}}{\tau_+}\right) &\Delta t_{pp} > 0 \\
-    0 &\Delta t_{pp} = 0 \\
-    -A_- \exp \left(\frac{\Delta t_{pp}}{\tau_-}\right) &\Delta t_{pp} < 0
-\end{cases}
-$$
-
-$$
-\Delta t_{pp} = t^f_\text{post} - t^f_\text{pre} - d_{pp}
-$$
-
-*Where:*
-- $\Delta w_t$, change in weight
-- $A_+$, update magnitude for long-term potentiation (LTP)
-- $A_-$, update magnitude for long-term depression (LTD)
-- $\tau_+$, time constant for potentiation
-- $\tau_-$, time constant for depression
-- $\Delta t_{pp}$, adjusted time between neighboring post and presynaptic spikes
-- $t^f_\text{post}$, time of the most recent postsynaptic spike
-- $t^f_\text{pre}$, time of the most recent presynaptic spike
-- $d_{pp}$, length of the delay between input the neuron
-
-## Modulated Spike-Timing Dependent Plasticity (MSTDP)
-### Formulation
-$$
-\begin{align*}
-    \frac{dw}{dt} &= \gamma \, r(t) \, \xi(t) \\
-    \xi(t) &= P^+ \Phi_\text{post}(t) + P^- \Phi_\text{pre}(t) \\
-    \frac{dP^+}{dt} &= -\frac{P^+}{\tau_+} + A_+ \Phi_\text{pre}(t) \\
-    \frac{dP^-}{dt} &= -\frac{P^-}{\tau_-} + A_- \Phi_\text{post}(t) \\
-    \Phi_n(t) &= \sum_{\mathcal{F}_n} \delta(t - t_n^f)
-\end{align*}
-$$
-
-*With solutions:*
-
-$$
-\begin{align*}
-    w(t + \Delta t) - w(t) &= \gamma \, r(t) \, \zeta(t) \\
-    \zeta(t) &= P^+ \bigl[t = t_\text{post}^f\bigr] + P^- \bigl[t = t_\text{pre}^f\bigr] \\
-    P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\bigl[t = t_\text{pre}^f\bigr] \\
-    P^-(t) &= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \bigl[t = t_\text{post}^f\bigr]
-\end{align*}
-$$
-
-*Where:*
-- $w$, connection weight
-- $\gamma$, common learning rate
-- $r$, reward term
-- $A_+$, learning rate for postsynaptic events, Hebbian long-term potentiation (LTP) when positive
-- $A_-$, learning rate for presynaptic events, Hebbian long-term depression (LTD) when negative
-- $P^-$, [trace](<guide/concepts:Trace>) of postsynaptic spikes
-- $P^+$, trace of presynaptic spikes
-- $\tau_-$, time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for the postsynaptic trace
-- $\tau_+$, time constant of exponential decay for the presynaptic trace
-- $t$, current simulation time
-- $\Delta t$, duration of the simulation step
-- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
-- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
-- $\mathcal{F}_\text{post}$, set of prior postsynaptic spikes
-- $\mathcal{F}_\text{pre}$, set of prior presynaptic spikes
-- $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
-
-$[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
-
-### Description
-This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent reward term $r$. Note that $P^+$ is the presynaptic spike trace and $P^-$ is the postsynaptic spike trace (calculated as [cumulative trace](<guide/concepts:Cumulative Trace>)).
-
-### References
-1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
-
-## Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)
-### Formulation
-$$
-\begin{align*}
-    \frac{dw}{dt} &= \gamma \, r(t) \, z(t) \\
-    \tau_z \frac{dz}{dt} &= -z(t) + \xi(t) \\
-    \xi(t) &= P^+ \Phi_\text{post}(t) + P^- \Phi_\text{pre}(t) \\
-    \frac{dP^+}{dt} &= -\frac{P^+}{\tau_+} + A_+ \Phi_\text{pre}(t) \\
-    \frac{dP^-}{dt} &= -\frac{P^-}{\tau_-} + A_- \Phi_\text{post}(t) \\
-    \Phi_n(t) &= \sum_{\mathcal{F}_n} \delta(t - t_n^f)
-\end{align*}
-$$
-
-*With solutions:*
-
-$$
-\begin{align*}
-    w(t + \Delta t) - w(t) &= \gamma \Delta t \, r(t) \, z(t) \\
-    z(t ) &= z(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right) + \frac{\zeta(t)}{\tau_z} \\
-    \zeta(t) &= P^+ \bigl[t = t_\text{post}^f\bigr] + P^- \bigl[t = t_\text{pre}^f\bigr] \\
-    P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\bigl[t = t_\text{pre}^f\bigr] \\
-    P^-(t) &= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \bigl[t = t_\text{post}^f\bigr]
-\end{align*}
-$$
-
-*Where:*
-- $w$, connection weight
-- $z$, eligibility [trace](<guide/concepts:Trace>)
-- $\tau_z$ time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for eligibility trace
-- $\gamma$, common learning rate
-- $r$, reward term
-- $A_+$, learning rate for postsynaptic events, Hebbian long-term potentiation (LTP) when positive
-- $A_-$, learning rate for presynaptic events, Hebbian long-term depression (LTD) when negative
-- $P^-$, trace of postsynaptic spikes
-- $P^+$, trace of presynaptic spikes
-- $\tau_-$, time constant of exponential decay for postsynaptic trace
-- $\tau_+$, time constant of exponential decay for presynaptic trace
-- $t$, current simulation time
-- $\Delta t$, duration of the simulation step
-- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
-- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
-- $\mathcal{F}_\text{post}$, set of prior postsynaptic spikes
-- $\mathcal{F}_\text{pre}$, set of prior presynaptic spikes
-- $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
-
-$[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
-
-### Description
-This is equivalent to [MSTDP](#modulated-spike-timing-dependent-plasticity-mstdp) except the trace of what would have been the update term, the eligibility, is used instead. This has an exponential smoothing effect on the value of the weights. See the [Florian STDP](<examples/florian-stdp:Florian STDP>) example for a visual comparison.
-
-### References
-1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
-
 ## Triplet Spike-Timing Dependent Plasticity (Triplet STDP)
 ### Formulation
 $$
@@ -285,3 +154,219 @@ Unlike classical STDP which only triggers an update for spike pairs, triplet STD
 ### References
 1. [DOI:10.1523/JNEUROSCI.1425-06.2006](https://www.jneurosci.org/content/26/38/9673)
 1. [DOI:10.1007/s00422-008-0233-1](https://link.springer.com/article/10.1007/s00422-008-0233-1)
+
+## Modulated Spike-Timing Dependent Plasticity (MSTDP)
+### Formulation
+$$
+\begin{align*}
+    \frac{dw}{dt} &= \gamma \, M(t) \, \xi(t) \\
+    \xi(t) &= P^+ \Phi_\text{post}(t) + P^- \Phi_\text{pre}(t) \\
+    \frac{dP^+}{dt} &= -\frac{P^+}{\tau_+} + A_+ \Phi_\text{pre}(t) \\
+    \frac{dP^-}{dt} &= -\frac{P^-}{\tau_-} + A_- \Phi_\text{post}(t) \\
+    \Phi_n(t) &= \sum_{\mathcal{F}_n} \delta(t - t_n^f)
+\end{align*}
+$$
+
+*With solutions:*
+
+$$
+\begin{align*}
+    w(t + \Delta t) - w(t) &= \gamma \, M(t) \, \zeta(t) \\
+    \zeta(t) &= P^+ \bigl[t = t_\text{post}^f\bigr] + P^- \bigl[t = t_\text{pre}^f\bigr] \\
+    P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\bigl[t = t_\text{pre}^f\bigr] \\
+    P^-(t) &= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \bigl[t = t_\text{post}^f\bigr]
+\end{align*}
+$$
+
+*Where:*
+- $w$, connection weight
+- $\gamma$, scaling factor
+- $M$, modulation term
+- $A_+$, learning rate for postsynaptic events, Hebbian long-term potentiation (LTP) when positive
+- $A_-$, learning rate for presynaptic events, Hebbian long-term depression (LTD) when negative
+- $P^-$, [trace](<guide/concepts:Trace>) of postsynaptic spikes
+- $P^+$, trace of presynaptic spikes
+- $\tau_-$, time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for the postsynaptic trace
+- $\tau_+$, time constant of exponential decay for the presynaptic trace
+- $t$, current simulation time
+- $\Delta t$, duration of the simulation step
+- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
+- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
+- $\mathcal{F}_\text{post}$, set of prior postsynaptic spikes
+- $\mathcal{F}_\text{pre}$, set of prior presynaptic spikes
+- $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
+
+$[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
+
+### Description
+This is equivalent to [STDP](#spike-timing-dependent-plasticity-stdp) except scaled by a time-dependent modulation term $M$. The spike traces $P^-$ and $P^+$ are, in the original formulation, calculated as [cumulative trace](<guide/concepts:Cumulative Trace>).
+
+### References
+1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
+1. [10.3389/fncir.2015.00085](https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2015.00085/full)
+
+## Modulated Spike-Timing Dependent Plasticity with Eligibility Trace (MSTDPET)
+### Formulation
+$$
+\begin{align*}
+    \frac{dw}{dt} &= \gamma \, M(t) \, z(t) \\
+    \tau_z \frac{dz}{dt} &= -z(t) + \xi(t) \\
+    \xi(t) &= P^+ \Phi_\text{post}(t) + P^- \Phi_\text{pre}(t) \\
+    \frac{dP^+}{dt} &= -\frac{P^+}{\tau_+} + A_+ \Phi_\text{pre}(t) \\
+    \frac{dP^-}{dt} &= -\frac{P^-}{\tau_-} + A_- \Phi_\text{post}(t) \\
+    \Phi_n(t) &= \sum_{\mathcal{F}_n} \delta(t - t_n^f)
+\end{align*}
+$$
+
+*With solutions:*
+
+$$
+\begin{align*}
+    w(t + \Delta t) - w(t) &= \gamma \, \Delta t \, M(t) \, z(t) \\
+    z(t) &= z(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right) + \frac{\zeta(t)}{\tau_z} \\
+    \zeta(t) &= P^+ \bigl[t = t_\text{post}^f\bigr] + P^- \bigl[t = t_\text{pre}^f\bigr] \\
+    P^+(t) &= P^+(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_+}\right) + A_+\bigl[t = t_\text{pre}^f\bigr] \\
+    P^-(t) &= P^-(t - \Delta t) \exp \left(-\frac{\Delta t}{\tau_-}\right) + A_- \bigl[t = t_\text{post}^f\bigr]
+\end{align*}
+$$
+
+*Where:*
+- $w$, connection weight
+- $z$, eligibility [trace](<guide/concepts:Trace>)
+- $\tau_z$ time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for eligibility trace
+- $\gamma$, scaling factor
+- $M$, modulation term
+- $A_+$, learning rate for postsynaptic events, Hebbian long-term potentiation (LTP) when positive
+- $A_-$, learning rate for presynaptic events, Hebbian long-term depression (LTD) when negative
+- $P^-$, trace of postsynaptic spikes
+- $P^+$, trace of presynaptic spikes
+- $\tau_-$, time constant of exponential decay for postsynaptic trace
+- $\tau_+$, time constant of exponential decay for presynaptic trace
+- $t$, current simulation time
+- $\Delta t$, duration of the simulation step
+- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
+- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
+- $\mathcal{F}_\text{post}$, set of prior postsynaptic spikes
+- $\mathcal{F}_\text{pre}$, set of prior presynaptic spikes
+- $\delta$, [Dirac delta function](<guide/mathematics:Dirac Delta Function>)
+
+$[\cdots]$ is the Iverson bracket and equals $1$ if the inner statement is true and $0$ if it is false.
+
+### Description
+This is equivalent to [MSTDP](#modulated-spike-timing-dependent-plasticity-mstdp) except the trace of what would have been the update term, the eligibility, is used instead. This has an exponential smoothing effect on the value of the \text{pre}. See the [Florian STDP](<examples/florian-stdp:Florian STDP>) example for a visual comparison.
+
+The form of the modulation can vary. For example, in the case of reward-modulated spike-timing dependent plasticity (R-STDP), the modulation term is defined as $M(t) = R(t) - b$ where $R(t)$ is the reward signal at time $t$ and $b$ is some baseline (often the running average of $R$).
+
+Some sources have the formulation of the eligibility trace $z$ differ slightly. The above formulation is sourced from [[1]](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf) whereas the below is given in [[2]](https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2015.00085/full).
+
+$$\tau_z \frac{dz}{dt} = -z(t) + \xi(t)$$
+
+With the following solution.
+
+$$z(t) = z(t - \Delta t) \exp\left(-\frac{\Delta t}{\tau_z}\right) + \zeta(t)$$
+
+This comes from some notational changes made to the online learning in partially observable Markov decision process (OLPOMDP) algorithm, where the original uses a scaling factor $\gamma^0 = = \gamma \Delta t / \tau_z$ rather than $\gamma$.
+
+### References
+1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
+1. [10.3389/fncir.2015.00085](https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2015.00085/full)
+
+## Generalized-Kernel Spike-Timing Dependent Plasticity (Kernel STDP)
+### Formulation
+$$
+w(t + \Delta t) - w(t) =
+\begin{cases}
+    K_\text{post}\bigl(t^f_\text{post} - t^f_\text{pre}\bigr) &t^f_\text{post} \geq t^f_\text{pre} \\
+    K_\text{pre}\bigl(t^f_\text{post} - t^f_\text{pre}\bigr) &t^f_\text{post} < t^f_\text{pre}
+\end{cases}
+$$
+
+*Where:*
+- $w$, connection weight
+- $K_\text{post}$, kernel to use for cases where the last postsynaptic spike was at least as recent
+- $K_\text{pre}$, kernel to use for cases where the last presynaptic spike was more recent
+- $t$, current simulation time
+- $\Delta t$, duration of the simulation step
+- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
+- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
+
+### Description
+This method generalizes from most variants of STDP by allowing functions other than exponential decay to represent the scale of the update based on the relative time between the most recent postsynaptic and presynaptic spikes.
+
+### References
+1. [DOI:10.1371/journal.pone.0101109](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0101109)
+
+## Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)
+### Formulation
+$$
+\begin{align*}
+    w(t + \Delta t) - w(t) &=
+    \begin{cases}
+        A_+ \exp\left(-\frac{\lvert t_\Delta(t) \rvert}{\tau_+} \right) &t_\Delta(t) \geq 0 \\
+        A_- \exp\left(-\frac{\lvert t_\Delta(t) \rvert}{\tau_-} \right) &t_\Delta(t) < 0
+    \end{cases} \\
+    t_\Delta(t) &= t^f_\text{post} - t^f_\text{pre} - d(t)
+\end{align*}
+$$
+
+*Where:*
+- $w$, connection weight
+- $d$, connection delay
+- $A_+$, learning rate for postsynaptic events, Hebbian long-term potentiation (LTP) when positive
+- $A_-$, learning rate for presynaptic events, Hebbian long-term depression (LTD) when negative
+- $\tau_+$, time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for the postsynaptic adjusted trace
+- $\tau_-$, time constant of exponential decay for the presynaptic adjusted trace
+- $t$, current simulation time
+- $\Delta t$, duration of the simulation step
+- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
+- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
+- $t_\Delta$, adjusted postsynaptic-presynaptic spike time difference
+
+*Note:*
+
+As a deviation from the original, in this formulation, it is expected that when $A_-$ is negatively signed and $A_+$ is positively signed, the updates will be Hebbian.
+
+### Description
+This method applies an adjustment term to the difference in time between the most recent presynaptic and postsynaptic spike based on the learned delay. This is not directly equivalent to nearest neighbor [trace](<guide/concepts:Trace>) even when $d(t) = 0$ as the updates are not applied in an event-based manner. The adjusted traces additionally are not directly traces of postsynaptic and presynaptic spikes.
+
+### References
+1. [DOI:10.1162/neco_a_01674](https://arxiv.org/abs/2011.09380)
+
+## Delay-Adjusted Spike-Timing Dependent Plasticity of Delays (Delay-Adjusted STDPD)
+### Formulation
+$$
+\begin{align*}
+    d(t + \Delta t) - d(t) &=
+    \begin{cases}
+        B_- \exp\left(-\frac{\lvert t_\Delta(t) \rvert}{\tau_-} \right) &t_\Delta(t) \geq 0 \\
+        B_+ \exp\left(-\frac{\lvert t_\Delta(t) \rvert}{\tau_+} \right) &t_\Delta(t) < 0
+    \end{cases} \\
+    t_\Delta(t) &= t^f_\text{post} - t^f_\text{pre} - d(t)
+\end{align*}
+$$
+
+*Where:*
+- $d$, connection delay
+- $B_-$, learning rate for postsynaptic events, Hebbian when negative
+- $B_+$, learning rate for presynaptic events, Hebbian when positive
+- $\tau_-$, time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for the postsynaptic adjusted trace
+- $\tau_+$, time constant of exponential decay for the presynaptic adjusted trace
+- $t$, current simulation time
+- $\Delta t$, duration of the simulation step
+- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
+- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
+- $t_\Delta$, adjusted postsynaptic-presynaptic spike time difference
+
+*Note:*
+
+As a deviation from the original, in this formulation, it is expected that when $B_-$ is negatively signed and $B_+$ is positively signed, the updates will be the delay-equivalent of Hebbian.
+
+### Description
+This method applies an adjustment term to the difference in time between the most recent presynaptic and postsynaptic spike based on the learned delay. This is not directly equivalent to nearest neighbor [trace](<guide/concepts:Trace>) even when $d(t) = 0$ as the updates are not applied in an event-based manner. The adjusted traces additionally are not directly traces of postsynaptic and presynaptic spikes.
+
+The original paper suggests not updating any delay where $d(t) < c$ for a constant $c$ where $c > \min(B_+, B_-)$ if at least one of $B_+$ or $B_-$ is less than zero. This can be practically achieved either using weight clamping or [parameter dependence](<guide/concepts:Parameter Dependence>).
+
+This is the counterpart of [Delay-Adjusted STDP](<zoo/learning-stdp:Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)>) for delay learning.
+
+### References
+1. [DOI:10.1162/neco_a_01674](https://arxiv.org/abs/2011.09380)

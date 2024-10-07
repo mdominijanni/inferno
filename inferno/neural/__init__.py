@@ -26,6 +26,11 @@ from .synapses.current import (
     DeltaPlusCurrent,
 )
 
+from .synapses.expcurrent import (
+    SingleExponentialCurrent,
+    DoubleExponentialCurrent,
+)
+
 from .connections.linear import (
     LinearDense,
     LinearDirect,
@@ -81,6 +86,8 @@ __all__ = [
     "AdEx",
     "DeltaCurrent",
     "DeltaPlusCurrent",
+    "SingleExponentialCurrent",
+    "DoubleExponentialCurrent",
     "LinearDense",
     "LinearDirect",
     "LinearLateral",
