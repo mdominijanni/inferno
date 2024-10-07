@@ -120,6 +120,7 @@ The peak current following a spike at time $t_f$ is equal to $t_\text{peak} + t_
 $$t_\text{peak} = \frac{\tau_d\tau_r}{\tau_d - \tau_r} \ln\left(\frac{\tau_d}{\tau_r}\right)$$
 
 This is also used to determine the value for $Q$ for which the peak current will equal 1.
+
 $$K = \frac{\tau_d - \tau_r}{\exp(-\frac{t_\text{peak}}{\tau_d}) - \exp(-\frac{t_\text{peak}}{\tau_r})}$$
 
 ### References

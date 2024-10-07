@@ -24,7 +24,7 @@ def exp_stdp_post_kernel(
         torch.Tensor: unreduced update component.
 
     Note:
-        See :py:class:`~firebrand.functional.protocols.SpikeTimeHalfKernel`
+        See :py:class:`~inferno.functional.protocols.SpikeTimeHalfKernel`
         for more information on the expected inputs and outputs.
     """
     return torch.exp(diff.abs() / (-time_constant)) * (
@@ -55,7 +55,7 @@ def exp_stdp_pre_kernel(
         torch.Tensor: unreduced update component.
 
     Note:
-        See :py:class:`~firebrand.functional.protocols.SpikeTimeHalfKernel`
+        See :py:class:`~inferno.functional.protocols.SpikeTimeHalfKernel`
         for more information on the expected inputs and outputs.
     """
     return torch.exp(diff.abs() / (-time_constant)) * (
