@@ -1,12 +1,11 @@
 name: infernodev
 channels:
   - pytorch
-  - plotly
   - domdfcoding
   - conda-forge
   - defaults
 dependencies:
-  - python=3.11
+  - python=3.12
   # pytorch
   - pytorch
   - torchvision
@@ -14,14 +13,13 @@ dependencies:
   - cpuonly
   # math-sci
   - einops
-  - numpy >=1.26, <2
+  - numpy
   - pandas
   - scipy
   - scikit-learn
   # plotting
   - matplotlib
   - seaborn
-  - plotly
   # ui
   - tqdm
   # mlops

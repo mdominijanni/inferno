@@ -4,14 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "inferno-ai"
-version = "0.0.4"
+version = "0.0.5"
 description = "An Extensible Spiking Neural Network Library"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Marissa Dominijanni", email = "mdomini@buffalo.edu" }]
 
-dependencies = ["numpy~=1.26", "einops~=0.7"]
+dependencies = ["numpy>=1.26", "einops>=0.7"]
 
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -24,12 +24,12 @@ classifiers = [
 
 [project.optional-dependencies]
 torch = [
-    "torch==2.4.0 ; sys_platform == 'darwin'",
-    "torchvision==0.19.0 ; sys_platform == 'darwin'",
-    "torch==2.4.0 ; sys_platform == 'win32'",
-    "torchvision==0.19.0 ; sys_platform == 'win32'",
-    "torch==2.4.0 ; sys_platform == 'linux'",
-    "torchvision==0.19.0 ; sys_platform == 'linux'",
+    "torch==2.4.1 ; sys_platform == 'darwin'",
+    "torchvision==0.19.1 ; sys_platform == 'darwin'",
+    "torch==2.4.1 ; sys_platform == 'win32'",
+    "torchvision==0.19.1 ; sys_platform == 'win32'",
+    "torch==2.4.1 ; sys_platform == 'linux'",
+    "torchvision==0.19.1 ; sys_platform == 'linux'",
 ]
 
 [project.urls]
