@@ -46,4 +46,5 @@
     ConditionalNearestTraceReducer
     ConditionalCumulativeTraceReducer
     EMAReducer
+    CAReducer
 ```

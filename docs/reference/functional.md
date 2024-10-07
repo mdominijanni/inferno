@@ -16,6 +16,7 @@
     Interpolation
     Extrapolation
     DimensionReduction
+    SpikeTimeHalfKernel
 ```
 
 ## Bounding
@@ -97,4 +98,14 @@
     nangeomean
     quantile
     nanquantile
+```
+
+## Spike Time Kernels
+```{eval-rst}
+.. autosummary::
+    :nosignatures:
+    :toctree: generated
+
+    exp_stdp_post_kernel
+    exp_stdp_pre_kernel
 ```

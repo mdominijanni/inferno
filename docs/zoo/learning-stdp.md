@@ -155,35 +155,6 @@ Unlike classical STDP which only triggers an update for spike pairs, triplet STD
 1. [DOI:10.1523/JNEUROSCI.1425-06.2006](https://www.jneurosci.org/content/26/38/9673)
 1. [DOI:10.1007/s00422-008-0233-1](https://link.springer.com/article/10.1007/s00422-008-0233-1)
 
-## Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)
-```{admonition} Work In Progress
-This is not yet implemented and the documentation is incomplete. The information presented may be incorrect.
-```
-### Formulation
-$$
-\Delta w_t =
-\begin{cases}
-    A_+ \exp \left(-\frac{\Delta t_{pp}}{\tau_+}\right) &\Delta t_{pp} > 0 \\
-    0 &\Delta t_{pp} = 0 \\
-    -A_- \exp \left(\frac{\Delta t_{pp}}{\tau_-}\right) &\Delta t_{pp} < 0
-\end{cases}
-$$
-
-$$
-\Delta t_{pp} = t^f_\text{post} - t^f_\text{pre} - d_{pp}
-$$
-
-*Where:*
-- $\Delta w_t$, change in weight
-- $A_+$, update magnitude for long-term potentiation (LTP)
-- $A_-$, update magnitude for long-term depression (LTD)
-- $\tau_+$, time constant for potentiation
-- $\tau_-$, time constant for depression
-- $\Delta t_{pp}$, adjusted time between neighboring post and presynaptic spikes
-- $t^f_\text{post}$, time of the most recent postsynaptic spike
-- $t^f_\text{pre}$, time of the most recent presynaptic spike
-- $d_{pp}$, length of the delay between input the neuron
-
 ## Modulated Spike-Timing Dependent Plasticity (MSTDP)
 ### Formulation
 $$
@@ -299,3 +270,103 @@ This comes from some notational changes made to the online learning in partially
 ### References
 1. [10.1162/neco.2007.19.6.1468](https://florian.io/papers/2007_Florian_Modulated_STDP.pdf)
 1. [10.3389/fncir.2015.00085](https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2015.00085/full)
+
+## Generalized-Kernel Spike-Timing Dependent Plasticity (Kernel STDP)
+### Formulation
+$$
+w(t + \Delta t) - w(t) =
+\begin{cases}
+    K_\text{post}\bigl(t^f_\text{post} - t^f_\text{pre}\bigr) &t^f_\text{post} \geq t^f_\text{pre} \\
+    K_\text{pre}\bigl(t^f_\text{post} - t^f_\text{pre}\bigr) &t^f_\text{post} < t^f_\text{pre}
+\end{cases}
+$$
+
+*Where:*
+- $w$, connection weight
+- $K_\text{post}$, kernel to use for cases where the last postsynaptic spike was at least as recent
+- $K_\text{pre}$, kernel to use for cases where the last presynaptic spike was more recent
+- $t$, current simulation time
+- $\Delta t$, duration of the simulation step
+- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
+- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
+
+### Description
+This method generalizes from most variants of STDP by allowing functions other than exponential decay to represent the scale of the update based on the relative time between the most recent postsynaptic and presynaptic spikes.
+
+### References
+1. [DOI:10.1371/journal.pone.0101109](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0101109)
+
+## Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)
+### Formulation
+$$
+\begin{align*}
+    w(t + \Delta t) - w(t) &=
+    \begin{cases}
+        A_+ \exp\left(-\frac{\lvert t_\Delta(t) \rvert}{\tau_+} \right) &t_\Delta(t) \geq 0 \\
+        A_- \exp\left(-\frac{\lvert t_\Delta(t) \rvert}{\tau_-} \right) &t_\Delta(t) < 0
+    \end{cases} \\
+    t_\Delta(t) &= t^f_\text{post} - t^f_\text{pre} - d(t)
+\end{align*}
+$$
+
+*Where:*
+- $w$, connection weight
+- $d$, connection delay
+- $A_+$, learning rate for postsynaptic events, Hebbian long-term potentiation (LTP) when positive
+- $A_-$, learning rate for presynaptic events, Hebbian long-term depression (LTD) when negative
+- $\tau_+$, time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for the postsynaptic adjusted trace
+- $\tau_-$, time constant of exponential decay for the presynaptic adjusted trace
+- $t$, current simulation time
+- $\Delta t$, duration of the simulation step
+- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
+- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
+- $t_\Delta$, adjusted postsynaptic-presynaptic spike time difference
+
+*Note:*
+
+As a deviation from the original, in this formulation, it is expected that when $A_-$ is negatively signed and $A_+$ is positively signed, the updates will be Hebbian.
+
+### Description
+This method applies an adjustment term to the difference in time between the most recent presynaptic and postsynaptic spike based on the learned delay. This is not directly equivalent to nearest neighbor [trace](<guide/concepts:Trace>) even when $d(t) = 0$ as the updates are not applied in an event-based manner. The adjusted traces additionally are not directly traces of postsynaptic and presynaptic spikes.
+
+### References
+1. [DOI:10.1162/neco_a_01674](https://arxiv.org/abs/2011.09380)
+
+## Delay-Adjusted Spike-Timing Dependent Plasticity of Delays (Delay-Adjusted STDPD)
+### Formulation
+$$
+\begin{align*}
+    d(t + \Delta t) - d(t) &=
+    \begin{cases}
+        B_- \exp\left(-\frac{\lvert t_\Delta(t) \rvert}{\tau_-} \right) &t_\Delta(t) \geq 0 \\
+        B_+ \exp\left(-\frac{\lvert t_\Delta(t) \rvert}{\tau_+} \right) &t_\Delta(t) < 0
+    \end{cases} \\
+    t_\Delta(t) &= t^f_\text{post} - t^f_\text{pre} - d(t)
+\end{align*}
+$$
+
+*Where:*
+- $d$, connection delay
+- $B_-$, learning rate for postsynaptic events, Hebbian when negative
+- $B_+$, learning rate for presynaptic events, Hebbian when positive
+- $\tau_-$, time constant of [exponential decay](<guide/mathematics:Exponential Decay and Time Constants>) for the postsynaptic adjusted trace
+- $\tau_+$, time constant of exponential decay for the presynaptic adjusted trace
+- $t$, current simulation time
+- $\Delta t$, duration of the simulation step
+- $t^f_\text{post}$, time of (the most recent) postsynaptic spike
+- $t^f_\text{pre}$, time of (the most recent) presynaptic spike
+- $t_\Delta$, adjusted postsynaptic-presynaptic spike time difference
+
+*Note:*
+
+As a deviation from the original, in this formulation, it is expected that when $B_-$ is negatively signed and $B_+$ is positively signed, the updates will be the delay-equivalent of Hebbian.
+
+### Description
+This method applies an adjustment term to the difference in time between the most recent presynaptic and postsynaptic spike based on the learned delay. This is not directly equivalent to nearest neighbor [trace](<guide/concepts:Trace>) even when $d(t) = 0$ as the updates are not applied in an event-based manner. The adjusted traces additionally are not directly traces of postsynaptic and presynaptic spikes.
+
+The original paper suggests not updating any delay where $d(t) < c$ for a constant $c$ where $c > \min(B_+, B_-)$ if at least one of $B_+$ or $B_-$ is less than zero. This can be practically achieved either using weight clamping or [parameter dependence](<guide/concepts:Parameter Dependence>).
+
+This is the counterpart of [Delay-Adjusted STDP](<zoo/learning-stdp:Delay-Adjusted Spike-Timing Dependent Plasticity (Delay-Adjusted STDP)>) for delay learning.
+
+### References
+1. [DOI:10.1162/neco_a_01674](https://arxiv.org/abs/2011.09380)

@@ -19,6 +19,7 @@ from .core import (
     exponential_smoothing,
     holt_linear_smoothing,
     isi,
+    victor_purpura_pair_dist,
     # tensor
     zeros,
     ones,
@@ -60,6 +61,7 @@ __all__ = [
     "exponential_smoothing",
     "holt_linear_smoothing",
     "isi",
+    "victor_purpura_pair_dist",
     # tensor
     "zeros",
     "ones",
