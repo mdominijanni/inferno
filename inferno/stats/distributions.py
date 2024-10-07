@@ -6,9 +6,7 @@ import math
 import torch
 
 
-_astensorsfloat = partial(
-    astensors, conversion=lambda x: torch.tensor(x).float()
-)
+_astensorsfloat = partial(astensors, conversion=lambda x: torch.tensor(x).float())
 
 
 class Poisson(DiscreteDistribution):
@@ -704,8 +702,6 @@ class LogNormal(ContinuousDistribution):
         Returns:
             torch.Tensor: variance of the distribution with given parameters.
         """
-        loc, scale = astensors(
-            loc, scale, conversion=lambda x: torch.tensor(x).float()
-        )
+        loc, scale = astensors(loc, scale, conversion=lambda x: torch.tensor(x).float())
         scalesq = scale**2
         return torch.special.expm1(scalesq) * torch.exp(2 * loc + scalesq)

@@ -1714,7 +1714,9 @@ class TestRecordTensor:
             indices = base_indices + idxset
             times = indices * rt.dt
 
-            res = rt.select(times.squeeze(-1), interp_linear, tolerance=1e-4, offset=offset)
+            res = rt.select(
+                times.squeeze(-1), interp_linear, tolerance=1e-4, offset=offset
+            )
             indices = ein.rearrange(indices, "... t -> t ...")
             cmp = ein.rearrange(
                 interp_linear(
@@ -1979,11 +1981,13 @@ class TestRecordTensor:
                 obs.unsqueeze(0),
                 rt.dt - (times.unsqueeze(0) % rt.dt),
                 data.gather(
-                    0, (ptr - (indices.unsqueeze(0).ceil().long() + offset)) % rt.recordsz
+                    0,
+                    (ptr - (indices.unsqueeze(0).ceil().long() + offset)) % rt.recordsz,
                 ),
                 data.gather(
                     0,
-                    (ptr - (indices.unsqueeze(0).floor().long() + offset)) % rt.recordsz,
+                    (ptr - (indices.unsqueeze(0).floor().long() + offset))
+                    % rt.recordsz,
                 ),
                 rt.dt,
                 20.0,

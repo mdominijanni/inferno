@@ -12,7 +12,7 @@ def adaptive_currents_linear(
     time_constant: float | torch.Tensor,
     voltage_coupling: float | torch.Tensor,
     spike_increment: float | torch.Tensor,
-    refracs: torch.Tensor | None = None
+    refracs: torch.Tensor | None = None,
 ) -> torch.Tensor:
     r"""Update adaptive currents based on membrane potential and postsynaptic spikes.
 
@@ -119,7 +119,7 @@ def adaptive_thresholds_linear_voltage(
     rebound_rate: float | torch.Tensor,
     adapt_reset_min: float | torch.Tensor | None = None,
     spikes: torch.Tensor | None = None,
-    refracs: torch.Tensor | None = None
+    refracs: torch.Tensor | None = None,
 ) -> torch.Tensor:
     r"""Update adaptive thresholds based on membrane potential.
 
@@ -235,7 +235,7 @@ def adaptive_thresholds_linear_spike(
     step_time: float | torch.Tensor,
     time_constant: float | torch.Tensor,
     spike_increment: float | torch.Tensor,
-    refracs: torch.Tensor | None = None
+    refracs: torch.Tensor | None = None,
 ) -> torch.Tensor:
     r"""Update adaptive thresholds based on postsynaptic spikes.
 

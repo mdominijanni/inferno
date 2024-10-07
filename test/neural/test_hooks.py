@@ -181,7 +181,9 @@ class TestNormalization:
         scale = random.uniform(0.5, 1.5)
 
         module = MockModule(data)
-        normalize = Normalization(module, "data", order, scale, dims, as_prehook=prehook)
+        normalize = Normalization(
+            module, "data", order, scale, dims, as_prehook=prehook
+        )
         normalize.register()
 
         normed = torch.linalg.vector_norm(data, order, dim=dims, keepdim=True)

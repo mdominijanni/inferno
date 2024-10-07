@@ -1364,9 +1364,7 @@ class RecordTensor(ShapedTensor):
         return ShapedTensor.value.fget(self)  # type: ignore
 
     @value.setter
-    def value(
-        self, value: torch.Tensor | nn.Parameter | None
-    ) -> None:
+    def value(self, value: torch.Tensor | nn.Parameter | None) -> None:
         _ = ShapedTensor.value.fset(self, value)  # type: ignore
         if self._ignore(self.__data):
             setattr(self.__owner(), f"_{self.__name}_pointer", 0)
