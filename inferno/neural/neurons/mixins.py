@@ -233,6 +233,15 @@ class SpikeRefractoryMixin(RefractoryMixin):
         self.__absrefrac_attr = absrefrac
 
     @property
+    def absrefrac(self) -> float:
+        r"""Absolute refractory period.
+
+        Returns:
+            float: absolute refractory period in :math:`\text{ms}`.
+        """
+        return getattr(self, self.__absrefrac_attr)
+
+    @property
     def spike(self) -> torch.Tensor:
         r"""Action potentials last generated.
 
