@@ -713,7 +713,7 @@ class Biclique(Layer):
 
                 def combinefn(tensors, **kwargs):
                     return ein.reduce(
-                        list(tensors.values()), "s ... -> () ...", combine.lower()
+                        list(tensors.values()), "s ... -> ...", combine.lower()
                     )
 
                 self._combine = combinefn
