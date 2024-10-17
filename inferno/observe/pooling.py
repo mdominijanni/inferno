@@ -142,7 +142,7 @@ class Observable:
         found = None
         for obs, monitors in pool:
             # skip invalid cells or cells from a different layer
-            if not (obs.__basis() or id(obs.__basis()) != id(self.__basis())):
+            if (not obs.__basis()) or id(obs.__basis() != id(self.__basis())):
                 continue
 
             # skip if the named monitor doesn't exist
