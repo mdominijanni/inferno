@@ -228,7 +228,7 @@ def adaptive_thresholds_linear_voltage(
     return adaptations
 
 
-def adaptive_thresholds_linear_spike(
+def adaptive_thresholds_constant_spike(
     adaptations: torch.Tensor,
     spikes: torch.Tensor,
     *,
@@ -309,6 +309,98 @@ def adaptive_thresholds_linear_spike(
 
     # increment adaptations after spiking
     adaptations = adaptations + (spike_increment * spikes.unsqueeze(-1))
+
+    # return updated adaptation state
+    return adaptations
+
+
+def adaptive_thresholds_linear_spike(
+    adaptations: torch.Tensor,
+    spikes: torch.Tensor,
+    *,
+    step_time: float | torch.Tensor,
+    time_constant: float | torch.Tensor,
+    spike_scale: float | torch.Tensor,
+    spike_increment: float | torch.Tensor,
+    refracs: torch.Tensor | None = None,
+) -> torch.Tensor:
+    r"""Update adaptive thresholds based on postsynaptic spikes.
+
+    .. math::
+        \theta_k(t + \Delta t) = \theta_k(t) \exp\left(-\frac{\Delta t}{\tau_k}\right)
+
+    If a spike was generated at time :math:`t`, then.
+
+    .. math::
+        \theta_k(t) \leftarrow b_k \theta_k(t) + d_k
+
+    Args:
+        adaptations (torch.Tensor): last adaptations applied to membrane voltage
+            threshold, :math:`\theta_k`, in :math:`\text{mV}`.
+        spikes (torch.Tensor): if the corresponding neuron generated an
+            action potential.
+        step_time (float | torch.Tensor): length of a simulation time step,
+            :math:`\Delta t`, in :math:`\text{ms}`.
+        time_constant (float | torch.Tensor): time constant of exponential decay for
+            the adaptations, :math:`\tau_k`, in :math:`\text{ms}`.
+        spike_scale (torch.Tensor): amount by which the adaptive threshold is
+            multiplied after a spike, :math:`d_k`, in :math:`\text{mV}`.
+        spike_increment (torch.Tensor): amount by which the adaptive threshold is
+            increased after a spike, :math:`d_k`, in :math:`\text{mV}`.
+        refracs (torch.Tensor | None): remaining absolute refractory periods,
+            in :math:`\text{ms}`, when not ``None``, adaptations of neurons in their
+            absolute refractory periods are maintained. Defaults to ``None``.
+
+    Returns:
+        torch.Tensor: updated adaptations for membrane voltage threshold,
+        in :math:`\text{mV}`.
+
+    .. admonition:: Shape
+        :class: tensorshape
+
+        ``adaptations``:
+
+        :math:`N_0 \times \cdots \times K`
+
+        ``spikes``, ``refracs``:
+
+        :math:`[B] \times N_0 \times \cdots`
+
+        ``step_time``, ``time_constant``, ``spike_increment``:
+
+        `Broadcastable <https://pytorch.org/docs/stable/notes/broadcasting.html>`_ with
+        ``adaptations``.
+
+        ``return``:
+
+        :math:`[B] \times N_0 \times \cdots \times K`
+
+        Where:
+            * :math:`B` is the batch size.
+            * :math:`N_0, \ldots` are dimensions of the group of neurons simulated.
+            * :math:`K` is the number of sets of adaptation parameters.
+
+    Tip:
+        This function doesn't automatically reduce along the batch dimension,
+        this should generally be done by averaging along the :math:`0^\text{th}`
+        dimension.
+
+    See Also:
+        For more details and references, visit
+        :ref:`zoo/neurons-adaptation:Adaptive Threshold, Linear Spike-Dependent` in the zoo.
+    """
+    # decay adaptations over time
+    decayed = adaptations * exp(-step_time / time_constant)
+
+    if refracs is None:
+        adaptations = decayed
+    else:
+        adaptations = adaptations.where(refracs.unsqueeze(-1) > 0, decayed)
+
+    # increment adaptations after spiking
+    adaptations = adaptations + (
+        adaptations * (spike_scale - 1.0) + spike_increment
+    ) * spikes.unsqueeze(-1)
 
     # return updated adaptation state
     return adaptations

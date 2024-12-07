@@ -150,7 +150,7 @@ $$
 $$
 \begin{align*}
     V_m(t) &\leftarrow V_\text{rest} + m_v \left[ V_m(t) - V_\text{rest} \right] - b_v \\
-    \theta_k(t) &\leftarrow \theta_k(t) + d_k
+    \theta_k(t) &\leftarrow \theta_k(t) + d_k \theta_k(t)
 \end{align*}
 $$
 

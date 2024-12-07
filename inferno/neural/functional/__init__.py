@@ -19,6 +19,7 @@ from .neuron_dynamics import (
 from .neuron_adaptation import (
     adaptive_currents_linear,
     adaptive_thresholds_linear_voltage,
+    adaptive_thresholds_constant_spike,
     adaptive_thresholds_linear_spike,
     apply_adaptive_currents,
     apply_adaptive_thresholds,
@@ -39,6 +40,7 @@ __all__ = [
     "voltage_integration_exponential",
     "adaptive_currents_linear",
     "adaptive_thresholds_linear_voltage",
+    "adaptive_thresholds_constant_spike",
     "adaptive_thresholds_linear_spike",
     "apply_adaptive_currents",
     "apply_adaptive_thresholds",

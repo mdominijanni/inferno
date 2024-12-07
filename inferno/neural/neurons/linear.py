@@ -343,7 +343,7 @@ class ALIF(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoNe
         # conditionally update adaptive thresholds
         if adapt or (adapt is None and self.training):
             # use adaptive thresholds update function
-            adaptations = nf.adaptive_thresholds_linear_spike(
+            adaptations = nf.adaptive_thresholds_constant_spike(
                 adaptations=self.threshold_adaptation,
                 spikes=spikes,
                 step_time=self.step_time,
@@ -451,7 +451,7 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
     .. math::
         \begin{align*}
             V_m(t) &\leftarrow V_\text{rest} + m_v \left[ V_m(t) - V_\text{rest} \right] - b_v \\
-            \theta_k(t) &\leftarrow \theta_k(t) + d_k
+            \theta_k(t) &\leftarrow \theta_k(t) + d_k \theta_k(t)
         \end{align*}
 
     Args:
@@ -539,7 +539,9 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
 
         # register adaptation attributes as buffers (for tensor ops and compatibility)
         self.register_buffer("rc_adaptation", torch.tensor(rc_list), persistent=False)
-        self.register_buffer("adapt_increment", torch.tensor(si_list), persistent=False)
+        self.register_buffer(
+            "adapt_increment", torch.tensor(si_list) + 1.0, persistent=False
+        )
 
         # dynamics attributes
         self.step_time = argtest.gt("step_time", step_time, 0, float)
@@ -651,7 +653,8 @@ class GLIF2(AdaptiveThresholdMixin, VoltageMixin, SpikeRefractoryMixin, InfernoN
                 spikes=spikes,
                 step_time=self.step_time,
                 time_constant=1 / self.rc_adaptation,
-                spike_increment=self.adapt_increment,
+                spike_scale=self.adapt_increment,
+                spike_increment=0.0,
                 refracs=(self.refrac if refrac_lock else None),
             )
             # update parameter
