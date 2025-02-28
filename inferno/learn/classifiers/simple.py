@@ -244,7 +244,9 @@ class MaxRateClassifier(Module):
                 self.proportions, "... k -> (...) k"
             )
         else:
-            assocs = F.one_hot(self.assignments.view(-1), self.nclass).float()
+            assocs = F.one_hot(self.assignments.view(-1), self.nclass).to(
+                dtype=self.proportions_.dtype
+            )
 
         # compute logits
         ylogits = (
